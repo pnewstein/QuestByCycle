@@ -1,6 +1,8 @@
-from flask import render_template
+from flask import Blueprint, render_template
 from app import app
 from app.models import User Task
+
+main = Blueprint('main', __name__)
 
 @app.route('/')
 @app.route('/index')
