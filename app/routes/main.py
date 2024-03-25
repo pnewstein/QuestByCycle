@@ -1,7 +1,6 @@
-# routes/main.py
 from flask import render_template
 from app import app
-from app.models import Task
+from app.models import User Task
 
 @app.route('/')
 @app.route('/index')
