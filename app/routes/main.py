@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template
-from app import app
-from app.models import User, Task
+from flask import Blueprint, render_template, current_app, flash, redirect, url_for
+from flask_login import current_user
+from .forms import TaskForm
+from app import db
+from app.models import Task, User
 
 main = Blueprint('main', __name__)
 
