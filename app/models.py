@@ -22,3 +22,6 @@ class Task(db.Model):
     description = db.Column(db.String(500))
     completed = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    evidence_url = db.Column(db.String(500))
+    verified = db.Column(db.Boolean, default=False)
+    verification_comment = db.Column(db.String(500), default="")
