@@ -32,15 +32,15 @@ BikeHunt is a Flask-based web application designed to engage and motivate the bi
 
 3. Create and activate a virtual environment (optional):
 
-```virtualenv venv```
-```source venv/bin/activate # On Windows use venv\Scripts\activate```
+```python3 -m venv venv```
+```source venv/bin/activate```
 
 4. Install the requirements:
 
 ```pip install -r requirements.txt```
 
 5. Set up the environment variables:
-- Rename `.env.example` to `.env` and adjust the variables accordingly.
+- Edit `config.toml` to adjust the variables accordingly.
 
 6. Initialize the database:
 
