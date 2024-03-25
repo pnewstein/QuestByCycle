@@ -24,3 +24,14 @@ def leaderboard():
     top_users = User.query.order_by(User.score.desc()).all()
     users = User.query.join(Task).filter(Task.verified==True).group_by(User.id).order_by(db.func.count(Task.id).desc())
     return render_template('leaderboard.html', users=users, top_users=top_users)
+
+# Example snippet from a hypothetical task completion route
+@app.route('/complete_task/<int:task_id>', methods=['POST'])
+def complete_task(task_id):
+    task = Task.query.get(task_id)
+    if task and not task.completed:
+        task.completed = True
+        current_user.score += 10  # Assuming each task completion earns 10 points
+        db.session.commit()
+        flash('Task completed!', 'success')
+    return redirect(url_for('index'))
