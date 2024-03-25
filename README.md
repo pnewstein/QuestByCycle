@@ -44,6 +44,8 @@ BikeHunt is a Flask-based web application designed to engage and motivate the bi
 
 6. Initialize the database:
 
+```flask db init```
+
 ```flask db upgrade```
 
 7. Run the application:
