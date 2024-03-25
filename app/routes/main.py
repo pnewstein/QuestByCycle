@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, current_app, flash, redirect, url_for, request
 from flask_login import current_user, login_required
 from app.forms import TaskForm
-from app import db
 from app.models import Task, User
 
 main = Blueprint('main', __name__)

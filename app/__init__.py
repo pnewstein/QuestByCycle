@@ -2,7 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
-from .config import get_config
+from config import get_config
 from .models import User
 from .routes.main import main as main_blueprint
 from .routes.auth import auth as auth_blueprint
