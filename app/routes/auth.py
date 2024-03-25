@@ -1,13 +1,12 @@
 from flask import Blueprint, render_template, flash, redirect, url_for, request
 from werkzeug.security import check_password_hash, generate_password_hash
-from app import app
 from app.forms import LoginForm, RegistrationForm
 from flask_login import login_user, logout_user, login_required
 from app.models import User, db
 
 auth = Blueprint('auth', __name__)
 
-@app.route('/login', methods=['GET', 'POST'])
+@auth.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -21,8 +20,8 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('main.index'))
-    
-@app.route('/register', methods=['GET', 'POST'])
+
+@auth.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
