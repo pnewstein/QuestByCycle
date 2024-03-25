@@ -32,8 +32,8 @@ BikeHunt is a Flask-based web application designed to engage and motivate the bi
 
 3. Create and activate a virtual environment (optional):
 
-```virtualenv venv
-source venv/bin/activate # On Windows use venv\Scripts\activate```
+```virtualenv venv```
+```source venv/bin/activate # On Windows use venv\Scripts\activate```
 
 4. Install the requirements:
 
