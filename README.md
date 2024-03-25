@@ -1,1 +1,66 @@
 # BikeHunt
+
+## Overview
+
+BikeHunt is a Flask-based web application designed to engage and motivate the bicycling community through a gamified approach, promoting environmental sustainability and climate activism. Participants complete tasks or missions related to bicycling and environmental stewardship, earning badges and recognition among the community. The platform features a competitive yet collaborative environment where users can view their standings on a leaderboard, track their progress through profile pages, and contribute to a greener planet.
+
+## Features
+
+- **User Authentication:** Secure sign-up and login functionality to manage user access and personalize user experiences.
+- **Leaderboard/Homepage:** A dynamic display of participants, their rankings, and badges earned, fostering a sense of competition and achievement.
+- **Task Submission:** An interface for users to submit completed tasks or missions, facilitating the review and award of badges.
+- **User Profiles:** Dedicated pages for users to view their badges, completed tasks, and ranking within the community.
+- **Responsive Design:** Ensuring a seamless and engaging user experience across various devices and screen sizes.
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.6+
+- pip
+- virtualenv (optional)
+
+### Installation
+
+1. Clone the repository:
+
+```git clone https://github.com/yourusername/BikeHunt.git```
+
+2. Navigate into the project directory:
+
+```cd BikeHunt```
+
+3. Create and activate a virtual environment (optional):
+
+```virtualenv venv
+source venv/bin/activate # On Windows use venv\Scripts\activate```
+
+4. Install the requirements:
+
+```pip install -r requirements.txt```
+
+5. Set up the environment variables:
+- Rename `.env.example` to `.env` and adjust the variables accordingly.
+
+6. Initialize the database:
+
+```flask db upgrade```
+
+7. Run the application:
+
+```flask run```
+
+
+## Contributing
+
+We welcome contributions from the community! Whether you're interested in adding new features, fixing bugs, or improving documentation, your help is appreciated. Please refer to CONTRIBUTING.md for guidelines on how to contribute to BikeHunt.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- The bicycling community for their endless passion and dedication to making the world a greener place.
+- All contributors who spend their time and effort to improve BikeHunt.
+
