@@ -19,3 +19,8 @@ def submit_task():
         flash('Your task has been submitted!', 'success')
         return redirect(url_for('index'))
     return render_template('submit_task.html', title='Submit Task', form=form)
+
+@app.route('/leaderboard')
+def leaderboard():
+    users = User.query.join(Task).filter(Task.verified==True).group_by(User.id).order_by(db.func.count(Task.id).desc())
+    return render_template('leaderboard.html', users=users)
