@@ -22,6 +22,7 @@ class User(db.Model):
     tasks = db.relationship('Task', backref='author', lazy='dynamic')
     badges = db.relationship('Badge', secondary=user_badges, lazy='subquery',
         backref=db.backref('users', lazy=True))
+    score = db.Column(db.Integer, default=0)
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
