@@ -22,5 +22,6 @@ def submit_task():
 
 @app.route('/leaderboard')
 def leaderboard():
+    top_users = User.query.order_by(User.score.desc()).all()
     users = User.query.join(Task).filter(Task.verified==True).group_by(User.id).order_by(db.func.count(Task.id).desc())
-    return render_template('leaderboard.html', users=users)
+    return render_template('leaderboard.html', users=users, top_users=top_users)
