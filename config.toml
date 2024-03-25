@@ -1,0 +1,3 @@
+[flask]
+secret_key = "a_very_secret_key"
+database_url = "sqlite:///app.db"
