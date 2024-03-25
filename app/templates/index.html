@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<h1>Welcome to BikeHunt</h1>
+<div class="tasks">
+    <h2>Recent Tasks</h2>
+    <ul>
+        {% for task in tasks %}
+        <li>{{ task.title }} by {{ task.author.username }}</li>
+        {% else %}
+        <li>No tasks submitted yet.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
