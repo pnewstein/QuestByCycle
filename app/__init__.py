@@ -11,7 +11,6 @@ def create_app():
     app.config.from_object(get_config())
 
     db.init_app(app)
-    
     Migrate(app,db)
 
     login_manager = LoginManager()
@@ -24,6 +23,10 @@ def create_app():
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # Blueprint registrations here
+    from .routes.main import main as main_blueprint
+    app.register_blueprint(main_blueprint)
 
+    from .routes.auth import auth as auth_blueprint
+    app.register_blueprint(auth_blueprint, url_prefix='/auth')
+    
     return app
