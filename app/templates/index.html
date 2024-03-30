@@ -1,15 +1,29 @@
 {% extends "layout.html" %}
-{% block title %}Home{% endblock %}
+
 {% block content %}
 <h1>Welcome to BikeHunt</h1>
-<div class="tasks">
-    <h2>Recent Tasks</h2>
-    <ul>
-        {% for task in tasks %}
-        <li>{{ task.title }} by {{ task.author.username }}</li>
-        {% else %}
-        <li>No tasks submitted yet.</li>
-        {% endfor %}
-    </ul>
+
+{% if current_user.is_authenticated %}
+    {% if user_events %}
+        <h2>Your Events</h2>
+        <ul>
+            {% for event in user_events %}
+                <li>{{ event.title }}: {{ event.description }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You are not currently participating in any events.</p>
+    {% endif %}
+{% endif %}
+
+<div class="link-boxes">
+    <a href="/steps" class="box box-steps">Steps</a>
+    <a href="/missions" class="box box-missions">Missions</a>
+    <a href="/events" class="box box-events">Events</a>
 </div>
+
+<div class="introduction">
+    <p>BikeHunt is a community-wide motivational game designed to encourage cycling and outdoor activities. Participants can join various events, complete tasks, and earn points to climb up the leaderboard. It's a fun way to stay active, explore your surroundings, and connect with fellow cycling enthusiasts.</p>
+</div>
+
 {% endblock %}

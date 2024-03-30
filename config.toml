@@ -1,3 +1,20 @@
+[main]
+UPLOAD_FOLDER = "images"
+SQLALCHEMY_ECHO = true
+
+[encryption]
+DEFAULT_ADMIN_PASSWORD = "password"
+DEFAULT_ADMIN_USERNAME = "admin"
+DEFAULT_ADMIN_EMAIL = "user@example.com"
+SECRET_KEY = "changethiskey"
+SESSION_COOKIE_SECURE = true
+SESSION_COOKIE_NAME = "UsageTracker_Cookie"
+
+[smtp]
+ACCOUNT = "myapp"
+SUPPORT_EMAIL = "user@example.com"
+EMAIL_FILE_PATH = "/tmp/email.txt"
+
 [flask]
-secret_key = "a_very_secret_key"
-database_url = "sqlite:///app.db"
+SQLALCHEMY_DATABASE_URI = "sqlite:///entiredatabase.db"
+DEBUG = false

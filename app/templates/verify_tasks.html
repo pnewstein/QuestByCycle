@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1>Verify Tasks</h1>
+{% for task in tasks %}
+    <div>
+        <h2>{{ task.title }}</h2>
+        <p>Submitted by: {{ task.author.username }}</p>
+        <p>Evidence: <a href="{{ task.evidence_url }}">{{ task.evidence_url }}</a></p>
+        <a href="{{ url_for('events.verify_task', task_id=task.id) }}">Verify Task</a>
+    </div>
+{% endfor %}
+{% endblock %}
