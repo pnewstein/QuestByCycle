@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% block title %}Create New Event{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Create a New BikeHunt Event</h1>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            <label for="title">Event Title</label>
+            {{ form.title(class_="form-control", id="title") }}
+            {% if form.title.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {% for error in form.title.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="form-group">
+            <label for="description">Event Description</label>
+            {{ form.description(class_="form-control", id="description") }}
+            {% if form.description.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {% for error in form.description.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="form-group">
+            <label for="start_date">Start Date</label>
+            {{ form.start_date(class_="form-control", id="start_date") }}
+            {% if form.start_date.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {% for error in form.start_date.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="form-group">
+            <label for="end_date">End Date</label>
+            {{ form.end_date(class_="form-control", id="end_date") }}
+            {% if form.end_date.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {% for error in form.end_date.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary">Create Event</button>
+    </form>
+</div>
+{% endblock %}

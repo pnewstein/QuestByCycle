@@ -1,8 +1,10 @@
 {% extends "layout.html" %}
+
 {% block content %}
-<h2>Register</h2>
-<form method="post">
-    {{ form.hidden_tag() }}
+<h1>User Management</h1>
+
+<form action="{{ url_for('admin.user_management') }}" method="post">
+    {{ form.csrf_token }}
     <div>
         {{ form.username.label }} {{ form.username() }}
     </div>
@@ -13,10 +15,14 @@
         {{ form.password.label }} {{ form.password() }}
     </div>
     <div>
-        {{ form.confirm_password.label }} {{ form.confirm_password() }}
-    </div>
-    <div>
         {{ form.submit() }}
     </div>
 </form>
+
+<h2>Existing Users</h2>
+<ul>
+    {% for user in users %}
+    <li>{{ user.username }} - {{ user.email }}</li>
+    {% endfor %}
+</ul>
 {% endblock %}

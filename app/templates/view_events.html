@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1>Events</h1>
+<ul>
+    {% for event in events %}
+    <li>
+        <h2>{{ event.title }}</h2>
+        <p>{{ event.description }}</p>
+        <p>From {{ event.start_date.strftime('%Y-%m-%d') }} to {{ event.end_date.strftime('%Y-%m-%d') }}</p>
+        <!-- Link to view tasks for each event -->
+        <a href="{{ url_for('events.view_tasks', event_id=event.id) }}">View Tasks</a>
+    </li>
+    {% else %}
+    <li>No events found.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="event-detail">
+    <h1>{{ event.title }}</h1>
+    <p>Total Completed Tasks Points: {{ current_user.score }}</p>
+    <p>{{ event.description }}</p>
+    <p><strong>Start Date:</strong> {{ event.start_date.strftime("%Y-%m-%d %H:%M") }}</p>
+    <p><strong>End Date:</strong> {{ event.end_date.strftime("%Y-%m-%d %H:%M") }}</p>
+    <a href="{{ url_for('events.add_task', event_id=event.id) }}" class="btn btn-primary">Add Task</a>
+    {% for task in event.tasks %}
+    <li>
+        <strong>{{ task.title }}</strong> - {{ task.description }}
+        {% if task.completed %}
+            <span>(Completed - {{ task.points }} points)</span>
+        {% else %}
+            <form action="{{ url_for('events.complete_task', task_id=task.id) }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn btn-success">Mark as Completed</button>
+            </form>
+        {% endif %}
+    </li>
+    {% endfor %}
+    {% if event.tasks %}
+        <h2>Tasks</h2>
+        <ul>
+            {% for task in event.tasks %}
+                <li>
+                    <strong>{{ task.title }}</strong> - {{ task.description }}
+                    {% if task.completed %}
+                        <span>(Completed)</span>
+                    {% else %}
+                        <form action="{{ url_for('events.complete_task', task_id=task.id) }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit" class="btn btn-success">Mark as Completed</button>
+                        </form>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No tasks for this event.</p>
+    {% endif %}
+</div>
+{% endblock %}

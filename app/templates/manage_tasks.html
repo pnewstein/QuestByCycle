@@ -1,0 +1,36 @@
+<!-- manage_tasks.html -->
+{% extends "layout.html" %}
+
+{% block content %}
+<h1>Manage Tasks</h1>
+
+<div class="add-task-form">
+    <h2>Add New Task</h2>
+    <form method="POST" action="{{ url_for('events.manage_event_tasks' if event_id else 'events.manage_global_tasks', event_id=event_id if event_id else '') }}">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.title.label }}
+            {{ form.title(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.description.label }}
+            {{ form.description(class="form-control") }}
+        </div>
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+</div>
+
+<!-- Task List -->
+<div class="task-list">
+    <h2>Existing Tasks</h2>
+    {% for task in tasks %}
+        <div class="task">
+            <h3>{{ task.title }}</h3>
+            <p>{{ task.description }}</p>
+            <!-- Add link to task submission and verification if needed -->
+        </div>
+    {% else %}
+        <p>No tasks available.</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<select onchange="if (this.value) window.location.href=this.value;">
+    <option>Select an Event</option>
+    {% for event in events %}
+    <option value="{{ url_for('events.view_tasks', event_id=event.id) }}" {% if event.id == event_id %}selected{% endif %}>{{ event.title }}</option>
+    {% endfor %}
+</select>
+
+<h1>Tasks for {{ event.title }}</h1>
+{% if tasks %}
+<ul>
+    {% for task in tasks %}
+    <li>{{ task.title }} - {{ task.description }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No tasks for this event.</p>
+{% endif %}
+<a href="{{ url_for('events.view_events') }}">Back to Events</a>
+{% endblock %}
