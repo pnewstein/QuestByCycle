@@ -8,10 +8,6 @@ from app.main import main_bp
 from app.events import events_bp
 from app.models import db
 from .config import load_config
-
-import os
-import logging
-
 from logging.handlers import RotatingFileHandler
 from flask_wtf.csrf import CSRFProtect
 
