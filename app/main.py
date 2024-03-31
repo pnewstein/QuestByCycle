@@ -73,11 +73,29 @@ def sign_out():
     return redirect(url_for('main.index'))
 
 
-@main_bp.route('/leaderboard')
+from flask import request  # Import if not already imported
+
+@main_bp.route('/leaderboard', methods=['GET', 'POST'])
 @login_required
 def leaderboard():
-    users = User.query.order_by(User.score.desc()).all()
-    return render_template('leaderboard.html', users=users)
+    selected_event_id = request.args.get('event_id', type=int)
+    user_events = current_user.participated_events
+    
+    if selected_event_id:
+
+        event = Event.query.get_or_404(selected_event_id)
+        # Filter users based on their participation and scores in the selected event
+        users_with_scores = User.query.join(User.participated_events).filter(Event.id == selected_event_id).order_by(User.score.desc()).all()
+    else:
+        users_with_scores = User.query.order_by(User.score.desc()).all()
+    
+    top_users = [{
+        'username': user.username,
+        'score': user.score,
+        'events': ", ".join([event.title for event in user.participated_events])
+    } for user in users_with_scores]
+
+    return render_template('leaderboard.html', top_users=top_users, user_events=user_events, selected_event_id=selected_event_id)
 
 
 @main_bp.route('/debug/events')

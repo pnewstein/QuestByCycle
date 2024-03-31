@@ -197,3 +197,52 @@ article h3 {
     color: #ffffff;
     text-decoration: none;
 }
+
+.events-title {
+    margin-bottom: 20px;
+}
+
+.event-item {
+    background-color: #c9dbee;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.event-date {
+    margin: 10px 0;
+    font-style: italic;
+}
+
+.view-details {
+    display: inline-block;
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-top: 10px;
+}
+
+.view-details:hover {
+    background-color: #0056b3;
+}
+
+.tasks {
+    margin-top: 20px;
+}
+
+.tasks ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.tasks li {
+    padding: 5px 0;
+}
+
+.completed {
+    color: green;
+    font-weight: bold;
+}

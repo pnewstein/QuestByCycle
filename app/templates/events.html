@@ -1,33 +1,35 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1>Upcoming Events</h1>
-
-{% for event in events %}
-    <div class="event">
+<div class="container">
+    <h1 class="events-title">Upcoming Events</h1>
+    {% for event in events %}
+    <div class="event-item">
         <h2>{{ event.title }}</h2>
         <p>{{ event.description }}</p>
-        <p><strong>Start Date:</strong> {{ event.start_date.strftime("%Y-%m-%d %H:%M") }}</p>
-        <p><strong>End Date:</strong> {{ event.end_date.strftime("%Y-%m-%d %H:%M") }}</p>
-        
-        <!-- Link to event detail page -->
-        <a href="{{ url_for('events.event_detail', event_id=event.id) }}">View Event Details</a>
-        
+        <div class="event-date">
+            <strong>Start Date:</strong> {{ event.start_date.strftime("%Y-%m-%d %H:%M") }}<br>
+            <strong>End Date:</strong> {{ event.end_date.strftime("%Y-%m-%d %H:%M") }}
+        </div>
+        <a href="{{ url_for('events.event_detail', event_id=event.id) }}" class="view-details">View Event Details</a>
         {% if event.tasks %}
+        <div class="tasks">
             <h3>Tasks:</h3>
             <ul>
                 {% for task in event.tasks %}
-                    <li>
-                        <strong>{{ task.title }}</strong> - {{ task.description }}
-                        {% if task.completed %}
-                            <span>(Completed)</span>
-                        {% endif %}
-                    </li>
+                <li>
+                    <strong>{{ task.title }}</strong> - {{ task.description }}
+                    {% if task.completed %}
+                    <span class="completed">Completed</span>
+                    {% endif %}
+                </li>
                 {% endfor %}
             </ul>
+        </div>
         {% else %}
-            <p>No tasks for this event.</p>
+        <p>No tasks for this event.</p>
         {% endif %}
     </div>
-{% endfor %}
+    {% endfor %}
+</div>
 {% endblock %}

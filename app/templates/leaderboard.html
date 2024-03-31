@@ -5,6 +5,17 @@
 {% block content %}
 <div class="container">
     <h2>Leaderboard</h2>
+    <form method="get" action="{{ url_for('main.leaderboard') }}">
+        <div class="form-group">
+            <label for="eventSelect">Select Event:</label>
+            <select name="event_id" id="eventSelect" class="form-control" onchange="this.form.submit()">
+                <option value="">All Events</option>
+                {% for event in user_events %}
+                <option value="{{ event.id }}" {% if selected_event_id == event.id %}selected{% endif %}>{{ event.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
     <p>Top scorers in ongoing events:</p>
     <table class="table table-striped">
         <thead>
@@ -12,7 +23,6 @@
                 <th>Rank</th>
                 <th>Username</th>
                 <th>Score</th>
-                <th>Event</th>
             </tr>
         </thead>
         <tbody>
@@ -21,11 +31,10 @@
                 <td>{{ loop.index }}</td>
                 <td>{{ user.username }}</td>
                 <td>{{ user.score }}</td>
-                <td>{{ user.participated_events|join(", ", "title") }}</td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="4">No users have scored yet.</td>
+                <td colspan="3">No users have scored yet.</td>
             </tr>
             {% endfor %}
         </tbody>
