@@ -68,27 +68,28 @@ def add_task(event_id):
 @login_required
 def event_detail(event_id):
     event = Event.query.get_or_404(event_id)
-    
+    has_joined = event in current_user.participated_events
     # Assuming each task has points and you want to sum points of completed tasks for the current user
     total_points = db.session.query(db.func.sum(user_tasks.c.points_awarded)).filter(user_tasks.c.user_id == current_user.id, user_tasks.c.completed == True).scalar()
     completed_tasks_count = Task.query.filter_by(user_id=current_user.id, completed=True).count()
     
     csrf_token = generate_csrf()
     
-    return render_template('event_detail.html', event=event, csrf_token=csrf_token, total_points=total_points, completed_tasks_count=completed_tasks_count)
+    return render_template('event_detail.html', event=event, has_joined=has_joined, csrf_token=csrf_token, total_points=total_points, completed_tasks_count=completed_tasks_count)
 
 
-@events_bp.route('/register_event/<int:event_id>')
+@events_bp.route('/register_event/<int:event_id>', methods=['POST'])
 @login_required
 def register_event(event_id):
     event = Event.query.get_or_404(event_id)
-    if event not in current_user.events:
-        current_user.events.append(event)
+    if event not in current_user.participated_events:
+        current_user.participated_events.append(event)
         db.session.commit()
-        flash('Successfully registered for the event!', 'success')
+        flash('You have successfully joined the event.', 'success')
     else:
-        flash('You are already registered for this event!', 'warning')
-    return redirect(url_for('events.events'))
+        flash('You are already registered for this event.', 'info')
+    return redirect(url_for('events.event_detail', event_id=event_id))
+
 
 @events_bp.route('/submit_task/<int:task_id>', methods=['GET', 'POST'])
 @login_required
@@ -192,39 +193,34 @@ def view_tasks(event_id):
 @login_required
 def complete_task(task_id):
     task = Task.query.get_or_404(task_id)
-
-    # Attempt to find an existing association between the user and task
-    user_task = db.session.execute(
-        select(user_tasks).
-        where(user_tasks.c.user_id == current_user.id).
-        where(user_tasks.c.task_id == task.id)
-    ).fetchone()
-
-    if user_task:
-        # If there's already a record, update it if it's not marked as completed
-        if not user_task.completed:
-            db.session.execute(
-                update(user_tasks).
-                where(user_tasks.c.user_id == current_user.id).
-                where(user_tasks.c.task_id == task.id).
-                values(completed=True, points_awarded=task.points)
-            )
-            db.session.commit()
-            flash('Task marked as completed and points awarded.', 'success')
-        else:
-            flash('This task is already marked as completed.', 'info')
+    
+    # Query for an existing association between this user and task
+    user_task_record = db.session.query(user_tasks).filter(user_tasks.c.user_id == current_user.id, user_tasks.c.task_id == task.id).first()
+    
+    if user_task_record:
+        # Toggle the completion status
+        new_status = not user_task_record.completed
+        db.session.execute(
+            update(user_tasks).
+            where(user_tasks.c.user_id == current_user.id, user_tasks.c.task_id == task.id).
+            values(completed=new_status)
+        )
     else:
-        # If there's no record, insert a new one
+        # Insert a new record if it doesn't exist
+        new_status = True
         db.session.execute(
             insert(user_tasks).
-            values(
-                user_id=current_user.id,
-                task_id=task.id,
-                completed=True,
-                points_awarded=task.points
-            )
+            values(user_id=current_user.id, task_id=task.id, completed=True, points_awarded=task.points)
         )
-        db.session.commit()
-        flash('Task marked as completed and points awarded.', 'success')
+    
+    # Recalculate the user's total score based on completed tasks
+    total_points = db.session.query(db.func.sum(user_tasks.c.points_awarded)).filter(user_tasks.c.user_id == current_user.id, user_tasks.c.completed == True).scalar() or 0
+    current_user.score = total_points
+    db.session.commit()
+
+    if new_status:
+        flash('Task marked as completed. Total points updated.', 'success')
+    else:
+        flash('Task marked as not completed. Total points updated.', 'info')
 
     return redirect(url_for('events.event_detail', event_id=task.event_id))
