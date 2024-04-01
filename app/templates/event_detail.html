@@ -10,25 +10,47 @@
 
         {% if has_joined %}
             <p>Total Completed Tasks Points: {{ total_points }}</p>
-            <a href="{{ url_for('events.add_task', event_id=event.id) }}" class="button">Add Task</a>
-            {% for task in event.tasks %}
-            <div class="task">
-                <strong>{{ task.title }}</strong> - {{ task.description }} ({{ task.points }} points)
-                {% set user_task = task_users[task.id] if task.id in task_users else None %}
-                {% if user_task %}
-                    <span>✓ Completed</span>
-                    <form action="{{ url_for('events.complete_task', task_id=task.id) }}" method="post">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                        <button type="submit" class="button warning">Mark as Not Completed</button>
-                    </form>
-                {% else %}
-                    <form action="{{ url_for('events.complete_task', task_id=task.id) }}" method="post">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                        <button type="submit" class="button success">Mark as Completed</button>
-                    </form>
-                {% endif %}
-            </div>
-            {% endfor %}
+            
+            {% if current_user.is_admin %}
+                <a href="{{ url_for('events.add_task', event_id=event.id) }}" class="button">Add Task</a>
+            {% endif %}
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>Description</th>
+                        <th>Points</th>
+                        <th>Actions</th>
+                        <th>Completions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                    <tr>
+                        <td>{{ task.title }}</td>
+                        <td>
+                            {{ task.description }}
+                            {% if task.tips %}
+                                <a href="#" onclick="showModal('{{ task.tips }}')">[?]</a>
+                            {% endif %}
+                        </td>
+                        <td>{{ task.points }}</td>
+                        <td>
+                            <form action="{{ url_for('events.adjust_completion', task_id=task.id, action='increment') }}" method="post">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="button" {% if user_tasks_map.get(task.id, {'completions': 0}).completions >= task.completion_limit %}disabled{% endif %}>+</button>
+                            </form>
+                            <form action="{{ url_for('events.adjust_completion', task_id=task.id, action='decrement') }}" method="post">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="button" {% if user_tasks_map.get(task.id, {'completions': 0}).completions <= 0 %}disabled{% endif %}>-</button>
+                            </form>
+                        </td>
+                        <td>{{ user_tasks_map[task.id].completions if task.id in user_tasks_map else 0 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         {% else %}
             <form action="{{ url_for('events.register_event', event_id=event.id) }}" method="post">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
@@ -37,4 +59,37 @@
         {% endif %}
     </div>
 </div>
+
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <p id="modal-text"></p>
+    </div>
+</div>
+
+<script>
+    // Get the modal
+    var modal = document.getElementById("modal");
+    
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close-button")[0];
+    
+    // Function to open the modal with specific text
+    function showModal(text) {
+        document.getElementById("modal-text").innerHTML = text;
+        modal.style.display = "block";
+    }
+    
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+    
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+    </script>
 {% endblock %}

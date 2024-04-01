@@ -29,12 +29,20 @@ def create_app():
 
     csrf = CSRFProtect(app)
 
-    # Set configuration from the loaded config
+    # Apply configurations from the TOML file
+    app.config['UPLOAD_FOLDER'] = app.config['main']['UPLOAD_FOLDER']
+    app.config['SQLALCHEMY_ECHO'] = app.config['main']['SQLALCHEMY_ECHO']
+    app.config['SQLALCHEMY_DATABASE_URI'] = app.config['flask']['SQLALCHEMY_DATABASE_URI']
+    app.config['DEBUG'] = app.config['flask']['DEBUG']
+    
+    # Apply encryption related settings
     app.config['SECRET_KEY'] = app.config['encryption']['SECRET_KEY']
     app.config['SESSION_COOKIE_SECURE'] = app.config['encryption']['SESSION_COOKIE_SECURE']
-    app.config['SQLALCHEMY_DATABASE_URI'] = app.config['flask']['SQLALCHEMY_DATABASE_URI']
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['DEBUG'] = app.config['flask']['DEBUG']
+    app.config['SESSION_COOKIE_NAME'] = app.config['encryption']['SESSION_COOKIE_NAME']
+    app.config['SESSION_COOKIE_SAMESITE'] = app.config['encryption']['SESSION_COOKIE_SAMESITE']
+    app.config['SESSION_COOKIE_DOMAIN'] = app.config['encryption']['SESSION_COOKIE_DOMAIN']
+    app.config['SESSION_REFRESH_EACH_REQUEST'] = app.config['encryption']['SESSION_REFRESH_EACH_REQUEST']
+
 
     # Initialize extensions
     db.init_app(app)
