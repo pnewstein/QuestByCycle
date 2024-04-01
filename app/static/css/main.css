@@ -1,10 +1,23 @@
 /* main.css */
 body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
     font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f0f0f0;
+    height: 100%;
     color: #333;
+}
+
+main {
+    flex: 1;
+}
+
+.content-wrap {
+    flex: 1; /* This makes the content area flex and push the footer down */
 }
 
 a {
@@ -128,9 +141,9 @@ main {
 }
 
 /* Specific background colors for each box */
-.box-steps { background-color: #FFAAAA; }
-.box-missions { background-color: #AAFFAA; }
-.box-events { background-color: #AAAAFF; }
+.box-steps { background-color: #ff9090; }
+.box-missions { background-color: #82ff82; }
+.box-events { background-color: #7a7aff; }
 
 .introduction, .skill-building {
     margin-bottom: 30px;
@@ -283,4 +296,28 @@ article h3 {
     color: black;
     text-decoration: none;
     cursor: pointer;
+}
+
+footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.footer-container {
+    display: flex;
+    align-items: center; /* Aligns items vertically in the center */
+    justify-content: center; /* Centers the content horizontally */
+    gap: 20px; /* Adjust the space between the logo and the text */
+    max-width: 1200px; /* Adjust based on your design preference */
+    margin: 0 auto; /* Center the container */
+}
+
+.footer-logo {
+    height: 100px; /* Adjust based on your logo's size */
+}
+
+.footer-text {
+    text-align: left; /* Aligns the text to the left within its container */
 }

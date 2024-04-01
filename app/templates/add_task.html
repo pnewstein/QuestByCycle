@@ -26,6 +26,10 @@
             {{ form.completion_limit(class="form-control") }}
         </div>
         <div class="form-group">
+            <label for="{{ form.badge_image.id }}">{{ form.badge_image.label }}</label>
+            {{ form.badge_image(class="form-control") }}
+        </div>
+        <div class="form-group">
             {{ form.submit(class="button") }}
         </div>
     </form>

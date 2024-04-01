@@ -6,33 +6,47 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="{{ url_for('main.index') }}">Home</a>
-            <a href="{{ url_for('main.leaderboard') }}">Leaderboard</a>
-            {% if current_user.is_authenticated %}
-                <a href="{{ url_for('main.profile') }}">{{ current_user.username }}'s Profile</a>
-                <a href="{{ url_for('auth.logout') }}">Logout</a>
-                {% if current_user.is_admin %}
-                <a href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a>
+    <div class="content-wrap">
+        <header>
+            <nav>
+                <a href="{{ url_for('main.index') }}">Home</a>
+                <a href="{{ url_for('main.leaderboard') }}">Leaderboard</a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('main.profile') }}">{{ current_user.username }}'s Profile</a>
+                    <a href="{{ url_for('auth.logout') }}">Logout</a>
+                    {% if current_user.is_admin %}
+                    <a href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a>
+                    {% endif %}
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}">Login</a>
+                    <a href="{{ url_for('auth.register') }}">Register</a>
                 {% endif %}
-            {% else %}
-                <a href="{{ url_for('auth.login') }}">Login</a>
-                <a href="{{ url_for('auth.register') }}">Register</a>
-            {% endif %}
-        </nav>
-    </header>
-    <main>
-        <!-- Display Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
-        {% block content %}{% endblock %}
-    </main>
+            </nav>
+        </header>
+        <main>
+            <!-- Display Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    <footer>
+        <div class="footer-container">
+            <a href="https://climaterevolutions.org" target="_blank">
+                <img src="{{ url_for('static', filename='images/climate-revolutions-logo.png') }}" alt="Climate Revolutions by Bike Logo" class="footer-logo">
+            </a>
+            <div class="footer-text">
+                Sponsored by Climate Revolutions by Bike
+                <p>Supporting cycling initiatives for a greener planet.</p>
+                <!-- Add any additional details you want here -->
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

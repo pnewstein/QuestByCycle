@@ -61,7 +61,6 @@ def create_admin(app):
 @login_required
 def admin_dashboard():
     if not current_user.is_admin:
-        flash('Access denied: You do not have permission to view this page.', 'warning')
         return redirect(url_for('main.index'))  # Adjust the redirect as appropriate
     return render_template('admin_dashboard.html')
 

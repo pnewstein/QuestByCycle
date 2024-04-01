@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, send_from_directory
 from flask_login import current_user, login_required
 from itsdangerous import URLSafeTimedSerializer, BadSignature
-from app.models import db, Event, User
+from app.models import db, Event, User, UserTask
 from app.forms import SignInForm, SignOutForm, ProfileForm
 from .config import load_config
 from werkzeug.utils import secure_filename
@@ -18,19 +18,6 @@ config = load_config()
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-
-def generate_csrf_token(secret_key):
-    serializer = URLSafeTimedSerializer(secret_key)
-    return serializer.dumps({})  # Empty dict as the payload
-
-
-def validate_csrf_token(token, secret_key, max_age=3600):
-    serializer = URLSafeTimedSerializer(secret_key)
-    try:
-        serializer.loads(token, max_age=max_age)
-        return True
-    except BadSignature:
-        return False
 
 @main_bp.route('/static/<path:filename>')
 def static_files(filename):
@@ -191,6 +178,13 @@ def profile():
 
     return render_template('profile.html', form=form)
 
+@main_bp.route('/profile/<int:user_id>')
+def user_profile(user_id):
+    user = User.query.get_or_404(user_id)
+    user_tasks = UserTask.query.filter_by(user_id=user.id).all()
+    badges = user.badges
+
+    return render_template('_user_profile.html', user=user, user_tasks=user_tasks, badges=badges)
 
 @main_bp.route('/events')
 def events():

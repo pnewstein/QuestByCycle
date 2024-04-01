@@ -1,12 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from flask_wtf.csrf import generate_csrf
+from app.main import save_profile_picture
 from app.models import db, User, Event, Task, Badge, UserTask
 from app.forms import EventForm, TaskForm, TaskSubmissionForm
 from werkzeug.utils import secure_filename
 from sqlalchemy import select, update, insert, exists, func
 from sqlalchemy.exc import IntegrityError
-
 
 import os
 
@@ -16,7 +16,7 @@ events_bp = Blueprint('events', __name__)
 
 @events_bp.route('/events')
 @login_required
-def events():
+def view_events():
     # Fetch all events and user's events
     all_events = Event.query.all()
     user_registered_events = current_user.events
@@ -45,14 +45,6 @@ def create_event():
             flash(f'An error occurred while creating the event: {e}', 'error')
     return render_template('create_event.html', title='Create Event', form=form)
 
-
-@events_bp.route('/view_events', methods=['GET'])
-@login_required
-def view_events():
-    events = Event.query.all()
-    return render_template('view_events.html', events=events)
-
-
 @events_bp.route('/event/<int:event_id>/add_task', methods=['GET', 'POST'])
 @login_required
 def add_task(event_id):
@@ -63,20 +55,39 @@ def add_task(event_id):
         return redirect(url_for('events.event_detail', event_id=event_id))
     
     if form.validate_on_submit():
-        # Ensure points data is valid and within limits before creating a task
-        points = min(form.points.data, MAX_SQLITE_INT)
+        badge_image_filename = None
+        # Check if 'badge_image' is in request.files and has a filename
+        if 'badge_image' in request.files and request.files['badge_image'].filename != '':
+            badge_image_file = request.files['badge_image']
+            # Log debug information
+            print("Badge Image File:", badge_image_file)
+            # Make sure save_profile_picture or its equivalent is correctly implemented
+            badge_image_filename = save_profile_picture(badge_image_file)
+            # Log debug information
+            print("Badge Image Filename:", badge_image_filename)
+        
+        # Instantiate Task object here, after processing the image
         task = Task(
             title=form.title.data,
             description=form.description.data,
-            points=points,
+            points=min(form.points.data, MAX_SQLITE_INT),
             event_id=event_id,
             tips=form.tips.data,
-            completion_limit=form.completion_limit.data
+            completion_limit=form.completion_limit.data,
+            badge_image=badge_image_filename  # Use the filename or path
         )
-        db.session.add(task)
-        db.session.commit()
-        flash('Task added successfully', 'success')
-        return redirect(url_for('events.event_detail', event_id=event_id))
+        try:
+            db.session.add(task)
+            db.session.commit()
+            flash('Task added successfully', 'success')
+            return redirect(url_for('events.event_detail', event_id=event_id))
+        except Exception as e:
+            # Rollback changes if an error occurs
+            db.session.rollback()
+            flash(f'An error occurred: {e}', 'error')
+            # Log the error for debugging
+            current_app.logger.error(f'Error adding task: {e}')
+    
     return render_template('add_task.html', form=form, event_id=event_id)
 
 
@@ -274,13 +285,6 @@ def view_badges():
     user_badges = Badge.query.join(user_badges).join(User).filter(User.id == current_user.id)
     return render_template('badges.html', badges=user_badges)
 
-@events_bp.route('/verify_tasks')
-@login_required
-def verify_tasks():
-    tasks = Task.query.filter_by(verified=False).all()
-    return render_template('verify_tasks.html', tasks=tasks)
-
-
 @events_bp.route('/verify_task/<int:task_id>')
 @login_required
 def verify_task(task_id):
@@ -292,10 +296,11 @@ def verify_task(task_id):
     flash('Task verified.', 'success')
     return redirect(url_for('events.verify_tasks'))
 
-def award_badges(user_id):
-    user = User.query.get(user_id)
-    completed_tasks = Task.query.filter_by(user_id=user_id, verified=True).count()
-    
+def award_badges(user_id, task_id):
+    user = User.query.get(user_id, task_id)
+    verified_task_ids = Task.query.filter_by(verified=True).with_entities(Task.id)
+    completed_tasks = UserTask.query.filter_by(user_id=user_id, completed=True).filter(UserTask.task_id.in_(verified_task_ids)).count()
+        
     # Example badge logic
     if completed_tasks >= 5:
         badge = Badge.query.filter_by(name='Active Participant').first()
