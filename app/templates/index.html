@@ -8,7 +8,11 @@
         <h2>Your Events</h2>
         <ul>
             {% for event in user_events %}
-                <li>{{ event.title }}: {{ event.description }}</li>
+                <li>
+                    {{ event.title }}: {{ event.description }}
+                    <!-- Button to go to event detail page -->
+                    <a href="{{ url_for('events.event_detail', event_id=event.id) }}" class="btn btn-detail">View Event</a>
+                </li>
             {% endfor %}
         </ul>
     {% else %}

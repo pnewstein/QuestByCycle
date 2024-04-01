@@ -1,0 +1,43 @@
+<!-- app/templates/_user_profile.html -->
+{% block content %}
+<div class="user-profile">
+    <h1>{{ user.username }}'s Profile</h1>
+    <!-- Display user details -->
+    
+    <h2>Completed Tasks and Badges</h2>
+    {% if user_tasks %}
+        <ul class="tasks-list">
+        {% for user_task in user_tasks %}
+            <li>
+                <strong>{{ user_task.task.title }}</strong>: {{ user_task.task.description }}
+                {% if user_task.task.badge_image %}
+                    <div class="badge">
+                        <img src="{{ url_for('static', filename=user_task.task.badge_image) }}" alt="Badge Image">
+                    </div>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No tasks completed yet.</p>
+    {% endif %}
+    
+    <h2>Badges</h2>
+    {% if badges %}
+        <ul class="badges-list">
+        {% for badge in badges %}
+            <li>
+                <strong>{{ badge.name }}</strong>: {{ badge.description }}
+                {% if badge.image %}
+                    <div class="badge">
+                        <img src="{{ url_for('static', filename=badge.image) }}" alt="Badge Image">
+                    </div>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No badges earned yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

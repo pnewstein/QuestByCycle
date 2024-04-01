@@ -72,10 +72,23 @@ def decrypt_message(encrypted_message, key):
 def register():
     form = RegistrationForm(request.form)
     if form.validate_on_submit():
+        existing_user = User.query.filter_by(username=form.username.data).first()
+        if existing_user:
+            # Username already exists
+            flash('Username already taken. Please choose a different one.', 'warning')
+            return redirect(url_for('auth.register'))
+        
         user = User(username=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
         db.session.add(user)  # Add the new user to the database session
-        db.session.commit()  # Commit the transaction
-        flash('Congratulations, you are now a registered user!')
-        return redirect(url_for('auth.login'))
+        
+        try:
+            db.session.commit()  # Attempt to commit the transaction
+            flash('Congratulations, you are now a registered user!', 'success')
+            return redirect(url_for('auth.login'))
+        except Exception as e:
+            db.session.rollback()  # Rollback in case of error
+            flash('Registration failed due to an unexpected error. Please try again.', 'error')
+            current_app.logger.error(f'Failed to register user: {e}')
+            
     return render_template('register.html', title='Register', form=form)

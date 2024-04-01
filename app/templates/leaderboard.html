@@ -9,14 +9,14 @@
         <div class="form-group">
             <label for="eventSelect">Select Event:</label>
             <select name="event_id" id="eventSelect" class="form-control" onchange="this.form.submit()">
-                <option value="">All Events</option>
+                <!-- Removed the option for 'All Events' -->
                 {% for event in user_events %}
                 <option value="{{ event.id }}" {% if selected_event_id == event.id %}selected{% endif %}>{{ event.title }}</option>
                 {% endfor %}
             </select>
         </div>
     </form>
-    <p>Top scorers in ongoing events:</p>
+    <p>Top scorers in the selected event:</p>
     <table class="table table-striped">
         <thead>
             <tr>
@@ -29,15 +29,44 @@
             {% for user in top_users %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td>{{ user.username }}</td>
+                <td>
+                    <a href="javascript:void(0)" onclick="showUserProfileModal('userModal{{ user.id }}')">{{ user.username }}</a>
+                </td>
                 <td>{{ user.score }}</td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="3">No users have scored yet.</td>
+                <td colspan="3">No users have scored yet in this event.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+{% for user in top_users %}
+<div id="userModal{{ user.id }}" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal('userModal{{ user.id }}')">&times;</span>
+        {% set modal_user = user %}
+        {% include '_user_profile.html' %}
+    </div>
+</div>
+{% endfor %}
+<script>
+function showUserProfileModal(modalId) {
+    var modal = document.getElementById(modalId);
+    modal.style.display = "block";
+}
+
+function closeModal(modalId) {
+    var modal = document.getElementById(modalId);
+    modal.style.display = "none";
+}
+
+// Close modal if user clicks outside of it
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = "none";
+    }
+}
+</script>
 {% endblock %}

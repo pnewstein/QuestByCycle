@@ -72,7 +72,8 @@ class Task(db.Model):
     tips = db.Column(db.String(500), default='')
     completion_limit = db.Column(db.Integer, default=1)  # Limit for how many times a task can be completed
     user_tasks = db.relationship('UserTask', backref='task', lazy='dynamic')
-
+    badge_image = db.Column(db.String(500))
+    
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(140), nullable=False)
