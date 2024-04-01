@@ -14,8 +14,16 @@
             {{ form.description(class="form-control") }}
         </div>
         <div class="form-group">
+            <label for="{{ form.tips.id }}">{{ form.tips.label }}</label>
+            {{ form.tips(class="form-control") }}
+        </div>
+        <div class="form-group">
             <label for="{{ form.points.id }}">{{ form.points.label }}</label>
             {{ form.points(class="form-control") }}
+        </div>
+        <div class="form-group">
+            <label for="{{ form.completion_limit.id }}">{{ form.completion_limit.label }}</label>
+            {{ form.completion_limit(class="form-control") }}
         </div>
         <div class="form-group">
             {{ form.submit(class="button") }}

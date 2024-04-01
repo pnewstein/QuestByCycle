@@ -21,19 +21,25 @@ user_events = db.Table('user_events',
     db.Column('event_id', db.Integer, db.ForeignKey('event.id'), primary_key=True)
 )
 
-user_tasks = db.Table('user_tasks',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('task_id', db.Integer, db.ForeignKey('task.id'), primary_key=True),
-    db.Column('completed', db.Boolean, default=False),
-    db.Column('points_awarded', db.Integer)
-)
+class UserTask(db.Model):
+    __tablename__ = 'user_tasks'
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), primary_key=True)
+    completed = db.Column(db.Boolean, default=False)
+    completions = db.Column(db.Integer, default=0)  # Track number of completions
+    points_awarded = db.Column(db.Integer, default=0)  # Points awarded for the task
+
+    # Ensure user-task uniqueness
+    __table_args__ = (db.UniqueConstraint('user_id', 'task_id', name='_user_task_uc'),)
+
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
     is_admin = db.Column(db.Boolean, default=False)
-    tasks = db.relationship('Task', secondary=user_tasks, backref=db.backref('users', lazy='dynamic'))
+    user_tasks = db.relationship('UserTask', backref='user', lazy='dynamic')
     badges = db.relationship('Badge', secondary=user_badges, lazy='subquery',
         backref=db.backref('users', lazy=True))
     score = db.Column(db.Integer, default=0)
@@ -62,7 +68,10 @@ class Task(db.Model):
     verified = db.Column(db.Boolean, default=False)
     verification_comment = db.Column(db.String(500), default="")
     event_id = db.Column(db.Integer, db.ForeignKey('event.id'))  # Make sure this line is within the class definition
-    points = db.Column(db.Integer, default=1)
+    points = db.Column(db.Integer, default='')
+    tips = db.Column(db.String(500), default='')
+    completion_limit = db.Column(db.Integer, default=1)  # Limit for how many times a task can be completed
+    user_tasks = db.relationship('UserTask', backref='task', lazy='dynamic')
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)

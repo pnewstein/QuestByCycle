@@ -73,8 +73,6 @@ def sign_out():
     return redirect(url_for('main.index'))
 
 
-from flask import request  # Import if not already imported
-
 @main_bp.route('/leaderboard', methods=['GET', 'POST'])
 @login_required
 def leaderboard():
@@ -96,12 +94,6 @@ def leaderboard():
     } for user in users_with_scores]
 
     return render_template('leaderboard.html', top_users=top_users, user_events=user_events, selected_event_id=selected_event_id)
-
-
-@main_bp.route('/debug/events')
-def debug_events():
-    events = Event.query.all()  # Fetch all events for debugging
-    return render_template('debug_events.html', events=events)
 
 
 @main_bp.route('/steps')
