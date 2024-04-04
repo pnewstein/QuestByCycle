@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from flask_wtf.csrf import generate_csrf
 from app.main import save_profile_picture
-from app.models import db, User, Event, Task, Badge, UserTask
+from app.models import db, User, Event, Task, Badge, UserTask, ShoutBoardMessage
 from app.forms import EventForm, TaskForm, TaskSubmissionForm
 from werkzeug.utils import secure_filename
 from sqlalchemy import select, update, insert, exists, func
@@ -10,18 +10,9 @@ from sqlalchemy.exc import IntegrityError
 
 import os
 
-MAX_SQLITE_INT = 2**63 - 1
+MAX_POINTS_INT = 2**63 - 1
 
 events_bp = Blueprint('events', __name__)
-
-@events_bp.route('/events')
-@login_required
-def view_events():
-    # Fetch all events and user's events
-    all_events = Event.query.all()
-    user_registered_events = current_user.events
-    return render_template('events.html', all_events=all_events, user_registered_events=user_registered_events)
-
 
 @events_bp.route('/create_event', methods=['GET', 'POST'])
 @login_required
@@ -45,49 +36,36 @@ def create_event():
             flash(f'An error occurred while creating the event: {e}', 'error')
     return render_template('create_event.html', title='Create Event', form=form)
 
+
 @events_bp.route('/event/<int:event_id>/add_task', methods=['GET', 'POST'])
 @login_required
 def add_task(event_id):
     form = TaskForm()
-
-    if not current_user.is_admin:
-        flash('Access denied: Only administrators can add tasks.', 'danger')
-        return redirect(url_for('events.event_detail', event_id=event_id))
-    
     if form.validate_on_submit():
-        badge_image_filename = None
-        # Check if 'badge_image' is in request.files and has a filename
-        if 'badge_image' in request.files and request.files['badge_image'].filename != '':
+        badge_id = None
+        if form.badge_name.data and 'badge_image' in request.files:
             badge_image_file = request.files['badge_image']
-            # Log debug information
-            print("Badge Image File:", badge_image_file)
-            # Make sure save_profile_picture or its equivalent is correctly implemented
-            badge_image_filename = save_profile_picture(badge_image_file)
-            # Log debug information
-            print("Badge Image Filename:", badge_image_filename)
+            filename = secure_filename(badge_image_file.filename)
+            badge_image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            badge_image_file.save(badge_image_path)
+
+            new_badge = Badge(name=form.badge_name.data, description=form.new_badge_description.data, image=filename)
+            db.session.add(new_badge)
+            db.session.commit()
+            badge_id = new_badge.id
         
-        # Instantiate Task object here, after processing the image
         task = Task(
             title=form.title.data,
             description=form.description.data,
-            points=min(form.points.data, MAX_SQLITE_INT),
+            points=form.points.data,
             event_id=event_id,
-            tips=form.tips.data,
             completion_limit=form.completion_limit.data,
-            badge_image=badge_image_filename  # Use the filename or path
+            badge_id=badge_id  # This will be None if no new badge was created
         )
-        try:
-            db.session.add(task)
-            db.session.commit()
-            flash('Task added successfully', 'success')
-            return redirect(url_for('events.event_detail', event_id=event_id))
-        except Exception as e:
-            # Rollback changes if an error occurs
-            db.session.rollback()
-            flash(f'An error occurred: {e}', 'error')
-            # Log the error for debugging
-            current_app.logger.error(f'Error adding task: {e}')
-    
+        db.session.add(task)
+        db.session.commit()
+        flash('Task and optionally a new badge added successfully!', 'success')
+        return redirect(url_for('main.index'))  # Redirect as appropriate
     return render_template('add_task.html', form=form, event_id=event_id)
 
 
@@ -131,113 +109,78 @@ def event_detail(event_id):
 
 def update_user_score(user_id):
     user = User.query.get(user_id)
-    MAX_SQLITE_INT = 2**63 - 1
+    total_points = sum(task.points_awarded for task in user.user_tasks)
+    user.score = min(total_points, MAX_POINTS_INT)
+    db.session.commit()
 
-    # Calculate total points with overflow check
-    total_points = 0
-    user_tasks = UserTask.query.filter_by(user_id=user_id).all()
-    for task in user_tasks:
-        total_points += task.points_awarded
-        if total_points > MAX_SQLITE_INT:
-            total_points = MAX_SQLITE_INT
-            break  # Cap the total points to prevent overflow
+def award_badge(user_id):
+    user = User.query.get(user_id)
+    completed_tasks = UserTask.query.filter_by(user_id=user_id, completions=1).all()
 
-    user.score = total_points
-
-    try:
-        db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        # Log the error or notify someone as needed
-        print(f"Failed to update user score due to error: {e}")
+    for user_task in completed_tasks:
+        task = Task.query.get(user_task.task_id)
+        if task.badge and task.badge not in user.badges:
+            user.badges.append(task.badge)
+            shout_message = ShoutBoardMessage(message=f"{current_user.username} has just earned the {task.badge.name} badge!", user_id=user_id)
+            db.session.add(shout_message)
+            db.session.commit()
+            flash(f"Badge '{task.badge.name}' awarded for completing task '{task.title}'.")
 
 
-@events_bp.route('/adjust_completion/<int:task_id>/<action>', methods=['POST'])
+
+def revoke_badge(user_id):
+    user = User.query.get(user_id)
+
+    completed_tasks = UserTask.query.filter_by(user_id=user_id, completions=0).all()
+    for user_task in completed_tasks:
+
+        task = Task.query.get(user_task.task_id)
+        if task.badge and task.badge in user.badges:
+            user.badges.remove(task.badge)
+            db.session.commit()
+            flash(f"Badge '{task.badge.name}' revoked as the task '{task.title}' is no longer completed.", 'info')
+
+
+@events_bp.route('/events/adjust_completion/<int:task_id>/<action>', methods=['POST'])
 @login_required
-def adjust_completion(task_id, action):
+def adjust_task_completion(task_id, action):
     task = Task.query.get_or_404(task_id)
-    user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
-    MAX_SQLITE_INT = 2**63 - 1  # Define SQLite's max int limit
+    user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task.id).first()
 
-    if not user_task:
-        user_task = UserTask(
-            user_id=current_user.id, 
-            task_id=task_id, 
-            completions=0, 
-            points_awarded=0  # Ensure this field is initialized
-        )
-        db.session.add(user_task)
-    else:
-        # Ensure points_awarded is not None before incrementing or decrementing
-        user_task.points_awarded = user_task.points_awarded or 0
-
-    if action == 'increment' and user_task.completions < task.completion_limit:
-        user_task.completions += 1
-        # Prevent points_awarded from exceeding SQLite's maximum integer limit
-        projected_points = user_task.points_awarded + task.points
-        if projected_points > MAX_SQLITE_INT:
-            user_task.points_awarded = MAX_SQLITE_INT
-            flash('Maximum points limit reached.', 'warning')
+    if action == "increment":
+        if not user_task:
+            user_task = UserTask(
+                user_id=current_user.id, 
+                task_id=task.id, 
+                completions=1, 
+                points_awarded=task.points, 
+                completed=True
+            )
+            db.session.add(user_task)
         else:
-            user_task.points_awarded = projected_points
-    elif action == 'decrement' and user_task.completions > 0:
+            user_task.completions += 1
+            user_task.points_awarded += task.points
+            user_task.completed = True
+
+    elif action == "decrement" and user_task and user_task.completions > 0:
         user_task.completions -= 1
-        user_task.points_awarded = max(0, user_task.points_awarded - task.points)  # Prevent negative values
+        user_task.points_awarded = max(0, user_task.points_awarded - task.points)
+        if user_task.completions == 0:
+            user_task.completed = False
 
     try:
         db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        flash('An error occurred. Please try again.', 'error')
-        current_app.logger.error(f'Error during adjust_completion: {str(e)}')
-    else:
         update_user_score(current_user.id)
-        
+        if action == "increment":
+            award_badge(current_user.id)
+        if action == "decrement":
+            revoke_badge(current_user.id)
+        flash(f"Task completion successfully {action}ed.", 'success')
+    except IntegrityError as e:
+        db.session.rollback()
+        flash(f"Error updating task completion: {e}", 'error')
+
     return redirect(url_for('events.event_detail', event_id=task.event_id))
-
-
-@events_bp.route('/events/adjust_completion/<int:task_id>/increment', methods=['POST'])
-@login_required
-def increment_completion(task_id):
-    task = Task.query.get_or_404(task_id)
-    user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
-
-    if user_task:
-        projected_points = user_task.points_awarded + task.points
-        if projected_points >= MAX_SQLITE_INT:
-            flash('Maximum points limit reached.', 'error')
-        elif user_task.completions < task.completion_limit:
-            try:
-                user_task.completions += 1
-                user_task.points_awarded = min(projected_points, MAX_SQLITE_INT)
-                db.session.commit()
-                flash('Task completion incremented.', 'success')
-            except IntegrityError:
-                db.session.rollback()
-                flash('Database error occurred.', 'error')
-    else:
-        flash('User task does not exist.', 'error')
-    
-    return redirect(url_for('events.event_detail', event_id=task.event_id))
-
-
-@events_bp.route('/events/adjust_completion/<int:task_id>/decrement', methods=['POST'])
-@login_required
-def decrement_completion(task_id):
-    user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
-    if not user_task or user_task.completions <= 0:
-        flash("Can't decrement. No completions or task hasn't been completed yet.", 'info')
-    else:
-        task = Task.query.get(task_id)
-        user_task.completions -= 1
-        new_points = max(user_task.points_awarded - task.points, 0)  # Ensure points don't go negative
-        user_task.points_awarded = new_points
-        if user_task.completions == 0:
-            user_task.completed = False  # Adjust based on your application logic
-        db.session.commit()
-        flash('Task completion decremented.', 'success')
-    return redirect(url_for('events.event_detail', event_id=user_task.task.event_id))
-
 
 
 @events_bp.route('/register_event/<int:event_id>', methods=['POST'])
@@ -279,12 +222,6 @@ def submit_task(task_id):
     return render_template('submit_task.html', form=form, task_id=task_id)
 
 
-@events_bp.route('/view_badges')
-@login_required
-def view_badges():
-    user_badges = Badge.query.join(user_badges).join(User).filter(User.id == current_user.id)
-    return render_template('badges.html', badges=user_badges)
-
 @events_bp.route('/verify_task/<int:task_id>')
 @login_required
 def verify_task(task_id):
@@ -292,22 +229,9 @@ def verify_task(task_id):
     task.verified = True
     db.session.commit()
     # Trigger badge awarding logic
-    award_badges(task.user_id)
+    award_badge(task.user_id)
     flash('Task verified.', 'success')
     return redirect(url_for('events.verify_tasks'))
-
-def award_badges(user_id, task_id):
-    user = User.query.get(user_id, task_id)
-    verified_task_ids = Task.query.filter_by(verified=True).with_entities(Task.id)
-    completed_tasks = UserTask.query.filter_by(user_id=user_id, completed=True).filter(UserTask.task_id.in_(verified_task_ids)).count()
-        
-    # Example badge logic
-    if completed_tasks >= 5:
-        badge = Badge.query.filter_by(name='Active Participant').first()
-        if badge not in user.badges:
-            user.badges.append(badge)
-            db.session.commit()
-            flash('Congratulations! You have earned a badge for active participation.', 'success')
 
 
 # Rename the function to avoid conflict and more accurately represent its purpose
@@ -356,28 +280,3 @@ def view_tasks(event_id):
     tasks = Task.query.filter_by(event_id=event.id).all()
     all_events = Event.query.all()  # Fetch all events to populate the dropdown
     return render_template('view_tasks.html', event=event, tasks=tasks, events=all_events)
-
-
-@events_bp.route('/complete_task/<int:task_id>', methods=['POST'])
-@login_required
-def complete_task(task_id):
-    task = Task.query.get_or_404(task_id)
-    user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
-
-    if user_task and user_task.completions < task.completion_limit:
-        user_task.completions += 1
-        user_task.completed = True  # Mark as ever completed
-        # Recalculate points awarded based on completions and multiplier
-        user_task.points_awarded = user_task.completions * task.points * task.point_multiplier
-        db.session.commit()
-        flash('Task completed again. Points updated.', 'success')
-    elif not user_task:
-        # First time task completion
-        user_task = UserTask(user_id=current_user.id, task_id=task_id, completed=True, completions=1, points_awarded=task.points * task.point_multiplier)
-        db.session.add(user_task)
-        db.session.commit()
-        flash('Task marked as completed. Points awarded.', 'success')
-    else:
-        flash('Task completion limit reached.', 'info')
-
-    return redirect(url_for('events.event_detail', event_id=task.event_id))

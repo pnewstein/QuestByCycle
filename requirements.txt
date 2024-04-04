@@ -5,17 +5,10 @@ flask_login==0.6.3
 Flask-Migrate==3.1.0
 WTForms==3.1.1
 toml~=0.10.2
-tomli-w == 0.4.0
 cryptography~=41.0.7
 werkzeug~=3.0.1
-itsdangerous~=2.1.2
 email-validator==1.2.1
-bleach==6.1.0
-APScheduler==3.10.4
-fs~=2.4.16
-alembic~=1.12.1
 SQLAlchemy~=2.0.22
-flask_paginate==2023.10.24
-paramiko~=3.3.1
-numpy==1.26.2
 qrcode==7.4.2
+psycopg2-binary==2.9.9
+gunicorn==21.2.0

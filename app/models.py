@@ -9,7 +9,8 @@ class Badge(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
     description = db.Column(db.String(150))
-    # Additional fields like badge image URL
+    image = db.Column(db.String(500))  # Path to the badge image file
+    tasks = db.relationship('Task', back_populates='badge')
 
 user_badges = db.Table('user_badges',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
@@ -37,7 +38,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
-    password_hash = db.Column(db.String(128))
+    password_hash = db.Column(db.String(512))
     is_admin = db.Column(db.Boolean, default=False)
     user_tasks = db.relationship('UserTask', backref='user', lazy='dynamic')
     badges = db.relationship('Badge', secondary=user_badges, lazy='subquery',
@@ -72,8 +73,12 @@ class Task(db.Model):
     tips = db.Column(db.String(500), default='')
     completion_limit = db.Column(db.Integer, default=1)  # Limit for how many times a task can be completed
     user_tasks = db.relationship('UserTask', backref='task', lazy='dynamic')
-    badge_image = db.Column(db.String(500))
-    
+    badge_id = db.Column(db.Integer, db.ForeignKey('badge.id'), nullable=True)  # Foreign key to Badge
+    badge = db.relationship('Badge', back_populates='tasks', uselist=False)
+
+Badge.tasks = db.relationship('Task', order_by=Task.id, back_populates='badge')
+
+
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(140), nullable=False)
@@ -89,3 +94,20 @@ event_participants = db.Table('event_participants',
     db.Column('event_id', db.Integer, db.ForeignKey('event.id'), primary_key=True),
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
 )
+
+class ShoutBoardMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message = db.Column(db.String(500), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    
+    user = db.relationship('User', backref='shoutboard_messages')
+    
+    likes = db.relationship('ShoutBoardLike', backref='message', lazy='dynamic')
+
+class ShoutBoardLike(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, db.ForeignKey('shout_board_message.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    __table_args__ = (db.UniqueConstraint('message_id', 'user_id', name='_message_user_uc'),)

@@ -16,9 +16,8 @@ BikeHunt is a Flask-based web application designed to engage and motivate the bi
 
 ### Prerequisites
 
-- Python 3.6+
-- pip
-- virtualenv (optional)
+- Python 3.11+
+- PostgreSQL
 
 ### Installation
 
@@ -42,15 +41,40 @@ BikeHunt is a Flask-based web application designed to engage and motivate the bi
 5. Set up the environment variables:
 - Edit `config.toml` to adjust the variables accordingly.
 
+6. Database Setup:
+```sudo su - postgres```
+
+```psql -U postgres```
+
+```CREATE DATABASE databasename;```
+
+```CREATE USER username WITH PASSWORD 'password';```
+
+```GRANT ALL PRIVILEGES ON DATABASE databasename TO username;```
+
+```GRANT USAGE, CREATE ON SCHEMA public TO username;```
+
+```GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO username```
+
+```ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO username;```
+
+```\q```
+
+```exit```
+
 6. Initialize the database:
 
 ```flask db init```
 
+```flask db migrate```
+
 ```flask db upgrade```
+
+(Upgrade db:  sudo su - postgres, psql, ALTER TABLE user_tasks DROP CONSTRAINT IF EXISTS _user_task_uc;)
 
 7. Run the application:
 
-```flask run```
+```gunicorn wsgi:app```
 
 
 ## Contributing

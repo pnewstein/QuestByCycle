@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container">
     <h2>Add New Task to Event</h2>
-    <form action="" method="post" class="form">
+    <form action="" method="post" class="form" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         <div class="form-group">
             <label for="{{ form.title.id }}">{{ form.title.label }}</label>
@@ -26,8 +26,20 @@
             {{ form.completion_limit(class="form-control") }}
         </div>
         <div class="form-group">
-            <label for="{{ form.badge_image.id }}">{{ form.badge_image.label }}</label>
-            {{ form.badge_image(class="form-control") }}
+            <label for="{{ form.badge_id.id }}">{{ form.badge_id.label }}</label>
+            {{ form.badge_id(class="form-control") }}
+        </div>
+        <div class="form-group">
+            <label for="{{ form.badge_name.id }}">{{ form.badge_name.label }}</label>
+            {{ form.badge_name(class="form-control") }}
+        </div>
+        <div class="form-group">
+            <label for="{{ form.badge_description.id }}">{{ form.badge_description.label }}</label>
+            {{ form.badge_description(class="form-control") }}
+        </div>
+        <div class="form-group">
+            <label for="{{ form.badge_image_filename.id }}">{{ form.badge_image_filename.label }}</label>
+            {{ form.badge_image_filename(class="form-control") }}
         </div>
         <div class="form-group">
             {{ form.submit(class="button") }}
