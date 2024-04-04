@@ -1,8 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, send_from_directory
-from flask_login import current_user, login_required
-from itsdangerous import URLSafeTimedSerializer, BadSignature
-from app.models import db, Event, User, UserTask
-from app.forms import SignInForm, SignOutForm, ProfileForm
+from flask_login import current_user, login_required, logout_user
+from app.models import db, Event, User, Task, UserTask, Badge, ShoutBoardMessage, ShoutBoardLike
+from app.forms import SignInForm, ProfileForm, ShoutBoardForm
 from .config import load_config
 from werkzeug.utils import secure_filename
 
@@ -19,18 +18,45 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-@main_bp.route('/static/<path:filename>')
-def static_files(filename):
-    return send_from_directory('static', filename)
-
 @main_bp.route('/')
 def index():
+    events = Event.query.all()
+    form = ShoutBoardForm()
+    messages = ShoutBoardMessage.query.order_by(ShoutBoardMessage.timestamp.desc()).all()  # Adjust the model/query as needed
+
     if current_user.is_authenticated:
         user_events = current_user.participated_events  # Directly access the events
     else:
         user_events = []
 
-    return render_template('index.html', user_events=user_events)
+    return render_template('index.html', form=form, events=events, user_events=user_events, messages=messages)
+
+
+@main_bp.route('/shout-board', methods=['POST'])
+@login_required
+def shout_board():
+    form = ShoutBoardForm()
+    if form.validate_on_submit():
+        shout_message = ShoutBoardMessage(message=form.message.data, user_id=current_user.id)
+        db.session.add(shout_message)
+        db.session.commit()
+        flash('Your message has been posted!', 'success')
+        return redirect(url_for('main.index'))
+    messages = ShoutBoardMessage.query.order_by(ShoutBoardMessage.timestamp.desc()).all()
+    return render_template('shout_board.html', form=form, messages=messages)
+
+@main_bp.route('/like-message/<int:message_id>', methods=['POST'])
+@login_required
+def like_message(message_id):
+    message = ShoutBoardMessage.query.get_or_404(message_id)
+    if ShoutBoardLike.query.filter_by(user_id=current_user.id, message_id=message.id).first():
+        flash('You have already liked this message!', 'info')
+    else:
+        like = ShoutBoardLike(user_id=current_user.id, message_id=message.id)
+        db.session.add(like)
+        db.session.commit()
+        flash('You liked a message.', 'success')
+    return redirect(url_for('main.index'))
 
 
 @main_bp.route('/sign-in', methods=['GET', 'POST'])
@@ -45,94 +71,42 @@ def sign_in():
     return render_template('sign_in.html', form=form)
 
 
+@main_bp.route('/request_custom/<int:user_id>', methods=['GET', 'POST'])
+def custom_request(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template('request_custom.html', user=user)
 
-@main_bp.route('/sign-out', methods=['GET', 'POST'])
-def sign_out():
-    form = SignOutForm()
 
-    if form.validate_on_submit():
-        flash('Signed out successfully.')
-    else:
-        # If neither form submission nor continue button click
-        return render_template('sign_out.html', form=form)
-
-    session.pop('l_number', None)
+@main_bp.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out.')
     return redirect(url_for('main.index'))
 
 
-@main_bp.route('/leaderboard', methods=['GET', 'POST'])
+@main_bp.route('/leaderboard', methods=['GET'])
 @login_required
 def leaderboard():
-    selected_event_id = request.args.get('event_id', type=int)
-    user_events = current_user.participated_events
-    
+    events = Event.query.order_by(Event.id).all()  # Fetch and order events by ID to ensure consistency
+
+    # Default to the first event's ID if 'event_id' is not specified in the request or if it's None
+    selected_event_id = request.args.get('event_id', type=int) or (events[0].id if events else None)
+
+    top_users = []
     if selected_event_id:
+        top_users = db.session.query(
+            User.id,
+            User.username,
+            db.func.sum(UserTask.points_awarded).label('total_points')
+        ).join(UserTask, UserTask.user_id == User.id
+        ).join(Task, Task.id == UserTask.task_id
+        ).filter(Task.event_id == selected_event_id
+        ).group_by(User.id, User.username
+        ).order_by(db.func.sum(UserTask.points_awarded).desc()
+        ).all()
 
-        event = Event.query.get_or_404(selected_event_id)
-        # Filter users based on their participation and scores in the selected event
-        users_with_scores = User.query.join(User.participated_events).filter(Event.id == selected_event_id).order_by(User.score.desc()).all()
-    else:
-        users_with_scores = User.query.order_by(User.score.desc()).all()
-    
-    top_users = [{
-        'username': user.username,
-        'score': user.score,
-        'events': ", ".join([event.title for event in user.participated_events])
-    } for user in users_with_scores]
-
-    return render_template('leaderboard.html', top_users=top_users, user_events=user_events, selected_event_id=selected_event_id)
-
-
-@main_bp.route('/steps')
-def steps():
-    # This page might contain links to all the subsections for an easy navigation
-    return render_template('steps.html')
-
-# Route for the "Introduction to Biking" section
-@main_bp.route('/introduction-to-biking')
-def introduction_to_biking():
-    return render_template('introduction_to_biking.html')
-
-# Route for the "Bicycle Types Explained" section
-@main_bp.route('/bicycle-types-explained')
-def bicycle_types_explained():
-    # This could potentially fetch dynamic content if necessary
-    return render_template('bicycle_types_explained.html')
-
-# Route for the "Gear Up for Safety" section
-@main_bp.route('/gear-up-for-safety')
-def gear_up_for_safety():
-    return render_template('gear_up_for_safety.html')
-
-# Route for the "Riding Your Bike 101" section
-@main_bp.route('/riding-your-bike-101')
-def riding_your_bike_101():
-    return render_template('riding_your_bike_101.html')
-
-# Route for the "Warm-Up Exercises" section
-@main_bp.route('/warm-up-exercises')
-def warm_up_exercises():
-    return render_template('warm_up_exercises.html')
-
-# Route for the "Basic Bike Maintenance" section
-@main_bp.route('/basic-bike-maintenance')
-def basic_bike_maintenance():
-    return render_template('basic_bike_maintenance.html')
-
-# Route for the "Daily Ride Challenge" section (part of Skill-Building Tasks)
-@main_bp.route('/daily-ride-challenge')
-def daily_ride_challenge():
-    return render_template('daily_ride_challenge.html')
-
-# Route for the "Bike Repair Workshop" section
-@main_bp.route('/bike-repair-workshop')
-def bike_repair_workshop():
-    return render_template('bike_repair_workshop.html')
-
-@main_bp.route('/missions')
-def missions():
-    # This page might contain links to all the subsections for an easy navigation
-    return render_template('missions.html')
+    return render_template('leaderboard.html', events=events, top_users=top_users, selected_event_id=selected_event_id)
 
 
 def save_profile_picture(profile_picture_file):
@@ -151,6 +125,7 @@ def save_profile_picture(profile_picture_file):
 @login_required
 def profile():
     form = ProfileForm()
+
     if form.validate_on_submit():
         current_user.display_name = form.display_name.data
         current_user.age_group = form.age_group.data
@@ -179,14 +154,24 @@ def profile():
     return render_template('profile.html', form=form)
 
 @main_bp.route('/profile/<int:user_id>')
+@login_required
 def user_profile(user_id):
     user = User.query.get_or_404(user_id)
+    print(f"Accessing profile for user: {user.username}, Admin: {user.is_admin}")  # Debugging print
+
+
     user_tasks = UserTask.query.filter_by(user_id=user.id).all()
     badges = user.badges
 
     return render_template('_user_profile.html', user=user, user_tasks=user_tasks, badges=badges)
 
-@main_bp.route('/events')
-def events():
-    events = Event.query.all()
-    return render_template('events.html', events=events)
+def award_badges(user_id):
+    user = User.query.get_or_404(user_id)
+    for task in user.user_tasks:
+        if task.completed and task.task.badge_id:  # Assuming task links to UserTask which links to Task
+            badge = Badge.query.get(task.task.badge_id)
+            if badge and badge not in user.badges:
+                user.badges.append(badge)
+    db.session.commit()
+    flash('Badges updated based on completed tasks.', 'success')
+

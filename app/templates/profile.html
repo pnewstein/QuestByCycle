@@ -20,6 +20,15 @@
 <hr>
 
 <h2>Edit Profile</h2>
+
+<div>
+    {% if current_user.is_authenticated and not current_user.is_admin %}
+        <a href="{{ url_for('main.custom_request', user_id=current_user.id) }}" class="btn btn-detail">Request Event</a>
+    {% else %}
+        <!-- Display some alternative content for anonymous users or nothing -->
+    {% endif %}
+</div>
+
 <form action="{{ url_for('main.profile') }}" method="post" enctype="multipart/form-data">
     {{ form.hidden_tag() }}
     <div class="form-group">
@@ -36,4 +45,7 @@
     </div>
     {{ form.submit() }}
 </form>
+<div>
+    <a href="{{ url_for('main.logout') }}" class="blue_button">Logout</a>
+</div>
 {% endblock %}

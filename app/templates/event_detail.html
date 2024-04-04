@@ -2,18 +2,24 @@
 
 {% block content %}
 <div class="container">
-    <div class="event-detail">
+    <div class="welcomeImage">
+        <img src="{{ url_for('static', filename='images/eventBikeHunt.png') }}" alt="Bike Hunt Events" style="max-width: 1000px; max-height: 300px;">
+    </div>
+    <div class="event-item">
         <h1>{{ event.title }}</h1>
         <p>{{ event.description }}</p>
-        <p><strong>Start Date:</strong> {{ event.start_date.strftime("%Y-%m-%d %H:%M") }}</p>
-        <p><strong>End Date:</strong> {{ event.end_date.strftime("%Y-%m-%d %H:%M") }}</p>
+        <p><strong>Start Date:</strong> {{ event.start_date.strftime("%m-%d-%y") }}</p>
+        <p><strong>End Date:</strong> {{ event.end_date.strftime("%m-%d-%y") }}</p>
+    </div>
+    <div class="event-item">
 
         {% if has_joined %}
-            <p>Total Completed Tasks Points: {{ total_points }}</p>
-            
-            {% if current_user.is_admin %}
-                <a href="{{ url_for('events.add_task', event_id=event.id) }}" class="button">Add Task</a>
-            {% endif %}
+            <p>Total Completed Points: {{ total_points }}</p>
+            <p>
+                {% if current_user.is_admin %}
+                    <a href="{{ url_for('events.add_task', event_id=event.id) }}" class="button">Add Task</a>
+                {% endif %}
+            </p>
 
             <table class="table">
                 <thead>
@@ -21,6 +27,7 @@
                         <th>Task</th>
                         <th>Description</th>
                         <th>Points</th>
+                        <th>Badge</th>
                         <th>Actions</th>
                         <th>Completions</th>
                     </tr>
@@ -32,16 +39,25 @@
                         <td>
                             {{ task.description }}
                             {% if task.tips %}
-                                <a href="#" onclick="showModal('{{ task.tips }}')">[?]</a>
+                                <a href="#" onclick="showModal('{{ task.tips }}')">[...]</a>
                             {% endif %}
                         </td>
                         <td>{{ task.points }}</td>
                         <td>
-                            <form action="{{ url_for('events.adjust_completion', task_id=task.id, action='increment') }}" method="post">
+                            {% if task.badge %}
+                                {% if task.badge.image %}
+                                    <img src="{{ url_for('static', filename=task.badge.image) }}" alt="Badge" style="width: 50px;">
+                                {% endif %}
+                            {% else %}
+                                None
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form action="{{ url_for('events.adjust_task_completion', task_id=task.id, action='increment') }}" method="post">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                 <button type="submit" class="button" {% if user_tasks_map.get(task.id, {'completions': 0}).completions >= task.completion_limit %}disabled{% endif %}>+</button>
                             </form>
-                            <form action="{{ url_for('events.adjust_completion', task_id=task.id, action='decrement') }}" method="post">
+                            <form action="{{ url_for('events.adjust_task_completion', task_id=task.id, action='decrement') }}" method="post">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                 <button type="submit" class="button" {% if user_tasks_map.get(task.id, {'completions': 0}).completions <= 0 %}disabled{% endif %}>-</button>
                             </form>
@@ -63,7 +79,7 @@
 <div id="modal" class="modal">
     <div class="modal-content">
         <span class="close-button">&times;</span>
-        <p id="modal-text"></p>
+        <p id="modal-text">No tips for now.</p>
     </div>
 </div>
 

@@ -1,33 +1,55 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1>Welcome to BikeHunt</h1>
+<div class="container">
 
-{% if current_user.is_authenticated %}
-    {% if user_events %}
-        <h2>Your Events</h2>
-        <ul>
-            {% for event in user_events %}
-                <li>
-                    {{ event.title }}: {{ event.description }}
-                    <!-- Button to go to event detail page -->
-                    <a href="{{ url_for('events.event_detail', event_id=event.id) }}" class="btn btn-detail">View Event</a>
-                </li>
+    <div class="welcomeImage">
+        <img src="{{ url_for('static', filename='images/welcomeBikeHunt.png') }}" alt="Welcome to Bike Hunt" style="max-width: 600px; max-height: 300px;">
+    </div>
+
+    <div class="introduction">
+        <strong><p>BikeHunt is a community-wide motivational game designed to encourage cycling and outdoor activities. Participants can join various events, complete tasks, and earn points to climb up the leaderboard. It's a fun way to stay active, explore your surroundings, and connect with fellow cycling enthusiasts.</p></strong>
+    </div>
+    <div class="content-flex-container">
+
+        <div class="events-column">
+            <h2>Events</h2>
+            {% for event in events %}
+            <div class="event-item">
+                <h3>{{ event.title }}</h3>
+                <p>{{ event.description }}</p>
+                <a href="{{ url_for('events.event_detail', event_id=event.id) }}" class="blue_button">View Details</a>
+            </div>
             {% endfor %}
-        </ul>
-    {% else %}
-        <p>You are not currently participating in any events.</p>
-    {% endif %}
-{% endif %}
+        </div>
+    
+        <div class="shout-board-column">
+            <h2>Current Activities</h2>
+            <div class="event-item">
+                {% if current_user.is_admin %}
 
-<div class="link-boxes">
-    <a href="/steps" class="box box-steps">Steps</a>
-    <a href="/missions" class="box box-missions">Missions</a>
-    <a href="/events" class="box box-events">Events</a>
-</div>
-
-<div class="introduction">
-    <p>BikeHunt is a community-wide motivational game designed to encourage cycling and outdoor activities. Participants can join various events, complete tasks, and earn points to climb up the leaderboard. It's a fun way to stay active, explore your surroundings, and connect with fellow cycling enthusiasts.</p>
+                    <form action="{{ url_for('main.shout_board') }}" method="post">
+                        {{ form.hidden_tag() }}
+                        <div class="form-group">
+                            {{ form.message.label }} {{ form.message(rows=3) }}
+                        </div>
+                        {{ form.submit() }}
+                    </form>
+                {% endif %}    
+                <div class="shout-messages">
+                    {% for message in messages %}
+                    <div class="message">
+                        <strong>{{ message.user.username }}</strong>: {{ message.message }}
+                        <form action="{{ url_for('main.like_message', message_id=message.id) }}" method="post">
+                            {{ form.hidden_tag() }}
+                            <button type="submit" class="blue_button">Like</button> {{ message.likes.count() }}
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% endblock %}

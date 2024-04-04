@@ -2,27 +2,20 @@
 {% block content %}
 <div class="user-profile">
     <h1>{{ user.username }}'s Profile</h1>
-    <!-- Display user details -->
-    
-    <h2>Completed Tasks and Badges</h2>
-    {% if user_tasks %}
-        <ul class="tasks-list">
-        {% for user_task in user_tasks %}
-            <li>
-                <strong>{{ user_task.task.title }}</strong>: {{ user_task.task.description }}
-                {% if user_task.task.badge_image %}
-                    <div class="badge">
-                        <img src="{{ url_for('static', filename=user_task.task.badge_image) }}" alt="Badge Image">
-                    </div>
-                {% endif %}
-            </li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>No tasks completed yet.</p>
-    {% endif %}
-    
-    <h2>Badges</h2>
+    <div class="user-profile">
+        <div class="profile-details">
+            <p><strong>Display Name:</strong> {{ user.display_name }}</p>
+            {% if user.profile_picture %}
+            <div class="profile-picture">
+                <img src="{{ url_for('static', filename=user.profile_picture) }}" alt="Profile Picture" style="max-width: 200px; max-height: 200px;">
+            </div>
+            {% endif %}
+            <p><strong>Age Group:</strong> {{ user.age_group }}</p>
+            <p><strong>Interests:</strong> {{ user.interests }}</p>
+        </div>
+    </div>
+    <hr>
+    <h2>Completed Badges</h2>
     {% if badges %}
         <ul class="badges-list">
         {% for badge in badges %}
@@ -38,6 +31,20 @@
         </ul>
     {% else %}
         <p>No badges earned yet.</p>
+    {% endif %}
+    <h2>Completed Tasks</h2>
+    {% if user_tasks %}
+        <ul class="tasks-list">
+        {% for user_task in user_tasks %}
+            <li>
+                {% if user_task.completed %}
+                    <strong>{{ user_task.task.title }}</strong>: {{ user_task.task.description }}
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No tasks completed yet.</p>
     {% endif %}
 </div>
 {% endblock %}

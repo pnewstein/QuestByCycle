@@ -12,10 +12,19 @@
                 <a href="{{ url_for('main.index') }}">Home</a>
                 <a href="{{ url_for('main.leaderboard') }}">Leaderboard</a>
                 {% if current_user.is_authenticated %}
+                    <div class="dropdown">
+                        <button class="dropbtn">Your Events</button>
+                        <div class="dropdown-content">
+                            {% for event in current_user.participated_events %}
+                                <a href="{{ url_for('events.event_detail', event_id=event.id) }}">{{ event.title }}</a>
+                            {% else %}
+                                No events.
+                            {% endfor %}
+                        </div>
+                    </div>
                     <a href="{{ url_for('main.profile') }}">{{ current_user.username }}'s Profile</a>
-                    <a href="{{ url_for('auth.logout') }}">Logout</a>
                     {% if current_user.is_admin %}
-                    <a href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a>
+                        <a href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a>
                     {% endif %}
                 {% else %}
                     <a href="{{ url_for('auth.login') }}">Login</a>
@@ -41,8 +50,14 @@
             <a href="https://climaterevolutions.org" target="_blank">
                 <img src="{{ url_for('static', filename='images/climate-revolutions-logo.png') }}" alt="Climate Revolutions by Bike Logo" class="footer-logo">
             </a>
+            <a href="https://www.350eugene.org/" target="_blank">
+                <img src="{{ url_for('static', filename='images/350EUG-logo.png') }}" alt="350Eugene Logo" class="footer-logo">
+            </a>
+            <a href="https://arrivingbybike.com/" target="_blank">
+                <img src="{{ url_for('static', filename='images/arriving-by-bike-logo.png') }}" alt="Arriving By Bike Logo" class="footer-logo">
+            </a>
             <div class="footer-text">
-                Sponsored by Climate Revolutions by Bike
+                Sponsored by Climate Revolutions by Bike, 350Eugene, and Arriving by Bike.
                 <p>Supporting cycling initiatives for a greener planet.</p>
                 <!-- Add any additional details you want here -->
             </div>
