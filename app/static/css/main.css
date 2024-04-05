@@ -49,7 +49,7 @@ main {
 }
 
 .container {
-    width: 80%;
+    width: 95%;
     margin: 20px auto;
     background-color: #ffffff;
     padding: 20px;
@@ -124,6 +124,39 @@ main {
     border-color: #ebccd1;
 }
 
+/* Media Queries for Responsive Design */
+@media (max-width: 768px) {
+    header, header nav, .container, .table, .form-group, .button, .alert {
+        width: 100%; /* Full width */
+        margin: auto; /* Center align */
+        padding: 10px;
+    }
+
+    header nav a {
+        margin: 5px 0; /* More vertical space */
+        display: block; /* Stack nav items vertically */
+    }
+
+    .modal-content, .footer-container, .dropdown-content {
+        width: 90%; /* Adjust width for smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .container, main {
+        padding: 10px;
+    }
+
+    header {
+        padding: 10px;
+    }
+    
+    .box, .info-box, .event-item, .message {
+        /* Increase font size for better readability on very small screens */
+        font-size: larger;
+    }
+}
+
 /* New styles for link boxes */
 .link-boxes {
     display: flex;
@@ -155,16 +188,16 @@ main {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.introduction h2, .skill-building h2 {
+.introduction h2 {
     color: #007bff;
 }
 
-.introduction h3, .skill-building h3 {
+.introduction h3 {
     margin-top: 20px;
     color: #0056b3;
 }
 
-.introduction a, .skill-building a {
+.introduction a {
     display: inline-block;
     margin-top: 10px;
     background-color: #007bff;
@@ -174,7 +207,7 @@ main {
     transition: background-color 0.3s ease;
 }
 
-.introduction a:hover, .skill-building a:hover {
+.introduction a:hover {
     background-color: #0056b3;
 }
 
@@ -190,7 +223,7 @@ article h3 {
     margin-top: 0;
 }
 
-.links-container, .preparation-missions, .skill-mastery-missions, .epic-challenge-missions {
+.links-container {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
@@ -406,4 +439,91 @@ footer {
     margin-bottom: 10px;
     padding: 5px;
     border-radius: 5px;
+}
+
+/* Adjust link boxes for smaller screens */
+@media only screen and (max-width: 768px) {
+    .link-boxes {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .box {
+        width: 90%; /* Make boxes wider on smaller screens */
+        margin-bottom: 20px; /* Add some space between boxes */
+    }
+}
+
+/* Introduction, Skill-building, and Articles Responsiveness */
+@media only screen and (max-width: 768px) {
+    .introduction, .skill-building, article {
+        /* Reduce padding for a more compact look */
+        padding: 15px;
+    }
+
+    .introduction h2, .skill-building h2, article h3 {
+        /* Slightly reduce the font size for headings */
+        font-size: 1.2em;
+    }
+}
+
+/* Event Items and Tasks List Responsiveness */
+@media only screen and (max-width: 768px) {
+    .event-item, .tasks li {
+        /* Make these elements more compact on smaller screens */
+        padding: 10px;
+    }
+
+    .tasks ul {
+        /* Reduce padding to use more of the available space */
+        padding-left: 0;
+    }
+}
+
+/* Modal Responsiveness */
+@media only screen and (max-width: 768px) {
+    .modal-content {
+        /* Make modal content take more screen width on smaller devices */
+        width: 95%;
+        padding: 15px; /* Slightly reduce padding */
+    }
+
+    .close-button {
+        /* Adjust close button size to be more touch-friendly */
+        font-size: 32px;
+    }
+}
+
+/* Footer Adjustments for Smaller Screens */
+@media only screen and (max-width: 768px) {
+    .footer-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .footer-logo, .footer-text {
+        /* Adjustments to ensure the footer content is centered and not too large */
+        margin-bottom: 10px; /* Add some space between elements */
+    }
+}
+
+/* Dropdown and Messages Box for Better Mobile Interaction */
+@media only screen and (max-width: 768px) {
+    .dropdown-content, .message {
+        /* Ensure dropdowns and message boxes are not too wide */
+        width: auto; /* Allow the width to auto-adjust based on content */
+    }
+
+    .message {
+        /* Increase padding for easier reading and interaction */
+        padding: 10px;
+    }
+}
+
+/* Ensuring Text and Buttons are Easily Interactable */
+@media only screen and (max-width: 768px) {
+    body, button, a, input[type="submit"], .dropbtn {
+        /* Increase font size for better legibility on small screens */
+        font-size: 16px; /* Adjust size as needed for your design */
+    }
 }

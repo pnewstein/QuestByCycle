@@ -68,7 +68,7 @@ def decrypt_message(encrypted_message, key):
     return decrypted_message
 
 
-@auth_bp.route('/auth/register', methods=['GET', 'POST'])
+@auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm(request.form)
     if form.validate_on_submit():
@@ -84,8 +84,12 @@ def register():
         
         try:
             db.session.commit()  # Attempt to commit the transaction
-            flash('Congratulations, you are now a registered user!', 'success')
-            return redirect(url_for('auth.login'))
+            # Automatically log in the user after registration
+            login_user(user)
+            flash('Congratulations, you are now a registered user and logged in!', 'success')
+            # Redirect to a different page, depending on your application structure
+            # For example, redirect to the main index page or user's dashboard
+            return redirect(url_for('main.index'))
         except Exception as e:
             db.session.rollback()  # Rollback in case of error
             flash('Registration failed due to an unexpected error. Please try again.', 'error')

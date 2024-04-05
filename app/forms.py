@@ -1,9 +1,12 @@
 from flask_wtf import FlaskForm
+from flask import current_app
 from wtforms import RadioField, StringField, SelectField, SubmitField, IntegerField, PasswordField, TextAreaField, BooleanField
 from wtforms.validators import DataRequired, NumberRange, EqualTo, Optional, Email, Length
 from wtforms.fields import DateField
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from app.models import Badge
+
+import os
 
 class CSRFProtectForm(FlaskForm):
     # Used only for CSRF protection
@@ -61,12 +64,15 @@ class TaskForm(FlaskForm):
     badge_id = SelectField('Select Existing Badge', coerce=int, choices=[], default=0)
     badge_name = StringField('Badge Name', validators=[DataRequired()])
     badge_description = TextAreaField('Badge Description', validators=[DataRequired()])    
+    default_badge_image = SelectField('Select Default Badge Image', coerce=str, choices=[], default='')
     badge_image_filename = FileField('Badge Image', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
     submit = SubmitField('Add Task')
 
     def __init__(self, *args, **kwargs):
         super(TaskForm, self).__init__(*args, **kwargs)
         self.badge_id.choices = [(0, 'None')] + [(b.id, b.name) for b in Badge.query.order_by('name')]
+        badge_image_directory = os.path.join(current_app.root_path, 'static/images/default_badges')
+        self.default_badge_image.choices = [('','None')] + [(filename, filename) for filename in os.listdir(badge_image_directory)]
 
 class ProfileForm(FlaskForm):
     display_name = StringField('Display Name', validators=[Optional()])

@@ -4,13 +4,19 @@
     <title>{% block title %}{% endblock %} - BikeHunt</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
 </head>
 <body>
     <div class="content-wrap">
         <header>
             <nav>
-                <a href="{{ url_for('main.index') }}">Home</a>
-                <a href="{{ url_for('main.leaderboard') }}">Leaderboard</a>
+                <div class="dropdown">
+                    <a href="{{ url_for('main.index') }}"><button class="dropbtn">Home</button></a>
+                </div>
+                <div class="dropdown">
+                    <a href="{{ url_for('main.leaderboard') }}"><button class="dropbtn">Leaderboard</button></a>
+                </div>
                 {% if current_user.is_authenticated %}
                     <div class="dropdown">
                         <button class="dropbtn">Your Events</button>
@@ -18,11 +24,23 @@
                             {% for event in current_user.participated_events %}
                                 <a href="{{ url_for('events.event_detail', event_id=event.id) }}">{{ event.title }}</a>
                             {% else %}
-                                No events.
+                                <a href="{{ url_for('main.index') }}">Join!</a>
                             {% endfor %}
                         </div>
                     </div>
-                    <a href="{{ url_for('main.profile') }}">{{ current_user.username }}'s Profile</a>
+
+                    <div class="dropdown">
+                        <a href="{{ url_for('main.profile') }}">
+                            <button class="dropbtn">
+                                {{ current_user.username }}'s Profile
+                            </button>
+                        </a>
+                        <div class="dropdown-content">
+                            <div>
+                                <a href="{{ url_for('main.logout') }}">Logout</a>
+                            </div>
+                        </div>
+                    </div>                    
                     {% if current_user.is_admin %}
                         <a href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a>
                     {% endif %}
