@@ -70,7 +70,7 @@
             </table>
         {% else %}
             <form action="{{ url_for('events.register_event', event_id=event.id) }}" method="post">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="button primary">Join Event</button>
             </form>
         {% endif %}
