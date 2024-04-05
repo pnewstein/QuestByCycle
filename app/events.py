@@ -49,12 +49,12 @@ def add_task(event_id):
             # Case 2: Default badge image selected
             badge_image_path = os.path.join('images/default_badges', form.default_badge_image.data)
         elif 'badge_image_filename' in request.files and request.files['badge_image_filename'].filename != '':
-            # Case 3: New badge image uploaded
+            # Case: New badge image uploaded
             badge_image_file = request.files['badge_image_filename']
-            filename = secure_filename(badge_image_file.filename)
-            badge_image_path = os.path.join('images/uploaded_badges', filename)  # Ensure this directory exists
-            badge_image_file.save(os.path.join(current_app.root_path, 'static', badge_image_path))
-        
+            # Use save_profile_picture function to save the badge image
+            badge_image_path = save_profile_picture(badge_image_file)
+            # Now badge_image_path contains the path relative to the static folder
+            
         if badge_image_path:
             # Only create a badge if an image is selected or uploaded
             new_badge = Badge(name=form.badge_name.data, description=form.badge_description.data, image=badge_image_path)
@@ -70,9 +70,14 @@ def add_task(event_id):
             badge_id=new_badge.id if new_badge else None
         )
         db.session.add(task)
-        db.session.commit()
-        flash('Task added successfully!', 'success')
-        return redirect(url_for('main.index'))  # Adjust as needed
+        try:
+
+            db.session.commit()
+            flash('Task added successfully!', 'success')
+            return redirect(url_for('main.index'))  # Adjust as needed
+        except Exception as e:
+            db.session.rollback()
+            flash(f'An error occurred: {e}', 'error')
 
     return render_template('add_task.html', form=form, event_id=event_id)
 
