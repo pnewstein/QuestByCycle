@@ -73,11 +73,30 @@ BikeHunt is a Flask-based web application designed to engage and motivate the bi
 
 ```flask db upgrade```
 
-(Upgrade db:  sudo su - postgres, psql, ALTER TABLE user_tasks DROP CONSTRAINT IF EXISTS _user_task_uc;)
-
 7. Run the application:
 
 ```gunicorn --bind 0.0.0.0:8000 wsgi:app```
+
+8. Update instructions:
+
+```ssh bikehunt.org```
+```cd BikeHunt/```
+```git pull```
+```cd BikeHunt/```
+```screen -r```
+
+```Ctrl-c```
+
+```sudo rm -rf *```
+```cp -r ~/BikeHunt/* /var/www/html```
+```flask db migrate -m "pulled updates"```
+```sudo su - postgres```
+```psql```
+```\c DATABASENAME```
+```ALTER TABLE user_tasks DROP CONSTRAINT IF EXISTS _user_task_uc;```
+```\q```
+```exit```
+```flask db upgrade```
 
 
 ## Contributing

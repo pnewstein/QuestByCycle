@@ -177,12 +177,8 @@ def profile():
     return render_template('profile.html', form=form)
 
 @main_bp.route('/profile/<int:user_id>')
-@login_required
 def user_profile(user_id):
     user = User.query.get_or_404(user_id)
-    print(f"Accessing profile for user: {user.username}, Admin: {user.is_admin}")  # Debugging print
-
-
     user_tasks = UserTask.query.filter_by(user_id=user.id).all()
     badges = user.badges
 
