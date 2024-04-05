@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, send_from_directory
+from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, session, current_app, send_from_directory
 from flask_login import current_user, login_required, logout_user
+from flask_wtf.csrf import generate_csrf
 from app.models import db, Event, User, Task, UserTask, Badge, ShoutBoardMessage, ShoutBoardLike
 from app.forms import SignInForm, ProfileForm, ShoutBoardForm
 from .config import load_config
@@ -22,7 +23,11 @@ logger = logging.getLogger(__name__)
 def index():
     events = Event.query.all()
     form = ShoutBoardForm()
-    messages = ShoutBoardMessage.query.order_by(ShoutBoardMessage.timestamp.desc()).all()  # Adjust the model/query as needed
+    messages = ShoutBoardMessage.query.order_by(ShoutBoardMessage.timestamp.desc()).all()
+    liked_message_ids = {like.message_id for like in ShoutBoardLike.query.filter_by(user_id=current_user.id)} if current_user.is_authenticated else set()
+    
+    for message in messages:
+        message.liked_by_user = message.id in liked_message_ids
 
     if current_user.is_authenticated:
         user_events = current_user.participated_events  # Directly access the events
@@ -45,18 +50,28 @@ def shout_board():
     messages = ShoutBoardMessage.query.order_by(ShoutBoardMessage.timestamp.desc()).all()
     return render_template('shout_board.html', form=form, messages=messages)
 
+
 @main_bp.route('/like-message/<int:message_id>', methods=['POST'])
 @login_required
 def like_message(message_id):
+    # Retrieve the message by ID
     message = ShoutBoardMessage.query.get_or_404(message_id)
-    if ShoutBoardLike.query.filter_by(user_id=current_user.id, message_id=message.id).first():
-        flash('You have already liked this message!', 'info')
-    else:
-        like = ShoutBoardLike(user_id=current_user.id, message_id=message.id)
-        db.session.add(like)
+    # Check if the current user already liked this message
+    already_liked = ShoutBoardLike.query.filter_by(user_id=current_user.id, message_id=message.id).first() is not None
+
+    if not already_liked:
+        # User has not liked this message before, so create a new like
+        new_like = ShoutBoardLike(user_id=current_user.id, message_id=message.id)
+        db.session.add(new_like)
         db.session.commit()
-        flash('You liked a message.', 'success')
-    return redirect(url_for('main.index'))
+        success = True
+    else:
+        # User already liked the message. Optionally, handle "unliking" here
+        success = False
+    
+    # Fetch the new like count for the message
+    new_like_count = ShoutBoardMessage.query.get(message_id).likes.count()
+    return jsonify(success=success, new_like_count=new_like_count, already_liked=already_liked)
 
 
 @main_bp.route('/sign-in', methods=['GET', 'POST'])
@@ -84,15 +99,22 @@ def logout():
     flash('You have been logged out.')
     return redirect(url_for('main.index'))
 
-
 @main_bp.route('/leaderboard', methods=['GET'])
 @login_required
 def leaderboard():
-    events = Event.query.order_by(Event.id).all()  # Fetch and order events by ID to ensure consistency
+    # Retrieve events the current user has joined
+    user_events = current_user.participated_events
+    # Try to get 'event_id' from query parameters
+    selected_event_id = request.args.get('event_id', type=int)
 
-    # Default to the first event's ID if 'event_id' is not specified in the request or if it's None
-    selected_event_id = request.args.get('event_id', type=int) or (events[0].id if events else None)
+    # If the user is part of only one event and 'event_id' is not specified or differs, redirect to that event's leaderboard
+    if len(user_events) == 1:
+        single_event_id = user_events[0].id
+        if selected_event_id is None or selected_event_id != single_event_id:
+            return redirect(url_for('main.leaderboard', event_id=single_event_id))
 
+    # Use the selected_event_id if provided, otherwise default to None
+    # This will be used to fetch the leaderboard for the specific event
     top_users = []
     if selected_event_id:
         top_users = db.session.query(
@@ -106,7 +128,8 @@ def leaderboard():
         ).order_by(db.func.sum(UserTask.points_awarded).desc()
         ).all()
 
-    return render_template('leaderboard.html', events=events, top_users=top_users, selected_event_id=selected_event_id)
+    # Render the leaderboard template with the necessary data
+    return render_template('leaderboard.html', events=user_events, top_users=top_users, selected_event_id=selected_event_id)
 
 
 def save_profile_picture(profile_picture_file):

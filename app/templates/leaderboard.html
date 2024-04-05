@@ -6,54 +6,60 @@
         <img src="{{ url_for('static', filename='images/leaderboardBikeHunt.png') }}" alt="Bike Hunt Leaderboard" style="max-width: 600px; max-height: 200px;">
     </div>
 
-    <div class="event-item">
-        <form method="get" action="{{ url_for('main.leaderboard') }}">
-            <div class="form-group">
-                <label for="eventSelect">Select Event:</label>
-                <select name="event_id" id="eventSelect" class="form-control" onchange="this.form.submit()">
-                    {% for event in events %}
-                    <option value="{{ event.id }}" {% if selected_event_id == event.id %}selected{% endif %}>{{ event.title }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </form>
-        {% if top_users %}
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Player</th>
-                    <th>Total Points</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user_id, username, total_points in top_users %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>
-                        <a href="javascript:void(0)" onclick="showUserProfileModal('{{ user_id }}')">{{ username }}</a>
-                    </td>
-                    <td>{{ total_points }}</td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="3">No players have scored yet in this event.</td>
-                </tr>
+    {% if events|length > 1 %}
+    <form method="get" action="{{ url_for('main.leaderboard') }}">
+        <div class="form-group">
+            <label for="eventSelect">Select Event:</label>
+            <select name="event_id" id="eventSelect" class="form-control" onchange="this.form.submit()">
+                {% for event in events %}
+                <option value="{{ event.id }}" {% if selected_event_id == event.id %}selected{% endif %}>{{ event.title }}</option>
                 {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p>No scores available for the selected event.</p>
-        {% endif %}
-    </div>
+            </select>
+        </div>
+    </form>
+    {% endif %}
+
+    {% if top_users %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Carbon “Reduction” Points</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user_id, username, total_points in top_users %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td><a href="javascript:void(0)" onclick="showUserProfileModal('{{ user_id }}')">{{ username }}</a></td>
+                <td>{{ total_points }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3">No players have scored yet in this event.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Join an event to see the leaderboard!</p>
+    {% endif %}
 </div>
-<div id="userProfileModal" class="modal">
+
+<!-- User Profile Modal -->
+<div id="userProfileModal" style="display:none;" class="modal">
     <div class="modal-content">
-        <span class="close-button">&times;</span>
-        <div id="userProfileContent">Player profile ...</div>
+        <span class="close-button" onclick="closeModal()">&times;</span>
+        <div id="userProfileContent">
+            <!-- User profile details will be loaded here -->
+        </div>
     </div>
 </div>
+
 <script>
+document.addEventListener("DOMContentLoaded", function() {});
+
 function showUserProfileModal(userId) {
     fetch(`/profile/${userId}`)
         .then(response => response.text())
@@ -64,9 +70,8 @@ function showUserProfileModal(userId) {
         .catch(err => console.error('Failed to load user profile:', err));
 }
 
-// Close the modal when the user clicks the close button
-document.querySelector('.close-button').onclick = function() {
+function closeModal() {
     document.getElementById('userProfileModal').style.display = 'none';
-};
+}
 </script>
 {% endblock %}

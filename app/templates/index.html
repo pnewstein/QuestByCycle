@@ -1,55 +1,126 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="container">
+    <div class="container">
 
-    <div class="welcomeImage">
-        <img src="{{ url_for('static', filename='images/welcomeBikeHunt.png') }}" alt="Welcome to Bike Hunt" style="max-width: 600px; max-height: 300px;">
-    </div>
-
-    <div class="introduction">
-        <strong><p>BikeHunt is a community-wide motivational game designed to encourage cycling and outdoor activities. Participants can join various events, complete tasks, and earn points to climb up the leaderboard. It's a fun way to stay active, explore your surroundings, and connect with fellow cycling enthusiasts.</p></strong>
-    </div>
-    <div class="content-flex-container">
-
-        <div class="events-column">
-            <h2>Events</h2>
-            {% for event in events %}
-            <div class="event-item">
-                <h3>{{ event.title }}</h3>
-                <p>{{ event.description }}</p>
-                <a href="{{ url_for('events.event_detail', event_id=event.id) }}" class="blue_button">View Details</a>
-            </div>
-            {% endfor %}
+        <div class="welcomeImage">
+            <img src="{{ url_for('static', filename='images/welcomeBikeHunt.png') }}" alt="Welcome to Bike Hunt" style="max-width: 600px; max-height: 300px;">
         </div>
-    
-        <div class="shout-board-column">
-            <h2>Current Activities</h2>
-            <div class="event-item">
-                {% if current_user.is_admin %}
 
-                    <form action="{{ url_for('main.shout_board') }}" method="post">
-                        {{ form.hidden_tag() }}
-                        <div class="form-group">
-                            {{ form.message.label }} {{ form.message(rows=3) }}
-                        </div>
-                        {{ form.submit() }}
-                    </form>
-                {% endif %}    
-                <div class="shout-messages">
-                    {% for message in messages %}
-                    <div class="message">
-                        <strong>{{ message.user.username }}</strong>: {{ message.message }}
-                        <form action="{{ url_for('main.like_message', message_id=message.id) }}" method="post">
+        <div class="introduction">
+            <strong><p>BikeHunt is a community-wide motivational game designed to encourage cycling and outdoor activities. Participants can join the game, complete tasks, and earn points/”reduce carbon” in the atmosphere to climb up the leaderboard. It's a fun way to stay active, explore your surroundings, and connect with fellow cycling enthusiasts.
+            </p></strong>
+        </div>
+        <div class="content-flex-container">
+
+            <div class="events-column">
+                <h2>Events</h2>
+                {% for event in events %}
+                <div class="event-item">
+                    <h3>{{ event.title }}</h3>
+                    <p>{{ event.description }}</p>
+                    <a href="{{ url_for('events.event_detail', event_id=event.id) }}" class="blue_button">View Details</a>
+                </div>
+                {% endfor %}
+            </div>
+        
+            <div class="shout-board-column">
+                <h2>Current Activities</h2>
+                <div class="event-item">
+                    {% if current_user.is_admin %}
+
+                        <form action="{{ url_for('main.shout_board') }}" method="post">
                             {{ form.hidden_tag() }}
-                            <button type="submit" class="blue_button">Like</button> {{ message.likes.count() }}
+                            <div class="form-group">
+                                {{ form.message.label }} {{ form.message(rows=3) }}
+                            </div>
+                            {{ form.submit() }}
                         </form>
+                    {% endif %}    
+                    <div class="shout-messages">
+                        {% for message in messages %}
+                        <div class="message">
+                            <!-- Add an onclick event handler to call showUserProfileModal with the user ID -->
+                            <strong><a href="javascript:void(0)" onclick="showUserProfileModal('{{ message.user.id }}')">{{ message.user.username }}</a></strong>: {{ message.message }}
+                            <button type="button" class="blue_button" id="like-button-{{ message.id }}" onclick="likeMessage('{{ message.id }}')">
+                                {% if message.liked_by_user %}Liked{% else %}Like{% endif %}
+                            </button>
+                            <span id="like-count-{{ message.id }}">{{ message.likes.count() }}</span>👍🏾
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
-</div>
+    <!-- User Profile Modal -->
+    <div id="userProfileModal" style="display:none;" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <div id="userProfileContent">
+                <!-- User profile details will be loaded here -->
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {});
+        
+        function showUserProfileModal(userId) {
+            fetch(`/profile/${userId}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('userProfileContent').innerHTML = html;
+                    document.getElementById('userProfileModal').style.display = 'block';
+                })
+                .catch(err => console.error('Failed to load user profile:', err));
+        }
+        
+        function closeModal() {
+            document.getElementById('userProfileModal').style.display = 'none';
+        }
+    </script>
+    <script>
 
+        document.addEventListener("DOMContentLoaded", function() {
+        });
+
+        function likeMessage(messageId) {
+    const likeButton = document.getElementById(`like-button-${messageId}`);
+    const likeCount = document.getElementById(`like-count-${messageId}`);
+
+    // Immediately disable the button to prevent multiple clicks
+    likeButton.disabled = true;
+
+    fetch(`/like-message/${messageId}`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update like count
+            likeCount.innerText = data.new_like_count;
+            
+            // Update button text and style as needed
+            likeButton.innerText = 'Liked';
+            
+            // Keep the button disabled to reflect that the like action is complete
+            likeButton.disabled = true;
+        } else {
+            // Optional: Handle cases where the like wasn't successful or was a duplicate
+            // For duplicate likes, the button can remain disabled or provide feedback
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Re-enable the button in case of error to allow retrying
+        likeButton.disabled = false;
+    });
+}
+
+        </script>
 {% endblock %}

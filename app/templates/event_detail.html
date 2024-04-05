@@ -14,7 +14,7 @@
     <div class="event-item">
 
         {% if has_joined %}
-            <p>Total Completed Points: {{ total_points }}</p>
+            <p id="total-points">Total Completed Points: {{ total_points }}</p>
             <p>
                 {% if current_user.is_admin %}
                     <a href="{{ url_for('events.add_task', event_id=event.id) }}" class="button">Add Task</a>
@@ -55,14 +55,15 @@
                         <td>
                             <form action="{{ url_for('events.adjust_task_completion', task_id=task.id, action='increment') }}" method="post">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                <button type="submit" class="button" {% if user_tasks_map.get(task.id, {'completions': 0}).completions >= task.completion_limit %}disabled{% endif %}>+</button>
+                                <button type="button" id="increment-{{ task.id }}" class="button" onclick="adjustTaskCompletion('{{ task.id }}', 'increment')" {{ 'disabled' if user_tasks_map.get(task.id, {'completions': 0}).completions >= task.completion_limit else '' }}>+</button>
                             </form>
                             <form action="{{ url_for('events.adjust_task_completion', task_id=task.id, action='decrement') }}" method="post">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                <button type="submit" class="button" {% if user_tasks_map.get(task.id, {'completions': 0}).completions <= 0 %}disabled{% endif %}>-</button>
+                                <button type="button" id="decrement-{{ task.id }}" class="button" onclick="adjustTaskCompletion('{{ task.id }}', 'decrement')" {{ 'disabled' if user_tasks_map.get(task.id, {'completions': 0}).completions <= 0 else '' }}>-</button>
                             </form>
                         </td>
-                        <td>{{ user_tasks_map[task.id].completions if task.id in user_tasks_map else 0 }}</td>
+                        <td><span id="completion-count-{{ task.id }}">{{ user_tasks_map[task.id].completions if task.id in user_tasks_map else 0 }}</span>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -108,4 +109,31 @@
         }
     }
     </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+        });
+
+        function adjustTaskCompletion(taskId, action) {
+            fetch(`/events/adjust_completion/${taskId}/${action}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`completion-count-${taskId}`).innerText = data.new_completions_count;
+                    document.getElementById(`total-points`).innerText = `Total Completed Points: ${data.total_points}`;
+                    const incrementButton = document.getElementById(`increment-${taskId}`);
+                    const decrementButton = document.getElementById(`decrement-${taskId}`);
+                    incrementButton.disabled = data.disable_increment;
+                    decrementButton.disabled = data.disable_decrement;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        </script>
 {% endblock %}

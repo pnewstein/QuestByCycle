@@ -42,9 +42,12 @@ BikeHunt is a Flask-based web application designed to engage and motivate the bi
 - Edit `config.toml` to adjust the variables accordingly.
 
 6. Database Setup:
+
 ```sudo su - postgres```
 
 ```psql -U postgres```
+
+```\c databasename```
 
 ```CREATE DATABASE databasename;```
 
@@ -74,7 +77,7 @@ BikeHunt is a Flask-based web application designed to engage and motivate the bi
 
 7. Run the application:
 
-```gunicorn wsgi:app```
+```gunicorn --bind 0.0.0.0:8000 wsgi:app```
 
 
 ## Contributing
