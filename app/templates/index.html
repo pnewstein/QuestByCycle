@@ -80,47 +80,45 @@
         }
     </script>
     <script>
-
-        document.addEventListener("DOMContentLoaded", function() {
-        });
-
+        document.addEventListener("DOMContentLoaded", function() {});
+        
         function likeMessage(messageId) {
-    const likeButton = document.getElementById(`like-button-${messageId}`);
-    const likeCount = document.getElementById(`like-count-${messageId}`);
+            const likeButton = document.getElementById(`like-button-${messageId}`);
+            const likeCount = document.getElementById(`like-count-${messageId}`);
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-    // Immediately disable the button to prevent multiple clicks
-    likeButton.disabled = true;
-
-    fetch(`/like-message/${messageId}`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({})
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Update like count
-            likeCount.innerText = data.new_like_count;
-            
-            // Update button text and style as needed
-            likeButton.innerText = 'Liked';
-            
-            // Keep the button disabled to reflect that the like action is complete
+            // Immediately disable the button to prevent multiple clicks
             likeButton.disabled = true;
-        } else {
-            // Optional: Handle cases where the like wasn't successful or was a duplicate
-            // For duplicate likes, the button can remain disabled or provide feedback
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        // Re-enable the button in case of error to allow retrying
-        likeButton.disabled = false;
-    });
-}
 
-        </script>
+            fetch(`/like-message/${messageId}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update like count
+                    likeCount.innerText = data.new_like_count;
+                    
+                    // Update button text and style as needed
+                    likeButton.innerText = 'Liked';
+                    
+                    // Keep the button disabled to reflect that the like action is complete
+                    likeButton.disabled = true;
+                } else {
+                    // Optional: Handle cases where the like wasn't successful or was a duplicate
+                    // For duplicate likes, the button can remain disabled or provide feedback
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Re-enable the button in case of error to allow retrying
+                likeButton.disabled = false;
+            });
+        }
+    </script>
 {% endblock %}
