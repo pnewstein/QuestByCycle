@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask import current_app
-from wtforms import RadioField, StringField, SelectField, SubmitField, IntegerField, PasswordField, TextAreaField, BooleanField
+from wtforms import StringField, SelectField, SubmitField, IntegerField, PasswordField, TextAreaField, BooleanField
 from wtforms.validators import DataRequired, NumberRange, EqualTo, Optional, Email, Length
 from wtforms.fields import DateField
 from flask_wtf.file import FileField, FileAllowed, FileRequired
@@ -19,15 +19,6 @@ class RegistrationForm(FlaskForm):
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Register')
 
-
-class SignInForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()], render_kw={'readonly': True})
-    class_selected = RadioField('Class', coerce=str, validators=[DataRequired()], choices=[])
-    sign_in_comment = TextAreaField('Sign In Comment', validators=[Optional()])
-
-    def __init__(self, *args, **kwargs):
-        super(SignInForm, self).__init__(*args, **kwargs)
-        self.class_selected.choices = []  # Initialize with empty list
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -73,6 +64,55 @@ class TaskForm(FlaskForm):
         self.badge_id.choices = [(0, 'None')] + [(b.id, b.name) for b in Badge.query.order_by('name')]
         badge_image_directory = os.path.join(current_app.root_path, 'static/images/default_badges')
         self.default_badge_image.choices = [('','None')] + [(filename, filename) for filename in os.listdir(badge_image_directory)]
+
+class AdvancedTaskForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    description = TextAreaField('Description', validators=[DataRequired()])
+    tips = TextAreaField('Tips', validators=[])
+    points = IntegerField('Points', validators=[DataRequired(), NumberRange(min=1)], default=1)  # Assuming tasks have at least 1 point
+    completion_limit = IntegerField('Completion Limit', validators=[DataRequired(), NumberRange(min=1)], default=1)
+    badge_id = SelectField('Select Existing Badge', coerce=int, choices=[], default=0)
+    badge_name = StringField('Badge Name', validators=[DataRequired()])
+    badge_description = TextAreaField('Badge Description', validators=[DataRequired()])    
+    default_badge_image = SelectField('Select Default Badge Image', coerce=str, choices=[], default='')
+    badge_image_filename = FileField('Badge Image', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
+    submit = SubmitField('Add Task')
+
+    def __init__(self, *args, **kwargs):
+        super(TaskForm, self).__init__(*args, **kwargs)
+        self.badge_id.choices = [(0, 'None')] + [(b.id, b.name) for b in Badge.query.order_by('name')]
+        badge_image_directory = os.path.join(current_app.root_path, 'static/images/default_badges')
+        self.default_badge_image.choices = [('','None')] + [(filename, filename) for filename in os.listdir(badge_image_directory)]
+
+
+class AdvancedBadgeForm(FlaskForm):
+    badge_id = SelectField('Select Existing Badge', coerce=int, choices=[], default=0)
+    badge_name = StringField('Badge Name', validators=[DataRequired()])
+    badge_description = TextAreaField('Badge Description', validators=[DataRequired()])    
+    default_badge_image = SelectField('Select Default Badge Image', coerce=str, choices=[], default='')
+    badge_image_filename = FileField('Badge Image', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
+    submit = SubmitField('Add Task')
+
+
+class TaskImportForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    description = TextAreaField('Description', validators=[DataRequired()])
+    tips = TextAreaField('Tips', validators=[])
+    points = IntegerField('Points', validators=[DataRequired(), NumberRange(min=1)], default=1)  # Assuming tasks have at least 1 point
+    completion_limit = IntegerField('Completion Limit', validators=[DataRequired(), NumberRange(min=1)], default=1)
+    badge_id = SelectField('Select Existing Badge', coerce=int, choices=[], default=0)
+    badge_name = StringField('Badge Name', validators=[DataRequired()])
+    badge_description = TextAreaField('Badge Description', validators=[DataRequired()])    
+    default_badge_image = SelectField('Select Default Badge Image', coerce=str, choices=[], default='')
+    badge_image_filename = FileField('Badge Image', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
+    submit = SubmitField('Add Task')
+
+    def __init__(self, *args, **kwargs):
+        super(TaskForm, self).__init__(*args, **kwargs)
+        self.badge_id.choices = [(0, 'None')] + [(b.id, b.name) for b in Badge.query.order_by('name')]
+        badge_image_directory = os.path.join(current_app.root_path, 'static/images/default_badges')
+        self.default_badge_image.choices = [('','None')] + [(filename, filename) for filename in os.listdir(badge_image_directory)]
+
 
 class ProfileForm(FlaskForm):
     display_name = StringField('Display Name', validators=[Optional()])

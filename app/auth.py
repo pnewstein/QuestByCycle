@@ -1,5 +1,5 @@
 from cryptography.fernet import Fernet
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_user, logout_user, login_required
 from app.models import db, User
 from app.forms import LoginForm, RegistrationForm

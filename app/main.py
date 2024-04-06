@@ -1,14 +1,13 @@
-from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, session, current_app, send_from_directory
+from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app
 from flask_login import current_user, login_required, logout_user
-from flask_wtf.csrf import generate_csrf
+from app.utils import save_profile_picture, award_badges
 from app.models import db, Event, User, Task, UserTask, Badge, ShoutBoardMessage, ShoutBoardLike
-from app.forms import SignInForm, ProfileForm, ShoutBoardForm
+from app.forms import ProfileForm, ShoutBoardForm
 from .config import load_config
 from werkzeug.utils import secure_filename
 
 import os
 import logging
-import uuid
 
 main_bp = Blueprint('main', __name__)
 
@@ -74,30 +73,11 @@ def like_message(message_id):
     return jsonify(success=success, new_like_count=new_like_count, already_liked=already_liked)
 
 
-@main_bp.route('/sign-in', methods=['GET', 'POST'])
-def sign_in():
-    form = SignInForm()
-
-    if form.validate_on_submit():
-
-        flash('Signed in successfully')
-        return redirect(url_for('main.index'))
-
-    return render_template('sign_in.html', form=form)
-
-
 @main_bp.route('/request_custom/<int:user_id>', methods=['GET', 'POST'])
 def custom_request(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('request_custom.html', user=user)
 
-
-@main_bp.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    flash('You have been logged out.')
-    return redirect(url_for('main.index'))
 
 @main_bp.route('/leaderboard', methods=['GET'])
 @login_required
@@ -130,18 +110,6 @@ def leaderboard():
 
     # Render the leaderboard template with the necessary data
     return render_template('leaderboard.html', events=user_events, top_users=top_users, selected_event_id=selected_event_id)
-
-
-def save_profile_picture(profile_picture_file):
-    ext = profile_picture_file.filename.rsplit('.', 1)[-1]
-    filename = secure_filename(f"{uuid.uuid4()}.{ext}")
-    # Ensure 'uploads' directory exists under 'static'
-    uploads_path = os.path.join(current_app.root_path, 'static', current_app.config['main']['UPLOAD_FOLDER'])
-    if not os.path.exists(uploads_path):
-        os.makedirs(uploads_path)
-    # Save file
-    profile_picture_file.save(os.path.join(uploads_path, filename))
-    return os.path.join(current_app.config['main']['UPLOAD_FOLDER'], filename)
 
 
 @main_bp.route('/profile', methods=['GET', 'POST'])
@@ -183,14 +151,3 @@ def user_profile(user_id):
     badges = user.badges
 
     return render_template('_user_profile.html', user=user, user_tasks=user_tasks, badges=badges)
-
-def award_badges(user_id):
-    user = User.query.get_or_404(user_id)
-    for task in user.user_tasks:
-        if task.completed and task.task.badge_id:  # Assuming task links to UserTask which links to Task
-            badge = Badge.query.get(task.task.badge_id)
-            if badge and badge not in user.badges:
-                user.badges.append(badge)
-    db.session.commit()
-    flash('Badges updated based on completed tasks.', 'success')
-

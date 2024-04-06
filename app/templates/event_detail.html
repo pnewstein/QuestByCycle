@@ -17,7 +17,7 @@
             <p id="total-points">Total Completed Points: {{ total_points }}</p>
             <p>
                 {% if current_user.is_admin %}
-                    <a href="{{ url_for('events.add_task', event_id=event.id) }}" class="button">Add Task</a>
+                    <a href="{{ url_for('tasks.add_task', event_id=event.id) }}" class="button">Add Task</a>
                 {% endif %}
             </p>
 
@@ -53,11 +53,11 @@
                             {% endif %}
                         </td>
                         <td>
-                            <form action="{{ url_for('events.adjust_task_completion', task_id=task.id, action='increment') }}" method="post">
+                            <form action="{{ url_for('tasks.adjust_task_completion', task_id=task.id, action='increment') }}" method="post">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                 <button type="button" id="increment-{{ task.id }}" class="button" onclick="adjustTaskCompletion('{{ task.id }}', 'increment')" {{ 'disabled' if user_tasks_map.get(task.id, {'completions': 0}).completions >= task.completion_limit else '' }}>+</button>
                             </form>
-                            <form action="{{ url_for('events.adjust_task_completion', task_id=task.id, action='decrement') }}" method="post">
+                            <form action="{{ url_for('tasks.adjust_task_completion', task_id=task.id, action='decrement') }}" method="post">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                 <button type="button" id="decrement-{{ task.id }}" class="button" onclick="adjustTaskCompletion('{{ task.id }}', 'decrement')" {{ 'disabled' if user_tasks_map.get(task.id, {'completions': 0}).completions <= 0 else '' }}>-</button>
                             </form>
@@ -114,7 +114,7 @@
         });
 
         function adjustTaskCompletion(taskId, action) {
-            fetch(`/events/adjust_completion/${taskId}/${action}`, {
+            fetch(`/tasks/adjust_completion/${taskId}/${action}`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
