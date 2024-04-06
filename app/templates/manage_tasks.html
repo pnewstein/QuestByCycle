@@ -6,7 +6,7 @@
 
 <div class="add-task-form">
     <h2>Add New Task</h2>
-    <form method="POST" action="{{ url_for('events.manage_event_tasks' if event_id else 'events.manage_global_tasks', event_id=event_id if event_id else '') }}">
+    <form method="POST" action="{{ url_for('tasks.manage_event_tasks' if event_id else 'tasks.manage_global_tasks', event_id=event_id if event_id else '') }}">
         {{ form.hidden_tag() }}
         <div class="form-group">
             {{ form.title.label }}

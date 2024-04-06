@@ -5,7 +5,7 @@
 <select onchange="if (this.value) window.location.href=this.value;">
     <option>Select an Event</option>
     {% for event in events %}
-    <option value="{{ url_for('events.view_tasks', event_id=event.id) }}" {% if event.id == event_id %}selected{% endif %}>{{ event.title }}</option>
+    <option value="{{ url_for('tasks.view_tasks', event_id=event.id) }}" {% if event.id == event_id %}selected{% endif %}>{{ event.title }}</option>
     {% endfor %}
 </select>
 

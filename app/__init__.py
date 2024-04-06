@@ -3,12 +3,13 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from werkzeug.middleware.proxy_fix import ProxyFix
 from app.auth import auth_bp
-from app.admin import admin_bp, create_admin
+from app.admin import admin_bp
 from app.main import main_bp
 from app.events import events_bp
+from app.tasks import tasks_bp
+from app.badges import badges_bp
 from app.models import db
 from .config import load_config
-from logging.handlers import RotatingFileHandler
 from flask_wtf.csrf import CSRFProtect
 
 # Global variable to track the first request
@@ -54,6 +55,8 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(events_bp, url_prefix='/events')
+    app.register_blueprint(tasks_bp, url_prefix='/tasks')
+    app.register_blueprint(badges_bp, url_prefix='/badges')
     app.register_blueprint(main_bp)
 
     # Setup login manager

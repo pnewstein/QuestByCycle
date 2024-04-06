@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
-from app.models import db, User, Task, Event
-from app.forms import AddUserForm, EventForm, TaskForm
+from app.models import db, User
+from app.forms import AddUserForm
 from functools import wraps
 
 import traceback
