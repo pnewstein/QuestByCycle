@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, flash, redirect, url_for
+from flask import Blueprint, current_app, render_template, flash, redirect, url_for, jsonify, request
 from flask_login import login_required, current_user
-from .forms import AdvancedBadgeForm
+from .forms import BadgeForm
+from .utils import save_badge_image
 from .models import db, Task, Badge, UserTask, Event
 from werkzeug.utils import secure_filename
 import csv
@@ -9,12 +10,96 @@ import os
 badges_bp = Blueprint('badges', __name__, template_folder='templates')
 
 
-@badges_bp.route('/create_badge', methods=['GET', 'POST'])
+@badges_bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def create_badge():
-    form = AdvancedBadgeForm()
+    form = BadgeForm()
     if form.validate_on_submit():
-        # Implement badge creation logic
+        filename = None
+        if 'image' in request.files:
+            file = request.files['image']
+            if file.filename != '':
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                file.save(file_path)
+        new_badge = Badge(name=form.name.data, description=form.description.data, image=filename)
+        db.session.add(new_badge)
+        db.session.commit()
         flash('Badge created successfully!', 'success')
-        return redirect(url_for('badges_bp.manage_badges'))
+        return redirect(url_for('badges.list_badges'))
     return render_template('create_badge.html', form=form)
+
+
+@badges_bp.route('/badges', methods=['GET'])
+def get_badges():
+    badges = Badge.query.all()
+    badges_data = [{'id': badge.id, 'name': badge.name, 'description': badge.description, 'image': badge.image} for badge in badges]
+    return jsonify(badges=badges_data)
+
+
+@badges_bp.route('/badges/manage_badges', methods=['GET', 'POST'])
+@login_required
+def manage_badges():
+    if not current_user.is_admin:
+        flash('Access denied: Only administrators can manage badges.', 'danger')
+        return redirect(url_for('main.index'))
+
+    form = BadgeForm()
+    if form.validate_on_submit():
+        # Similar to how profile pictures are handled
+        if 'image' in request.files:
+            image_file = request.files['image']
+            if image_file and image_file.filename != '':
+                filename = save_badge_image(image_file)  # Your function to save the image and return the filename
+                # Assuming save_badge_image saves the file and returns a relative path to be stored in the database
+                new_badge = Badge(
+                    name=form.name.data,
+                    description=form.description.data,
+                    image=filename  # Store the filename or relative path in the database
+                )
+                db.session.add(new_badge)
+                db.session.commit()
+                flash('Badge added successfully.', 'success')
+            else:
+                flash('No file selected for upload.', 'error')
+        else:
+            flash('No file part in the request.', 'error')
+
+        return redirect(url_for('badges.manage_badges'))
+
+    badges = Badge.query.all()
+    return render_template('manage_badges.html', form=form, badges=badges)
+
+
+@badges_bp.route('/badges/update/<int:badge_id>', methods=['POST'])
+@login_required
+def update_badge(badge_id):
+    badge = Badge.query.get_or_404(badge_id)
+    # Process form data
+    badge.name = request.form.get('name')
+    badge.description = request.form.get('description')
+    # Handle file upload if included
+    if 'image' in request.files:
+        image_file = request.files['image']
+        if image_file.filename:
+            filename = secure_filename(image_file.filename)
+            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            image_file.save(filepath)
+            badge.image = filename
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Badge updated successfully'})
+
+
+@badges_bp.route('/badges/delete/<int:badge_id>', methods=['DELETE'])
+@login_required
+def delete_badge(badge_id):
+    if not current_user.is_admin:
+        return jsonify({'success': False, 'message': 'Permission denied'}), 403
+    try:
+        badge = Badge.query.get_or_404(badge_id)
+        db.session.delete(badge)
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Badge deleted successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Error deleting badge: {str(e)}'}), 500

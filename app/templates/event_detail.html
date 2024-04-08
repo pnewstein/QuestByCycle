@@ -17,10 +17,11 @@
             <p id="total-points">Total Completed Points: {{ total_points }}</p>
             <p>
                 {% if current_user.is_admin %}
-                    <a href="{{ url_for('tasks.add_task', event_id=event.id) }}" class="button">Add Task</a>
+                    <!-- Add a link to the advanced task configuration page here -->
+                    <a href="{{ url_for('events.manage_event_tasks', event_id=event.id) }}" class="button" style="margin-left: 10px;">Configure Tasks</a>
+                    <a href="{{ url_for('badges.manage_badges', event_id=event.id) }}" class="button" style="margin-left: 10px;">Configure Badges</a>
                 {% endif %}
             </p>
-
             <table class="table">
                 <thead>
                     <tr>

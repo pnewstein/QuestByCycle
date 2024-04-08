@@ -1,36 +1,249 @@
-<!-- manage_tasks.html -->
 {% extends "layout.html" %}
 
 {% block content %}
-<h1>Manage Tasks</h1>
+    <div id="eventData" data-event-id="{{ event.id }}"></div>
+    <div class="container">
+        <h2>Manage Tasks for "{{ event.title }}"</h2>
+        
+        <a href="{{ url_for('tasks.add_task', event_id=event.id) }}" class="button">Add Task</a>
 
-<div class="add-task-form">
-    <h2>Add New Task</h2>
-    <form method="POST" action="{{ url_for('tasks.manage_event_tasks' if event_id else 'tasks.manage_global_tasks', event_id=event_id if event_id else '') }}">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.title.label }}
-            {{ form.title(class="form-control") }}
+        <!-- Existing Tasks List -->
+        <div id="tasksList" class="tasks-section">
+            <h3>Existing Tasks</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Tips</th>
+                        <th>Points</th>
+                        <th>Completion Limit</th>
+                        <th>Enabled</th>
+                        <th>Verification Type</th>
+                        <th>Badge Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tasksBody">
+                    <!-- This section will be filled dynamically with JavaScript -->
+                </tbody>
+            </table>
         </div>
-        <div class="form-group">
-            {{ form.description.label }}
-            {{ form.description(class="form-control") }}
-        </div>
-        {{ form.submit(class="btn btn-primary") }}
-    </form>
-</div>
+    </div>
+    <script>
+        const eventId = document.getElementById('eventData').dataset.eventId;
+        const VerificationTypes = {
+            NOT_APPLICABLE: "Not Applicable",
+            QR_CODE: "QR Code",
+            PHOTO_UPLOAD: "Photo Upload",
+            DESTRUCTION_PHOTO: "Destruction Photo",
+            SELFIE: "Selfie",
+            SCREENSHOT: "Screenshot",
+            COMMENT: "Comment",
+            PHOTO_COMMENT: "Photo Upload and Comment",
+            MANUAL_REVIEW: "Manual Review",
+            YOUTUBE_URL: "Youtube URL",
+            URL: "URL"
+        };
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadBadges();
+            loadTasks(eventId);
+        });
 
-<!-- Task List -->
-<div class="task-list">
-    <h2>Existing Tasks</h2>
-    {% for task in tasks %}
-        <div class="task">
-            <h3>{{ task.title }}</h3>
-            <p>{{ task.description }}</p>
-            <!-- Add link to task submission and verification if needed -->
-        </div>
-    {% else %}
-        <p>No tasks available.</p>
-    {% endfor %}
-</div>
+        async function loadBadges() {
+            try {
+                const response = await fetch('/badges/badges');
+                if (!response.ok) throw new Error('Failed to fetch badges');
+                const data = await response.json();
+                // Assuming the endpoint returns an object with a badges array
+                badges = data.badges || [];
+            } catch (error) {
+                console.error('Error fetching badges:', error);
+            }
+        }
+
+        function addTask() {
+            // Collect task data from form
+            const formData = new FormData(document.getElementById('addTaskForm'));
+            
+            fetch(`/tasks/event/${eventId}/add_task`, { // Make sure 'eventId' is defined or fetched appropriately
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-Token': document.querySelector('input[name="csrf_token"]').value
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadTasks(); // Reload tasks to include the new one
+                } else {
+                    alert('Failed to add task');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+               
+        function editTask(taskId) {
+            const row = document.querySelector(`#task-${taskId}`);
+            
+            // Handle text and number inputs
+            const textAndNumberFields = [
+                {name: "title", type: "text"},
+                {name: "description", type: "textarea"},
+                {name: "tips", type: "textarea"},
+                {name: "points", type: "number"},
+                {name: "completion_limit", type: "number"},
+                {name: "badge_name", type: "text"},
+                {name: "badge_description", type: "textarea"}
+            ];
+            textAndNumberFields.forEach(field => {
+                const cell = row.querySelector(`.editable[data-name="${field.name}"]`);
+                if (cell) {
+                    const currentValue = cell.innerText.trim();
+                    cell.innerHTML = field.type === "textarea" ? `<textarea name="${field.name}">${currentValue}</textarea>` : `<input type="${field.type}" name="${field.name}" value="${currentValue}">`;
+            
+                }
+            });
+
+            // Handle boolean fields like 'enabled'
+            const enabledCell = row.querySelector(`.editable[data-name="enabled"]`);
+            const isEnabled = enabledCell.innerText.trim().toLowerCase() === "yes"; // Assuming the cell text is "Yes" for true values
+            enabledCell.innerHTML = `
+            <select name="enabled">
+                <option value="true" ${isEnabled ? 'selected' : ''}>Yes</option>
+                <option value="false" ${!isEnabled ? 'selected' : ''}>No</option>
+            </select>`;
+
+            // Handle enum fields like 'verification_type'
+            const verificationTypeCell = row.querySelector('.editable[data-name="verification_type"]');
+            const currentVerificationType = verificationTypeCell.innerText.trim();
+
+            const verificationTypeOptions = Object.entries(VerificationTypes).map(([key, value]) => {
+                const selected = (currentVerificationType === value) ? 'selected' : '';
+                return `<option value="${key}" ${selected}>${value}</option>`;
+            }).join('');
+
+            verificationTypeCell.innerHTML = `<select name="verification_type">${verificationTypeOptions}</select>`;
+
+            // Updating the edit button to a save button
+            const editButton = row.querySelector(`.edit-button`);
+            editButton.innerText = "Save";
+            editButton.onclick = () => saveTask(taskId);
+        }
+
+
+        function saveTask(taskId) {
+            const row = document.querySelector(`#task-${taskId}`);
+            let taskData = {};
+
+            // Collect inputs, selects, and textarea values
+            row.querySelectorAll('input, select, textarea').forEach(input => {  // Fixed line
+                let value = input.value;
+                if (input.name === 'badge_id' && value === '') {
+                    value = null; // Convert empty string to null for badge_id
+                }
+                taskData[input.name] = value;
+            });
+
+            fetch(`/tasks/task/${taskId}/update`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                body: JSON.stringify(taskData),  // Adjusted to directly use taskData object
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Task updated successfully.');
+                    loadTasks(eventId);
+                } else {
+                    alert('Failed to update task. Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error updating task:', error);
+                alert('Error updating task. Please check console for details.');
+            });
+        }
+
+
+        function loadTasks(eventId) {
+            fetch(`/tasks/event/${eventId}/tasks`, {
+                method: 'GET',
+                headers: {'Content-Type': 'application/json'},
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tasksBody = document.getElementById('tasksBody');
+                tasksBody.innerHTML = '';
+                data.tasks.forEach(task => {
+                    // Change badgeOptions to let because it will be modified
+                    let badgeOptions = '';
+
+                    // Add badge options, including marking the correct one as selected
+                    window.badges.forEach(badge => {
+                        const isSelected = task.badge_id === badge.id ? 'selected' : '';
+                        badgeOptions += `<option value="${badge.id}" ${isSelected}>${badge.name}</option>`;
+                    });
+
+                    const row = `
+                        <tr id="task-${task.id}">
+                            <td class="editable" data-name="title">${task.title}</td>
+                            <td class="editable" data-name="description">${task.description}</td>
+                            <td class="editable" data-name="tips">${task.tips || ''}</td>
+                            <td class="editable" data-name="points">${task.points}</td>
+                            <td class="editable" data-name="completion_limit">${task.completion_limit}</td>
+                            <td class="editable" data-name="enabled">${task.enabled ? 'Yes' : 'No'}</td>
+                            <td class="editable" data-name="verification_type">${task.verification_type || 'Not Applicable'}</td>
+                            <td>
+                                <select name="badge_id" class="editable-select" data-task-id="${task.id}">
+                                    <option value="">${task.badge_name}</option>
+                                    ${badgeOptions}
+                                </select>
+                            </td>
+                            <td>
+                                <button class="edit-button" onclick="editTask(${task.id})">Edit</button>
+                                <button onclick="deleteTask(${task.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                    tasksBody.innerHTML += row;
+                });
+            })
+            .catch(error => console.error('Error loading tasks:', error));
+        }
+
+
+
+        // Function for deleting a task
+        function deleteTask(taskId) {
+            fetch(`/tasks/task/${taskId}/delete`, {  // Use the correct path for your DELETE endpoint
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                },
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to delete task');
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert('Task deleted successfully');
+                    loadTasks(eventId);  // Reload tasks
+                } else {
+                    alert(`Failed to delete task: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to delete task. Please check the console for more details.');
+            });
+        }
+        </script>
+        
 {% endblock %}

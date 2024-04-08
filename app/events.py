@@ -45,7 +45,7 @@ def event_detail(event_id):
     has_joined = event in current_user.participated_events
 
     # Fetch tasks for this event; this includes all tasks, not just those completed
-    tasks = Task.query.filter_by(event_id=event_id).all()
+    tasks = Task.query.filter_by(event_id=event_id, enabled=True).all()
 
     # For each task, determine if the current user has any completion record
     user_tasks = UserTask.query.join(Task, UserTask.task_id == Task.id).filter(
@@ -111,8 +111,7 @@ def submit_task(task_id):
     return render_template('submit_task.html', form=form, task_id=task_id)
 
 
-# Rename the function to avoid conflict and more accurately represent its purpose
-@events_bp.route('/event/<int:event_id>/manage_tasks', methods=['GET', 'POST'])
+@events_bp.route('/<int:event_id>/manage_tasks', methods=['GET', 'POST'])
 @login_required
 def manage_event_tasks(event_id):
     event = Event.query.get_or_404(event_id)
@@ -121,7 +120,7 @@ def manage_event_tasks(event_id):
         flash('Access denied: Only administrators can manage tasks.', 'danger')
         return redirect(url_for('events.event_detail', event_id=event_id))
     
-    tasks = Task.query.filter_by(event_id=event_id, verified=False).all()
+    tasks = Task.query.filter_by(event_id=event_id).all()
     form = TaskForm()
 
     if request.method == 'POST':
