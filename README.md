@@ -47,9 +47,9 @@ BikeHunt is a Flask-based web application designed to engage and motivate the bi
 
 ```psql -U postgres```
 
-```\c databasename```
-
 ```CREATE DATABASE databasename;```
+
+```\c databasename```
 
 ```CREATE USER username WITH PASSWORD 'password';```
 

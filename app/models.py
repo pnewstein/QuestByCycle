@@ -2,15 +2,32 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from enum import Enum
+from sqlalchemy import Enum as SQLAlchemyEnum
 
 db = SQLAlchemy()
 
+
+class VerificationType(Enum):
+    NOT_APPLICABLE = "Not Applicable",
+    QR_CODE = "QR Code"
+    PHOTO_UPLOAD = "Photo Upload"
+    DESTRUCTION_PHOTO = ""
+    SELFIE = "Selfie"
+    SCREENSHOT = "Screenshot"
+    COMMENT = "Comment"
+    PHOTO_COMMENT = "Photo Upload and Comment"
+    MANUAL_REVIEW = "Manual Review"
+    YOUTUBE_URL = "Youtube URL"
+    URL = "URL"
+
+
 class Badge(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50))
-    description = db.Column(db.String(150))
-    image = db.Column(db.String(500))  # Path to the badge image file
-    tasks = db.relationship('Task', back_populates='badge')
+    name = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.String(150), nullable=True)
+    image = db.Column(db.String(500), nullable=True)
+    tasks = db.relationship('Task', backref='badge', lazy=True)
 
 user_badges = db.Table('user_badges',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
@@ -66,13 +83,15 @@ class Task(db.Model):
     completed = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     evidence_url = db.Column(db.String(500))
-    verified = db.Column(db.Boolean, default=False)
+    enabled = db.Column(db.Boolean, default=True)
+    verification_type = db.Column(SQLAlchemyEnum(VerificationType))
     verification_comment = db.Column(db.String(500), default="")
     event_id = db.Column(db.Integer, db.ForeignKey('event.id'))  # Make sure this line is within the class definition
     points = db.Column(db.Integer, default='')
     tips = db.Column(db.String(500), default='')
     completion_limit = db.Column(db.Integer, default=1)  # Limit for how many times a task can be completed
     user_tasks = db.relationship('UserTask', backref='task', lazy='dynamic')
+    category = db.Column(db.String(50), nullable=True)
     badge_id = db.Column(db.Integer, db.ForeignKey('badge.id'), nullable=True)  # Foreign key to Badge
     badge = db.relationship('Badge', back_populates='tasks', uselist=False)
 

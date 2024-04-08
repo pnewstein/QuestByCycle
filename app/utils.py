@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
 from app.forms import EventForm, TaskForm
-from .models import db, Task, Badge, UserTask, Event, User
+from .models import db, Task, Badge, UserTask, Event, User, ShoutBoardMessage
 from werkzeug.utils import secure_filename
 
 import uuid
@@ -68,3 +68,18 @@ def save_profile_picture(profile_picture_file):
     profile_picture_file.save(os.path.join(uploads_path, filename))
     return os.path.join(current_app.config['main']['UPLOAD_FOLDER'], filename)
 
+
+def save_badge_image(badge_image_file):
+    ext = badge_image_file.filename.rsplit('.', 1)[-1]
+    filename = secure_filename(f"{uuid.uuid4()}.{ext}")
+    # Specify the upload directory for badge images, which might be different from profile pictures
+    uploads_path = os.path.join(current_app.root_path, 'static', 'badge_images')
+    
+    if not os.path.exists(uploads_path):
+        os.makedirs(uploads_path)
+    
+    # Save the badge image file
+    badge_image_file.save(os.path.join(uploads_path, filename))
+    
+    # Return the relative path to the badge image for storing in the database
+    return os.path.join('badge_images', filename)
