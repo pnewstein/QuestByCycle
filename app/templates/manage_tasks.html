@@ -6,7 +6,17 @@
         <h2>Manage Tasks for "{{ event.title }}"</h2>
         
         <a href="{{ url_for('tasks.add_task', event_id=event.id) }}" class="button">Add Task</a>
-
+    
+        <!-- Add a section for importing tasks from a CSV file -->
+        <div class="import-tasks-form">
+            <h3>Import Tasks from CSV</h3>
+            <h4>Import these headers in this order:category, title,	description, tips, points, completion_limit, verification_type, badge_name, badge_description</h4>
+            <form id="importTasksForm" method="post" enctype="multipart/form-data">
+                <input type="file" name="tasks_csv" accept=".csv">
+                <button type="button" onclick="importTasks()">Import</button>
+            </form>
+    
+        </div>
         <!-- Existing Tasks List -->
         <div id="tasksList" class="tasks-section">
             <h3>Existing Tasks</h3>
@@ -217,7 +227,6 @@
         }
 
 
-
         // Function for deleting a task
         function deleteTask(taskId) {
             fetch(`/tasks/task/${taskId}/delete`, {  // Use the correct path for your DELETE endpoint
@@ -244,6 +253,37 @@
                 alert('Failed to delete task. Please check the console for more details.');
             });
         }
-        </script>
+
+        function importTasks() {
+            const form = document.getElementById('importTasksForm');
+            const formData = new FormData(form);
+            
+            fetch(`/tasks/event/${eventId}/import_tasks`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && data.redirectUrl) {
+                    alert('Tasks imported successfully');
+                    loadTasks(eventId); // Reload the tasks list
+                } else {
+                    alert('Failed to import tasks: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error importing tasks:', error);
+            });
+        }
+    </script>
         
 {% endblock %}

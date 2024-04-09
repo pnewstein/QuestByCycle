@@ -1,11 +1,12 @@
 from flask import Blueprint, jsonify, render_template, request, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
-from app.utils import update_user_score, award_badge, revoke_badge, save_badge_image
+from app.utils import update_user_score, award_badge, revoke_badge, save_badge_image, save_submission_image
 from app.forms import EventForm, TaskForm, TaskImportForm, TaskSubmissionForm
-from .models import db, Task, Badge, UserTask, Event, VerificationType
+from .models import db, Task, Badge, UserTask, Event, VerificationType, TaskSubmission
 from werkzeug.utils import secure_filename
 from sqlalchemy.exc import IntegrityError
 
+import csv
 import os
 
 tasks_bp = Blueprint('tasks', __name__, template_folder='templates')
@@ -30,17 +31,6 @@ def create_task(event_id):
         flash('Task created successfully.', 'success')
         return redirect(url_for('tasks.view_tasks', event_id=event_id))
     return render_template('create_task.html', form=form, event_id=event_id)
-
-
-@tasks_bp.route('/import_tasks', methods=['GET', 'POST'])
-@login_required
-def import_tasks():
-    form = TaskImportForm()
-    if form.validate_on_submit():
-        # Implement CSV import logic
-        flash('Tasks imported successfully!', 'success')
-        return redirect(url_for('tasks.view_tasks'))
-    return render_template('import_tasks.html', form=form)
 
 
 @tasks_bp.route('/event/<int:event_id>/add_task', methods=['GET', 'POST'])
@@ -148,25 +138,58 @@ def adjust_task_completion(task_id, action):
         return jsonify(success=False, error=str(e))
 
 
-
-@tasks_bp.route('/submit_task/<int:task_id>', methods=['GET', 'POST'])
+@tasks_bp.route('/task/<int:task_id>/submit', methods=['POST'])
 @login_required
-def submit_task(task_id):
-    task = Task.query.get_or_404(task_id)
-    form = TaskSubmissionForm()
+def submit_task_detail(task_id):
+    if 'image' not in request.files:
+        return jsonify({'success': False, 'message': 'File part missing'})
+    
+    image_file = request.files['image']
+    if image_file.filename == '':
+        return jsonify({'success': False, 'message': 'No file selected'})
 
-    if form.validate_on_submit():
-        filename = secure_filename(form.evidence.data.filename)
-        filepath = os.path.join('uploads', filename)
-        form.evidence.data.save(os.path.join(current_app.root_path, 'static', filepath))
+    # Generate unique filename and save the image
+    relative_path = save_submission_image(image_file)
+    
+    # Save submission details
+    new_submission = TaskSubmission(
+        task_id=task_id,
+        user_id=current_user.id,
+        image_url=url_for('static', filename=relative_path),
+        comment=request.form.get('comment', '')
+    )
+    db.session.add(new_submission)
 
-        task.evidence_url = filepath
+    try:
+        adjust_completion_result = adjust_task_completion_logic(task_id, "increment")
+        if not adjust_completion_result['success']:
+            raise Exception(adjust_completion_result['message'])
+        
         db.session.commit()
+        return jsonify({'success': True, 'message': 'Submission saved successfully and task completion incremented.'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Failed to save submission or increment task completion: {str(e)}'})
 
-        flash('Task submitted successfully!', 'success')
-        return redirect(url_for('events.event_detail', event_id=task.event_id))
+def adjust_task_completion_logic(task_id, action):
+    # This function is a simplified version of adjust_task_completion to be used internally
+    # It mirrors the logic of the existing adjust_task_completion, without handling request/response directly
+    try:
+        task = Task.query.get_or_404(task_id)
+        user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
 
-    return render_template('submit_task.html', form=form, task_id=task_id)
+        if action == "increment":
+            if not user_task:
+                user_task = UserTask(user_id=current_user.id, task_id=task.id, completions=1, points_awarded=task.points, completed=True)
+                db.session.add(user_task)
+            elif user_task.completions < task.completion_limit:
+                user_task.completions += 1
+                user_task.points_awarded += task.points
+                user_task.completed = True
+        
+        return {'success': True, 'message': 'Completion adjusted successfully.'}
+    except Exception as e:
+        return {'success': False, 'message': str(e)}
 
 
 @tasks_bp.route('/<int:event_id>/view_tasks')
@@ -178,11 +201,27 @@ def view_tasks(event_id):
     return render_template('view_tasks.html', event=event, tasks=tasks, events=all_events)
 
 
-@tasks_bp.route('/tasks/<int:task_id>', methods=['GET'])
-@login_required
+@tasks_bp.route('/tasks/detail/<int:task_id>')
 def task_detail(task_id):
+    # Assuming Task model has a relationship to a Badge model
     task = Task.query.get_or_404(task_id)
-    return render_template('task_detail.html', task=task)
+    badge_name = task.badge.name if task.badge else 'None'
+    
+    total_completions = db.session.query(db.func.sum(UserTask.completions)).filter_by(task_id=task_id).scalar() or 0
+
+    # Prepare the task data, including the badge name
+    task_data = {
+        'title': task.title,
+        'description': task.description,
+        'tips': task.tips or 'No tips available',
+        'points': task.points,
+        'completion_limit': task.completion_limit,
+        'enabled': task.enabled,
+        'verification_type': task.verification_type.name or 'Not Applicable',
+        'badge_name': badge_name,
+        'total_completions': total_completions,
+    }
+    return jsonify(task_data)
 
 
 @tasks_bp.route('/task/<int:task_id>/edit', methods=['GET'])
@@ -289,3 +328,91 @@ def get_tasks_for_event(event_id):
     
     return jsonify(tasks=tasks_data)
 
+@tasks_bp.route('/event/<int:event_id>/import_tasks', methods=['POST'])
+@login_required
+def import_tasks(event_id):
+    if 'tasks_csv' not in request.files:
+        return jsonify(success=False, message="No file part"), 400
+    
+    file = request.files['tasks_csv']
+    if file.filename == '':
+        return jsonify(success=False, message="No selected file"), 400
+    
+    if file:
+        # Ensure the target directory exists
+        upload_dir = current_app.config['TASKCSV']
+        os.makedirs(upload_dir, exist_ok=True)  # This will create the directory if it doesn't exist
+        
+        filepath = os.path.join(upload_dir, secure_filename(file.filename))
+        file.save(filepath)
+
+        imported_badges = []
+        with open(filepath, mode='r', encoding='utf-8') as csv_file:
+            tasks_data = csv.DictReader(csv_file)
+            for task_info in tasks_data:
+                badge = Badge.query.filter_by(name=task_info['badge_name']).first()
+                if not badge:
+                    badge = Badge(
+                        name=task_info['badge_name'],
+                        description=task_info['badge_description'],
+                    )
+                    db.session.add(badge)
+                    db.session.flush()  # to get badge.id for new badges
+                    imported_badges.append(badge.id)
+
+                new_task = Task(
+                    category=task_info['category'],
+                    title=task_info['title'],
+                    description=task_info['description'],
+                    tips=task_info['tips'],
+                    points=int(task_info['points'].replace(',', '')),  # Removing commas in numbers
+                    completion_limit=int(task_info['completion_limit']),
+                    verification_type=task_info['verification_type'],
+                    badge_id=badge.id,
+                    event_id=event_id
+                )
+                db.session.add(new_task)
+            
+            db.session.commit()
+            os.remove(filepath)  # Clean up the uploaded file
+        
+        # Skip adding badge images for now.
+        return jsonify(success=True, redirectUrl=url_for('events.manage_event_tasks', event_id=event_id))
+
+
+    return jsonify(success=False, message="Invalid file"), 400
+
+
+@tasks_bp.route('/event/<int:event_id>/upload_badge_images', methods=['GET', 'POST'])
+@login_required
+def upload_badge_images(event_id):
+    badge_ids = request.args.get('badge_ids', '')
+    if request.method == 'POST':
+        for badge_id in badge_ids.split(','):
+            file = request.files.get(f'badge_image_{badge_id}', None)
+            if file and file.filename != '':
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(current_app.config['TASKCSV'], filename)
+                file.save(filepath)
+                
+                badge = Badge.query.get(badge_id)
+                if badge:
+                    badge.image = filepath
+                    db.session.commit()
+
+        flash('Badge images updated successfully', 'success')
+        return redirect(url_for('tasks.view_tasks', event_id=event_id))
+    
+    badge_ids = [int(id_) for id_ in badge_ids.split(',') if id_.isdigit()]
+    badges = Badge.query.filter(Badge.id.in_(badge_ids)).all()
+    return render_template('upload_badge_images.html', badges=badges, event_id=event_id)
+
+
+@tasks_bp.route('/task/<int:task_id>/submissions')
+def get_task_submissions(task_id):
+    submissions = TaskSubmission.query.filter_by(task_id=task_id).all()
+    submissions_data = [{
+        'image_url': submission.image_url,
+        'comment': submission.comment,
+    } for submission in submissions]
+    return jsonify(submissions_data)

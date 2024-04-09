@@ -59,6 +59,10 @@ BikeHunt is a Flask-based web application designed to engage and motivate the bi
 
 ```GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO username```
 
+```ALTER TABLE badge ALTER COLUMN name TYPE VARCHAR(255);```
+
+```ALTER TABLE badge ALTER COLUMN description TYPE VARCHAR(500);```
+
 ```ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO username;```
 
 ```\q```

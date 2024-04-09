@@ -12,7 +12,6 @@ class VerificationType(Enum):
     NOT_APPLICABLE = "Not Applicable",
     QR_CODE = "QR Code"
     PHOTO_UPLOAD = "Photo Upload"
-    DESTRUCTION_PHOTO = ""
     SELFIE = "Selfie"
     SCREENSHOT = "Screenshot"
     COMMENT = "Comment"
@@ -24,8 +23,8 @@ class VerificationType(Enum):
 
 class Badge(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    description = db.Column(db.String(150), nullable=True)
+    name = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.String(500), nullable=True)
     image = db.Column(db.String(500), nullable=True)
     tasks = db.relationship('Task', backref='badge', lazy=True)
 
@@ -130,3 +129,15 @@ class ShoutBoardLike(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     __table_args__ = (db.UniqueConstraint('message_id', 'user_id', name='_message_user_uc'),)
+
+
+class TaskSubmission(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    image_url = db.Column(db.String(500))
+    comment = db.Column(db.String(500))
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+
+    task = db.relationship('Task', backref='submissions')
+    user = db.relationship('User', backref='task_submissions')

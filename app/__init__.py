@@ -32,6 +32,8 @@ def create_app():
 
     # Apply configurations from the TOML file
     app.config['UPLOAD_FOLDER'] = app.config['main']['UPLOAD_FOLDER']
+    app.config['VERIFICATIONS'] = app.config['main']['VERIFICATIONS']
+    app.config['TASKCSV'] = app.config['main']['TASKCSV']
     app.config['SQLALCHEMY_ECHO'] = app.config['main']['SQLALCHEMY_ECHO']
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config['flask']['SQLALCHEMY_DATABASE_URI']
     app.config['DEBUG'] = app.config['flask']['DEBUG']
