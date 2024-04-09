@@ -146,3 +146,26 @@ def view_tasks(event_id):
     tasks = Task.query.filter_by(event_id=event.id).all()
     all_events = Event.query.all()  # Fetch all events to populate the dropdown
     return render_template('view_tasks.html', event=event, tasks=tasks, events=all_events)
+
+
+@events_bp.route('/delete_event/<int:event_id>', methods=['POST'])
+@login_required
+def delete_event(event_id):
+    if not current_user.is_admin:
+        flash('Access denied: Only administrators can delete events.', 'danger')
+        return redirect(url_for('main.index'))
+
+    event = Event.query.get_or_404(event_id)
+    try:
+        # Optional: Delete related data (e.g., tasks) if necessary
+        for task in event.tasks:
+            db.session.delete(task)
+        
+        db.session.delete(event)
+        db.session.commit()
+        flash('Event deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'An error occurred while deleting the event: {e}', 'error')
+    
+    return redirect(url_for('admin.admin_dashboard'))

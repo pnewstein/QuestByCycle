@@ -83,3 +83,16 @@ def save_badge_image(badge_image_file):
     
     # Return the relative path to the badge image for storing in the database
     return os.path.join('badge_images', filename)
+
+
+def save_submission_image(submission_image_file):
+    ext = submission_image_file.filename.rsplit('.', 1)[-1]
+    filename = secure_filename(f"{uuid.uuid4()}.{ext}")
+    uploads_dir = os.path.join(current_app.static_folder, 'images', 'verifications')
+    
+    # Ensure the upload directory exists
+    os.makedirs(uploads_dir, exist_ok=True)
+    
+    full_path = os.path.join(uploads_dir, filename)
+    submission_image_file.save(full_path)
+    return os.path.join('images', 'verifications', filename)

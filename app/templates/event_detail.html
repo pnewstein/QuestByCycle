@@ -29,14 +29,12 @@
                         <th>Description</th>
                         <th>Points</th>
                         <th>Badge</th>
-                        <th>Actions</th>
-                        <th>Completions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for task in tasks %}
                     <tr>
-                        <td>{{ task.title }}</td>
+                        <td><a href="#" onclick="openTaskDetailModal('{{ task.id }}')">{{ task.title }}</a></td>
                         <td>
                             {{ task.description }}
                             {% if task.tips %}
@@ -53,18 +51,6 @@
                                 None
                             {% endif %}
                         </td>
-                        <td>
-                            <form action="{{ url_for('tasks.adjust_task_completion', task_id=task.id, action='increment') }}" method="post">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                <button type="button" id="increment-{{ task.id }}" class="button" onclick="adjustTaskCompletion('{{ task.id }}', 'increment')" {{ 'disabled' if user_tasks_map.get(task.id, {'completions': 0}).completions >= task.completion_limit else '' }}>+</button>
-                            </form>
-                            <form action="{{ url_for('tasks.adjust_task_completion', task_id=task.id, action='decrement') }}" method="post">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                <button type="button" id="decrement-{{ task.id }}" class="button" onclick="adjustTaskCompletion('{{ task.id }}', 'decrement')" {{ 'disabled' if user_tasks_map.get(task.id, {'completions': 0}).completions <= 0 else '' }}>-</button>
-                            </form>
-                        </td>
-                        <td><span id="completion-count-{{ task.id }}">{{ user_tasks_map[task.id].completions if task.id in user_tasks_map else 0 }}</span>
-                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -78,37 +64,274 @@
     </div>
 </div>
 
-<div id="modal" class="modal">
+<div id="modal" style="display:none;" class="modal">
     <div class="modal-content">
         <span class="close-button">&times;</span>
         <p id="modal-text">No tips for now.</p>
     </div>
 </div>
+<!-- Task Detail Modal Structure -->
+<div id="taskDetailModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeTaskDetailModal()">&times;</span>
+        <h2 id="modalTaskTitle">Task Title</h2>
+        <p id="modalTaskDescription">Description</p>
+        <p id="modalTaskTips">Tips</p>
+        <p id="modalTaskPoints">Points</p>
+        <p id="modalTaskCompletionLimit">Completion Limit</p>
+        <p id="modalTaskEnabled">Enabled</p>
+        <p id="modalTaskVerificationType">Verification Type</p>
+        <p id="modalTaskBadgeName">Badge Name</p>
+        <!-- Actions and Completions placeholders -->
+        <div id="modalTaskActions"></div>
+        <p id="modalTaskCompletions">Total Completions: </p>
 
+        <!-- Inside the task detail modal, after the submission form -->
+        <div id="submissionCarousel" class="carousel slide" data-ride="carousel">
+            <div class="carousel-inner" id="carouselItems">
+                <!-- Carousel items will be added here dynamically -->
+            </div>
+            <a class="carousel-control-prev" href="#submissionCarousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#submissionCarousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+            </a>
+        </div>
+    </div>
+</div>
 <script>
-    // Get the modal
-    var modal = document.getElementById("modal");
-    
-    // Get the <span> element that closes the modal
-    var span = document.getElementsByClassName("close-button")[0];
-    
-    // Function to open the modal with specific text
-    function showModal(text) {
-        document.getElementById("modal-text").innerHTML = text;
-        modal.style.display = "block";
+    function incrementCompletion(taskId) {
+        // Example fetch request to increment task completions
+        fetch(`/tasks/adjust_completion/${taskId}/increment`, {
+            method: 'POST',
+            headers: {
+                // Ensure to include the CSRF token in your request headers if you are using CSRF protection
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}) // You might not need to send any specific data for the action, but include CSRF token if required
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Update UI based on response
+            if (data.success) {
+                // Update total completions in the modal
+                document.getElementById('modalTaskCompletions').innerText = `Total Completions: ${data.new_completions_count}`;
+
+                // Update total points in the modal, assuming data.total_points is the updated points value
+                document.getElementById('total-points').innerText = `Total Completed Points: ${data.total_points}`;
+                // Optionally, update other parts of the UI to reflect the new completions count
+            } else {
+                console.error('Increment failed:', data.error);
+            }
+        })
+        .catch(error => console.error('Error incrementing task completions:', error));
     }
-    
-    // When the user clicks on <span> (x), close the modal
-    span.onclick = function() {
-        modal.style.display = "none";
+
+
+    function decrementCompletion(taskId) {
+        // Example fetch request to decrement task completions
+        fetch(`/tasks/adjust_completion/${taskId}/decrement`, {
+            method: 'POST',
+            headers: {
+                // If you are using CSRF protection, ensure to include the CSRF token in your request headers
+                'X-CSRFToken':  document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}) // You might not need to send any data for the action, but include CSRF token if needed
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Update UI based on response
+            if (data.success) {
+                // Update total completions in the modal
+                document.getElementById('modalTaskCompletions').innerText = `Total Completions: ${data.new_completions_count}`;
+
+                // Update total points in the modal, assuming data.total_points is the updated points value
+                document.getElementById('total-points').innerText = `Total Completed Points: ${data.total_points}`;
+
+                // Optionally, you might want to update other parts of the UI to reflect the new completions count
+            } else {
+                console.error('Decrement failed:', data.error);
+            }
+        })
+        .catch(error => console.error('Error decrementing task completions:', error));
     }
-    
-    // When the user clicks anywhere outside of the modal, close it
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
+
+</script>
+<script>
+    // Function to open the task detail modal
+    function openTaskDetailModal(taskId) {
+        console.log("Opening task detail modal for task ID:", taskId); // Debugging
+
+        // Fetch task details from the server
+        fetch(`/tasks/tasks/detail/${taskId}`)
+        .then(response => response.ok ? response.json() : Promise.reject('Failed to load task details'))
+        .then(task => {
+            // Populate modal with task details
+            populateTaskDetails(task, taskId);
+
+            // Fetch and display submissions
+            fetchSubmissions(taskId);
+
+            // Display the modal
+            document.getElementById('taskDetailModal').style.display = 'block';
+        })
+        .catch(error => console.error('Failed to fetch task details:', error));
+    }
+
+    // Function to populate task details in the modal
+    function populateTaskDetails(task, taskId) {    
+            // Populate modal with task details
+            document.getElementById('modalTaskTitle').innerText = task.title;
+            document.getElementById('modalTaskDescription').innerText = task.description;
+            document.getElementById('modalTaskTips').innerText = task.tips;
+            document.getElementById('modalTaskPoints').innerText = `Points: ${task.points}`;
+            document.getElementById('modalTaskCompletionLimit').innerText = `Completion Limit: ${task.completion_limit}`;
+            document.getElementById('modalTaskEnabled').innerText = `Enabled: ${task.enabled ? 'Yes' : 'No'}`;
+            document.getElementById('modalTaskVerificationType').innerText = `Verification Type: ${task.verification_type}`;
+            document.getElementById('modalTaskBadgeName').innerText = `Badge: ${task.badge_name}`;
+
+            // Actions HTML updated to include form for submission instead of increment/decrement buttons
+            const submissionFormHTML = `
+            <form id="taskSubmissionForm" onsubmit="submitTaskDetails(event, task.id)">
+                <input type="file" id="imageUpload" name="image" accept="image/*" required>
+                <textarea id="comment" name="comment" placeholder="Enter a comment..."></textarea>
+                <button type="submit">Submit</button>
+            </form>
+        `;
+            document.getElementById('modalTaskActions').innerHTML = submissionFormHTML;
+            document.getElementById('modalTaskCompletions').innerText = `Total Completions: ${task.total_completions}`;
+            setupSubmissionForm(taskId);
+    }
+
+    // Function to fetch and display submissions in the carousel
+    function fetchSubmissions(taskId) {
+        fetch(`/tasks/task/${taskId}/submissions`)
+        .then(response => response.ok ? response.json() : Promise.reject('Failed to load submissions'))
+        .then(submissions => {
+            const carouselItems = document.getElementById('carouselItems');
+            carouselItems.innerHTML = ''; // Clear existing carousel items
+            submissions.forEach((submission, index) => {
+                const imageUrl = submission.image_url; // No need to modify
+                const item = document.createElement('div');
+                item.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+                item.innerHTML = `
+                    <img src="${imageUrl}" class="d-block w-100" alt="Submission Image" style="max-height: 200px;">
+                    <div class="carousel-caption d-none d-md-block">
+                        <p>${submission.comment}</p>
+                    </div>
+                `;
+                carouselItems.appendChild(item);
+            });
+        })
+        .catch(error => console.error('Failed to fetch submissions:', error));
+    }
+
+    // Function to set up and handle the task submission form
+    function setupSubmissionForm(taskId) {
+        const submissionForm = document.getElementById('taskSubmissionForm');
+        if (submissionForm) {
+            submissionForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                // Directly pass taskId to ensure it's not lost
+                submitTaskDetails(event, taskId);
+            });
+        } else {
+            console.error("Unable to find submission form.");
         }
     }
+
+
+// Adjusted to correctly receive the event and taskId parameters
+function submitTaskDetails(event, taskId) {
+    event.preventDefault(); // Prevent the default form submission
+    console.log("Submitting for task ID:", taskId);
+
+    const form = event.target; // Correctly referencing the form from the event
+    const formData = new FormData(form);
+
+    fetch(`/tasks/task/${taskId}/submit`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+        headers: {
+            'X-CSRFToken': getCsrfToken(),
+        // Additional headers might be needed depending on server-side requirements
+        }
+        // Additional headers might be needed depending on server-side requirements
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Submission successful');
+            closeTaskDetailModal();
+        } else {
+            alert('Submission failed: ' + data.message);
+        }
+    })
+    .catch(error => alert('Error during submission: ' + error));
+}
+
+    // Function to extract and return CSRF token
+    function getCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    }
+
+    // Flash message implementation
+    function flashMessage(message, type) {
+        console.log(`Flash message (${type}): ${message}`);
+    }
+        
+    // Function to close the task detail modal
+    function closeTaskDetailModal() {
+        document.getElementById('taskDetailModal').style.display = 'none';
+    }
+    
+    // Close the modal if the user clicks outside of it
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('taskDetailModal')) {
+            closeTaskDetailModal();
+        }
+    }
+    </script>
+    <script>
+        // Get the modal
+        var modal = document.getElementById("modal");
+        
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close-button")[0];
+        
+        // Function to open the modal with specific text
+        function showModal(text) {
+            document.getElementById("modal-text").innerHTML = text;
+            modal.style.display = "block";
+        }
+        
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+        
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
     </script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -136,5 +359,5 @@
             })
             .catch(error => console.error('Error:', error));
         }
-        </script>
+    </script>
 {% endblock %}

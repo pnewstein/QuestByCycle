@@ -103,3 +103,25 @@ def delete_badge(badge_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': f'Error deleting badge: {str(e)}'}), 500
+
+
+@badges_bp.route('/event/<int:event_id>/upload_badge_images', methods=['GET', 'POST'])
+@login_required
+def upload_badge_images(event_id):
+    badge_ids = request.args.get('badge_ids', '').split(',')
+    badges = Badge.query.filter(Badge.id.in_(badge_ids)).all()
+    
+    if request.method == 'POST':
+        for badge in badges:
+            file = request.files.get(f'badge_image_{badge.id}')
+            if file and file.filename:
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
+                badge.image = filepath
+                db.session.commit()
+                
+        flash('Badge images updated successfully', 'success')
+        return redirect(url_for('badges.manage_badges'))
+    
+    return render_template('upload_badge_images.html', badges=badges, event_id=event_id)

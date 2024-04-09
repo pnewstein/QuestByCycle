@@ -1,5 +1,7 @@
 [main]
 UPLOAD_FOLDER = "images"
+VERIFICATIONS = "verifications"
+TASKCSV = "csv"
 SQLALCHEMY_ECHO = true
 
 [encryption]

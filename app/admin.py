@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
-from app.models import db, User
+from app.models import db, User, Event
 from app.forms import AddUserForm
 from functools import wraps
 
@@ -57,12 +57,14 @@ def create_admin(app):
 
 
 # Function to sign in to the admin dashboard
-@admin_bp.route('/admin/admin_dashboard')
+@admin_bp.route('/admin_dashboard')
 @login_required
 def admin_dashboard():
     if not current_user.is_admin:
-        return redirect(url_for('main.index'))  # Adjust the redirect as appropriate
-    return render_template('admin_dashboard.html')
+        return redirect(url_for('main.index'))
+
+    events = Event.query.all()  # Retrieve all events from the database
+    return render_template('admin_dashboard.html', events=events)
 
 
 # ADMIN USER MANAGEMENT #
