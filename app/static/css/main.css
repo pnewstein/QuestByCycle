@@ -524,6 +524,49 @@ footer {
 @media only screen and (max-width: 768px) {
     body, button, a, input[type="submit"], .dropbtn {
         /* Increase font size for better legibility on small screens */
-        font-size: 16px; /* Adjust size as needed for your design */
+        font-size: 48px; /* Adjust size as needed for your design */
     }
+}
+
+.carousel-item img {
+    width: 100%; /* Ensures the image takes the full width of the carousel */
+    height: 500px; /* Sets a fixed height for the images */
+    object-fit: scale-down; /* Ensures the image covers the area without distorting aspect ratio */
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" fill="%23000" viewBox="0 0 8 8"%3E%3Cpath d="M4.5 0L3 1.5 5.5 4 3 6.5 4.5 8l4-4-4-4z"/%3E%3C/svg%3E');
+}
+
+.carousel-control-prev-icon {
+    transform: scaleX(-1);
+}
+
+.carousel-caption {
+    background: rgba(0, 0, 0, 0.5); /* Make text more readable */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 10px; /* Add padding */
+    text-align: center; /* Center text */
+    color:#d6e9c6;
+    size: 25px;
+}
+
+.social-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.social-button svg {
+    fill: #fff; /* White color icon */
+    width: 24px;
+    height: 24px;
+}
+
+.social-button:hover svg {
+    fill: #ccc; /* Light grey on hover */
 }
