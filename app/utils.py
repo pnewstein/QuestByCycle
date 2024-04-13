@@ -12,50 +12,78 @@ MAX_POINTS_INT = 2**63 - 1
 
 
 def update_user_score(user_id):
-    user = User.query.get(user_id)
-    total_points = sum(task.points_awarded for task in user.user_tasks)
-    user.score = min(total_points, MAX_POINTS_INT)
-    db.session.commit()
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            print(f"No user found with ID {user_id}")
+            return False
+
+        # Calculate the total points awarded to the user
+        total_points = sum(task.points_awarded for task in user.user_tasks if task.points_awarded is not None)
+
+        # Update user score, ensuring it doesn't exceed a predefined maximum
+        user.score = min(total_points, MAX_POINTS_INT)
+
+        # Commit changes to the database
+        db.session.commit()
+        print(f"Updated user score for user ID {user_id} to {user.score}")
+        return True
+    except Exception as e:
+        db.session.rollback()  # Rollback in case of any exception
+        print(f"Failed to update score for user ID {user_id}: {e}")
+        return False
 
 
 def award_badge(user_id):
     user = User.query.get(user_id)
     completed_tasks = UserTask.query.filter_by(user_id=user_id, completions=1).all()
 
-    for user_task in completed_tasks:
-        task = Task.query.get(user_task.task_id)
-        if task.badge and task.badge not in user.badges:
-            user.badges.append(task.badge)
-            shout_message = ShoutBoardMessage(message=f"{current_user.username} has just earned the {task.badge.name} badge!", user_id=user_id)
-            db.session.add(shout_message)
-            db.session.commit()
-            flash(f"Badge '{task.badge.name}' awarded for completing task '{task.title}'.")
-
+    try:
+        for user_task in completed_tasks:
+            task = Task.query.get(user_task.task_id)
+            if task.badge and task.badge not in user.badges:
+                user.badges.append(task.badge)
+                shout_message = ShoutBoardMessage(message=f"{current_user.username} has just earned the {task.badge.name} badge!", user_id=user_id)
+                db.session.add(shout_message)
+                db.session.commit()
+                flash(f"Badge '{task.badge.name}' awarded for completing task '{task.title}'.")
+    except Exception as e:
+        db.session.rollback()  # Rollback in case of any exception
+        print(f"Failed to update badge for user ID {user_id}: {e}")
+        return False
 
 def award_badges(user_id):
     user = User.query.get_or_404(user_id)
-    for task in user.user_tasks:
-        if task.completed and task.task.badge_id:  # Assuming task links to UserTask which links to Task
-            badge = Badge.query.get(task.task.badge_id)
-            if badge and badge not in user.badges:
-                user.badges.append(badge)
-    db.session.commit()
-    flash('Badges updated based on completed tasks.', 'success')
-
+    try:
+        for task in user.user_tasks:
+            if task.completed and task.task.badge_id:  # Assuming task links to UserTask which links to Task
+                badge = Badge.query.get(task.task.badge_id)
+                if badge and badge not in user.badges:
+                    user.badges.append(badge)
+        db.session.commit()
+        flash('Badges updated based on completed tasks.', 'success')
+    except Exception as e:
+        db.session.rollback()  # Rollback in case of any exception
+        print(f"Failed to update badges for user ID {user_id}: {e}")
+        return False
 
 
 def revoke_badge(user_id):
     user = User.query.get(user_id)
-
     completed_tasks = UserTask.query.filter_by(user_id=user_id, completions=0).all()
-    for user_task in completed_tasks:
 
-        task = Task.query.get(user_task.task_id)
-        if task.badge and task.badge in user.badges:
-            user.badges.remove(task.badge)
-            db.session.commit()
-            flash(f"Badge '{task.badge.name}' revoked as the task '{task.title}' is no longer completed.", 'info')
+    try:
+        for user_task in completed_tasks:
 
+            task = Task.query.get(user_task.task_id)
+            if task.badge and task.badge in user.badges:
+                user.badges.remove(task.badge)
+                db.session.commit()
+                flash(f"Badge '{task.badge.name}' revoked as the task '{task.title}' is no longer completed.", 'info')
+    except Exception as e:
+        db.session.rollback()  # Rollback in case of any exception
+        print(f"Failed to revoke badge for user ID {user_id}: {e}")
+        return False
 
 def save_profile_picture(profile_picture_file):
     ext = profile_picture_file.filename.rsplit('.', 1)[-1]

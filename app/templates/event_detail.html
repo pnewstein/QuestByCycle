@@ -120,76 +120,6 @@
     </div>
 </div>
 <script>
-    function incrementCompletion(taskId) {
-        // Example fetch request to increment task completions
-        fetch(`/tasks/adjust_completion/${taskId}/increment`, {
-            method: 'POST',
-            headers: {
-                // Ensure to include the CSRF token in your request headers if you are using CSRF protection
-                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({}) // You might not need to send any specific data for the action, but include CSRF token if required
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Update UI based on response
-            if (data.success) {
-                // Update total completions in the modal
-                document.getElementById('modalTaskCompletions').innerText = `Total Completions: ${data.new_completions_count}`;
-
-                // Update total points in the modal, assuming data.total_points is the updated points value
-                document.getElementById('total-points').innerText = `Total Completed Points: ${data.total_points}`;
-                // Optionally, update other parts of the UI to reflect the new completions count
-            } else {
-                console.error('Increment failed:', data.error);
-            }
-        })
-        .catch(error => console.error('Error incrementing task completions:', error));
-    }
-
-
-    function decrementCompletion(taskId) {
-        // Example fetch request to decrement task completions
-        fetch(`/tasks/adjust_completion/${taskId}/decrement`, {
-            method: 'POST',
-            headers: {
-                // If you are using CSRF protection, ensure to include the CSRF token in your request headers
-                'X-CSRFToken':  document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({}) // You might not need to send any data for the action, but include CSRF token if needed
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Update UI based on response
-            if (data.success) {
-                // Update total completions in the modal
-                document.getElementById('modalTaskCompletions').innerText = `Total Completions: ${data.new_completions_count}`;
-
-                // Update total points in the modal, assuming data.total_points is the updated points value
-                document.getElementById('total-points').innerText = `Total Completed Points: ${data.total_points}`;
-
-                // Optionally, you might want to update other parts of the UI to reflect the new completions count
-            } else {
-                console.error('Decrement failed:', data.error);
-            }
-        })
-        .catch(error => console.error('Error decrementing task completions:', error));
-    }
-
-</script>
-<script>
     document.addEventListener("DOMContentLoaded", function() {
         document.querySelectorAll('[id^="verifyButton-"]').forEach(button => {
             button.addEventListener('click', function() {
@@ -386,7 +316,7 @@
         })
         .finally(() => {
             // Re-enable the submit button after processing is complete
-            submitButton.disabled = false;
+            document.getElementById(`verifyButton-${taskId}`).disabled = false;
         });
     }
 
@@ -415,34 +345,6 @@
         `;
         carouselInner.innerHTML += newItemHtml;
         // You might need to reinitialize or update your carousel here, depending on the library you're using
-    }
-
-
-    function adjustTaskCompletion(taskId, action) {
-        fetch(`/tasks/adjust_completion/${taskId}/${action}`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById(`completion-count-${taskId}`).innerText = data.new_completions_count;
-                document.getElementById(`total-points`).innerText = `Total Completed Points: ${data.total_points}`;
-                // Re-check whether the verify button should be enabled or disabled
-                const verifyButton = document.getElementById(`verifyButton-${taskId}`);
-                verifyButton.disabled = !(data.new_completions_count < task.completion_limit);
-                if (verifyButton.disabled) {
-                    const lastRelevantCompletionTime = data.lastRelevantCompletionTime; // Should be provided by the backend after adjusting completion
-                    const frequency = task.frequency; // This needs to be available in this scope
-                    updateCountdownFromLastRelevant(lastRelevantCompletionTime, frequency);
-                }
-            }
-        })
-        .catch(error => console.error('Error:', error));
     }
 
 
@@ -501,6 +403,39 @@
         const minutes = Math.floor((timeDiff / (1000 * 60)) % 60);
         const seconds = Math.floor((timeDiff / 1000) % 60);
         return `${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
+    }
+
+    function incrementCompletion(taskId) {
+        // Example fetch request to increment task completions
+        fetch(`/tasks/adjust_completion/${taskId}/increment`, {
+            method: 'POST',
+            headers: {
+                // Ensure to include the CSRF token in your request headers if you are using CSRF protection
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}) // You might not need to send any specific data for the action, but include CSRF token if required
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Update UI based on response
+            if (data.success) {
+                // Update total completions in the modal
+                document.getElementById('modalTaskCompletions').innerText = `Total Completions: ${data.new_completions_count}`;
+
+                // Update total points in the modal, assuming data.total_points is the updated points value
+                document.getElementById('total-points').innerText = `Total Completed Points: ${data.total_points}`;
+                // Optionally, update other parts of the UI to reflect the new completions count
+            } else {
+                console.error('Increment failed:', data.error);
+            }
+        })
+        .catch(error => console.error('Error incrementing task completions:', error));
     }
 </script>
 <script>

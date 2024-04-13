@@ -204,7 +204,6 @@ def submit_task(task_id):
 
     # Check if this task has already been processed in the current request
     if task_id in g.submission_processed:
-        print(f"Duplicate submission detected for Task ID: {task_id}")
         return jsonify({'success': False, 'message': 'Duplicate submission detected'})
 
     if 'image' not in request.files:
@@ -213,46 +212,64 @@ def submit_task(task_id):
     image_file = request.files['image']
     if image_file.filename == '':
         return jsonify({'success': False, 'message': 'No file selected'})
+    try:
+        image_url = save_submission_image(image_file)
 
-    image_url = save_submission_image(image_file)
+        new_submission = TaskSubmission(
+            task_id=task_id,
+            user_id=current_user.id,
+            image_url=url_for('static', filename=image_url),
+            comment=request.form.get('comment', ''),
+            timestamp=datetime.now(timezone.utc)  # Record the time of submission
+        )
+        db.session.add(new_submission)
 
-    new_submission = TaskSubmission(
-        task_id=task_id,
-        user_id=current_user.id,
-        image_url=url_for('static', filename=image_url),
-        comment=request.form.get('comment', ''),
-        timestamp=datetime.now(timezone.utc)  # Record the time of submission
-    )
-    db.session.add(new_submission)
+        task = Task.query.get_or_404(task_id)
+        user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
 
-    user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
-    if user_task:
+        if not user_task:
+            print(f"No existing UserTask entry, creating new for task ID: {task_id}")
+
+            user_task = UserTask(
+                user_id=current_user.id,
+                task_id=task_id,
+                completions=0,
+                points_awarded=0,
+                completed_at=datetime.now(timezone.utc)
+            )
+            db.session.add(user_task)
+
         if user_task.completions is None:
             user_task.completions = 0
-        user_task.completions += 1
-        print(f"Incremented completions for Task ID: {task_id}, new count: {user_task.completions}")
-    else:
-        user_task = UserTask(user_id=current_user.id, task_id=task_id, completions=1)
-        db.session.add(user_task)
-        print(f"Created new UserTask for Task ID: {task_id}, initial completions set to 1")
+        if user_task.points_awarded is None:
+            user_task.points_awarded = 0
 
-    try:
+        # Check against the task's completion limit before incrementing
+        user_task.completions += 1
+        user_task.points_awarded += task.points
+        user_task.completed = True
+        print(f"Task {task_id} completed {user_task.completions} times; Total points now {user_task.points_awarded}")
+
         db.session.commit()
         g.submission_processed.add(task_id)  # Mark this task as processed for this request
-        total_points = update_user_score(current_user.id)  # Assume this function recalculates and returns the total points
-        print(f"Submission processed for Task ID: {task_id}, total points: {total_points}")
+
+        print("Submission processed, updating user score...")
+        update_user_score(current_user.id)  # This function should recalculate and update the user's score
+
+        total_points = sum(ut.points_awarded for ut in UserTask.query.filter_by(user_id=current_user.id))
+        print(f"Total points after update: {total_points}")
+
         return jsonify({
             'success': True,
             'new_completion_count': user_task.completions,
             'total_points': total_points,
-            'image_url': url_for('static', filename=image_url),
+            'image_url': image_url,
             'comment': request.form.get('comment', '')
         })
+    
     except Exception as e:
         db.session.rollback()
-        print(f"Failed to process submission for Task ID: {task_id}, error: {e}")
         return jsonify({'success': False, 'message': str(e)})
-
     
 
 @tasks_bp.route('/task/<int:task_id>/update', methods=['POST'])
