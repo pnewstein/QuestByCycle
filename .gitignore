@@ -1,5 +1,8 @@
 migrations/
 instance/
+app/static/badge_images/
+app/static/images/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
