@@ -310,12 +310,19 @@ article h3 {
 
 /* Modal Content */
 .modal-content {
+    max-width: 80%; /* Adjust the width to your preference */
+    max-height: 70vh; /* Adjust the height to your preference */
+    overflow-y: auto; /* Enable scrolling inside the modal */
     background-color: #fefefe;
     margin: 15% auto; /* 15% from the top and centered */
     padding: 20px;
     border: 1px solid #888;
     width: 80%; /* Could be more or less, depending on screen size */
     border-radius: 8px; /* Optional: Rounded corners */
+}
+
+.body-no-scroll {
+    overflow: hidden; /* Prevent scrolling on the body */
 }
 
 /* The Close Button */

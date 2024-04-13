@@ -4,6 +4,7 @@ from app.utils import update_user_score, getLastRelevantCompletionTime, award_ba
 from app.forms import TaskForm, TaskSubmissionForm
 from .models import db, Event, Task, Badge, UserTask, VerificationType, TaskSubmission, Frequency
 from werkzeug.utils import secure_filename
+from werkzeug.exceptions import RequestEntityTooLarge
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone
 
@@ -469,3 +470,8 @@ def get_last_relevant_completion_time(task_id, user_id):
         return jsonify(success=True, lastRelevantCompletionTime=last_time.isoformat())
     else:
         return jsonify(success=False, message="No relevant completion found")
+    
+
+@tasks_bp.errorhandler(RequestEntityTooLarge)
+def handle_large_file_error(e):
+    return "File too large", 413
