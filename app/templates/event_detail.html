@@ -18,7 +18,7 @@
             <p>
                 {% if current_user.is_admin %}
                     <!-- Add a link to the advanced task configuration page here -->
-                    <a href="{{ url_for('events.manage_event_tasks', event_id=event.id) }}" class="button" style="margin-left: 10px;">Configure Tasks</a>
+                    <a href="{{ url_for('tasks.manage_event_tasks', event_id=event.id) }}" class="button" style="margin-left: 10px;">Configure Tasks</a>
                     <a href="{{ url_for('badges.manage_badges', event_id=event.id) }}" class="button" style="margin-left: 10px;">Configure Badges</a>
                 {% endif %}
             </p>
@@ -79,12 +79,29 @@
         <p id="modalTaskTips">Tips</p>
         <p id="modalTaskPoints">Points</p>
         <p id="modalTaskCompletionLimit">Completion Limit</p>
+        <p id="modalTaskFrequency">Frequency: </p>
+        <p id="modalTaskCategory">Category: </p>
         <p id="modalTaskEnabled">Enabled</p>
         <p id="modalTaskVerificationType">Verification Type</p>
         <p id="modalTaskBadgeName">Badge Name</p>
         <!-- Actions and Completions placeholders -->
         <div id="modalTaskActions"></div>
         <p id="modalTaskCompletions">Total Completions: </p>
+        <p id="modalCountdown"></p>
+        {% for task in tasks %}
+            <!-- Verify Task Button -->
+            <button id="verifyButton-{{ task.id }}" class="verifyButton" style="display: block;">Verify Task</button>
+
+            <!-- Hidden Verification Form -->
+            <div id="verifyTaskForm-{{ task.id }}" style="display: none;">
+                <form enctype="multipart/form-data">
+                    <input type="file" name="image" accept="image/*" required>
+                    <textarea name="verificationComment" placeholder="Enter a comment..." required></textarea>
+                    <button type="submit">Submit Verification</button>
+                </form>
+            </div>
+        {% endfor %}
+
 
         <!-- Inside the task detail modal, after the submission form -->
         <div id="submissionCarousel" class="carousel slide" data-ride="carousel">
@@ -173,129 +190,207 @@
 
 </script>
 <script>
-    // Function to open the task detail modal
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll('[id^="verifyButton-"]').forEach(button => {
+            button.addEventListener('click', function() {
+                if (!this.disabled) {
+                    const taskId = this.id.split('-')[1]; // Extract taskId from button id
+                    const formId = `verifyTaskForm-${taskId}`;
+                    const form = document.getElementById(formId);
+                    form.style.display = 'block'; // Show the form only if the button is not disabled
+                }
+            });
+        });
+    });
+
+    function canCompleteTask(taskId, canVerify) {
+        const verifyButton = document.getElementById(`verifyButton-${taskId}`);
+        if (verifyButton) {
+            verifyButton.disabled = !canVerify; // Correctly disable or enable the button based on canVerify
+        }
+    }
+    
     function openTaskDetailModal(taskId) {
-        console.log("Opening task detail modal for task ID:", taskId); // Debugging
+        // Reset previous modal content
+        resetModalContent();
 
-        // Fetch task details from the server
-        fetch(`/tasks/tasks/detail/${taskId}`)
-        .then(response => response.ok ? response.json() : Promise.reject('Failed to load task details'))
-        .then(task => {
-            // Populate modal with task details
-            populateTaskDetails(task, taskId);
+        // Fetch task details and user completion status from the server
+        fetch(`/tasks/detail/${taskId}/user_completion`)
+            .then(response => response.json())
+            .then(data => {
+                const task = data.task;
+                const userCompletion = data.userCompletion;
+                const canVerify = data.canVerify;
+                const frequency = task.frequency; // Provided by the backend.
+                const lastRelevantCompletionTime = data.lastRelevantCompletionTime; // Now provided in the JSON response.
+                const nextEligibleTime = task.nextEligibleTime; // Make sure this matches the JSON attribute
 
-            // Fetch and display submissions
-            fetchSubmissions(taskId);
+                // Determine if the verify button should be enabled based on completions and limit.
+                const verifyButton = document.getElementById(`verifyButton-${taskId}`);
+                verifyButton.disabled = !(userCompletion.completions < task.completionLimit);
 
-            // Display the modal
-            document.getElementById('taskDetailModal').style.display = 'block';
-        })
-        .catch(error => console.error('Failed to fetch task details:', error));
+                if (verifyButton.disabled) {
+                    updateCountdownFromLastRelevant(lastRelevantCompletionTime, frequency);
+                } else {
+                    document.getElementById('modalCountdown').innerText = "Verify button is not disabled.";
+                }
+
+                // Populate the modal with task details.
+                populateTaskDetails(task, userCompletion.completions, canVerify, taskId, task.nextEligibleTime);
+
+                // Fetch and display submissions related to the task
+                fetchSubmissions(taskId);
+
+                // Show the modal.
+                document.getElementById('taskDetailModal').style.display = 'block';
+
+            })
+            .catch(error => {
+                console.error('Error opening task detail modal:', error);
+                alert('Failed to load task details.');
+            });
+    }
+
+
+    function resetModalContent() {
+        // Example: Resetting elements inside the modal. Adjust according to your HTML structure.
+        const modalTaskActions = document.getElementById('modalTaskActions');
+        if (modalTaskActions) {
+            modalTaskActions.innerHTML = '';  // Clear previous task's verify button and form
+
+        }
+        document.querySelectorAll('[id^="verifyButton-"]').forEach(button => {
+            button.style.display = 'none';
+        });
+        document.querySelectorAll('[id^="verifyTaskForm-"]').forEach(form => {
+            form.style.display = 'none';
+        });
+        // If you have other dynamic contents, reset them in a similar manner.
     }
 
     // Function to populate task details in the modal
-    function populateTaskDetails(task, taskId) {    
-            // Populate modal with task details
-            document.getElementById('modalTaskTitle').innerText = task.title;
-            document.getElementById('modalTaskDescription').innerText = task.description;
-            document.getElementById('modalTaskTips').innerText = task.tips;
-            document.getElementById('modalTaskPoints').innerText = `Points: ${task.points}`;
-            document.getElementById('modalTaskCompletionLimit').innerText = `Completion Limit: ${task.completion_limit}`;
-            document.getElementById('modalTaskEnabled').innerText = `Enabled: ${task.enabled ? 'Yes' : 'No'}`;
-            document.getElementById('modalTaskVerificationType').innerText = `Verification Type: ${task.verification_type}`;
-            document.getElementById('modalTaskBadgeName').innerText = `Badge: ${task.badge_name}`;
+    function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextEligibleTime) {
+        document.getElementById('modalTaskTitle').innerText = task.title;
+        document.getElementById('modalTaskDescription').innerText = task.description;
+        document.getElementById('modalTaskTips').innerText = task.tips || 'No tips available';
+        document.getElementById('modalTaskPoints').innerText = `Points: ${task.points}`;
 
-            // Actions HTML updated to include form for submission instead of increment/decrement buttons
-            const submissionFormHTML = `
-            <form id="taskSubmissionForm" onsubmit="submitTaskDetails(event, task.id)">
-                <input type="file" id="imageUpload" name="image" accept="image/*" required>
-                <textarea id="comment" name="comment" placeholder="Enter a comment..."></textarea>
-                <button type="submit">Submit</button>
-            </form>
-        `;
-            document.getElementById('modalTaskActions').innerHTML = submissionFormHTML;
-            document.getElementById('modalTaskCompletions').innerText = `Total Completions: ${task.total_completions}`;
-            setupSubmissionForm(taskId);
+        // Updated to format completion limit and frequency
+        if (task.completion_limit && task.frequency) {
+            let frequencyReadable = task.frequency.replace('Frequency.', ''); // Assuming frequency comes in format 'Frequency.daily'
+            frequencyReadable = frequencyReadable[0].toUpperCase() + frequencyReadable.slice(1); // Capitalize first letter
+            document.getElementById('modalTaskCompletionLimit').innerText = `Can be completed ${task.completion_limit} times ${frequencyReadable.toLowerCase()}.`;
+        } else {
+            document.getElementById('modalTaskCompletionLimit').innerText = 'No completion limits set.';
+        }
+
+        document.getElementById('modalTaskCategory').innerText = `Category: ${task.category || 'No category'}`;
+        document.getElementById('modalTaskEnabled').innerText = `Enabled: ${task.enabled ? 'Yes' : 'No'}`;
+        document.getElementById('modalTaskVerificationType').innerText = `Verification Type: ${task.verification_type || 'Not applicable'}`;
+        document.getElementById('modalTaskBadgeName').innerText = `Badge: ${task.badge_name || 'No badge'}`;
+        document.getElementById('modalTaskCompletions').innerText = `Total Completions: ${userCompletionCount || 0}`;
+        console.log(`Populating details for Task ID ${taskId}, canVerify: ${canVerify}`);
+
+        // Update countdown or verification availability based on the backend data
+        const countdownDisplay = document.getElementById('modalCountdown');
+        if (!canVerify && nextEligibleTime) {
+            const nextAvailableTime = new Date(nextEligibleTime);
+            if (nextAvailableTime > new Date()) {
+                updateCountdown(countdownDisplay, nextAvailableTime);
+            } else {
+                countdownDisplay.innerText = "nextAvailableTime is greater than current time.";
+            }
+        } else {
+            countdownDisplay.innerText = "You are eligible to verify!";
+        }
+        
+        // Check and toggle the visibility of the verify button
+        const verifyButton = document.getElementById(`verifyButton-${taskId}`);
+        if (verifyButton) {
+            verifyButton.disabled = !canVerify;
+            verifyButton.style.display = 'block'; // Ensure the button is always visible
+        }
+        console.log(`Selected verify button for Task ID ${taskId}`, verifyButton);
+
+        setupSubmissionForm(taskId);
     }
 
     // Function to fetch and display submissions in the carousel
     function fetchSubmissions(taskId) {
+        // Fetch and display submissions for the task
         fetch(`/tasks/task/${taskId}/submissions`)
-        .then(response => response.ok ? response.json() : Promise.reject('Failed to load submissions'))
-        .then(submissions => {
-            const carouselItems = document.getElementById('carouselItems');
-            carouselItems.innerHTML = ''; // Clear existing carousel items
-            submissions.forEach((submission, index) => {
-                const imageUrl = submission.image_url; // No need to modify
-                const item = document.createElement('div');
-                item.className = `carousel-item ${index === 0 ? 'active' : ''}`;
-                item.innerHTML = `
-                    <img src="${imageUrl}" class="d-block w-100" alt="Submission Image" style="max-height: 200px;">
-                    <div class="carousel-caption d-none d-md-block">
-                        <p>${submission.comment}</p>
-                    </div>
-                `;
-                carouselItems.appendChild(item);
-            });
-        })
-        .catch(error => console.error('Failed to fetch submissions:', error));
+            .then(response => response.ok ? response.json() : Promise.reject('Failed to load submissions'))
+            .then(submissions => {
+                const carouselItems = document.getElementById('carouselItems');
+                carouselItems.innerHTML = ''; // Clear existing items
+                submissions.forEach((submission, index) => {
+                    // Dynamically create carousel items with submission images and comments
+                    const item = document.createElement('div');
+                    item.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+                    item.innerHTML = `
+                        <img src="${submission.image_url}" class="d-block w-100" alt="Submission Image">
+                        <div class="carousel-caption d-none d-md-block">
+                            <p>${submission.comment}</p>
+                        </div>
+                    `;
+                    carouselItems.appendChild(item);
+                });
+                $('#submissionCarousel').carousel();
+            })
+            .catch(error => console.error('Failed to fetch submissions:', error));
     }
 
     // Function to set up and handle the task submission form
     function setupSubmissionForm(taskId) {
-        const submissionForm = document.getElementById('taskSubmissionForm');
+        const submissionForm = document.getElementById(`verifyTaskForm-${taskId}`);
+
         if (submissionForm) {
             submissionForm.addEventListener('submit', function(event) {
-                event.preventDefault();
-                // Directly pass taskId to ensure it's not lost
                 submitTaskDetails(event, taskId);
             });
         } else {
-            console.error("Unable to find submission form.");
+            console.error("Form not found for task ID:", taskId);
         }
     }
 
 
-// Adjusted to correctly receive the event and taskId parameters
-function submitTaskDetails(event, taskId) {
-    event.preventDefault(); // Prevent the default form submission
-    console.log("Submitting for task ID:", taskId);
+    function submitTaskDetails(event, taskId) {
+        const form = event.target;
+        const formData = new FormData(form);
 
-    const form = event.target; // Correctly referencing the form from the event
-    const formData = new FormData(form);
+        fetch(`/tasks/task/${taskId}/submit`, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Handle successful submission, e.g., updating UI, showing a message, etc.
+                document.getElementById('total-points').innerText = `Total Completed Points: ${data.total_points}`;
+                addSubmissionToCarousel(data.image_url, data.comment);
+                alert('Submission successful!');
+                document.getElementById('taskDetailModal').style.display = 'none'; // Close modal on success if needed
+                form.reset(); // Reset the form to clear fields
 
-    fetch(`/tasks/task/${taskId}/submit`, {
-        method: 'POST',
-        body: formData,
-        credentials: 'same-origin',
-        headers: {
-            'X-CSRFToken': getCsrfToken(),
-        // Additional headers might be needed depending on server-side requirements
-        }
-        // Additional headers might be needed depending on server-side requirements
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Submission successful');
-            closeTaskDetailModal();
-        } else {
-            alert('Submission failed: ' + data.message);
-        }
-    })
-    .catch(error => alert('Error during submission: ' + error));
-}
-
-    // Function to extract and return CSRF token
-    function getCsrfToken() {
-        return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            } else {
+                alert('Submission failed: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Submission error:", error);
+            alert('Error during submission: ' + error.message);
+        })
+        .finally(() => {
+            // Re-enable the submit button after processing is complete
+            submitButton.disabled = false;
+        });
     }
 
-    // Flash message implementation
-    function flashMessage(message, type) {
-        console.log(`Flash message (${type}): ${message}`);
-    }
-        
+
     // Function to close the task detail modal
     function closeTaskDetailModal() {
         document.getElementById('taskDetailModal').style.display = 'none';
@@ -307,57 +402,130 @@ function submitTaskDetails(event, taskId) {
             closeTaskDetailModal();
         }
     }
-    </script>
-    <script>
-        // Get the modal
-        var modal = document.getElementById("modal");
-        
-        // Get the <span> element that closes the modal
-        var span = document.getElementsByClassName("close-button")[0];
-        
-        // Function to open the modal with specific text
-        function showModal(text) {
-            document.getElementById("modal-text").innerHTML = text;
-            modal.style.display = "block";
+
+    function addSubmissionToCarousel(imageURL, comment) {
+        const carouselInner = document.getElementById('carouselItems');
+        const newItemHtml = `
+            <div class="carousel-item">
+                <img src="${imageURL}" class="d-block w-100" alt="Submitted Image">
+                <div class="carousel-caption d-none d-md-block">
+                    <p>${comment}</p>
+                </div>
+            </div>
+        `;
+        carouselInner.innerHTML += newItemHtml;
+        // You might need to reinitialize or update your carousel here, depending on the library you're using
+    }
+
+
+    function adjustTaskCompletion(taskId, action) {
+        fetch(`/tasks/adjust_completion/${taskId}/${action}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById(`completion-count-${taskId}`).innerText = data.new_completions_count;
+                document.getElementById(`total-points`).innerText = `Total Completed Points: ${data.total_points}`;
+                // Re-check whether the verify button should be enabled or disabled
+                const verifyButton = document.getElementById(`verifyButton-${taskId}`);
+                verifyButton.disabled = !(data.new_completions_count < task.completion_limit);
+                if (verifyButton.disabled) {
+                    const lastRelevantCompletionTime = data.lastRelevantCompletionTime; // Should be provided by the backend after adjusting completion
+                    const frequency = task.frequency; // This needs to be available in this scope
+                    updateCountdownFromLastRelevant(lastRelevantCompletionTime, frequency);
+                }
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+
+    function getNextAvailableTime(lastRelevantDate, frequency) {
+        const lastCompletionDate = new Date(lastRelevantDate);
+        let nextAvailableDate;
+
+        switch (frequency.toLowerCase()) {
+            case 'daily':
+                nextAvailableDate = new Date(lastCompletionDate.getTime() + (24 * 60 * 60 * 1000));
+                break;
+            case 'weekly':
+                // For weekly, if testing with 4 minutes
+                nextAvailableDate = new Date(lastCompletionDate.getTime() + (4 * 60 * 1000));
+                break;
+            case 'monthly':
+                const month = lastCompletionDate.getMonth();
+                nextAvailableDate = new Date(lastCompletionDate.setMonth(month + 1));
+                break;
+            default:
+                nextAvailableDate = new Date(); // Now, if no frequency set or for immediate availability
         }
-        
-        // When the user clicks on <span> (x), close the modal
-        span.onclick = function() {
+
+        return nextAvailableDate;
+    }
+
+    // Assuming lastRelevantCompletionTime is passed correctly from the backend
+    function updateCountdownFromLastRelevant(nextEligibleTime, frequency) {
+    const countdownDisplay = document.getElementById('modalCountdown');
+    const nextAvailableTime = new Date(nextEligibleTime);
+    const now = new Date();
+
+    if (nextAvailableTime > now) {
+        const timeDiff = nextAvailableTime - now;
+        countdownDisplay.innerText = `You can verify in ${formatTimeDiff(timeDiff)}`;
+    } else {
+        countdownDisplay.innerText = "UCLR nextAvailableTime is less than current time.";
+    }
+}
+
+
+    function updateCountdown(displayElement, nextEligibleTime) {
+        const now = new Date();
+        const nextAvailableTime = new Date(nextEligibleTime);
+        if (nextAvailableTime > now) {
+            const timeDiff = nextAvailableTime - now;
+            displayElement.innerText = `You can verify in ${formatTimeDiff(timeDiff)}`;
+        } else {
+            displayElement.innerText = "UC nextAvailableTime is less than current time.";
+        }
+    }
+
+    function formatTimeDiff(timeDiff) {
+        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeDiff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((timeDiff / (1000 * 60)) % 60);
+        const seconds = Math.floor((timeDiff / 1000) % 60);
+        return `${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
+    }
+</script>
+<script>
+    // Get the modal
+    var modal = document.getElementById("modal");
+    
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close-button")[0];
+    
+    // Function to open the modal with specific text
+    function showModal(text) {
+        document.getElementById("modal-text").innerHTML = text;
+        modal.style.display = "block";
+    }
+    
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+    
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        if (event.target == modal) {
             modal.style.display = "none";
         }
-        
-        // When the user clicks anywhere outside of the modal, close it
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-    </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-        });
-
-        function adjustTaskCompletion(taskId, action) {
-            fetch(`/tasks/adjust_completion/${taskId}/${action}`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById(`completion-count-${taskId}`).innerText = data.new_completions_count;
-                    document.getElementById(`total-points`).innerText = `Total Completed Points: ${data.total_points}`;
-                    const incrementButton = document.getElementById(`increment-${taskId}`);
-                    const decrementButton = document.getElementById(`decrement-${taskId}`);
-                    incrementButton.disabled = data.disable_increment;
-                    decrementButton.disabled = data.disable_decrement;
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-    </script>
+    }
+</script>
 {% endblock %}

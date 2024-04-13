@@ -1,11 +1,11 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app
-from flask_login import login_required, current_user
-from app.forms import EventForm, TaskForm
-from .models import db, Task, Badge, UserTask, Event, User, ShoutBoardMessage
+from flask import flash, current_app, jsonify
+from .models import db, Task, Badge, UserTask, User, ShoutBoardMessage, Frequency, TaskSubmission
 from werkzeug.utils import secure_filename
+from datetime import datetime, timedelta, timezone
+from sqlalchemy import and_, func, distinct
+
 
 import uuid
-import csv
 import os
 
 MAX_POINTS_INT = 2**63 - 1
@@ -96,3 +96,83 @@ def save_submission_image(submission_image_file):
     full_path = os.path.join(uploads_dir, filename)
     submission_image_file.save(full_path)
     return os.path.join('images', 'verifications', filename)
+
+
+def can_complete_task(user_id, task_id):
+    now = datetime.now(timezone.utc)
+    task = Task.query.get(task_id)
+    
+    if not task:
+        print(f"No task found for Task ID: {task_id}")
+        return False, None  # Task does not exist
+    
+    print(f"Current time: {now}")
+    print(f"Task found: {task.title} with frequency {task.frequency.name} and completion limit {task.completion_limit}")
+
+    # Determine the start of the relevant period based on frequency
+    period_start_map = {
+        'daily': timedelta(days=1),
+        'weekly': timedelta(minutes=4),
+        'monthly': timedelta(days=30)  # Approximation for monthly
+    }
+    period_start = now - period_start_map.get(task.frequency.name.lower(), timedelta(days=1))
+    print(f"Period start calculated as: {period_start}")
+
+    # Count completions in the defined period
+    completions_within_period = TaskSubmission.query.filter(
+        TaskSubmission.user_id == user_id,
+        TaskSubmission.task_id == task_id,
+        TaskSubmission.timestamp >= period_start
+    ).count()
+
+    print(f"Completions within period for user {user_id} on task {task_id}: {completions_within_period}")
+
+    # Check if the user can verify the task again
+    can_verify = completions_within_period < task.completion_limit
+    next_eligible_time = None
+    if not can_verify:
+        first_completion_in_period = TaskSubmission.query.filter(
+            TaskSubmission.user_id == user_id,
+            TaskSubmission.task_id == task_id,
+            TaskSubmission.timestamp >= period_start
+        ).order_by(TaskSubmission.timestamp.asc()).first()
+
+        if first_completion_in_period:
+            print(f"First Completion in the period found at: {first_completion_in_period.timestamp}")
+            # Calculate when the user is eligible next, based on the first completion time
+            increment_map = {
+                'daily': timedelta(days=1),
+                'weekly': timedelta(minutes=4),
+                'monthly': timedelta(days=30)
+            }
+            next_eligible_time = first_completion_in_period.timestamp + increment_map.get(task.frequency.name.lower(), timedelta(days=1))
+            print(f"Next eligible time calculated as: {next_eligible_time}")
+        else:
+            print("No completions found within the period.")
+    else:
+        print("User can currently verify the task.")
+
+    return can_verify, next_eligible_time
+
+def getLastRelevantCompletionTime(user_id, task_id):
+    now = datetime.now(timezone.utc)
+    task = Task.query.get(task_id)
+    
+    if not task:
+        return None  # Task does not exist
+
+    # Start of the period calculation must reflect the frequency
+    period_start = {
+        Frequency.daily: now - timedelta(days=1),
+        Frequency.weekly: now - timedelta(minutes=4),
+        Frequency.monthly: now - timedelta(days=30)
+    }.get(task.frequency, now)  # Default to immediate if frequency is not set
+
+    # Fetch the last completion that affects the current period
+    last_relevant_completion = TaskSubmission.query.filter(
+        TaskSubmission.user_id == user_id,
+        TaskSubmission.task_id == task_id,
+        TaskSubmission.timestamp >= period_start
+    ).order_by(TaskSubmission.timestamp.desc()).first()
+
+    return last_relevant_completion.timestamp if last_relevant_completion else None

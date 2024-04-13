@@ -1,36 +1,71 @@
-from flask import Blueprint, jsonify, render_template, request, flash, redirect, url_for, current_app
+from flask import g, Blueprint, jsonify, render_template, request, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
-from app.utils import update_user_score, award_badge, revoke_badge, save_badge_image, save_submission_image
-from app.forms import EventForm, TaskForm, TaskImportForm, TaskSubmissionForm
-from .models import db, Task, Badge, UserTask, Event, VerificationType, TaskSubmission
+from app.utils import update_user_score, getLastRelevantCompletionTime, award_badge, revoke_badge, save_badge_image, save_submission_image, can_complete_task
+from app.forms import TaskForm, TaskSubmissionForm
+from .models import db, Event, Task, Badge, UserTask, VerificationType, TaskSubmission, Frequency
 from werkzeug.utils import secure_filename
 from sqlalchemy.exc import IntegrityError
+from datetime import datetime, timezone
 
 import csv
 import os
 
 tasks_bp = Blueprint('tasks', __name__, template_folder='templates')
 
-@tasks_bp.route('/event/<int:event_id>/create_task', methods=['GET', 'POST'])
+
+
+@tasks_bp.route('/<int:event_id>/manage_tasks', methods=['GET', 'POST'])
 @login_required
-def create_task(event_id):
+def manage_event_tasks(event_id):
     event = Event.query.get_or_404(event_id)
+
+    if not current_user.is_admin:
+        flash('Access denied: Only administrators can manage tasks.', 'danger')
+        return redirect(url_for('events.event_detail', event_id=event_id))
+    
     form = TaskForm()
-    if form.validate_on_submit():
-        new_task = Task(
-            title=form.title.data,
-            description=form.description.data,
-            points=form.points.data,
-            tips=form.tips.data,
-            completion_limit=form.completion_limit.data,
-            event_id=event_id,
-            # Assume badge handling is done separately or included in the form
-        )
-        db.session.add(new_task)
-        db.session.commit()
-        flash('Task created successfully.', 'success')
-        return redirect(url_for('tasks.view_tasks', event_id=event_id))
-    return render_template('create_task.html', form=form, event_id=event_id)
+
+    if request.method == 'POST':
+        # Process JSON data if content type is application/json
+        if request.content_type == 'application/json':
+            data = request.get_json()
+            frequency_value = data.get('frequency')
+        else:
+            # For non-JSON requests, this block can be adapted to process form data or other data types
+            frequency_value = None
+
+        if form.validate_on_submit():
+            task = Task(
+                title=form.title.data,
+                description=form.description.data,
+                event_id=event_id
+            )
+
+            # If frequency value is provided and valid, set it here
+            if frequency_value:
+                try:
+                    # Ensure frequency_value is an integer and valid enum before assignment
+                    frequency_enum = Frequency(int(frequency_value))
+                    task.frequency = frequency_enum
+                except (ValueError, TypeError, KeyError):
+                    # Handle invalid frequency values (e.g., not an integer, not a valid enum value)
+                    flash('Invalid frequency value provided.', 'error')
+
+            db.session.add(task)
+            try:
+                db.session.commit()
+                flash('Task added successfully', 'success')
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error adding task: {str(e)}', 'error')
+
+            return redirect(url_for('tasks.manage_event_tasks', event_id=event_id))
+
+    # Retrieve tasks each time the page is loaded or reloaded
+    tasks = Task.query.filter_by(event_id=event_id).all()
+    
+    # Pass event_id to the template, alongside the event object, tasks, and form
+    return render_template('manage_tasks.html', event=event, tasks=tasks, form=form, event_id=event_id)
 
 
 @tasks_bp.route('/event/<int:event_id>/add_task', methods=['GET', 'POST'])
@@ -69,6 +104,7 @@ def add_task(event_id):
             points=form.points.data,
             event_id=event_id,
             completion_limit=form.completion_limit.data,
+            frequency=form.frequency.data,
             enabled=form.enabled.data,
             category=form.category.data,
             verification_type=form.verification_type.data,
@@ -82,7 +118,7 @@ def add_task(event_id):
             db.session.rollback()
             flash(f'An error occurred: {e}', 'error')
 
-        return redirect(url_for('events.manage_event_tasks', event_id=event_id))
+        return redirect(url_for('tasks.manage_event_tasks', event_id=event_id))
 
     return render_template('add_task.html', form=form, event_id=event_id)
 
@@ -138,39 +174,6 @@ def adjust_task_completion(task_id, action):
         return jsonify(success=False, error=str(e))
 
 
-@tasks_bp.route('/task/<int:task_id>/submit', methods=['POST'])
-@login_required
-def submit_task_detail(task_id):
-    if 'image' not in request.files:
-        return jsonify({'success': False, 'message': 'File part missing'})
-    
-    image_file = request.files['image']
-    if image_file.filename == '':
-        return jsonify({'success': False, 'message': 'No file selected'})
-
-    # Generate unique filename and save the image
-    relative_path = save_submission_image(image_file)
-    
-    # Save submission details
-    new_submission = TaskSubmission(
-        task_id=task_id,
-        user_id=current_user.id,
-        image_url=url_for('static', filename=relative_path),
-        comment=request.form.get('comment', '')
-    )
-    db.session.add(new_submission)
-
-    try:
-        adjust_completion_result = adjust_task_completion_logic(task_id, "increment")
-        if not adjust_completion_result['success']:
-            raise Exception(adjust_completion_result['message'])
-        
-        db.session.commit()
-        return jsonify({'success': True, 'message': 'Submission saved successfully and task completion incremented.'})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'success': False, 'message': f'Failed to save submission or increment task completion: {str(e)}'})
-
 def adjust_task_completion_logic(task_id, action):
     # This function is a simplified version of adjust_task_completion to be used internally
     # It mirrors the logic of the existing adjust_task_completion, without handling request/response directly
@@ -192,53 +195,65 @@ def adjust_task_completion_logic(task_id, action):
         return {'success': False, 'message': str(e)}
 
 
-@tasks_bp.route('/<int:event_id>/view_tasks')
+@tasks_bp.route('/task/<int:task_id>/submit', methods=['POST'])
 @login_required
-def view_tasks(event_id):
-    event = Event.query.get_or_404(event_id)
-    tasks = Task.query.filter_by(event_id=event.id).all()
-    all_events = Event.query.all()  # Fetch all events to populate the dropdown
-    return render_template('view_tasks.html', event=event, tasks=tasks, events=all_events)
+def submit_task(task_id):
+    # Initialize a key in g to track if submission has been processed
+    if not hasattr(g, 'submission_processed'):
+        g.submission_processed = set()
 
+    # Check if this task has already been processed in the current request
+    if task_id in g.submission_processed:
+        print(f"Duplicate submission detected for Task ID: {task_id}")
+        return jsonify({'success': False, 'message': 'Duplicate submission detected'})
 
-@tasks_bp.route('/tasks/detail/<int:task_id>')
-def task_detail(task_id):
-    # Assuming Task model has a relationship to a Badge model
-    task = Task.query.get_or_404(task_id)
-    badge_name = task.badge.name if task.badge else 'None'
+    if 'image' not in request.files:
+        return jsonify({'success': False, 'message': 'File part missing'})
+
+    image_file = request.files['image']
+    if image_file.filename == '':
+        return jsonify({'success': False, 'message': 'No file selected'})
+
+    image_url = save_submission_image(image_file)
+
+    new_submission = TaskSubmission(
+        task_id=task_id,
+        user_id=current_user.id,
+        image_url=url_for('static', filename=image_url),
+        comment=request.form.get('comment', ''),
+        timestamp=datetime.now(timezone.utc)  # Record the time of submission
+    )
+    db.session.add(new_submission)
+
+    user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
+    if user_task:
+        if user_task.completions is None:
+            user_task.completions = 0
+        user_task.completions += 1
+        print(f"Incremented completions for Task ID: {task_id}, new count: {user_task.completions}")
+    else:
+        user_task = UserTask(user_id=current_user.id, task_id=task_id, completions=1)
+        db.session.add(user_task)
+        print(f"Created new UserTask for Task ID: {task_id}, initial completions set to 1")
+
+    try:
+        db.session.commit()
+        g.submission_processed.add(task_id)  # Mark this task as processed for this request
+        total_points = update_user_score(current_user.id)  # Assume this function recalculates and returns the total points
+        print(f"Submission processed for Task ID: {task_id}, total points: {total_points}")
+        return jsonify({
+            'success': True,
+            'new_completion_count': user_task.completions,
+            'total_points': total_points,
+            'image_url': url_for('static', filename=image_url),
+            'comment': request.form.get('comment', '')
+        })
+    except Exception as e:
+        db.session.rollback()
+        print(f"Failed to process submission for Task ID: {task_id}, error: {e}")
+        return jsonify({'success': False, 'message': str(e)})
+
     
-    total_completions = db.session.query(db.func.sum(UserTask.completions)).filter_by(task_id=task_id).scalar() or 0
-
-    # Prepare the task data, including the badge name
-    task_data = {
-        'title': task.title,
-        'description': task.description,
-        'tips': task.tips or 'No tips available',
-        'points': task.points,
-        'completion_limit': task.completion_limit,
-        'enabled': task.enabled,
-        'verification_type': task.verification_type.name or 'Not Applicable',
-        'badge_name': badge_name,
-        'total_completions': total_completions,
-    }
-    return jsonify(task_data)
-
-
-@tasks_bp.route('/task/<int:task_id>/edit', methods=['GET'])
-@login_required
-def edit_task(task_id):
-    task = Task.query.get_or_404(task_id)
-    # Assuming you return a JSON response with task details
-    return jsonify({
-        'id': task.id,
-        'title': task.title,
-        'description': task.description,
-        'points': task.points,
-        'completion_limit': task.completion_limit,
-        'tips': task.tips,
-        'badge_id': task.badge_id
-    })
-
 
 @tasks_bp.route('/task/<int:task_id>/update', methods=['POST'])
 @login_required
@@ -249,36 +264,39 @@ def update_task(task_id):
     task = Task.query.get_or_404(task_id)
     data = request.get_json()
 
-    try:
-        # Update direct task attributes
-        task.title = data.get('title', task.title)
-        task.description = data.get('description', task.description)
-        task.tips = data.get('tips', task.tips)
-        task.points = int(data.get('points', task.points))
-        task.completion_limit = int(data.get('completion_limit', task.completion_limit))
-        
-        # Convert the 'enabled' field from string to boolean
-        if 'enabled' in data:
-            task.enabled = data['enabled'].lower() == 'true'  # Converts 'true' to True and 'false' to False
-        
-        # Handle 'verification_type' considering 'Not Applicable' as None or a special value
-        if 'verification_type' in data and data['verification_type'] != 'NOT_APPLICABLE':
-            task.verification_type = VerificationType[data['verification_type']]
-        else:
-            task.verification_type = None  # or a special enum value for 'Not Applicable'
+    # Update task with new data
+    task.title = data.get('title', task.title)
+    task.description = data.get('description', task.description)
+    task.tips = data.get('tips', task.tips)
+    task.points = int(data.get('points', task.points))
+    task.completion_limit = int(data.get('completion_limit', task.completion_limit))
+    task.enabled = data.get('enabled', task.enabled)
+    task.category = data.get('category', task.category)
 
-        # Convert 'badge_id' from string to int, handling empty string as None
-        badge_id = data.get('badge_id')
-        if badge_id and badge_id.isdigit():
+    # Handling Frequency
+    if 'frequency' in data:
+        frequency_value = data['frequency'].lower()
+        if frequency_value in Frequency.__members__:
+            task.frequency = Frequency[frequency_value]
+
+    # Handling Verification Type
+    if 'verification_type' in data and data['verification_type'] in VerificationType.__members__:
+        task.verification_type = VerificationType[data['verification_type']]
+    
+    # Handle badge_id conversion and validation
+    badge_id = data.get('badge_id')
+    if badge_id is not None:
+        try:
             task.badge_id = int(badge_id)
-        else:
-            task.badge_id = None  # Handles empty string and non-digit strings
+        except ValueError:
+            return jsonify({'success': False, 'message': 'Invalid badge ID'}), 400
 
+    try:
         db.session.commit()
         return jsonify({'success': True, 'message': 'Task updated successfully'})
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'message': f'Failed to update task: {e}'})
+        return jsonify({'success': False, 'message': str(e)})
 
 
 
@@ -314,14 +332,15 @@ def get_tasks_for_event(event_id):
             'id': task.id,
             'title': task.title,
             'description': task.description,
-            'tips': task.tips,  # Ensure this field is included
+            'tips': task.tips,
             'points': task.points,
             'completion_limit': task.completion_limit,
             'enabled': task.enabled,
-            'verification_type': task.verification_type.value if task.verification_type else None,  # Handle Enum, if applicable
-            'badge_name': task.badge.name if task.badge else '',
+            'verification_type': task.verification_type.name if task.verification_type else 'Not Applicable',
+            'badge_name': task.badge.name if task.badge else 'None',
             'badge_description': task.badge.description if task.badge else '',
-            # Additional fields can be added here as necessary
+            'frequency': task.frequency.name if task.frequency else 'Not Set',  # Handling Frequency Enum
+            'category': task.category if task.category else 'Not Set',  # Handling potentially undefined Category
         }
         for task in tasks
     ]
@@ -377,35 +396,10 @@ def import_tasks(event_id):
             os.remove(filepath)  # Clean up the uploaded file
         
         # Skip adding badge images for now.
-        return jsonify(success=True, redirectUrl=url_for('events.manage_event_tasks', event_id=event_id))
+        return jsonify(success=True, redirectUrl=url_for('tasks.manage_event_tasks', event_id=event_id))
 
 
     return jsonify(success=False, message="Invalid file"), 400
-
-
-@tasks_bp.route('/event/<int:event_id>/upload_badge_images', methods=['GET', 'POST'])
-@login_required
-def upload_badge_images(event_id):
-    badge_ids = request.args.get('badge_ids', '')
-    if request.method == 'POST':
-        for badge_id in badge_ids.split(','):
-            file = request.files.get(f'badge_image_{badge_id}', None)
-            if file and file.filename != '':
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(current_app.config['TASKCSV'], filename)
-                file.save(filepath)
-                
-                badge = Badge.query.get(badge_id)
-                if badge:
-                    badge.image = filepath
-                    db.session.commit()
-
-        flash('Badge images updated successfully', 'success')
-        return redirect(url_for('tasks.view_tasks', event_id=event_id))
-    
-    badge_ids = [int(id_) for id_ in badge_ids.split(',') if id_.isdigit()]
-    badges = Badge.query.filter(Badge.id.in_(badge_ids)).all()
-    return render_template('upload_badge_images.html', badges=badges, event_id=event_id)
 
 
 @tasks_bp.route('/task/<int:task_id>/submissions')
@@ -416,3 +410,52 @@ def get_task_submissions(task_id):
         'comment': submission.comment,
     } for submission in submissions]
     return jsonify(submissions_data)
+
+
+@tasks_bp.route('/detail/<int:task_id>/user_completion')
+@login_required
+def task_user_completion(task_id):
+    task = Task.query.get_or_404(task_id)
+    user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
+    can_verify, next_eligible_time = can_complete_task(current_user.id, task_id)
+    last_relevant_completion_time = getLastRelevantCompletionTime(current_user.id, task_id)
+
+    task_details = {
+        'id': task.id,
+        'title': task.title,
+        'description': task.description,
+        'points': task.points,
+        'completion_limit': task.completion_limit,
+        'frequency': task.frequency.name if task.frequency else 'Not Set', 
+        'enabled': task.enabled,
+        'verification_type': task.verification_type.name if task.verification_type else 'Not Applicable',
+        'badge_name': task.badge.name if task.badge else 'None',
+        'nextEligibleTime': next_eligible_time.isoformat() if next_eligible_time else None
+
+    }
+
+    user_completion_data = {
+        'completions': user_task.completions if user_task else 0,
+        'lastCompletionTimestamp': user_task.completed_at.isoformat() if user_task and user_task.completed_at else None
+    }
+
+    response_data = {
+        'task': task_details,
+        'userCompletion': user_completion_data,
+        'canVerify': can_verify,
+        'nextEligibleTime': next_eligible_time.isoformat() if next_eligible_time else None,
+        'lastRelevantCompletionTime': last_relevant_completion_time.isoformat() if last_relevant_completion_time else None
+    }
+
+    return jsonify(response_data)
+
+
+
+@tasks_bp.route('/get_last_relevant_completion_time/<int:task_id>/<int:user_id>')
+@login_required
+def get_last_relevant_completion_time(task_id, user_id):
+    last_time = getLastRelevantCompletionTime(user_id, task_id)
+    if last_time:
+        return jsonify(success=True, lastRelevantCompletionTime=last_time.isoformat())
+    else:
+        return jsonify(success=False, message="No relevant completion found")

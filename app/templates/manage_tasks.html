@@ -10,7 +10,6 @@
         <!-- Add a section for importing tasks from a CSV file -->
         <div class="import-tasks-form">
             <h3>Import Tasks from CSV</h3>
-            <h4>Import these headers in this order:category, title,	description, tips, points, completion_limit, verification_type, badge_name, badge_description</h4>
             <form id="importTasksForm" method="post" enctype="multipart/form-data">
                 <input type="file" name="tasks_csv" accept=".csv">
                 <button type="button" onclick="importTasks()">Import</button>
@@ -31,6 +30,8 @@
                         <th>Enabled</th>
                         <th>Verification Type</th>
                         <th>Badge Name</th>
+                        <th>Frequency</th> <!-- New column for Frequency -->
+                        <th>Category</th> <!-- New column for Category -->
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -80,7 +81,7 @@
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRF-Token': document.querySelector('input[name="csrf_token"]').value
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
             })
             .then(response => response.json())
@@ -96,48 +97,106 @@
                
         function editTask(taskId) {
             const row = document.querySelector(`#task-${taskId}`);
-            
-            // Handle text and number inputs
-            const textAndNumberFields = [
-                {name: "title", type: "text"},
-                {name: "description", type: "textarea"},
-                {name: "tips", type: "textarea"},
-                {name: "points", type: "number"},
-                {name: "completion_limit", type: "number"},
-                {name: "badge_name", type: "text"},
-                {name: "badge_description", type: "textarea"}
+            if (!row) {
+                console.error(`Row for taskId ${taskId} not found.`);
+                return;
+            }
+
+            const frequencyElement = row.querySelector('.editable[data-name="frequency"]');
+            if (!frequencyElement) {
+                console.error(`Frequency element not found for taskId: ${taskId}.`);
+                return;
+            }
+
+            // Extract the current frequency value from the element's data-value attribute.
+            let currentFrequencyValue = frequencyElement.getAttribute('data-value');
+
+            // Define the mapping for frequency values to their display text.
+            const frequencyOptions = {
+                daily: 1,
+                weekly: 2,
+                monthly: 3,
+            };
+
+            // Generate the HTML for the frequency select element, marking the current value as selected.
+            let frequencySelectHTML = '<select name="frequency" class="editable-select">';
+            for (const [text, value] of Object.entries(frequencyOptions)) {
+                let isSelected = currentFrequencyValue == text ? 'selected' : '';
+                frequencySelectHTML += `<option value="${value}" ${isSelected}>${text.charAt(0).toUpperCase() + text.slice(1)}</option>`;
+            }
+            frequencySelectHTML += '</select>';
+
+            frequencyElement.innerHTML = frequencySelectHTML;
+
+            const badgeCell = row.querySelector('.editable[data-name="badge_name"]');
+            if (badgeCell) {
+                let currentBadgeName = badgeCell.innerText.trim();
+                let badgeSelectHTML = '<select name="badge_id" class="editable-select">';
+                // Add an option for no badge selected
+                badgeSelectHTML += `<option value="">None</option>`;
+
+                badges.forEach(badge => {
+                    let isSelected = currentBadgeName === badge.name ? 'selected' : '';
+                    badgeSelectHTML += `<option value="${badge.id}" ${isSelected}>${badge.name}</option>`;
+                });
+                badgeSelectHTML += '</select>';
+                badgeCell.innerHTML = badgeSelectHTML;
+            } else {
+                console.error(`Badge element not found for taskId: ${taskId}.`);
+            }
+
+            // Define editable fields with their corresponding input types or options for select elements
+            const editableFields = [
+                { name: "title", type: "text" },
+                { name: "description", type: "textarea" },
+                { name: "tips", type: "textarea" },
+                { name: "points", type: "number" },
+                { name: "completion_limit", type: "number" },
+                { name: "frequency", type: "select", options: ["Daily", "Weekly", "Monthly"] }, // Assuming these are the display values used in your HTML
+                { name: "category", type: "text" },
+                { name: "enabled", type: "select", options: ["Yes", "No"] }, // Display values for boolean field
+                { name: "verification_type", type: "select", options: Object.keys(VerificationTypes), displayValues: Object.values(VerificationTypes) },
             ];
-            textAndNumberFields.forEach(field => {
-                const cell = row.querySelector(`.editable[data-name="${field.name}"]`);
-                if (cell) {
-                    const currentValue = cell.innerText.trim();
-                    cell.innerHTML = field.type === "textarea" ? `<textarea name="${field.name}">${currentValue}</textarea>` : `<input type="${field.type}" name="${field.name}" value="${currentValue}">`;
             
+            // Iterate over each editable field to dynamically create the input element
+            editableFields.forEach(field => {
+                const cell = row.querySelector(`.editable[data-name="${field.name}"]`);
+                if (!cell) return; // Skip if the cell doesn't exist for some reason
+
+                const currentValue = cell.innerText.trim();
+                let inputElement;
+
+                if (field.type === "select") {
+                    inputElement = document.createElement("select");
+                    inputElement.name = field.name;
+
+                    field.options.forEach((option, index) => {
+                        const optionElement = document.createElement("option");
+                        optionElement.value = option;
+                        optionElement.text = field.displayValues ? field.displayValues[index] : option; // Use display values if provided
+                        if (currentValue === optionElement.text) {
+                            optionElement.selected = true;
+                        }
+                        inputElement.appendChild(optionElement);
+                    });
+                } else if (field.type === "textarea") {
+                    inputElement = document.createElement("textarea");
+                    inputElement.name = field.name;
+                    inputElement.value = currentValue;
+                } else { // Handle text and number inputs
+                    inputElement = document.createElement("input");
+                    inputElement.type = field.type;
+                    inputElement.name = field.name;
+                    inputElement.value = currentValue;
                 }
+
+                // Replace the cell's content with the new input element
+                cell.innerHTML = '';
+                cell.appendChild(inputElement);
             });
 
-            // Handle boolean fields like 'enabled'
-            const enabledCell = row.querySelector(`.editable[data-name="enabled"]`);
-            const isEnabled = enabledCell.innerText.trim().toLowerCase() === "yes"; // Assuming the cell text is "Yes" for true values
-            enabledCell.innerHTML = `
-            <select name="enabled">
-                <option value="true" ${isEnabled ? 'selected' : ''}>Yes</option>
-                <option value="false" ${!isEnabled ? 'selected' : ''}>No</option>
-            </select>`;
-
-            // Handle enum fields like 'verification_type'
-            const verificationTypeCell = row.querySelector('.editable[data-name="verification_type"]');
-            const currentVerificationType = verificationTypeCell.innerText.trim();
-
-            const verificationTypeOptions = Object.entries(VerificationTypes).map(([key, value]) => {
-                const selected = (currentVerificationType === value) ? 'selected' : '';
-                return `<option value="${key}" ${selected}>${value}</option>`;
-            }).join('');
-
-            verificationTypeCell.innerHTML = `<select name="verification_type">${verificationTypeOptions}</select>`;
-
-            // Updating the edit button to a save button
-            const editButton = row.querySelector(`.edit-button`);
+            // Updating the edit button to a save button and setting its click event to call saveTask
+            const editButton = row.querySelector(".edit-button");
             editButton.innerText = "Save";
             editButton.onclick = () => saveTask(taskId);
         }
@@ -145,21 +204,24 @@
 
         function saveTask(taskId) {
             const row = document.querySelector(`#task-${taskId}`);
-            let taskData = {};
-
+            let taskData = {}; 
+            
             // Collect inputs, selects, and textarea values
             row.querySelectorAll('input, select, textarea').forEach(input => {  // Fixed line
                 let value = input.value;
-                if (input.name === 'badge_id' && value === '') {
+                if (input.name === 'enabled') {
+                    value = input.value === 'Yes'; // This will be true for "Yes", false for anything else
+                } else if (input.name === 'badge_id' && value === '') {
                     value = null; // Convert empty string to null for badge_id
                 }
+
                 taskData[input.name] = value;
             });
 
             fetch(`/tasks/task/${taskId}/update`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json', // Ensuring JSON Content-Type
                     'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 },
                 body: JSON.stringify(taskData),  // Adjusted to directly use taskData object
@@ -188,42 +250,38 @@
             .then(response => response.json())
             .then(data => {
                 const tasksBody = document.getElementById('tasksBody');
-                tasksBody.innerHTML = '';
+                tasksBody.innerHTML = ''; // Clear the table before adding new rows
+
                 data.tasks.forEach(task => {
-                    // Change badgeOptions to let because it will be modified
-                    let badgeOptions = '';
+                    const row = document.createElement('tr');
+                    row.id = `task-${task.id}`;
 
-                    // Add badge options, including marking the correct one as selected
-                    window.badges.forEach(badge => {
-                        const isSelected = task.badge_id === badge.id ? 'selected' : '';
-                        badgeOptions += `<option value="${badge.id}" ${isSelected}>${badge.name}</option>`;
-                    });
+                    const verificationTypeText = VerificationTypes[task.verification_type] || 'Not Applicable';
+                    const badgeName = task.badge_name || 'None';
+                    const frequencyDisplayText = task.frequency ? task.frequency.toUpperCase() : 'Not Set';
+                    const categoryText = task.category || 'Not Set';
 
-                    const row = `
-                        <tr id="task-${task.id}">
-                            <td class="editable" data-name="title">${task.title}</td>
-                            <td class="editable" data-name="description">${task.description}</td>
-                            <td class="editable" data-name="tips">${task.tips || ''}</td>
-                            <td class="editable" data-name="points">${task.points}</td>
-                            <td class="editable" data-name="completion_limit">${task.completion_limit}</td>
-                            <td class="editable" data-name="enabled">${task.enabled ? 'Yes' : 'No'}</td>
-                            <td class="editable" data-name="verification_type">${task.verification_type || 'Not Applicable'}</td>
-                            <td>
-                                <select name="badge_id" class="editable-select" data-task-id="${task.id}">
-                                    <option value="">${task.badge_name}</option>
-                                    ${badgeOptions}
-                                </select>
-                            </td>
-                            <td>
-                                <button class="edit-button" onclick="editTask(${task.id})">Edit</button>
-                                <button onclick="deleteTask(${task.id})">Delete</button>
-                            </td>
-                        </tr>
+                    row.innerHTML = `
+                        <td class="editable" data-name="title">${task.title}</td>
+                        <td class="editable" data-name="description">${task.description}</td>
+                        <td class="editable" data-name="tips">${task.tips || ''}</td>
+                        <td class="editable" data-name="points">${task.points}</td>
+                        <td class="editable" data-name="completion_limit">${task.completion_limit}</td>
+                        <td class="editable" data-name="enabled">${task.enabled ? 'Yes' : 'No'}</td>
+                        <td class="editable" data-name="verification_type" data-value="${task.verification_type}">${verificationTypeText}</td>
+                        <td class="editable" data-name="badge_name">${badgeName}</td>
+                        <td class="editable" data-name="frequency" data-value="${task.frequency || ''}">${frequencyDisplayText}</td>
+                        <td class="editable" data-name="category">${categoryText}</td>
+                        <td>
+                            <button class="edit-button" onclick="editTask(${task.id})">Edit</button>
+                            <button onclick="deleteTask(${task.id})">Delete</button>
+                        </td>
                     `;
-                    tasksBody.innerHTML += row;
+
+                    tasksBody.appendChild(row);
                 });
             })
-            .catch(error => console.error('Error loading tasks:', error));
+            .catch(error => console.error('Failed to load tasks:', error));
         }
 
 

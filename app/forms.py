@@ -4,7 +4,7 @@ from wtforms import StringField, SelectField, SubmitField, IntegerField, Passwor
 from wtforms.validators import DataRequired, NumberRange, EqualTo, Optional, Email, Length
 from wtforms.fields import DateField
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from app.models import Badge, VerificationType
+from app.models import Badge, VerificationType, Frequency
 
 import os
 
@@ -48,13 +48,15 @@ class EventForm(FlaskForm):
 
 class TaskForm(FlaskForm):
     enabled = BooleanField('Enabled', default=True)
-    category = StringField('Category', validators=[Optional()])
-    verification_type = SelectField('Verification Type', choices=[(choice.name, choice.value) for choice in VerificationType], validators=[Optional()])
+    category_choices = [('Environment', 'Environment'), ('Community', 'Community')]  # Example categories
+    category = SelectField('Category', choices=category_choices, validators=[DataRequired()])
+    verification_type = SelectField('Verification Type', choices=[(vt.name, vt.value) for vt in VerificationType], coerce=str, validators=[DataRequired()])
     title = StringField('Title', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
     tips = TextAreaField('Tips', validators=[])
     points = IntegerField('Points', validators=[DataRequired(), NumberRange(min=1)], default=1)  # Assuming tasks have at least 1 point
     completion_limit = IntegerField('Completion Limit', validators=[DataRequired(), NumberRange(min=1)], default=1)
+    frequency = SelectField('Frequency', choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly')], validators=[DataRequired()])
     badge_id = SelectField('Badge', coerce=int, choices=[])
     badge_name = StringField('Badge Name', validators=[])
     badge_description = TextAreaField('Badge Description', validators=[])    

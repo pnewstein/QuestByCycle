@@ -57,7 +57,7 @@ BikeHunt is a Flask-based web application designed to engage and motivate the bi
 
 ```GRANT USAGE, CREATE ON SCHEMA public TO username;```
 
-```GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO username```
+```GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO username;```
 
 ```ALTER TABLE badge ALTER COLUMN name TYPE VARCHAR(255);```
 
@@ -97,7 +97,7 @@ BikeHunt is a Flask-based web application designed to engage and motivate the bi
 ```sudo su - postgres```
 ```psql```
 ```\c DATABASENAME```
-```ALTER TABLE user_tasks DROP CONSTRAINT IF EXISTS _user_task_uc;```
+
 ```\q```
 ```exit```
 ```flask db upgrade```

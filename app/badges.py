@@ -108,20 +108,24 @@ def delete_badge(badge_id):
 @badges_bp.route('/event/<int:event_id>/upload_badge_images', methods=['GET', 'POST'])
 @login_required
 def upload_badge_images(event_id):
-    badge_ids = request.args.get('badge_ids', '').split(',')
-    badges = Badge.query.filter(Badge.id.in_(badge_ids)).all()
-    
+    badge_ids = request.args.get('badge_ids', '')
     if request.method == 'POST':
-        for badge in badges:
-            file = request.files.get(f'badge_image_{badge.id}')
-            if file and file.filename:
+        for badge_id in badge_ids.split(','):
+            file = request.files.get(f'badge_image_{badge_id}', None)
+            if file and file.filename != '':
                 filename = secure_filename(file.filename)
-                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                filepath = os.path.join(current_app.config['TASKCSV'], filename)
                 file.save(filepath)
-                badge.image = filepath
-                db.session.commit()
                 
+                badge = Badge.query.get(badge_id)
+                if badge:
+                    badge.image = filepath
+                    db.session.commit()
+
         flash('Badge images updated successfully', 'success')
-        return redirect(url_for('badges.manage_badges'))
+        return redirect(url_for('tasks.manage_event_tasks', event_id=event_id))
     
+    badge_ids = [int(id_) for id_ in badge_ids.split(',') if id_.isdigit()]
+    badges = Badge.query.filter(Badge.id.in_(badge_ids)).all()
     return render_template('upload_badge_images.html', badges=badges, event_id=event_id)
+
