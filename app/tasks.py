@@ -214,12 +214,13 @@ def submit_task(task_id):
         return jsonify({'success': False, 'message': 'No file selected'})
     try:
         image_url = save_submission_image(image_file)
+        comment = request.form.get('verificationComment')
 
         new_submission = TaskSubmission(
             task_id=task_id,
             user_id=current_user.id,
             image_url=url_for('static', filename=image_url),
-            comment=request.form.get('comment', ''),
+            comment=request.form.get('verificationComment', ''),
             timestamp=datetime.now(timezone.utc)  # Record the time of submission
         )
         db.session.add(new_submission)
@@ -264,7 +265,7 @@ def submit_task(task_id):
             'new_completion_count': user_task.completions,
             'total_points': total_points,
             'image_url': image_url,
-            'comment': request.form.get('comment', '')
+            'comment': comment
         })
     
     except Exception as e:

@@ -79,10 +79,7 @@
         <p id="modalTaskTips">Tips</p>
         <p id="modalTaskPoints">Points</p>
         <p id="modalTaskCompletionLimit">Completion Limit</p>
-        <p id="modalTaskFrequency">Frequency: </p>
         <p id="modalTaskCategory">Category: </p>
-        <p id="modalTaskEnabled">Enabled</p>
-        <p id="modalTaskVerificationType">Verification Type</p>
         <p id="modalTaskBadgeName">Badge Name</p>
         <!-- Actions and Completions placeholders -->
         <div id="modalTaskActions"></div>
@@ -104,7 +101,7 @@
 
 
         <!-- Inside the task detail modal, after the submission form -->
-        <div id="submissionCarousel" class="carousel slide" data-ride="carousel">
+        <div id="submissionCarousel" class="carousel slide">
             <div class="carousel-inner" id="carouselItems">
                 <!-- Carousel items will be added here dynamically -->
             </div>
@@ -215,8 +212,6 @@
         }
 
         document.getElementById('modalTaskCategory').innerText = `Category: ${task.category || 'No category'}`;
-        document.getElementById('modalTaskEnabled').innerText = `Enabled: ${task.enabled ? 'Yes' : 'No'}`;
-        document.getElementById('modalTaskVerificationType').innerText = `Verification Type: ${task.verification_type || 'Not applicable'}`;
         document.getElementById('modalTaskBadgeName').innerText = `Badge: ${task.badge_name || 'No badge'}`;
         document.getElementById('modalTaskCompletions').innerText = `Total Completions: ${userCompletionCount || 0}`;
         console.log(`Populating details for Task ID ${taskId}, canVerify: ${canVerify}`);
@@ -247,27 +242,49 @@
 
     // Function to fetch and display submissions in the carousel
     function fetchSubmissions(taskId) {
-        // Fetch and display submissions for the task
         fetch(`/tasks/task/${taskId}/submissions`)
-            .then(response => response.ok ? response.json() : Promise.reject('Failed to load submissions'))
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server responded with status ${response.status}`);
+                }
+                return response.json();
+            })
             .then(submissions => {
                 const carouselItems = document.getElementById('carouselItems');
                 carouselItems.innerHTML = ''; // Clear existing items
+
                 submissions.forEach((submission, index) => {
-                    // Dynamically create carousel items with submission images and comments
                     const item = document.createElement('div');
                     item.className = `carousel-item ${index === 0 ? 'active' : ''}`;
                     item.innerHTML = `
                         <img src="${submission.image_url}" class="d-block w-100" alt="Submission Image">
-                        <div class="carousel-caption d-none d-md-block">
+                        <div class="carousel-caption">
                             <p>${submission.comment}</p>
+                            <!-- Social Buttons Here -->
+                            <button onclick="shareOnFacebook('${submission.image_url}')">
+                                <!-- Facebook SVG -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 48 48">
+                                    <path fill="#039be5" d="M24 5A19 19 0 1 0 24 43A19 19 0 1 0 24 5Z"></path>
+                                    <path fill="#fff" d="M26.572,29.036h4.917l0.772-4.995h-5.69v-2.73c0-2.075,0.678-3.915,2.619-3.915h3.119v-4.359c-0.548-0.074-1.707-0.236-3.897-0.236c-4.573,0-7.254,2.415-7.254,7.917v3.323h-4.701v4.995h4.701v13.729C22.089,42.905,23.032,43,24,43c0.875,0,1.729-0.08,2.572-0.194V29.036z"></path>
+                                </svg>
+                            </button>
+                            <button onclick="shareOnTwitter('${submission.image_url}', '${submission.comment}')">
+                                <!-- X SVG (Twitter-like) -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 50 50">
+                                    <path d="M 11 4 C 7.134 4 4 7.134 4 11 L 4 39 C 4 42.866 7.134 46 11 46 L 39 46 C 42.866 46 46 42.866 46 39 L 46 11 C 46 7.134 42.866 4 39 4 L 11 4 z M 13.085938 13 L 21.023438 13 L 26.660156 21.009766 L 33.5 13 L 36 13 L 27.789062 22.613281 L 37.914062 37 L 29.978516 37 L 23.4375 27.707031 L 15.5 37 L 13 37 L 22.308594 26.103516 L 13.085938 13 z M 16.914062 15 L 31.021484 35 L 34.085938 35 L 19.978516 15 L 16.914062 15 z"></path>
+                                </svg>
+                            </button>
                         </div>
                     `;
                     carouselItems.appendChild(item);
                 });
-                $('#submissionCarousel').carousel();
+
+                $('#submissionCarousel').carousel({interval: false});
             })
-            .catch(error => console.error('Failed to fetch submissions:', error));
+            .catch(error => {
+                console.error('Failed to fetch submissions:', error.message);
+                alert('Could not load submissions. Please try again.');
+            });
     }
 
     // Function to set up and handle the task submission form
@@ -287,6 +304,7 @@
     function submitTaskDetails(event, taskId) {
         const form = event.target;
         const formData = new FormData(form);
+        console.log('Comment being sent:', formData.get('verificationComment')); // Assuming 'verificationComment' is the field name
 
         fetch(`/tasks/task/${taskId}/submit`, {
             method: 'POST',
@@ -301,7 +319,11 @@
             if (data.success) {
                 // Handle successful submission, e.g., updating UI, showing a message, etc.
                 document.getElementById('total-points').innerText = `Total Completed Points: ${data.total_points}`;
-                addSubmissionToCarousel(data.image_url, data.comment);
+                
+                const newImageURL = data.image_url; // This should be returned by the server
+                const newComment = data.comment; // This should also be returned by the server
+                addSubmissionToCarousel(newImageURL, newComment);
+                
                 alert('Submission successful!');
                 document.getElementById('taskDetailModal').style.display = 'none'; // Close modal on success if needed
                 form.reset(); // Reset the form to clear fields
@@ -333,20 +355,39 @@
         }
     }
 
+
     function addSubmissionToCarousel(imageURL, comment) {
         const carouselInner = document.getElementById('carouselItems');
-        const newItemHtml = `
-            <div class="carousel-item">
-                <img src="${imageURL}" class="d-block w-100" alt="Submitted Image">
-                <div class="carousel-caption d-none d-md-block">
-                    <p>${comment}</p>
-                </div>
+        const item = document.createElement('div');
+        item.className = 'carousel-item';
+        item.innerHTML = `
+            <img src="${imageURL}" class="d-block w-100" alt="Submission Image">
+            <div class="carousel-caption">
+                <p>${comment}</p>
+                <button onclick="shareOnFacebook('${imageURL}')">
+                    <!-- Facebook SVG -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 48 48">
+                        <path fill="#039be5" d="M24 5A19 19 0 1 0 24 43A19 19 0 1 0 24 5Z"></path>
+                        <path fill="#fff" d="M26.572,29.036h4.917l0.772-4.995h-5.69v-2.73c0-2.075,0.678-3.915,2.619-3.915h3.119v-4.359c-0.548-0.074-1.707-0.236-3.897-0.236c-4.573,0-7.254,2.415-7.254,7.917v3.323h-4.701v4.995h4.701v13.729C22.089,42.905,23.032,43,24,43c0.875,0,1.729-0.08,2.572-0.194V29.036z"></path>
+                    </svg>
+                </button>
+                <button class="social-button" onclick="shareOnTwitter('${imageURL}', '${comment}')">
+                    <!-- X SVG (Twitter-like) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 50 50">
+                        <path d="M 11 4 C 7.134 4 4 7.134 4 11 L 4 39 C 4 42.866 7.134 46 11 46 L 39 46 C 42.866 46 46 42.866 46 39 L 46 11 C 46 7.134 42.866 4 39 4 L 11 4 z M 13.085938 13 L 21.023438 13 L 26.660156 21.009766 L 33.5 13 L 36 13 L 27.789062 22.613281 L 37.914062 37 L 29.978516 37 L 23.4375 27.707031 L 15.5 37 L 13 37 L 22.308594 26.103516 L 13.085938 13 z M 16.914062 15 L 31.021484 35 L 34.085938 35 L 19.978516 15 L 16.914062 15 z"></path>
+                    </svg>
+                </button>
             </div>
         `;
-        carouselInner.innerHTML += newItemHtml;
-        // You might need to reinitialize or update your carousel here, depending on the library you're using
-    }
+        carouselInner.appendChild(item);
 
+        // Ensure the first item is marked as active if not already set
+        if (!document.querySelector('.carousel-item.active')) {
+            item.classList.add('active');
+        }
+
+        $('#submissionCarousel').carousel({interval: false});
+    }
 
     function getNextAvailableTime(lastRelevantDate, frequency) {
         const lastCompletionDate = new Date(lastRelevantDate);
@@ -462,5 +503,16 @@
             modal.style.display = "none";
         }
     }
+
+    function shareOnFacebook(imageUrl) {
+        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(imageUrl)}`;
+        window.open(url, '_blank');
+    }
+
+    function shareOnTwitter(imageUrl, text) {
+        const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(imageUrl)}&text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+
 </script>
 {% endblock %}
