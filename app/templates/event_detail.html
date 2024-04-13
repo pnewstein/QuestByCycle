@@ -140,6 +140,7 @@
     function openTaskDetailModal(taskId) {
         // Reset previous modal content
         resetModalContent();
+        document.body.classList.add('body-no-scroll');
 
         // Fetch task details and user completion status from the server
         fetch(`/tasks/detail/${taskId}/user_completion`)
