@@ -1,4 +1,4 @@
-from flask import g, Blueprint, jsonify, render_template, request, flash, redirect, url_for, current_app
+from flask import Blueprint, jsonify, render_template, request, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
 from app.utils import update_user_score, getLastRelevantCompletionTime, award_badge, revoke_badge, save_badge_image, save_submission_image, can_complete_task
 from app.forms import TaskForm, TaskSubmissionForm
@@ -198,13 +198,6 @@ def adjust_task_completion_logic(task_id, action):
 @tasks_bp.route('/task/<int:task_id>/submit', methods=['POST'])
 @login_required
 def submit_task(task_id):
-    # Initialize a key in g to track if submission has been processed
-    if not hasattr(g, 'submission_processed'):
-        g.submission_processed = set()
-
-    # Check if this task has already been processed in the current request
-    if task_id in g.submission_processed:
-        return jsonify({'success': False, 'message': 'Duplicate submission detected'})
 
     if 'image' not in request.files:
         return jsonify({'success': False, 'message': 'File part missing'})
@@ -252,7 +245,6 @@ def submit_task(task_id):
         print(f"Task {task_id} completed {user_task.completions} times; Total points now {user_task.points_awarded}")
 
         db.session.commit()
-        g.submission_processed.add(task_id)  # Mark this task as processed for this request
 
         print("Submission processed, updating user score...")
         update_user_score(current_user.id)  # This function should recalculate and update the user's score
