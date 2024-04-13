@@ -28,6 +28,12 @@
             {{ form.completion_limit(class="form-control") }}
         </div>
 
+        <!-- Frequency Field -->
+        <div class="form-group">
+            <label for="{{ form.frequency.id }}">{{ form.frequency.label }}</label>
+            {{ form.frequency(class="form-control") }}
+        </div>
+
         <!-- Task Configuration -->
         <div class="form-group">
             <label for="{{ form.enabled.id }}">{{ form.enabled.label }}</label>
@@ -38,6 +44,12 @@
             {{ form.category(class="form-control") }}
         </div>
 
+        <!-- Verification Type Field -->
+        <div class="form-group">
+            <label for="{{ form.verification_type.id }}">{{ form.verification_type.label }}</label>
+            {{ form.verification_type(class="form-control") }}
+        </div>
+        
         <!-- Badge Selection or Creation -->
         <fieldset>
             <legend>Badge Information</legend>

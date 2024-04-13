@@ -2,7 +2,7 @@
 UPLOAD_FOLDER = "images"
 VERIFICATIONS = "verifications"
 TASKCSV = "csv"
-SQLALCHEMY_ECHO = true
+SQLALCHEMY_ECHO = false
 
 [encryption]
 DEFAULT_ADMIN_PASSWORD = "password"
@@ -16,5 +16,5 @@ SESSION_COOKIE_DOMAIN = false
 SESSION_REFRESH_EACH_REQUEST = true
 
 [flask]
-SQLALCHEMY_DATABASE_URI = "postgresql://username:password@localhost/databasename1"
+SQLALCHEMY_DATABASE_URI = "postgresql://username:password@localhost/databasename2"
 DEBUG = true

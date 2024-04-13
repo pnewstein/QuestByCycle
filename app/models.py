@@ -1,11 +1,17 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from sqlalchemy import Enum as SQLAlchemyEnum
 
 db = SQLAlchemy()
+
+
+class Frequency(Enum):
+    daily = 1
+    weekly = 2
+    monthly = 3
 
 
 class VerificationType(Enum):
@@ -40,14 +46,12 @@ user_events = db.Table('user_events',
 
 class UserTask(db.Model):
     __tablename__ = 'user_tasks'
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), primary_key=True)
-    completed = db.Column(db.Boolean, default=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True, nullable=False)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), primary_key=True, nullable=False)
     completions = db.Column(db.Integer, default=0)  # Track number of completions
     points_awarded = db.Column(db.Integer, default=0)  # Points awarded for the task
-
-    # Ensure user-task uniqueness
-    __table_args__ = (db.UniqueConstraint('user_id', 'task_id', name='_user_task_uc'),)
+    completed_at = db.Column(db.DateTime(timezone=True), default=datetime.now(timezone.utc))
 
 
 class User(UserMixin, db.Model):
@@ -89,6 +93,7 @@ class Task(db.Model):
     points = db.Column(db.Integer, default='')
     tips = db.Column(db.String(500), default='')
     completion_limit = db.Column(db.Integer, default=1)  # Limit for how many times a task can be completed
+    frequency = db.Column(db.Enum(Frequency), nullable=False, default='daily')
     user_tasks = db.relationship('UserTask', backref='task', lazy='dynamic')
     category = db.Column(db.String(50), nullable=True)
     badge_id = db.Column(db.Integer, db.ForeignKey('badge.id'), nullable=True)  # Foreign key to Badge
@@ -101,8 +106,8 @@ class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(140), nullable=False)
     description = db.Column(db.String(500))
-    start_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    end_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    start_date = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
+    end_date = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
     admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     tasks = db.relationship('Task', backref='event', lazy='dynamic')
     participants = db.relationship('User', secondary='event_participants', lazy='subquery',
@@ -117,7 +122,7 @@ class ShoutBoardMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(500), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.now(timezone.utc))
     
     user = db.relationship('User', backref='shoutboard_messages')
     
@@ -137,7 +142,7 @@ class TaskSubmission(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     image_url = db.Column(db.String(500))
     comment = db.Column(db.String(500))
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.now(timezone.utc))
 
     task = db.relationship('Task', backref='submissions')
     user = db.relationship('User', backref='task_submissions')
