@@ -310,7 +310,6 @@ def update_task(task_id):
         return jsonify({'success': False, 'message': str(e)})
 
 
-
 @tasks_bp.route('/task/<int:task_id>/delete', methods=['DELETE'])
 @login_required
 def delete_task(task_id):
@@ -318,13 +317,10 @@ def delete_task(task_id):
         return jsonify({'success': False, 'message': 'Permission denied'}), 403
 
     # Fetch the task to be deleted
-    task = Task.query.get_or_404(task_id)
+    task_to_delete = Task.query.get_or_404(task_id)
     
-    # Delete all UserTask records associated with this task first
-    UserTask.query.filter_by(task_id=task_id).delete()
-
-    # Now, it's safe to delete the task itself
-    db.session.delete(task)
+    # Deleting the task. The cascade options in the relationship should handle deletion of related records.
+    db.session.delete(task_to_delete)
 
     try:
         db.session.commit()
