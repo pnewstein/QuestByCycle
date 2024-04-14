@@ -3,7 +3,9 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone
 from enum import Enum
+from sqlalchemy.orm import relationship
 from sqlalchemy import Enum as SQLAlchemyEnum
+
 
 db = SQLAlchemy()
 
@@ -48,11 +50,11 @@ class UserTask(db.Model):
     __tablename__ = 'user_tasks'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True, nullable=False)
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), primary_key=True, nullable=False)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id', ondelete='CASCADE'), primary_key=True, nullable=False)
     completions = db.Column(db.Integer, default=0)  # Track number of completions
     points_awarded = db.Column(db.Integer, default=0)  # Points awarded for the task
     completed_at = db.Column(db.DateTime(timezone=True), default=datetime.now(timezone.utc))
-
+    task = db.relationship("Task", back_populates="user_tasks")
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -94,10 +96,11 @@ class Task(db.Model):
     tips = db.Column(db.String(500), default='')
     completion_limit = db.Column(db.Integer, default=1)  # Limit for how many times a task can be completed
     frequency = db.Column(db.Enum(Frequency), nullable=False, default='daily')
-    user_tasks = db.relationship('UserTask', backref='task', lazy='dynamic')
+    user_tasks = db.relationship('UserTask', back_populates='task', cascade="all, delete", passive_deletes=True)
     category = db.Column(db.String(50), nullable=True)
     badge_id = db.Column(db.Integer, db.ForeignKey('badge.id'), nullable=True)  # Foreign key to Badge
-    badge = db.relationship('Badge', back_populates='tasks', uselist=False)
+    badge = db.relationship('Badge', back_populates='tasks')
+    submissions = db.relationship('TaskSubmission', back_populates='task', cascade='all, delete-orphan')
 
 Badge.tasks = db.relationship('Task', order_by=Task.id, back_populates='badge')
 
@@ -138,11 +141,11 @@ class ShoutBoardLike(db.Model):
 
 class TaskSubmission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id', ondelete='CASCADE'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     image_url = db.Column(db.String(500))
     comment = db.Column(db.String(500))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.now(timezone.utc))
 
-    task = db.relationship('Task', backref='submissions')
+    task = db.relationship('Task', back_populates='submissions')
     user = db.relationship('User', backref='task_submissions')
