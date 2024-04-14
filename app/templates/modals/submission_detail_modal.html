@@ -1,0 +1,14 @@
+<!-- Submission Detail Modal -->
+<div id="submissionDetailModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal('submissionDetailModal')">&times;</span>
+        <img id="submissionImage" src="" alt="Submission Detail" style="max-width: 90%; height: auto;">
+        <p id="submissionComment"></p>
+        <a id="submissionUserLink" href="#">User Profile</a>
+        <div>
+            <button onclick="shareOnFacebook(getImageUrl())">Share on Facebook</button>
+            <button onclick="shareOnTwitter(getImageUrl(), getComment())">Share on Twitter</button>
+            <a id="downloadLink" href="#" download>Download Image</a>
+        </div>
+    </div>
+</div>

@@ -12,3 +12,4 @@ SQLAlchemy~=2.0.22
 qrcode==7.4.2
 psycopg2-binary==2.9.9
 gunicorn==21.2.0
+qrcode[pil]==7.4.2
