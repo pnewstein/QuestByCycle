@@ -1,0 +1,34 @@
+<!-- Task Detail Modal Structure -->
+<div id="taskDetailModal" class="modal" data-placeholder-url="{{ url_for('static', filename='images/placeholdersubmission.png') }}">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeTaskDetailModal()">&times;</span>
+        <div class="task-modal-columns">
+            <div class="task-details">
+                <h2 id="modalTaskTitle">Task Title</h2>
+                <p id="modalTaskDescription">Description</p>
+                <p id="modalTaskTips">Tips</p>
+                <p id="modalTaskPoints">Points</p>
+                <p id="modalTaskCompletionLimit">Completion Limit</p>
+                <p id="modalTaskCategory">Category: </p>
+                <p id="modalTaskBadgeName">Badge Name</p>
+            </div>
+            <div class="user-task-data">
+                <!-- User Task Data -->
+                <p id="modalTaskCompletions">Total Completions: </p>
+                <p id="modalCountdown"></p>
+                {% for task in tasks %}
+                    <button id="verifyButton-{{ task.id }}" class="verifyButton">Verify Task</button>
+                    <div id="verifyTaskForm-{{ task.id }}" style="display: none;">
+                        <form enctype="multipart/form-data">
+                            <input type="file" name="image" accept="image/*" required>
+                            <textarea name="verificationComment" placeholder="Enter a comment..." required></textarea>
+                            <button type="submit">Submit Verification</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div id="submissionBoard" class="photo-board">
+        </div>
+    </div>
+</div>

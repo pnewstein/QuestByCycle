@@ -1,7 +1,7 @@
-from flask import Blueprint, jsonify, render_template, request, flash, redirect, url_for, current_app
+from flask import Blueprint, send_file, jsonify, render_template, request, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
 from app.utils import update_user_score, getLastRelevantCompletionTime, award_badge, revoke_badge, save_badge_image, save_submission_image, can_complete_task
-from app.forms import TaskForm, TaskSubmissionForm
+from app.forms import TaskForm, TaskSubmissionForm, PhotoForm
 from .models import db, Event, Task, Badge, UserTask, VerificationType, TaskSubmission, Frequency
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
@@ -10,9 +10,9 @@ from datetime import datetime, timezone
 
 import csv
 import os
+import qrcode
 
 tasks_bp = Blueprint('tasks', __name__, template_folder='templates')
-
 
 
 @tasks_bp.route('/<int:event_id>/manage_tasks', methods=['GET', 'POST'])
@@ -461,7 +461,6 @@ def task_user_completion(task_id):
     return jsonify(response_data)
 
 
-
 @tasks_bp.route('/get_last_relevant_completion_time/<int:task_id>/<int:user_id>')
 @login_required
 def get_last_relevant_completion_time(task_id, user_id):
@@ -470,7 +469,80 @@ def get_last_relevant_completion_time(task_id, user_id):
         return jsonify(success=True, lastRelevantCompletionTime=last_time.isoformat())
     else:
         return jsonify(success=False, message="No relevant completion found")
+
+
+@tasks_bp.route('/generate_qr/<int:task_id>')
+def generate_qr(task_id):
+    url = url_for('tasks.submit_photo', task_id=task_id, _external=True)
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    # Ensure the directory exists
+    qr_code_dir = os.path.join(current_app.static_folder, 'qr_codes')
+    if not os.path.exists(qr_code_dir):
+        os.makedirs(qr_code_dir)
+
+    file_path = os.path.join(qr_code_dir, f'qr_task_{task_id}.png')
+    img.save(file_path)
+    return send_file(file_path, mimetype='image/png')
+
+
+@tasks_bp.route('/submit_photo/<int:task_id>', methods=['GET', 'POST'])
+@login_required
+def submit_photo(task_id):
+    form = PhotoForm()
+    task = Task.query.get_or_404(task_id)
     
+    if request.method == 'POST':
+        photo = request.files.get('photo')
+        if photo:
+            try:
+                # Use the save_submission_image function to handle file saving
+                image_url = save_submission_image(photo)
+
+                # Update TaskSubmission Model
+                new_submission = TaskSubmission(
+                    user_id=current_user.id,
+                    task_id=task_id,
+                    image_url=url_for('static', filename=image_url),  # Generate URL for the saved image
+                    timestamp=datetime.now(timezone.utc)
+                )
+                db.session.add(new_submission)
+
+                # Update or create a UserTask entry
+                user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
+                if not user_task:
+                    user_task = UserTask(user_id=current_user.id, task_id=task_id, completions=1)
+                    db.session.add(user_task)
+                else:
+                    user_task.completions += 1
+
+                db.session.commit()
+
+                flash('Photo submitted successfully!', 'success')
+                # Redirect to a page that displays the event detail and the submitted task
+                return redirect(url_for('events.event_detail', event_id=task.event_id, task_id=task_id, open_modal='true'))
+            except Exception as e:
+                db.session.rollback()
+                flash(f'An error occurred while submitting the photo: {e}', 'error')
+        else:
+            flash('No photo detected, please try again.', 'error')
+
+    return render_template('submit_photo.html', form=form, task=task)
+
+
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @tasks_bp.errorhandler(RequestEntityTooLarge)
 def handle_large_file_error(e):

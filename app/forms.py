@@ -105,6 +105,10 @@ class TaskSubmissionForm(FlaskForm):
     submit = SubmitField('Submit Task')
 
 
+class PhotoForm(FlaskForm):
+    photo = FileField(validators=[DataRequired()])
+    
+
 class ShoutBoardForm(FlaskForm):
     message = TextAreaField('Message', validators=[DataRequired(), Length(max=500)])
     submit = SubmitField('Post')

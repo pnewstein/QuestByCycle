@@ -275,6 +275,7 @@
                         <td>
                             <button class="edit-button" onclick="editTask(${task.id})">Edit</button>
                             <button onclick="deleteTask(${task.id})">Delete</button>
+                            <button onclick="generateQRCode(${task.id})">Generate QR Code</button>
                         </td>
                     `;
 
@@ -340,6 +341,25 @@
             })
             .catch(error => {
                 console.error('Error importing tasks:', error);
+            });
+        }
+        
+        function generateQRCode(taskId) {
+            // Assuming you have an endpoint that generates and sends a QR code image
+            const url = `/tasks/generate_qr/${taskId}`;
+            fetch(url)
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to generate QR code');
+                return response.blob();
+            })
+            .then(blob => {
+                const imageUrl = URL.createObjectURL(blob);
+                const win = window.open();
+                win.document.write('<img src="' + imageUrl + '" style="width: auto; height: auto;"/>');
+            })
+            .catch(error => {
+                console.error('Error generating QR code:', error);
+                alert('Failed to generate QR code. Please check console for more details.');
             });
         }
     </script>
