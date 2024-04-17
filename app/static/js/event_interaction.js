@@ -33,4 +33,10 @@ function closeSubmissionModal() {
     document.getElementById('taskDetailModal').style.backgroundColor = 'rgba(0,0,0,0.4)';
 }
 
+function closeUserProfileModal() {
+    const userProfileModal = document.getElementById('userProfileModal');
+    if (userProfileModal) {
+        userProfileModal.style.display = 'none';
+    }
+}
 // Assuming other utility functions might be needed here

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from app.models import db, Event, Task, UserTask, TaskSubmission
 from app.forms import EventForm, TaskForm, TaskSubmissionForm
@@ -21,7 +21,8 @@ def create_event():
             description=form.description.data,
             start_date=form.start_date.data,
             end_date=form.end_date.data,
-            admin_id=current_user.id
+            admin_id=current_user.id,
+            event_goal=form.event_goal.data  # Make sure to handle the event_goal
         )
         db.session.add(event)
         try:
@@ -32,6 +33,23 @@ def create_event():
             db.session.rollback()
             flash(f'An error occurred while creating the event: {e}', 'error')
     return render_template('create_event.html', title='Create Event', form=form)
+
+
+@events_bp.route('/update_event/<int:event_id>', methods=['GET', 'POST'])
+@login_required
+def update_event(event_id):
+    event = Event.query.get_or_404(event_id)
+    form = EventForm(obj=event)
+    if form.validate_on_submit():
+        event.title = form.title.data
+        event.description = form.description.data
+        event.start_date = form.start_date.data
+        event.end_date = form.end_date.data
+        event.event_goal = form.event_goal.data
+        db.session.commit()
+        flash('Event updated successfully!', 'success')
+        return redirect(url_for('admin.admin_dashboard'))
+    return render_template('update_event.html', form=form, event_id=event_id)
 
 
 @events_bp.route('/event_detail/<int:event_id>')
@@ -137,3 +155,20 @@ def delete_event(event_id):
         flash(f'An error occurred while deleting the event: {e}', 'error')
     
     return redirect(url_for('admin.admin_dashboard'))
+
+
+@events_bp.route('/get_event_points/<int:event_id>', methods=['GET'])
+@login_required
+def get_event_points(event_id):
+    # Query to get the total points awarded for a specific event
+    total_event_points = db.session.query(
+        db.func.sum(UserTask.points_awarded)
+    ).join(Task, UserTask.task_id == Task.id
+    ).filter(Task.event_id == event_id
+    ).scalar() or 0
+
+    # Query to get the goal for the specific event
+    event = Event.query.get(event_id)
+    event_goal = event.event_goal  # Assumes that `event_goal` is a column in your Event model
+
+    return jsonify(total_event_points=total_event_points, event_goal=event_goal)

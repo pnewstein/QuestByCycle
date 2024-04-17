@@ -5,7 +5,6 @@
     <div class="welcomeImage">
         <img src="{{ url_for('static', filename='images/leaderboardBikeHunt.png') }}" alt="Bike Hunt Leaderboard" style="max-width: 600px; max-height: 200px;">
     </div>
-
     {% if events|length > 1 %}
     <form method="get" action="{{ url_for('main.leaderboard') }}">
         <div class="form-group">
@@ -18,34 +17,49 @@
         </div>
     </form>
     {% endif %}
+    <div class="event-item">
+        <div class="leaderboard-container">
+            <!-- Leaderboard Table -->
+            <div class="leaderboard-table">
+                {% if top_users %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Carbon “Reduction” Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user_id, username, total_points in top_users %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td><a href="javascript:void(0)" onclick="showUserProfileModal('{{ user_id }}')">{{ username }}</a></td>
+                            <td>{{ total_points }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3">No players have scored yet in this event.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>Join an event to see the leaderboard!</p>
+                {% endif %}
+            </div>
 
-    {% if top_users %}
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Rank</th>
-                <th>Player</th>
-                <th>Carbon “Reduction” Points</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user_id, username, total_points in top_users %}
-            <tr>
-                <td>{{ loop.index }}</td>
-                <td><a href="javascript:void(0)" onclick="showUserProfileModal('{{ user_id }}')">{{ username }}</a></td>
-                <td>{{ total_points }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="3">No players have scored yet in this event.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>Join an event to see the leaderboard!</p>
-    {% endif %}
+            <!-- Group Completion Meter -->
+            <div class="completion-meter-container">
+                <div class="meter-label">Group Completion: {{ total_event_points }} / {{ event_goal }}</div>
+                <div class="completion-meter">
+                    <div class="meter-bar" id="meterBar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
 
 <!-- User Profile Modal -->
 <div id="userProfileModal" style="display:none;" class="modal">
@@ -58,20 +72,39 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {});
+    document.addEventListener("DOMContentLoaded", function() {
+        updateMeter();
+        setInterval(updateMeter, 5000); // Update the meter every 5 seconds
+    });
+    
+    function updateMeter() {
+        const eventId = {{ selected_event_id | safe }};
+        fetch(`events/get_event_points/${eventId}`)
+            .then(response => response.json())
+            .then(data => {
+                const totalPoints = data.total_event_points;
+                const eventGoal = data.event_goal;
+                const heightPercentage = (totalPoints / eventGoal) * 100;
+                document.getElementById('meterBar').style.height = heightPercentage + '%';
+                document.documentElement.style.setProperty('--meter-fill-height', heightPercentage + '%');
 
-function showUserProfileModal(userId) {
-    fetch(`/profile/${userId}`)
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('userProfileContent').innerHTML = html;
-            document.getElementById('userProfileModal').style.display = 'block';
-        })
-        .catch(err => console.error('Failed to load user profile:', err));
-}
-
-function closeModal() {
-    document.getElementById('userProfileModal').style.display = 'none';
-}
+                document.querySelector('.meter-label').innerText = `Group Completion: ${totalPoints} / ${eventGoal}`;
+            })
+            .catch(err => console.error('Failed to update meter:', err));
+    }
+    
+    function showUserProfileModal(userId) {
+        fetch(`/profile/${userId}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('userProfileContent').innerHTML = html;
+                document.getElementById('userProfileModal').style.display = 'block';
+            })
+            .catch(err => console.error('Failed to load user profile:', err));
+    }
+    
+    function closeModal() {
+        document.getElementById('userProfileModal').style.display = 'none';
+    }
 </script>
 {% endblock %}

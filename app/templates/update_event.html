@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block title %}Update Event{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Update Event</h1>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            <label for="title">Event Title</label>
+            {{ form.title(class_="form-control", id="title") }}
+        </div>
+        <div class="form-group">
+            <label for="description">Event Description</label>
+            {{ form.description(class_="form-control", id="description") }}
+        </div>
+        <div class="form-group">
+            <label for="start_date">Start Date</label>
+            {{ form.start_date(class_="form-control", id="start_date") }}
+        </div>
+        <div class="form-group">
+            <label for="end_date">End Date</label>
+            {{ form.end_date(class_="form-control", id="end_date") }}
+        </div>
+        <div class="form-group">
+            <label for="event_goal">Event Goal</label>
+            {{ form.event_goal(class_="form-control", id="event_goal") }}
+        </div>
+        <button type="submit" class="btn btn-primary">Update Event</button>
+    </form>
+</div>
+{% endblock %}

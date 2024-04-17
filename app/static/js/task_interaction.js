@@ -80,6 +80,7 @@ function fetchSubmissions(taskId) {
                 return {
                     url: submission.image_url,
                     alt: "Submission Image",
+                    comment: submission.comment, 
                     user_id: submission.user_id
                 };
             });
@@ -125,7 +126,10 @@ function showSubmissionDetail(image) {
     const submissionModal = document.getElementById('submissionDetailModal');
     document.getElementById('submissionImage').src = image.url;
     document.getElementById('submissionComment').textContent = image.comment || 'No comment provided.';
-    document.getElementById('submissionUserLink').href = `/user/profile/${image.user_id}`;
+    document.getElementById('submissionUserLink').onclick = function() {
+        openUserProfile(image.user_id);
+        return false; // Prevent default link behavior
+    };
     document.getElementById('downloadLink').href = image.url;
     document.getElementById('downloadLink').download = `Image-${image.user_id}`;
 
