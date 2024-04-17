@@ -82,21 +82,22 @@ def custom_request(user_id):
 @main_bp.route('/leaderboard', methods=['GET'])
 @login_required
 def leaderboard():
-    # Retrieve events the current user has joined
     user_events = current_user.participated_events
-    # Try to get 'event_id' from query parameters
     selected_event_id = request.args.get('event_id', type=int)
 
-    # If the user is part of only one event and 'event_id' is not specified or differs, redirect to that event's leaderboard
     if len(user_events) == 1:
         single_event_id = user_events[0].id
         if selected_event_id is None or selected_event_id != single_event_id:
             return redirect(url_for('main.leaderboard', event_id=single_event_id))
 
-    # Use the selected_event_id if provided, otherwise default to None
-    # This will be used to fetch the leaderboard for the specific event
     top_users = []
+    total_event_points = 0
+    event_goal = None  # Initialize event goal as None
+
     if selected_event_id:
+        event = Event.query.get(selected_event_id)
+        event_goal = event.event_goal if event else None
+
         top_users = db.session.query(
             User.id,
             User.username,
@@ -108,9 +109,13 @@ def leaderboard():
         ).order_by(db.func.sum(UserTask.points_awarded).desc()
         ).all()
 
-    # Render the leaderboard template with the necessary data
-    return render_template('leaderboard.html', events=user_events, top_users=top_users, selected_event_id=selected_event_id)
+        total_event_points = db.session.query(
+            db.func.sum(UserTask.points_awarded)
+        ).join(Task, UserTask.task_id == Task.id
+        ).filter(Task.event_id == selected_event_id
+        ).scalar() or 0
 
+    return render_template('leaderboard.html', events=user_events, top_users=top_users, selected_event_id=selected_event_id, total_event_points=total_event_points, event_goal=event_goal)
 
 @main_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
@@ -150,4 +155,14 @@ def user_profile(user_id):
     user_tasks = UserTask.query.filter_by(user_id=user.id).all()
     badges = user.badges
 
-    return render_template('_user_profile.html', user=user, user_tasks=user_tasks, badges=badges)
+    # Debug prints to verify the data being sent to the template
+    print(f"Loading profile for user: {user.username}, ID: {user_id}")
+    print(f"Tasks loaded: {len(user_tasks)}")
+    print(f"Badges loaded: {len(badges)}")
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # Return only the part of the page needed for the modal
+        return render_template('_user_profile_modal_content.html', user=user)
+    else:
+        # Return the full page
+        return render_template('_user_profile.html', user=user, user_tasks=user_tasks, badges=badges)
+    

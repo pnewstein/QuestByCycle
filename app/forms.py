@@ -4,7 +4,7 @@ from wtforms import StringField, SelectField, SubmitField, IntegerField, Passwor
 from wtforms.validators import DataRequired, NumberRange, EqualTo, Optional, Email, Length
 from wtforms.fields import DateField
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from app.models import Badge, VerificationType, Frequency
+from app.models import Badge, VerificationType, Frequency, Task
 
 import os
 
@@ -13,7 +13,6 @@ class CSRFProtectForm(FlaskForm):
     pass
 
 class RegistrationForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
@@ -21,10 +20,10 @@ class RegistrationForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
-    remember_me = BooleanField('Remember Me')
-    submit = SubmitField('Login')
+    remember_me = BooleanField('Remember Me', default=True)
+    submit = SubmitField('Log In')
 
 
 class LogoutForm(FlaskForm):
@@ -43,6 +42,7 @@ class EventForm(FlaskForm):
     description = StringField('Description', validators=[DataRequired()])
     start_date = DateField('Start Date', format='%Y-%m-%d', validators=[DataRequired()])  # Use DateField
     end_date = DateField('End Date', format='%Y-%m-%d', validators=[DataRequired()])  # Use DateField
+    event_goal = IntegerField('Event Goal')  # Add a default value or make it required
     submit = SubmitField('Create Event')
 
 
@@ -53,7 +53,7 @@ class TaskForm(FlaskForm):
     verification_type = SelectField('Verification Type', choices=[(vt.name, vt.value) for vt in VerificationType], coerce=str, validators=[DataRequired()])
     title = StringField('Title', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
-    tips = TextAreaField('Tips', validators=[])
+    tips = TextAreaField('Tips', validators=[Optional()])
     points = IntegerField('Points', validators=[DataRequired(), NumberRange(min=1)], default=1)  # Assuming tasks have at least 1 point
     completion_limit = IntegerField('Completion Limit', validators=[DataRequired(), NumberRange(min=1)], default=1)
     frequency = SelectField('Frequency', choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly')], validators=[DataRequired()])
@@ -114,11 +114,17 @@ class ShoutBoardForm(FlaskForm):
     submit = SubmitField('Post')
 
 
+
 class BadgeForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired(), Length(max=255)])
     description = TextAreaField('Description', validators=[Length(max=500)])
     image = FileField('Badge Image', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
+    category = SelectField('Category', choices=[], coerce=str, validators=[Optional()])
     submit = SubmitField('Submit')
+
+    def __init__(self, *args, **kwargs):
+        super(BadgeForm, self).__init__(*args, **kwargs)
+        self.category.choices = [('','Select a Category')] + list(set([(task.category, task.category) for task in Task.query.filter(Task.category != None)]))
 
 
 class TaskImportForm(FlaskForm):

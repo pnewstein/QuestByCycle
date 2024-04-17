@@ -33,7 +33,7 @@ def create_badge():
 @badges_bp.route('/badges', methods=['GET'])
 def get_badges():
     badges = Badge.query.all()
-    badges_data = [{'id': badge.id, 'name': badge.name, 'description': badge.description, 'image': badge.image} for badge in badges]
+    badges_data = [{'id': badge.id, 'name': badge.name, 'description': badge.description, 'image': badge.image, 'category': badge.category} for badge in badges]
     return jsonify(badges=badges_data)
 
 
@@ -45,6 +45,8 @@ def manage_badges():
         return redirect(url_for('main.index'))
 
     form = BadgeForm()
+    form.category.choices = [category[0] for category in db.session.query(Task.category.distinct()).all() if category[0]]
+
     if form.validate_on_submit():
         # Similar to how profile pictures are handled
         if 'image' in request.files:
@@ -55,7 +57,8 @@ def manage_badges():
                 new_badge = Badge(
                     name=form.name.data,
                     description=form.description.data,
-                    image=filename  # Store the filename or relative path in the database
+                    image=filename,  # Store the filename or relative path in the database
+                    category=request.form['category']
                 )
                 db.session.add(new_badge)
                 db.session.commit()

@@ -23,23 +23,20 @@
             <table class="table">
                 <thead>
                     <tr>
+                        <th></th>
+                        <th>Badge</th>
                         <th>Task</th>
                         <th>Description</th>
                         <th>Points</th>
-                        <th>Badge</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for task in tasks %}
                     <tr>
-                        <td><a href="javascript:void(0);" onclick="openTaskDetailModal('{{ task.id }}')">{{ task.title }}</a></td>
-                        <td>
-                            {{ task.description }}
-                            {% if task.tips %}
-                                <a href="javascript:void(0);" onclick="showModal('{{ task.tips }}')">[...]</a>
-                            {% endif %}
+                        <td class="disabled-checkbox">
+                            <input type="checkbox" disabled {{ 'checked' if task.total_completions > 0 else '' }}>
+                            <span class="checkbox-custom"></span> <!-- This span acts as the visual element for the checkbox -->
                         </td>
-                        <td>{{ task.points }}</td>
                         <td>
                             {% if task.badge %}
                                 {% if task.badge.image %}
@@ -49,6 +46,14 @@
                                 None
                             {% endif %}
                         </td>
+                        <td><a href="javascript:void(0);" onclick="openTaskDetailModal('{{ task.id }}')">{{ task.title }}</a></td>
+                        <td>
+                            {{ task.description }}
+                            {% if task.tips %}
+                                <a href="javascript:void(0);" onclick="showModal('{{ task.tips }}')">[...]</a>
+                            {% endif %}
+                        </td>
+                        <td>{{ task.points }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -65,6 +70,7 @@
 {% include 'modals/task_detail_modal.html' %}
 {% include 'modals/submission_detail_modal.html' %}
 {% include 'modals/tips_modal.html' %}
+{% include 'modals/user_profile_modal.html' %}
 
 <script src="{{ url_for('static', filename='js/modal_handlers.js') }}"></script>
 <script src="{{ url_for('static', filename='js/task_interaction.js') }}"></script>

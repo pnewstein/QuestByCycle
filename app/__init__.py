@@ -11,6 +11,7 @@ from app.badges import badges_bp
 from app.models import db
 from .config import load_config
 from flask_wtf.csrf import CSRFProtect
+from datetime import timedelta
 
 # Global variable to track the first request
 has_run = False
@@ -45,6 +46,7 @@ def create_app():
     app.config['SESSION_COOKIE_SAMESITE'] = app.config['encryption']['SESSION_COOKIE_SAMESITE']
     app.config['SESSION_COOKIE_DOMAIN'] = app.config['encryption']['SESSION_COOKIE_DOMAIN']
     app.config['SESSION_REFRESH_EACH_REQUEST'] = app.config['encryption']['SESSION_REFRESH_EACH_REQUEST']
+    app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=app.config['encryption']['REMEMBER_COOKIE_DURATION_DAYS'])
 
 
     # Initialize extensions

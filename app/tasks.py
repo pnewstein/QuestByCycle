@@ -1,13 +1,14 @@
 from flask import Blueprint, send_file, jsonify, render_template, request, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
-from app.utils import update_user_score, getLastRelevantCompletionTime, award_badge, revoke_badge, save_badge_image, save_submission_image, can_complete_task
-from app.forms import TaskForm, TaskSubmissionForm, PhotoForm
-from .models import db, Event, Task, Badge, UserTask, VerificationType, TaskSubmission, Frequency
+from app.utils import update_user_score, getLastRelevantCompletionTime, check_and_award_badges, revoke_badge, save_badge_image, save_submission_image, can_complete_task
+from app.forms import TaskForm, PhotoForm
+from .models import db, Event, Task, Badge, UserTask, TaskSubmission, Frequency, ShoutBoardMessage, VerificationType
+from .utils import award_badges
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
-from sqlalchemy.exc import IntegrityError
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
+import pytz
 import csv
 import os
 import qrcode
@@ -91,7 +92,7 @@ def add_task(event_id):
             new_badge = Badge(
                 name=form.badge_name.data,
                 description=form.badge_description.data,
-                image=badge_image_path  # Use the saved image path or None if no image was uploaded
+                image=badge_image_path
             )
             db.session.add(new_badge)
             db.session.flush()  # Ensures new_badge gets an ID
@@ -124,81 +125,18 @@ def add_task(event_id):
     return render_template('add_task.html', form=form, event_id=event_id)
 
 
-@tasks_bp.route('/adjust_completion/<int:task_id>/<action>', methods=['POST'])
-@login_required
-def adjust_task_completion(task_id, action):
-    task = Task.query.get_or_404(task_id)
-    user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
-    disable_increment = False
-    disable_decrement = False
-
-    if action == "increment":
-        # Check against the task's completion limit before incrementing
-        if not user_task:
-            if task.completion_limit > 0:  # Assuming a completion_limit of 0 means unlimited completions
-                user_task = UserTask(
-                    user_id=current_user.id, 
-                    task_id=task.id, 
-                    completions=1, 
-                    points_awarded=task.points, 
-                    completed=True
-                )
-                db.session.add(user_task)
-        elif user_task.completions < task.completion_limit:
-            user_task.completions += 1
-            user_task.points_awarded += task.points
-            user_task.completed = True
-        disable_increment = user_task.completions >= task.completion_limit if user_task else False
-
-    elif action == "decrement" and user_task and user_task.completions > 0:
-        user_task.completions -= 1
-        user_task.points_awarded = max(0, user_task.points_awarded - task.points)
-        if user_task.completions == 0:
-            user_task.completed = False
-        disable_decrement = user_task.completions <= 0
-
-    try:
-        db.session.commit()
-        update_user_score(current_user.id)
-        if action == "increment":
-            award_badge(current_user.id)
-        if action == "decrement":
-            revoke_badge(current_user.id)
-
-        # Calculate the updated total points
-        total_points = sum(ut.points_awarded for ut in UserTask.query.filter_by(user_id=current_user.id).all())
-
-        return jsonify(success=True, new_completions_count=user_task.completions if user_task else 0, total_points=total_points, disable_increment=disable_increment, disable_decrement=disable_decrement)
-
-    except IntegrityError as e:
-        db.session.rollback()
-        return jsonify(success=False, error=str(e))
-
-
-def adjust_task_completion_logic(task_id, action):
-    # This function is a simplified version of adjust_task_completion to be used internally
-    # It mirrors the logic of the existing adjust_task_completion, without handling request/response directly
-    try:
-        task = Task.query.get_or_404(task_id)
-        user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
-
-        if action == "increment":
-            if not user_task:
-                user_task = UserTask(user_id=current_user.id, task_id=task.id, completions=1, points_awarded=task.points, completed=True)
-                db.session.add(user_task)
-            elif user_task.completions < task.completion_limit:
-                user_task.completions += 1
-                user_task.points_awarded += task.points
-                user_task.completed = True
-        
-        return {'success': True, 'message': 'Completion adjusted successfully.'}
-    except Exception as e:
-        return {'success': False, 'message': str(e)}
-
-
 @tasks_bp.route('/task/<int:task_id>/submit', methods=['POST'])
 @login_required
 def submit_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    event = Event.query.get_or_404(task.event_id)
+    now = datetime.now()
+    event_start = event.start_date.replace(tzinfo=None)
+    event_end = event.end_date.replace(tzinfo=None)
+
+    # Check if current time is within the event's active period
+    if not (event_start <= now <= event_end):
+        return jsonify({'success': False, 'message': 'This task cannot be completed outside of the event dates'}), 403
 
     if 'image' not in request.files:
         return jsonify({'success': False, 'message': 'File part missing'})
@@ -249,6 +187,7 @@ def submit_task(task_id):
 
         print("Submission processed, updating user score...")
         update_user_score(current_user.id)  # This function should recalculate and update the user's score
+        check_and_award_badges(user_id=current_user.id, task_id=task_id)
 
         total_points = sum(ut.points_awarded for ut in UserTask.query.filter_by(user_id=current_user.id))
         print(f"Total points after update: {total_points}")
@@ -260,11 +199,10 @@ def submit_task(task_id):
             'image_url': image_url,
             'comment': comment
         })
-    
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)})
-    
+
 
 @tasks_bp.route('/task/<int:task_id>/update', methods=['POST'])
 @login_required
@@ -308,7 +246,7 @@ def update_task(task_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)})
-
+    
 
 @tasks_bp.route('/task/<int:task_id>/delete', methods=['DELETE'])
 @login_required
@@ -415,6 +353,7 @@ def get_task_submissions(task_id):
     submissions_data = [{
         'image_url': submission.image_url,
         'comment': submission.comment,
+        'user_id': submission.user_id
     } for submission in submissions]
     return jsonify(submissions_data)
 
@@ -431,6 +370,7 @@ def task_user_completion(task_id):
         'id': task.id,
         'title': task.title,
         'description': task.description,
+        'tips': task.tips,
         'points': task.points,
         'completion_limit': task.completion_limit,
         'frequency': task.frequency.name if task.frequency else 'Not Set', 
@@ -499,40 +439,40 @@ def submit_photo(task_id):
     if request.method == 'POST':
         photo = request.files.get('photo')
         if photo:
-            try:
-                # Use the save_submission_image function to handle file saving
-                image_url = save_submission_image(photo)
+            filename = secure_filename(photo.filename)
+            image_url = save_submission_image(photo)  # Assuming this returns the path
 
-                # Update TaskSubmission Model
-                new_submission = TaskSubmission(
+            new_submission = TaskSubmission(
+                user_id=current_user.id,
+                task_id=task_id,
+                image_url=image_url,
+                timestamp=datetime.utcnow()
+            )
+            db.session.add(new_submission)
+
+            user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
+            if not user_task:
+                user_task = UserTask(
                     user_id=current_user.id,
                     task_id=task_id,
-                    image_url=url_for('static', filename=image_url),  # Generate URL for the saved image
-                    timestamp=datetime.now(timezone.utc)
+                    completions=1,
+                    points_awarded=task.points
                 )
-                db.session.add(new_submission)
+                db.session.add(user_task)
+            else:
+                user_task.completions += 1
+                user_task.points_awarded += task.points
 
-                # Update or create a UserTask entry
-                user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
-                if not user_task:
-                    user_task = UserTask(user_id=current_user.id, task_id=task_id, completions=1)
-                    db.session.add(user_task)
-                else:
-                    user_task.completions += 1
+            db.session.commit()
 
-                db.session.commit()
+            update_user_score(current_user.id)  # Recalculate and update user score
 
-                flash('Photo submitted successfully!', 'success')
-                # Redirect to a page that displays the event detail and the submitted task
-                return redirect(url_for('events.event_detail', event_id=task.event_id, task_id=task_id, open_modal='true'))
-            except Exception as e:
-                db.session.rollback()
-                flash(f'An error occurred while submitting the photo: {e}', 'error')
+            flash('Photo submitted successfully!', 'success')
+            return redirect(url_for('events.event_detail', event_id=task.event_id))
         else:
             flash('No photo detected, please try again.', 'error')
 
     return render_template('submit_photo.html', form=form, task=task)
-
 
 
 def allowed_file(filename):
@@ -543,3 +483,20 @@ def allowed_file(filename):
 @tasks_bp.errorhandler(RequestEntityTooLarge)
 def handle_large_file_error(e):
     return "File too large", 413
+
+
+@tasks_bp.route('/task/<int:task_id>/share')
+def task_share(task_id):
+    task = Task.query.get_or_404(task_id)
+    submission = TaskSubmission.query.filter_by(task_id=task_id).order_by(TaskSubmission.timestamp.desc()).first()
+    # Assuming `submission` has attributes like image_url and comment
+    return render_template('task_share.html', task=task, submission=submission)
+
+
+@tasks_bp.route('/get-image-url/<int:taskId>')
+@login_required
+def get_image_url(taskId):
+    task = Task.query.get_or_404(taskId)
+    # Assume the image URL is stored in a Task model attribute
+    imageUrl = task.image_url if task.image_url else url_for('static', filename='default.jpg')
+    return jsonify(success=True, imageUrl=imageUrl)

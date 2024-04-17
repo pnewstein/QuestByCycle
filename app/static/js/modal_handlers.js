@@ -16,20 +16,19 @@ function closeModal(modalId) {
     }
 }
 
+
 // Close modals if the user clicks outside of the modal content
 window.onclick = function(event) {
     let submissionModal = document.getElementById('submissionDetailModal');
     let taskModal = document.getElementById('taskDetailModal');
-    
-    if (event.target == modal) {
-        modal.style.display = "none";
-    }
-    if (event.target == submissionModal) {
-        closeSubmissionModal();
-    }
+    let userProfileModal = document.getElementById('userProfileModal');
 
-    else if (event.target == taskModal) {
-        closeTaskDetailModal(); 
+    if (submissionModal && event.target === submissionModal) {
+        closeSubmissionModal();
+    } else if (taskModal && event.target === taskModal) {
+        closeTaskDetailModal();
+    } else if (userProfileModal && event.target === userProfileModal) {
+        closeUserProfileModal();
     }
 }
 
@@ -58,8 +57,13 @@ function openTaskDetailModal(taskId) {
             populateTaskDetails(task, userCompletion.completions, canVerify, taskId, nextEligibleTime);
             fetchSubmissions(taskId);
 
-            document.getElementById('taskDetailModal').style.display = 'block';
-
+            getImageUrl(taskId).then(imageUrl => {
+                document.getElementById('submissionImage').src = imageUrl;
+                document.getElementById('taskDetailModal').style.display = 'block';
+            }).catch(error => {
+                console.error('Error fetching image URL:', error);
+                document.getElementById('taskDetailModal').style.display = 'block';  // Display modal even if image fetch fails
+            });
         })
         .catch(error => {
             console.error('Error opening task detail modal:', error);
@@ -67,6 +71,24 @@ function openTaskDetailModal(taskId) {
         });
 }
 
+function openUserProfile(userId) {
+    fetch(`/profile/${userId}`)
+        .then(response => response.text())  // Assuming the server responds with HTML for the user profile
+        .then(html => {
+            const userProfileModal = document.getElementById('userProfileModal');
+            const userProfileDetails = document.getElementById('userProfileDetails');
+            if (userProfileDetails) {
+                userProfileDetails.innerHTML = html;
+                openModal('userProfileModal');
+            } else {
+                console.error('User profile details container not found');
+            }
+        })
+        .catch(error => {
+            console.error('Failed to fetch profile:', error);
+            alert('Could not load user profile. Please try again.');
+        });
+}
 
 // Adding new DOMContentLoaded event listener for handling auto-opening of modal on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -83,7 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextEligibleTime) {
-    document.getElementById('modalTaskTitle').innerText = task.title;
+    let completeText = userCompletionCount >= task.completion_limit ? " - complete" : "";
+    document.getElementById('modalTaskTitle').innerText = task.title + completeText;
     document.getElementById('modalTaskDescription').innerText = task.description;
     document.getElementById('modalTaskTips').innerText = task.tips || 'No tips available';
     document.getElementById('modalTaskPoints').innerText = `Points: ${task.points}`;
@@ -171,20 +194,21 @@ function formatTimeDiff(timeDiff) {
     return `${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
 }
 
-// Social media sharing functions
-function shareOnFacebook(imageUrl) {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(imageUrl)}`;
-    window.open(url, '_blank');
-}
-
-function shareOnTwitter(imageUrl, text) {
-    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(imageUrl)}&text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-}
-
 // Retrieve image URL and comments for sharing
-function getImageUrl() {
-    return document.getElementById('submissionImage').src;
+function getImageUrl(taskId) {
+    return fetch(`/get-image-url/${taskId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                return data.imageUrl;
+            } else {
+                throw new Error('Failed to get image URL');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching image URL:', error);
+            return '';  // Return a default or error image path if needed
+        });
 }
 
 function getComment() {
