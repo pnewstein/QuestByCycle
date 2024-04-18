@@ -48,7 +48,6 @@
                 <p>Join an event to see the leaderboard!</p>
                 {% endif %}
             </div>
-
             <!-- Group Completion Meter -->
             <div class="completion-meter-container">
                 <div class="meter-label">Group Completion: {{ total_event_points }} / {{ event_goal }}</div>
@@ -59,8 +58,6 @@
         </div>
     </div>
 </div>
-
-
 <!-- User Profile Modal -->
 <div id="userProfileModal" style="display:none;" class="modal">
     <div class="modal-content">
@@ -70,15 +67,16 @@
         </div>
     </div>
 </div>
-
+<!-- Hidden div to store event ID -->
+<div id="eventIdHolder" data-event-id="{{ selected_event_id | safe }}" style="display:none;"></div>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         updateMeter();
-        setInterval(updateMeter, 5000); // Update the meter every 5 seconds
+        setInterval(updateMeter, 10000); // Update the meter every 5 seconds
     });
     
     function updateMeter() {
-        const eventId = {{ selected_event_id | safe }};
+        const eventId = document.getElementById('eventIdHolder').getAttribute('data-event-id');
         fetch(`events/get_event_points/${eventId}`)
             .then(response => response.json())
             .then(data => {
@@ -104,7 +102,7 @@
     }
     
     function closeModal() {
-        document.getElementById('userProfileModal').style.display = 'none';
+       document.getElementById('userProfileModal').style.display = 'none';
     }
 </script>
 {% endblock %}
