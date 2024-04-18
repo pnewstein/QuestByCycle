@@ -445,8 +445,8 @@ def submit_photo(task_id):
             new_submission = TaskSubmission(
                 user_id=current_user.id,
                 task_id=task_id,
-                image_url=image_url,
-                timestamp=datetime.utcnow()
+                image_url=url_for('static', filename=image_url),
+                timestamp=datetime.now(timezone.utc)
             )
             db.session.add(new_submission)
 
