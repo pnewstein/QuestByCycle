@@ -25,10 +25,13 @@ window.onclick = function(event) {
 
     if (submissionModal && event.target === submissionModal) {
         closeSubmissionModal();
+        document.body.classList.remove('body-no-scroll');
     } else if (taskModal && event.target === taskModal) {
         closeTaskDetailModal();
+        document.body.classList.remove('body-no-scroll');
     } else if (userProfileModal && event.target === userProfileModal) {
         closeUserProfileModal();
+        document.body.classList.remove('body-no-scroll');
     }
 }
 

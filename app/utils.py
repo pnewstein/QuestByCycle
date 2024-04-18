@@ -245,9 +245,6 @@ def check_and_award_badges(user_id, task_id):
 
     print(f"UserTask found: completions={user_task.completions}, task completion limit={task.completion_limit}")
     
-    # Debug print to confirm the condition evaluation
-    print(f"Evaluating condition: {user_task.completions} >= {task.completion_limit}")
-    
     if user_task.completions >= task.completion_limit:
         print("Condition met for awarding badge based on task completion limit.")
         if task.badge and task.badge not in user.badges:
@@ -263,25 +260,26 @@ def check_and_award_badges(user_id, task_id):
     else:
         print("Condition not met for awarding badge based on task completion limit.")
 
-    if task.category:
-        tasks_in_category = Task.query.filter_by(category=task.category).all()
-        completed_tasks = [ut.task_id for ut in user.user_tasks if ut.completions >= ut.task.completion_limit]
+    if task.category and task.event_id:
+        tasks_in_category = Task.query.filter_by(category=task.category, event_id=task.event_id).all()
+        completed_tasks = {ut.task_id for ut in user.user_tasks.join(Task).filter(Task.category == task.category, Task.event_id == task.event_id) if ut.completions >= 1}
 
-        print(f"Tasks in category '{task.category}': {[t.id for t in tasks_in_category]}")
-        print(f"Completed tasks in category by user: {completed_tasks}")
+        category_task_ids = {t.id for t in tasks_in_category}
+        print(f"Tasks in category '{task.category}' for event ID {task.event_id}: {category_task_ids}")
+        print(f"Completed tasks in category by user for this event: {completed_tasks}")
 
-        if set(t.id for t in tasks_in_category) == set(completed_tasks):
+        if category_task_ids == completed_tasks:
             print("Condition met for awarding badge based on category completion.")
             category_badges = Badge.query.filter_by(category=task.category).all()
             for badge in category_badges:
                 if badge not in user.badges:
                     user.badges.append(badge)
                     db.session.add(ShoutBoardMessage(
-                        message=f"{user.username} earned the badge '{task.badge.name}' for task '{task.title}'.",
+                        message=f"{user.username} earned the badge '{badge.name}' for completing all tasks in category '{task.category}' within event ID {task.event_id}.",
                         user_id=user_id
                     ))
                     db.session.commit()
-                    print(f"Badge '{badge.name}' awarded for completing all tasks in category '{task.category}'")
+                    print(f"Badge '{badge.name}' awarded for completing all tasks in category '{task.category}' within event ID {task.event_id}")
                 else:
                     print(f"User already has badge '{badge.name}', not awarded again")
         else:
