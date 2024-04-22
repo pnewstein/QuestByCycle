@@ -4,7 +4,7 @@
     <div class="container">
 
         <div class="welcomeImage">
-            <img src="{{ url_for('static', filename='images/welcomeBikeHunt2.png') }}" alt="Welcome to Bike Hunt" style="max-width: 600px; max-height: 300px;">
+            <img src="{{ url_for('static', filename='images/welcomeBikeHunt.png') }}" alt="Welcome to Bike Hunt" style="max-width: 600px; max-height: 300px;">
         </div>
 
         <div class="introduction">
@@ -13,20 +13,20 @@
         </div>
         <div class="content-flex-container">
 
-            <div class="events-column">
-                <h2>Events</h2>
-                {% for event in events %}
-                <div class="event-item">
-                    <h3>{{ event.title }}</h3>
-                    <p>{{ event.description }}</p>
-                    <a href="{{ url_for('events.event_detail', event_id=event.id) }}" class="blue_button">View Details</a>
+            <div class="games-column">
+                <h2>Games</h2>
+                {% for game in games %}
+                <div class="game-item">
+                    <h3>{{ game.title }}</h3>
+                    <p>{{ game.description }}</p>
+                    <a href="{{ url_for('games.game_detail', game_id=game.id) }}" class="blue_button">View Task List</a>
                 </div>
                 {% endfor %}
             </div>
         
             <div class="shout-board-column">
                 <h2>Current Activities</h2>
-                <div class="event-item">
+                <div class="game-item">
                     {% if current_user.is_admin %}
 
                         <form action="{{ url_for('main.shout_board') }}" method="post">
@@ -40,7 +40,7 @@
                     <div class="shout-messages">
                         {% for message in messages %}
                         <div class="message">
-                            <!-- Add an onclick event handler to call showUserProfileModal with the user ID -->
+                            <!-- Add an onclick game handler to call showUserProfileModal with the user ID -->
                             <strong><a href="javascript:void(0)" onclick="showUserProfileModal('{{ message.user.id }}')">{{ message.user.username }}</a></strong>: {{ message.message }}
                             <button type="button" class="blue_button" id="like-button-{{ message.id }}" onclick="likeMessage('{{ message.id }}')">
                                 {% if message.liked_by_user %}Liked{% else %}Like{% endif %}

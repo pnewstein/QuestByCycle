@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 
 {% block content %}
-    <div id="eventData" data-event-id="{{ event.id }}"></div>
+    <div id="game_Data" data-game-id="{{ game.id }}"></div>
     <div class="container">
-        <h2>Manage Tasks for "{{ event.title }}"</h2>
+        <h2>Manage Tasks for "{{ game.title }}"</h2>
         
-        <a href="{{ url_for('tasks.add_task', event_id=event.id) }}" class="button">Add Task</a>
+        <a href="{{ url_for('tasks.add_task', game_id=game.id) }}" class="button">Add Task</a>
     
         <!-- Add a section for importing tasks from a CSV file -->
         <div class="import-tasks-form">
@@ -42,7 +42,7 @@
         </div>
     </div>
     <script>
-        const eventId = document.getElementById('eventData').dataset.eventId;
+        const game_Id = document.getElementById('game_Data').dataset.gameId;
         const VerificationTypes = {
             NOT_APPLICABLE: "Not Applicable",
             QR_CODE: "QR Code",
@@ -58,7 +58,7 @@
         };
         document.addEventListener('DOMContentLoaded', async function() {
             await loadBadges();
-            loadTasks(eventId);
+            loadTasks(game_Id);
         });
 
         async function loadBadges() {
@@ -77,7 +77,7 @@
             // Collect task data from form
             const formData = new FormData(document.getElementById('addTaskForm'));
             
-            fetch(`/tasks/event/${eventId}/add_task`, { // Make sure 'eventId' is defined or fetched appropriately
+            fetch(`/tasks/game/${game_Id}/add_task`, { // Make sure 'game_Id' is defined or fetched appropriately
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -195,7 +195,7 @@
                 cell.appendChild(inputElement);
             });
 
-            // Updating the edit button to a save button and setting its click event to call saveTask
+            // Updating the edit button to a save button and setting its click game to call saveTask
             const editButton = row.querySelector(".edit-button");
             editButton.innerText = "Save";
             editButton.onclick = () => saveTask(taskId);
@@ -230,7 +230,7 @@
             .then(data => {
                 if (data.success) {
                     alert('Task updated successfully.');
-                    loadTasks(eventId);
+                    loadTasks(game_Id);
                 } else {
                     alert('Failed to update task. Error: ' + data.message);
                 }
@@ -241,48 +241,42 @@
             });
         }
 
-
-        function loadTasks(eventId) {
-            fetch(`/tasks/event/${eventId}/tasks`, {
+        function loadTasks(game_Id) {
+            fetch(`/tasks/game/${game_Id}/tasks`, {
                 method: 'GET',
-                headers: {'Content-Type': 'application/json'},
+                headers: {'Content-Type': 'application/json'}
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 const tasksBody = document.getElementById('tasksBody');
                 tasksBody.innerHTML = ''; // Clear the table before adding new rows
-
                 data.tasks.forEach(task => {
                     const row = document.createElement('tr');
                     row.id = `task-${task.id}`;
-
-                    const verificationTypeText = VerificationTypes[task.verification_type] || 'Not Applicable';
-                    const badgeName = task.badge_name || 'None';
-                    const frequencyDisplayText = task.frequency ? task.frequency.toUpperCase() : 'Not Set';
-                    const categoryText = task.category || 'Not Set';
-
                     row.innerHTML = `
-                        <td class="editable" data-name="title">${task.title}</td>
-                        <td class="editable" data-name="description">${task.description}</td>
-                        <td class="editable" data-name="tips">${task.tips || ''}</td>
-                        <td class="editable" data-name="points">${task.points}</td>
-                        <td class="editable" data-name="completion_limit">${task.completion_limit}</td>
-                        <td class="editable" data-name="enabled">${task.enabled ? 'Yes' : 'No'}</td>
-                        <td class="editable" data-name="verification_type" data-value="${task.verification_type}">${verificationTypeText}</td>
-                        <td class="editable" data-name="badge_name">${badgeName}</td>
-                        <td class="editable" data-name="frequency" data-value="${task.frequency || ''}">${frequencyDisplayText}</td>
-                        <td class="editable" data-name="category">${categoryText}</td>
-                        <td>
-                            <button class="edit-button" onclick="editTask(${task.id})">Edit</button>
-                            <button onclick="deleteTask(${task.id})">Delete</button>
-                            <button onclick="generateQRCode(${task.id})">Generate QR Code</button>
-                        </td>
+                        <td>${task.title}</td>
+                        <td>${task.description}</td>
+                        <td>${task.tips}</td>
+                        <td>${task.points}</td>
+                        <td>${task.completion_limit}</td>
+                        <td>${task.enabled ? 'Yes' : 'No'}</td>
+                        <td>${task.verification_type}</td>
+                        <td>${task.badge_name}</td>
+                        <td>${task.frequency}</td>
+                        <td>${task.category}</td>
+                        <td><button onclick="editTask(${task.id})">Edit</button></td>
                     `;
-
                     tasksBody.appendChild(row);
                 });
             })
-            .catch(error => console.error('Failed to load tasks:', error));
+            .catch(error => {
+                console.error('Failed to load tasks:', error);
+            });
         }
 
 
@@ -302,7 +296,7 @@
             .then(data => {
                 if (data.success) {
                     alert('Task deleted successfully');
-                    loadTasks(eventId);  // Reload tasks
+                    loadTasks(game_Id);  // Reload tasks
                 } else {
                     alert(`Failed to delete task: ${data.message}`);
                 }
@@ -317,7 +311,7 @@
             const form = document.getElementById('importTasksForm');
             const formData = new FormData(form);
             
-            fetch(`/tasks/event/${eventId}/import_tasks`, {
+            fetch(`/tasks/game/${game_Id}/import_tasks`, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -334,7 +328,7 @@
             .then(data => {
                 if (data.success && data.redirectUrl) {
                     alert('Tasks imported successfully');
-                    loadTasks(eventId); // Reload the tasks list
+                    loadTasks(game_Id); // Reload the tasks list
                 } else {
                     alert('Failed to import tasks: ' + data.message);
                 }

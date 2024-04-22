@@ -2,7 +2,7 @@ from flask import Blueprint, send_file, jsonify, render_template, request, flash
 from flask_login import login_required, current_user
 from app.utils import update_user_score, getLastRelevantCompletionTime, check_and_award_badges, revoke_badge, save_badge_image, save_submission_image, can_complete_task
 from app.forms import TaskForm, PhotoForm
-from .models import db, Event, Task, Badge, UserTask, TaskSubmission, Frequency, ShoutBoardMessage, VerificationType
+from .models import db, Game, Task, Badge, UserTask, TaskSubmission, Frequency, ShoutBoardMessage, VerificationType
 from .utils import award_badges
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
@@ -16,14 +16,14 @@ import qrcode
 tasks_bp = Blueprint('tasks', __name__, template_folder='templates')
 
 
-@tasks_bp.route('/<int:event_id>/manage_tasks', methods=['GET', 'POST'])
+@tasks_bp.route('/<int:game_id>/manage_tasks', methods=['GET', 'POST'])
 @login_required
-def manage_event_tasks(event_id):
-    event = Event.query.get_or_404(event_id)
+def manage_game_tasks(game_id):
+    game = Game.query.get_or_404(game_id)
 
     if not current_user.is_admin:
         flash('Access denied: Only administrators can manage tasks.', 'danger')
-        return redirect(url_for('events.event_detail', event_id=event_id))
+        return redirect(url_for('games.game_detail', game_id=game_id))
     
     form = TaskForm()
 
@@ -40,7 +40,7 @@ def manage_event_tasks(event_id):
             task = Task(
                 title=form.title.data,
                 description=form.description.data,
-                event_id=event_id
+                game_id=game_id
             )
 
             # If frequency value is provided and valid, set it here
@@ -61,18 +61,18 @@ def manage_event_tasks(event_id):
                 db.session.rollback()
                 flash(f'Error adding task: {str(e)}', 'error')
 
-            return redirect(url_for('tasks.manage_event_tasks', event_id=event_id))
+            return redirect(url_for('tasks.manage_game_tasks', game_id=game_id))
 
     # Retrieve tasks each time the page is loaded or reloaded
-    tasks = Task.query.filter_by(event_id=event_id).all()
+    tasks = Task.query.filter_by(game_id=game_id).all()
     
-    # Pass event_id to the template, alongside the event object, tasks, and form
-    return render_template('manage_tasks.html', event=event, tasks=tasks, form=form, event_id=event_id)
+    # Pass game_id to the template, alongside the game object, tasks, and form
+    return render_template('manage_tasks.html', game=game, tasks=tasks, form=form, game_id=game_id)
 
 
-@tasks_bp.route('/event/<int:event_id>/add_task', methods=['GET', 'POST'])
+@tasks_bp.route('/game/<int:game_id>/add_task', methods=['GET', 'POST'])
 @login_required
-def add_task(event_id):
+def add_task(game_id):
     form = TaskForm()
     if form.validate_on_submit():
         badge_id = form.badge_id.data if form.badge_id.data and form.badge_id.data != '0' else None
@@ -104,7 +104,7 @@ def add_task(event_id):
             description=form.description.data,
             tips=form.tips.data,
             points=form.points.data,
-            event_id=event_id,
+            game_id=game_id,
             completion_limit=form.completion_limit.data,
             frequency=form.frequency.data,
             enabled=form.enabled.data,
@@ -120,23 +120,23 @@ def add_task(event_id):
             db.session.rollback()
             flash(f'An error occurred: {e}', 'error')
 
-        return redirect(url_for('tasks.manage_event_tasks', event_id=event_id))
+        return redirect(url_for('tasks.manage_game_tasks', game_id=game_id))
 
-    return render_template('add_task.html', form=form, event_id=event_id)
+    return render_template('add_task.html', form=form, game_id=game_id)
 
 
 @tasks_bp.route('/task/<int:task_id>/submit', methods=['POST'])
 @login_required
 def submit_task(task_id):
     task = Task.query.get_or_404(task_id)
-    event = Event.query.get_or_404(task.event_id)
+    game = Game.query.get_or_404(task.game_id)
     now = datetime.now()
-    event_start = event.start_date.replace(tzinfo=None)
-    event_end = event.end_date.replace(tzinfo=None)
+    game_start = game.start_date.replace(tzinfo=None)
+    game_end = game.end_date.replace(tzinfo=None)
 
-    # Check if current time is within the event's active period
-    if not (event_start <= now <= event_end):
-        return jsonify({'success': False, 'message': 'This task cannot be completed outside of the event dates'}), 403
+    # Check if current time is within the game's active period
+    if not (game_start <= now <= game_end):
+        return jsonify({'success': False, 'message': 'This task cannot be completed outside of the game dates'}), 403
 
     if 'image' not in request.files:
         return jsonify({'success': False, 'message': 'File part missing'})
@@ -269,9 +269,9 @@ def delete_task(task_id):
         return jsonify({'success': False, 'message': 'Failed to delete task'})
 
 
-@tasks_bp.route('/event/<int:event_id>/tasks', methods=['GET'])
-def get_tasks_for_event(event_id):
-    tasks = Task.query.filter_by(event_id=event_id).all()
+@tasks_bp.route('/game/<int:game_id>/tasks', methods=['GET'])
+def get_tasks_for_game(game_id):
+    tasks = Task.query.filter_by(game_id=game_id).all()
     tasks_data = [
         {
             'id': task.id,
@@ -289,12 +289,11 @@ def get_tasks_for_event(event_id):
         }
         for task in tasks
     ]
-    
     return jsonify(tasks=tasks_data)
 
-@tasks_bp.route('/event/<int:event_id>/import_tasks', methods=['POST'])
+@tasks_bp.route('/game/<int:game_id>/import_tasks', methods=['POST'])
 @login_required
-def import_tasks(event_id):
+def import_tasks(game_id):
     if 'tasks_csv' not in request.files:
         return jsonify(success=False, message="No file part"), 400
     
@@ -333,7 +332,7 @@ def import_tasks(event_id):
                     completion_limit=int(task_info['completion_limit']),
                     verification_type=task_info['verification_type'],
                     badge_id=badge.id,
-                    event_id=event_id
+                    game_id=game_id
                 )
                 db.session.add(new_task)
             
@@ -341,8 +340,7 @@ def import_tasks(event_id):
             os.remove(filepath)  # Clean up the uploaded file
         
         # Skip adding badge images for now.
-        return jsonify(success=True, redirectUrl=url_for('tasks.manage_event_tasks', event_id=event_id))
-
+        return jsonify(success=True, redirectUrl=url_for('tasks.manage_game_tasks', game_id=game_id))
 
     return jsonify(success=False, message="Invalid file"), 400
 
@@ -468,7 +466,7 @@ def submit_photo(task_id):
             update_user_score(current_user.id)  # Recalculate and update user score
 
             flash('Photo submitted successfully!', 'success')
-            return redirect(url_for('events.event_detail', event_id=task.event_id))
+            return redirect(url_for('games.game_detail', game_id=task.game_id))
         else:
             flash('No photo detected, please try again.', 'error')
 

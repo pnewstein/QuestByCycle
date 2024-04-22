@@ -1,14 +1,14 @@
 {% extends "layout.html" %}
 
-{% block title %}Create New Event{% endblock %}
+{% block title %}Create New Game{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>Create a New BikeHunt Event</h1>
+    <h1>Create a New BikeHunt Game</h1>
     <form method="POST" action="">
         {{ form.hidden_tag() }}
         <div class="form-group">
-            <label for="title">Event Title</label>
+            <label for="title">Game Title</label>
             {{ form.title(class_="form-control", id="title") }}
             {% if form.title.errors %}
                 <div class="alert alert-danger" role="alert">
@@ -19,11 +19,22 @@
             {% endif %}
         </div>
         <div class="form-group">
-            <label for="description">Event Description</label>
+            <label for="description">Game Description</label>
             {{ form.description(class_="form-control", id="description") }}
             {% if form.description.errors %}
                 <div class="alert alert-danger" role="alert">
                     {% for error in form.description.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="form-group">
+            <label for="description">Task Instructions</label>
+            {{ form.description2(class_="form-control", id="description2") }}
+            {% if form.description2.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {% for error in form.description2.errors %}
                         <p>{{ error }}</p>
                     {% endfor %}
                 </div>
@@ -52,17 +63,29 @@
             {% endif %}
         </div>
         <div class="form-group">
-            <label for="event_goal">Event Goal</label>
-            {{ form.event_goal(class_="form-control", id="event_goal") }}
-            {% if form.event_goal.errors %}
+            <label for="game_goal">Game Goal</label>
+            {{ form.game_goal(class_="form-control", id="game_goal") }}
+            {% if form.game_goal.errors %}
                 <div class="alert alert-danger" role="alert">
-                    {% for error in form.event_goal.errors %}
+                    {% for error in form.game_goal.errors %}
                         <p>{{ error }}</p>
                     {% endfor %}
                 </div>
             {% endif %}
         </div>
-        <button type="submit" class="btn btn-primary">Create Event</button>
+        <div class="form-group">
+            <label for="details">Game Details</label>
+            {{ form.details(class_="form-control", id="details") }}
+        </div>
+        <div class="form-group">
+            <label for="awards">Awards Information</label>
+            {{ form.awards(class_="form-control", id="awards") }}
+        </div>
+        <div class="form-group">
+            <label for="beyond">Beyond the Game</label>
+            {{ form.beyond(class_="form-control", id="beyond") }}
+        </div>
+        <button type="submit" class="btn btn-primary">Create Game</button>
     </form>
 </div>
 {% endblock %}

@@ -80,7 +80,7 @@ def register():
             db.session.commit()
             login_user(user)
             flash('Congratulations, you are now a registered user and logged in!', 'success')
-            return redirect(url_for('main.index'))
+            return redirect(url_for('main.profile'))
         except Exception as e:
             db.session.rollback()
             flash('Registration failed due to an unexpected error. Please try again.', 'error')

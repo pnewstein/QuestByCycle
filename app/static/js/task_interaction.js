@@ -24,15 +24,15 @@ function openTaskDetailModal(taskId) {
         });
 }
 
-function submitTaskDetails(event, taskId) {
-    event.preventDefault();
+function submitTaskDetails(game, taskId) {
+    game.preventDefault();
 
     if (isSubmitting) {
         return;
     }
     isSubmitting = true;
 
-    const form = event.target;
+    const form = game.target;
     const formData = new FormData(form);
 
     fetch(`/tasks/task/${taskId}/submit`, {
@@ -40,7 +40,7 @@ function submitTaskDetails(event, taskId) {
         body: formData,
         credentials: 'same-origin',
         headers: {
-            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
         }
     })
     .then(response => response.json())
@@ -128,7 +128,7 @@ function showSubmissionDetail(image) {
     document.getElementById('submissionComment').textContent = image.comment || 'No comment provided.';
     document.getElementById('submissionUserLink').onclick = function() {
         openUserProfile(image.user_id);
-        return false; // Prevent default link behavior
+        return false; // prevent default link behavior
     };
     document.getElementById('downloadLink').href = image.url;
     document.getElementById('downloadLink').download = `Image-${image.user_id}`;

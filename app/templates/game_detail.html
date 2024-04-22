@@ -3,21 +3,21 @@
 {% block content %}
 <div class="container">
     <div class="welcomeImage">
-        <img src="{{ url_for('static', filename='images/eventBikeHunt.png') }}" alt="Bike Hunt Events" style="max-width: 1000px; max-height: 300px;">
+        <img src="{{ url_for('static', filename='images/gameBikeHunt.png') }}" alt="Bike Hunt Games" style="max-width: 1000px; max-height: 300px;">
     </div>
-    <div class="event-item">
-        <h1>{{ event.title }}</h1>
-        <p>{{ event.description }}</p>
-        <p><strong>Start Date:</strong> {{ event.start_date.strftime("%m-%d-%y") }}</p>
-        <p><strong>End Date:</strong> {{ event.end_date.strftime("%m-%d-%y") }}</p>
+    <div class="game-item">
+        <h1>{{ game.title }}</h1>
+        <p>{{ game.description }}</p>
+        <p><strong>Start Date:</strong> {{ game.start_date.strftime("%m-%d-%y") }}</p>
+        <p><strong>End Date:</strong> {{ game.end_date.strftime("%m-%d-%y") }}</p>
     </div>
-    <div class="event-item">
+    <div class="game-item">
         {% if has_joined %}
             <p id="total-points">Total Completed Points: {{ total_points }}</p>
             <p>
                 {% if current_user.is_admin %}
-                    <a href="{{ url_for('tasks.manage_event_tasks', event_id=event.id) }}" class="button" style="margin-left: 10px;">Configure Tasks</a>
-                    <a href="{{ url_for('badges.manage_badges', event_id=event.id) }}" class="button" style="margin-left: 10px;">Configure Badges</a>
+                    <a href="{{ url_for('tasks.manage_game_tasks', game_id=game.id) }}" class="button" style="margin-left: 10px;">Configure Tasks</a>
+                    <a href="{{ url_for('badges.manage_badges', game_id=game.id) }}" class="button" style="margin-left: 10px;">Configure Badges</a>
                 {% endif %}
             </p>
             <table class="table">
@@ -59,9 +59,9 @@
                 </tbody>
             </table>
         {% else %}
-            <form action="{{ url_for('events.register_event', event_id=event.id) }}" method="post">
+            <form action="{{ url_for('games.register_game', game_id=game.id) }}" method="post">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="button primary">Join Event</button>
+                <button type="submit" class="button primary">Join Game</button>
             </form>
         {% endif %}
     </div>
@@ -75,6 +75,6 @@
 <script src="{{ url_for('static', filename='js/modal_handlers.js') }}"></script>
 <script src="{{ url_for('static', filename='js/task_interaction.js') }}"></script>
 <script src="{{ url_for('static', filename='js/utility_functions.js') }}"></script>
-<script src="{{ url_for('static', filename='js/event_interaction.js') }}"></script>
+<script src="{{ url_for('static', filename='js/game_interaction.js') }}"></script>
 
 {% endblock %}

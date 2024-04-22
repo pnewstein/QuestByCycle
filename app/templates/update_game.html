@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block title %}Update Game{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Update Game</h1>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            <label for="title">Game Title</label>
+            {{ form.title(class_="form-control", id="title") }}
+        </div>
+        <div class="form-group">
+            <label for="description">Game Description</label>
+            {{ form.description(class_="form-control", id="description") }}
+        </div>
+        <div class="form-group">
+            <label for="description">Task Instructions</label>
+            {{ form.description2(class_="form-control", id="description2") }}
+        </div>
+        <div class="form-group">
+            <label for="start_date">Start Date</label>
+            {{ form.start_date(class_="form-control", id="start_date") }}
+        </div>
+        <div class="form-group">
+            <label for="end_date">End Date</label>
+            {{ form.end_date(class_="form-control", id="end_date") }}
+        </div>
+        <div class="form-group">
+            <label for="game_goal">Game Goal</label>
+            {{ form.game_goal(class_="form-control", id="game_goal") }}
+        </div>
+        <div class="form-group">
+            <label for="details">Game Details</label>
+            {{ form.details(class_="form-control", id="details") }}
+        </div>
+        <div class="form-group">
+            <label for="awards">Awards Information</label>
+            {{ form.awards(class_="form-control", id="awards") }}
+        </div>
+        <div class="form-group">
+            <label for="beyond">Beyond the Game</label>
+            {{ form.beyond(class_="form-control", id="beyond") }}
+        </div>
+        <button type="submit" class="btn btn-primary">Update Game</button>
+    </form>
+</div>
+{% endblock %}

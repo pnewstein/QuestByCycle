@@ -31,7 +31,7 @@ class VerificationType(Enum):
 
 class Badge(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(500), nullable=True)
     image = db.Column(db.String(500), nullable=True)
     tasks = db.relationship('Task', backref='badge', lazy=True)
@@ -42,9 +42,9 @@ user_badges = db.Table('user_badges',
     db.Column('badge_id', db.Integer, db.ForeignKey('badge.id'), primary_key=True)
 )
 
-user_events = db.Table('user_events',
+user_games = db.Table('user_games',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('event_id', db.Integer, db.ForeignKey('event.id'), primary_key=True)
+    db.Column('game_id', db.Integer, db.ForeignKey('game.id'), primary_key=True)
 )
 
 class UserTask(db.Model):
@@ -67,8 +67,8 @@ class User(UserMixin, db.Model):
     badges = db.relationship('Badge', secondary=user_badges, lazy='subquery',
         backref=db.backref('users', lazy=True))
     score = db.Column(db.Integer, default=0)
-    participated_events = db.relationship('Event', secondary='user_events', lazy='subquery',
-                                        backref=db.backref('event_participants', lazy=True))
+    participated_games = db.relationship('Game', secondary='user_games', lazy='subquery',
+                                        backref=db.backref('game_participants', lazy=True))
     display_name = db.Column(db.String(100))
     profile_picture = db.Column(db.String(200))  # Could be a URL or a path
     age_group = db.Column(db.String(50))
@@ -85,16 +85,16 @@ class User(UserMixin, db.Model):
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(140))
-    description = db.Column(db.String(500))
+    description = db.Column(db.String(750))
     completed = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     evidence_url = db.Column(db.String(500))
     enabled = db.Column(db.Boolean, default=True)
     verification_type = db.Column(SQLAlchemyEnum(VerificationType))
-    verification_comment = db.Column(db.String(500), default="")
-    event_id = db.Column(db.Integer, db.ForeignKey('event.id'))  # Make sure this line is within the class definition
+    verification_comment = db.Column(db.String(1000), default="")
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'))  # Make sure this line is within the class definition
     points = db.Column(db.Integer, default='')
-    tips = db.Column(db.String(500), default='')
+    tips = db.Column(db.String(1000), default='')
     completion_limit = db.Column(db.Integer, default=1)  # Limit for how many times a task can be completed
     frequency = db.Column(db.Enum(Frequency), nullable=False, default='daily')
     user_tasks = db.relationship('UserTask', back_populates='task', cascade="all, delete", passive_deletes=True)
@@ -106,20 +106,24 @@ class Task(db.Model):
 Badge.tasks = db.relationship('Task', order_by=Task.id, back_populates='badge')
 
 
-class Event(db.Model):
+class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(140), nullable=False)
-    description = db.Column(db.String(500))
+    title = db.Column(db.String(250), nullable=False)
+    description = db.Column(db.String(1000))
+    description2 = db.Column(db.String(1000))
     start_date = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
     end_date = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
     admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    tasks = db.relationship('Task', backref='event', lazy='dynamic')
-    participants = db.relationship('User', secondary='event_participants', lazy='subquery',
-                                   backref=db.backref('events', lazy=True))
-    event_goal = db.Column(db.Integer)
+    tasks = db.relationship('Task', backref='game', lazy='dynamic')
+    participants = db.relationship('User', secondary='game_participants', lazy='subquery',
+                                   backref=db.backref('games', lazy=True))
+    game_goal = db.Column(db.Integer)
+    details = db.Column(db.Text)  # New field for detailed game information
+    awards = db.Column(db.Text)  # Information about awards
+    beyond = db.Column(db.Text)  # Information on living a sustainable bicycle lifestyle
 
-event_participants = db.Table('event_participants',
-    db.Column('event_id', db.Integer, db.ForeignKey('event.id'), primary_key=True),
+game_participants = db.Table('game_participants',
+    db.Column('game_id', db.Integer, db.ForeignKey('game.id'), primary_key=True),
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
 )
 
@@ -146,7 +150,7 @@ class TaskSubmission(db.Model):
     task_id = db.Column(db.Integer, db.ForeignKey('task.id', ondelete='CASCADE'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     image_url = db.Column(db.String(500))
-    comment = db.Column(db.String(500))
+    comment = db.Column(db.String(1000))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.now(timezone.utc))
 
     task = db.relationship('Task', back_populates='submissions')
