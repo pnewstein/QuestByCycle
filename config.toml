@@ -17,5 +17,5 @@ SESSION_REFRESH_EACH_REQUEST = true
 REMEMBER_COOKIE_DURATION_DAYS = 180
 
 [flask]
-SQLALCHEMY_DATABASE_URI = "postgresql://username:password@localhost/databasename2"
+SQLALCHEMY_DATABASE_URI = "postgresql://username:password@localhost/databasename7"
 DEBUG = true

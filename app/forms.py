@@ -37,13 +37,17 @@ class AddUserForm(FlaskForm):
     submit = SubmitField('Add User')
 
 
-class EventForm(FlaskForm):
-    title = StringField('Title', validators=[DataRequired()])
-    description = StringField('Description', validators=[DataRequired()])
+class GameForm(FlaskForm):
+    title = StringField('Game Title', validators=[DataRequired()])
+    description = StringField('Game Description', validators=[DataRequired(), Length(max=1000)])
+    description2 = StringField('Task Rules', validators=[DataRequired(), Length(max=1000)])
     start_date = DateField('Start Date', format='%Y-%m-%d', validators=[DataRequired()])  # Use DateField
     end_date = DateField('End Date', format='%Y-%m-%d', validators=[DataRequired()])  # Use DateField
-    event_goal = IntegerField('Event Goal')  # Add a default value or make it required
-    submit = SubmitField('Create Event')
+    details = TextAreaField('Game Details')
+    awards = TextAreaField('Awards Details')
+    beyond = TextAreaField('Sustainability Details')
+    game_goal = IntegerField('Game Goal')  # Add a default value or make it required
+    submit = SubmitField('Create Game')
 
 
 class TaskForm(FlaskForm):
@@ -92,7 +96,7 @@ class TaskImportForm(FlaskForm):
 
 
 class ProfileForm(FlaskForm):
-    display_name = StringField('Display Name', validators=[Optional()])
+    display_name = StringField('Player/Team Name', validators=[Optional()])
     profile_picture = FileField('Profile Picture', validators=[FileRequired(), FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
     age_group = SelectField('Age Group', choices=[('teen', 'Teen'), ('adult', 'Adult'), ('senior', 'Senior')])
     interests = StringField('Interests', validators=[Optional()])

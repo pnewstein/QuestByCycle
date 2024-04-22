@@ -5,19 +5,19 @@
     <div class="welcomeImage">
         <img src="{{ url_for('static', filename='images/leaderboardBikeHunt.png') }}" alt="Bike Hunt Leaderboard" style="max-width: 600px; max-height: 200px;">
     </div>
-    {% if events|length > 1 %}
+    {% if games|length > 1 %}
     <form method="get" action="{{ url_for('main.leaderboard') }}">
         <div class="form-group">
-            <label for="eventSelect">Select Event:</label>
-            <select name="event_id" id="eventSelect" class="form-control" onchange="this.form.submit()">
-                {% for event in events %}
-                <option value="{{ event.id }}" {% if selected_event_id == event.id %}selected{% endif %}>{{ event.title }}</option>
+            <label for="game_Select">Select Game:</label>
+            <select name="game_id" id="game_Select" class="form-control" onchange="this.form.submit()">
+                {% for game in games %}
+                <option value="{{ game.id }}" {% if selected_game_id == game.id %}selected{% endif %}>{{ game.title }}</option>
                 {% endfor %}
             </select>
         </div>
     </form>
     {% endif %}
-    <div class="event-item">
+    <div class="game-item">
         <div class="leaderboard-container">
             <!-- Leaderboard Table -->
             <div class="leaderboard-table">
@@ -39,18 +39,18 @@
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="3">No players have scored yet in this event.</td>
+                            <td colspan="3">No players have scored yet in this game.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
                 {% else %}
-                <p>Join an event to see the leaderboard!</p>
+                <p>Join an game to see the leaderboard!</p>
                 {% endif %}
             </div>
             <!-- Group Completion Meter -->
             <div class="completion-meter-container">
-                <div class="meter-label">Group Completion: {{ total_event_points }} / {{ event_goal }}</div>
+                <div class="meter-label">Group Completion: {{ total_game_points }} / {{ game_goal }}</div>
                 <div class="completion-meter">
                     <div class="meter-bar" id="meterBar"></div>
                 </div>
@@ -67,8 +67,8 @@
         </div>
     </div>
 </div>
-<!-- Hidden div to store event ID -->
-<div id="eventIdHolder" data-event-id="{{ selected_event_id | safe }}" style="display:none;"></div>
+<!-- Hidden div to store game ID -->
+<div id="game_IdHolder" data-game-id="{{ selected_game_id | safe }}" style="display:none;"></div>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         updateMeter();
@@ -76,17 +76,17 @@
     });
     
     function updateMeter() {
-        const eventId = document.getElementById('eventIdHolder').getAttribute('data-event-id');
-        fetch(`events/get_event_points/${eventId}`)
+        const game_Id = document.getElementById('game_IdHolder').getAttribute('data-game-id');
+        fetch(`games/get_game_points/${game_Id}`)
             .then(response => response.json())
             .then(data => {
-                const totalPoints = data.total_event_points;
-                const eventGoal = data.event_goal;
-                const heightPercentage = (totalPoints / eventGoal) * 100;
+                const totalPoints = data.total_game_points;
+                const game_Goal = data.game_goal;
+                const heightPercentage = (totalPoints / game_Goal) * 100;
                 document.getElementById('meterBar').style.height = heightPercentage + '%';
                 document.documentElement.style.setProperty('--meter-fill-height', heightPercentage + '%');
 
-                document.querySelector('.meter-label').innerText = `Group Completion: ${totalPoints} / ${eventGoal}`;
+                document.querySelector('.meter-label').innerText = `Group Completion: ${totalPoints} / ${game_Goal}`;
             })
             .catch(err => console.error('Failed to update meter:', err));
     }

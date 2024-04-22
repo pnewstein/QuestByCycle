@@ -5,7 +5,7 @@
     <meta property="og:title" content="{{ task.title }} - complete" />
     <meta property="og:description" content="{{ submission.comment | default('Check out this task I completed!') }}" />
     <meta property="og:image" content="{{ url_for('static', filename=submission.image_url) }}" />
-    <meta property="og:url" content="{{ url_for('events.task_share', task_id=task.id, _external=True) }}" />
+    <meta property="og:url" content="{{ url_for('games.task_share', task_id=task.id, _external=True) }}" />
     <title>{{ task.title }}</title>
 </head>
 <body>

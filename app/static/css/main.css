@@ -51,7 +51,7 @@ main {
 .container {
     width: 95%;
     margin: 20px auto;
-    background-color: #ddffee;
+    background-color: #cecce6;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -151,7 +151,7 @@ main {
         padding: 10px;
     }
     
-    .box, .info-box, .event-item, .message {
+    .box, .info-box, .game-item, .message {
         /* Increase font size for better readability on very small screens */
         font-size: larger;
     }
@@ -178,7 +178,7 @@ main {
 /* Specific background colors for each box */
 .box-steps { background-color: #ff9090; }
 .box-missions { background-color: #82ff82; }
-.box-events { background-color: #7a7aff; }
+.box-games { background-color: #7a7aff; }
 
 .introduction, .skill-building {
     margin-bottom: 30px;
@@ -246,19 +246,19 @@ article h3 {
     text-decoration: none;
 }
 
-.events-title {
+.games-title {
     margin-bottom: 20px;
 }
 
-.event-item {
-    background-color: #c9dbee;
+.game-item {
+    background-color: #eef6ff;
     padding: 20px;
     margin-bottom: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.event-date {
+.game-date {
     margin: 10px 0;
     font-style: italic;
 }
@@ -338,7 +338,7 @@ article h3 {
 }
 
 .body-no-scroll {
-    overflow: hidden; /* Prevent scrolling on the body */
+    overflow: hidden; /* prevent scrolling on the body */
 }
 
 /* The Close Button */
@@ -454,7 +454,7 @@ footer {
     justify-content: space-between;
 }
 
-.events-column, .shout-board-column {
+.games-column, .shout-board-column {
     flex: 1;
     padding: 10px;
     margin: 5px;
@@ -493,9 +493,9 @@ footer {
     }
 }
 
-/* Event Items and Tasks List Responsiveness */
+/* Game Items and Tasks List Responsiveness */
 @media only screen and (max-width: 768px) {
-    .event-item, .tasks li {
+    .game-item, .tasks li {
         /* Make these elements more compact on smaller screens */
         padding: 10px;
     }
@@ -753,7 +753,7 @@ footer {
     left: 50%; /* Center horizontally */
     top: 50%; /* Center vertically */
     transform: translate(-50%, -50%); /* Perfect centering */
-    pointer-events: none; /* Prevents interaction directly with the pseudo-element */
+    pointer-events: none; /* prevents interaction directly with the pseudo-element */
 }
 
 /* Span that will hold the checkmark for customization */

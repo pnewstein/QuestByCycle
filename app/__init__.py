@@ -5,7 +5,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from app.auth import auth_bp
 from app.admin import admin_bp
 from app.main import main_bp
-from app.events import events_bp
+from app.games import games_bp
 from app.tasks import tasks_bp
 from app.badges import badges_bp
 from app.models import db
@@ -58,7 +58,7 @@ def create_app():
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(admin_bp, url_prefix='/admin')
-    app.register_blueprint(events_bp, url_prefix='/events')
+    app.register_blueprint(games_bp, url_prefix='/games')
     app.register_blueprint(tasks_bp, url_prefix='/tasks')
     app.register_blueprint(badges_bp, url_prefix='/badges')
     app.register_blueprint(main_bp)

@@ -2,7 +2,7 @@ from flask import Blueprint, current_app, render_template, flash, redirect, url_
 from flask_login import login_required, current_user
 from .forms import BadgeForm
 from .utils import save_badge_image
-from .models import db, Task, Badge, UserTask, Event
+from .models import db, Task, Badge, UserTask, Game
 from werkzeug.utils import secure_filename
 import csv
 import os
@@ -108,9 +108,9 @@ def delete_badge(badge_id):
         return jsonify({'success': False, 'message': f'Error deleting badge: {str(e)}'}), 500
 
 
-@badges_bp.route('/event/<int:event_id>/upload_badge_images', methods=['GET', 'POST'])
+@badges_bp.route('/game/<int:game_id>/upload_badge_images', methods=['GET', 'POST'])
 @login_required
-def upload_badge_images(event_id):
+def upload_badge_images(game_id):
     badge_ids = request.args.get('badge_ids', '')
     if request.method == 'POST':
         for badge_id in badge_ids.split(','):
@@ -126,9 +126,9 @@ def upload_badge_images(event_id):
                     db.session.commit()
 
         flash('Badge images updated successfully', 'success')
-        return redirect(url_for('tasks.manage_event_tasks', event_id=event_id))
+        return redirect(url_for('tasks.manage_game_tasks', game_id=game_id))
     
     badge_ids = [int(id_) for id_ in badge_ids.split(',') if id_.isdigit()]
     badges = Badge.query.filter(Badge.id.in_(badge_ids)).all()
-    return render_template('upload_badge_images.html', badges=badges, event_id=event_id)
+    return render_template('upload_badge_images.html', badges=badges, game_id=game_id)
 

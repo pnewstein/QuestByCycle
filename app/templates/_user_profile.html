@@ -1,14 +1,16 @@
 {% block content %}
 <div class="user-profile">
-    <h1>{{ user.username }}'s Profile</h1>
+    {% if user.display_name %}
+        <h1>{{ user.display_name }}'s Profile</h1>
+    {% else %}
+        <h1>{{ user.username }}'s Profile</h1>
+    {% endif %}
     <div class="profile-details">
-        <p><strong>Display Name:</strong> {{ user.display_name }}</p>
         {% if user.profile_picture %}
         <div class="profile-picture">
-            <img src="{{ url_for('static', filename=user.profile_picture) }}" alt="Profile Picture" style="max-width: 200px; max-height: 200px;">
+            <img src="{{ url_for('static', filename=user.profile_picture) }}" alt="Profile Picture" style="max-width: 150px; max-height: 150px;">
         </div>
         {% endif %}
-        <p><strong>Age Group:</strong> {{ user.age_group }}</p>
         <p><strong>Interests:</strong> {{ user.interests }}</p>
     </div>
     <hr>

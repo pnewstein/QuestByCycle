@@ -17,21 +17,20 @@
                 <div class="dropdown">
                     <a href="{{ url_for('main.index') }}"><button class="dropbtn">Home</button></a>
                 </div>
-                <div class="dropdown">
-                    <a href="{{ url_for('main.leaderboard') }}"><button class="dropbtn">Leaderboard</button></a>
-                </div>
                 {% if current_user.is_authenticated %}
                     <div class="dropdown">
-                        <button class="dropbtn">Your Events</button>
+                        <button class="dropbtn">Your Games</button>
                         <div class="dropdown-content">
-                            {% for event in current_user.participated_events %}
-                                <a href="{{ url_for('events.event_detail', event_id=event.id) }}">{{ event.title }}</a>
+                            {% for game in current_user.participated_games %}
+                                <a href="{{ url_for('games.game_detail', game_id=game.id) }}">{{ game.title }}</a>
                             {% else %}
                                 <a href="{{ url_for('main.index') }}">Join!</a>
                             {% endfor %}
                         </div>
                     </div>
-
+                    <div class="dropdown">
+                        <a href="{{ url_for('main.leaderboard') }}"><button class="dropbtn">Leaderboard</button></a>
+                    </div>
                     <div class="dropdown">
                         <a href="{{ url_for('main.profile') }}">
                             <button class="dropbtn">
@@ -47,6 +46,18 @@
                     {% if current_user.is_admin %}
                         <a href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a>
                     {% endif %}
+                    <div class="dropdown">
+                        <button class="dropbtn">Game Pages</button>
+                        <div class="dropdown-content">
+                            {% for game in games %}  <!-- Ensure this loop is correctly referencing a list of games passed from a view -->
+                                <a href="{{ url_for('games.game_details', game_id=game.id) }}">Details: {{ game.title }}</a>
+                                <a href="{{ url_for('games.game_awards', game_id=game.id) }}">Awards</a>
+                                <a href="{{ url_for('games.game_beyond', game_id=game.id) }}">Beyond</a>
+                            {% else %}
+                                <a>No games available</a>
+                            {% endfor %}
+                        </div>
+                    </div>
                 {% else %}
                     <a href="{{ url_for('auth.login') }}">Login</a>
                     <a href="{{ url_for('auth.register') }}">Register</a>

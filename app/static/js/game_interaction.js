@@ -1,4 +1,4 @@
-// event_interaction.js
+// game_interaction.js
 
 function resetModalContent() {
     const modalTaskActions = document.getElementById('modalTaskActions');

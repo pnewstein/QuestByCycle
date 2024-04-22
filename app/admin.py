@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
-from app.models import db, User, Event
+from app.models import db, User, Game
 from app.forms import AddUserForm
 from functools import wraps
 
@@ -63,8 +63,8 @@ def admin_dashboard():
     if not current_user.is_admin:
         return redirect(url_for('main.index'))
 
-    events = Event.query.all()  # Retrieve all events from the database
-    return render_template('admin_dashboard.html', events=events)
+    games = Game.query.all()  # Retrieve all games from the database
+    return render_template('admin_dashboard.html', games=games)
 
 
 # ADMIN USER MANAGEMENT #

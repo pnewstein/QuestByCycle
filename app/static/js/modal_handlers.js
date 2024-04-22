@@ -3,7 +3,7 @@ function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = 'block';
-        document.body.classList.add('body-no-scroll'); // Optional: Prevent scrolling when modal is open
+        document.body.classList.add('body-no-scroll'); // Optional: prevent scrolling when modal is open
     }
 }
 
@@ -18,18 +18,18 @@ function closeModal(modalId) {
 
 
 // Close modals if the user clicks outside of the modal content
-window.onclick = function(event) {
+window.onclick = function(game) {
     let submissionModal = document.getElementById('submissionDetailModal');
     let taskModal = document.getElementById('taskDetailModal');
     let userProfileModal = document.getElementById('userProfileModal');
 
-    if (submissionModal && event.target === submissionModal) {
+    if (submissionModal && game.target === submissionModal) {
         closeSubmissionModal();
         document.body.classList.remove('body-no-scroll');
-    } else if (taskModal && event.target === taskModal) {
+    } else if (taskModal && game.target === taskModal) {
         closeTaskDetailModal();
         document.body.classList.remove('body-no-scroll');
-    } else if (userProfileModal && event.target === userProfileModal) {
+    } else if (userProfileModal && game.target === userProfileModal) {
         closeUserProfileModal();
         document.body.classList.remove('body-no-scroll');
     }
@@ -65,7 +65,7 @@ function openTaskDetailModal(taskId) {
                 document.getElementById('taskDetailModal').style.display = 'block';
             }).catch(error => {
                 console.error('Error fetching image URL:', error);
-                document.getElementById('taskDetailModal').style.display = 'block';  // Display modal even if image fetch fails
+                document.getElementById('taskDetailModal').style.display = 'block';  // Display modal game if image fetch fails
             });
         })
         .catch(error => {
@@ -93,7 +93,7 @@ function openUserProfile(userId) {
         });
 }
 
-// Adding new DOMContentLoaded event listener for handling auto-opening of modal on page load
+// Adding new DOMContentLoaded game listener for handling auto-opening of modal on page load
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const shouldOpenModal = urlParams.get('open_modal');
@@ -168,8 +168,8 @@ function setupSubmissionForm(taskId) {
     const submissionForm = document.getElementById(`verifyTaskForm-${taskId}`);
 
     if (submissionForm) {
-        submissionForm.addEventListener('submit', function(event) {
-            submitTaskDetails(event, taskId);
+        submissionForm.addEventListener('submit', function(game) {
+            submitTaskDetails(game, taskId);
         });
     } else {
         console.error("Form not found for task ID:", taskId);
