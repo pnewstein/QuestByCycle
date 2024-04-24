@@ -72,6 +72,8 @@ class TaskForm(FlaskForm):
         super(TaskForm, self).__init__(*args, **kwargs)
         self.badge_id.choices = [(0, 'None')] + [(badge.id, badge.name) for badge in Badge.query.all()]
         badge_image_directory = os.path.join(current_app.root_path, 'static/images/default_badges')
+        if not os.path.exists(badge_image_directory):
+            os.makedirs(badge_image_directory)  # Create the directory if it does not exist
         self.default_badge_image.choices = [('','None')] + [(filename, filename) for filename in os.listdir(badge_image_directory)]
 
 
