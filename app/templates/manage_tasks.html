@@ -44,17 +44,16 @@
     <script>
         const game_Id = document.getElementById('game_Data').dataset.gameId;
         const VerificationTypes = {
-            NOT_APPLICABLE: "Not Applicable",
-            QR_CODE: "QR Code",
-            PHOTO_UPLOAD: "Photo Upload",
-            DESTRUCTION_PHOTO: "Destruction Photo",
-            SELFIE: "Selfie",
-            SCREENSHOT: "Screenshot",
-            COMMENT: "Comment",
-            PHOTO_COMMENT: "Photo Upload and Comment",
-            MANUAL_REVIEW: "Manual Review",
-            YOUTUBE_URL: "Youtube URL",
-            URL: "URL"
+            not_applicable: "Not Applicable",
+            qr_code: "QR Code",
+            photo_upload: "Photo Upload",
+            selfie: "Selfie",
+            screenshot: "Screenshot",
+            comment: "Comment",
+            photo_comment: "Photo Upload and Comment",
+            manual_review: "Manual Review",
+            youtube_url: "YouTube URL",
+            url: "URL"
         };
         document.addEventListener('DOMContentLoaded', async function() {
             await loadBadges();
@@ -94,7 +93,8 @@
             })
             .catch(error => console.error('Error:', error));
         }
-               
+
+
         function editTask(taskId) {
             const row = document.querySelector(`#task-${taskId}`);
             if (!row) {
@@ -102,41 +102,70 @@
                 return;
             }
 
+            const originalData = {}; // Store original data to revert back if canceled
+
+            // Save original innerHTML of all editable fields
+            row.querySelectorAll('.editable').forEach(cell => {
+                originalData[cell.getAttribute('data-name')] = cell.innerHTML;
+            });
+
+
+            // Verification handling
+            processVerification(row);
+
+            // Frequency handling
+            processFrequency(row);
+
+            // Badge handling
+            processBadge(row);
+
+            // Process other editable fields
+            processEditableFields(row, originalData);
+
+            // Button controls
+            setupEditAndCancelButtons(row, taskId, originalData);
+        }
+
+
+        function processVerification(row) {
+            const verificationElement = row.querySelector('.editable[data-name="verification_type"]');
+            const currentVerificationType = verificationElement.getAttribute('data-value').toLowerCase();  // Convert to lowercase
+
+            let verificationTypeSelectHTML = '<select name="verification_type" class="editable-select">';
+            Object.entries(VerificationTypes).forEach(([key, display]) => {
+                const isSelected = (currentVerificationType === key.toLowerCase()) ? 'selected' : '';
+                verificationTypeSelectHTML += `<option value="${key}" ${isSelected}>${display}</option>`;
+            });
+            verificationTypeSelectHTML += '</select>';
+            verificationElement.innerHTML = verificationTypeSelectHTML;
+        }
+
+
+        function processFrequency(row) {
             const frequencyElement = row.querySelector('.editable[data-name="frequency"]');
-            if (!frequencyElement) {
-                console.error(`Frequency element not found for taskId: ${taskId}.`);
-                return;
-            }
-
-            // Extract the current frequency value from the element's data-value attribute.
-            let currentFrequencyValue = frequencyElement.getAttribute('data-value');
-
-            // Define the mapping for frequency values to their display text.
-            const frequencyOptions = {
-                daily: 1,
-                weekly: 2,
-                monthly: 3,
-            };
-
-            // Generate the HTML for the frequency select element, marking the current value as selected.
+            const currentFrequencyValue = frequencyElement.getAttribute('data-value').toLowerCase();
             let frequencySelectHTML = '<select name="frequency" class="editable-select">';
-            for (const [text, value] of Object.entries(frequencyOptions)) {
-                let isSelected = currentFrequencyValue == text ? 'selected' : '';
-                frequencySelectHTML += `<option value="${value}" ${isSelected}>${text.charAt(0).toUpperCase() + text.slice(1)}</option>`;
-            }
+            const frequencyOptions = {
+                daily: "Daily",
+                weekly: "Weekly",
+                monthly: "Monthly",
+            };
+            Object.entries(frequencyOptions).forEach(([key, display]) => {
+                const isSelected = (currentFrequencyValue === key.toLowerCase()) ? 'selected' : '';
+                frequencySelectHTML += `<option value="${key}" ${isSelected}>${display}</option>`;
+            });
             frequencySelectHTML += '</select>';
-
             frequencyElement.innerHTML = frequencySelectHTML;
+        }
 
+
+        function processBadge(row) {
             const badgeCell = row.querySelector('.editable[data-name="badge_name"]');
             if (badgeCell) {
                 let currentBadgeName = badgeCell.innerText.trim();
-                let badgeSelectHTML = '<select name="badge_id" class="editable-select">';
-                // Add an option for no badge selected
-                badgeSelectHTML += `<option value="">None</option>`;
-
+                let badgeSelectHTML = '<select name="badge_id" class="editable-select"><option value="">None</option>';
                 badges.forEach(badge => {
-                    let isSelected = currentBadgeName === badge.name ? 'selected' : '';
+                    const isSelected = (currentBadgeName === badge.name) ? 'selected' : '';
                     badgeSelectHTML += `<option value="${badge.id}" ${isSelected}>${badge.name}</option>`;
                 });
                 badgeSelectHTML += '</select>';
@@ -144,61 +173,86 @@
             } else {
                 console.error(`Badge element not found for taskId: ${taskId}.`);
             }
+        }
 
-            // Define editable fields with their corresponding input types or options for select elements
+
+        function processEditableFields(row, originalData) {
             const editableFields = [
                 { name: "title", type: "text" },
                 { name: "description", type: "textarea" },
                 { name: "tips", type: "textarea" },
                 { name: "points", type: "number" },
                 { name: "completion_limit", type: "number" },
-                { name: "frequency", type: "select", options: ["Daily", "Weekly", "Monthly"] }, // Assuming these are the display values used in your HTML
                 { name: "category", type: "text" },
-                { name: "enabled", type: "select", options: ["Yes", "No"] }, // Display values for boolean field
-                { name: "verification_type", type: "select", options: Object.keys(VerificationTypes), displayValues: Object.values(VerificationTypes) },
+                { name: "enabled", type: "select", options: ["Yes", "No"] },
             ];
-            
-            // Iterate over each editable field to dynamically create the input element
+
             editableFields.forEach(field => {
                 const cell = row.querySelector(`.editable[data-name="${field.name}"]`);
-                if (!cell) return; // Skip if the cell doesn't exist for some reason
-
-                const currentValue = cell.innerText.trim();
-                let inputElement;
-
-                if (field.type === "select") {
-                    inputElement = document.createElement("select");
-                    inputElement.name = field.name;
-
-                    field.options.forEach((option, index) => {
-                        const optionElement = document.createElement("option");
-                        optionElement.value = option;
-                        optionElement.text = field.displayValues ? field.displayValues[index] : option; // Use display values if provided
-                        if (currentValue === optionElement.text) {
-                            optionElement.selected = true;
-                        }
-                        inputElement.appendChild(optionElement);
-                    });
-                } else if (field.type === "textarea") {
-                    inputElement = document.createElement("textarea");
-                    inputElement.name = field.name;
-                    inputElement.value = currentValue;
-                } else { // Handle text and number inputs
-                    inputElement = document.createElement("input");
-                    inputElement.type = field.type;
-                    inputElement.name = field.name;
-                    inputElement.value = currentValue;
-                }
-
-                // Replace the cell's content with the new input element
-                cell.innerHTML = '';
-                cell.appendChild(inputElement);
+                if (!cell) return;
+                updateEditableField(cell, field);
             });
+        }
 
-            // Updating the edit button to a save button and setting its click game to call saveTask
+
+        function updateEditableField(cell, field) {
+            const currentValue = cell.innerText.trim();
+            let inputElement;
+
+            if (field.type === "select") {
+                inputElement = document.createElement("select");
+                inputElement.name = field.name;
+                field.options.forEach(option => {
+                    const optionElement = document.createElement("option");
+                    optionElement.value = option;
+                    optionElement.text = field.displayValues ? field.displayValues[field.options.indexOf(option)] : option;
+                    if (currentValue === optionElement.text) {
+                        optionElement.selected = true;
+                    }
+                    inputElement.appendChild(optionElement);
+                });
+            } else if (field.type === "textarea") {
+                inputElement = document.createElement("textarea");
+                inputElement.name = field.name;
+                inputElement.value = currentValue;
+            } else {
+                inputElement = document.createElement("input");
+                inputElement.type = field.type;
+                inputElement.name = field.name;
+                inputElement.value = currentValue;
+            }
+            cell.innerHTML = '';
+            cell.appendChild(inputElement);
+        }
+
+
+        function setupEditAndCancelButtons(row, taskId, originalData) {
             const editButton = row.querySelector(".edit-button");
             editButton.innerText = "Save";
             editButton.onclick = () => saveTask(taskId);
+
+            const cancelButton = document.createElement("button");
+            cancelButton.innerText = "Cancel";
+            cancelButton.className = "cancel-button";
+            cancelButton.onclick = () => {
+                cancelEditTask(row, originalData, editButton, taskId);
+            };
+
+            editButton.parentNode.insertBefore(cancelButton, editButton.nextSibling);
+        }
+
+
+        function cancelEditTask(row, originalData, editButton, taskId) {
+            Object.entries(originalData).forEach(([name, html]) => {
+                const cell = row.querySelector(`.editable[data-name="${name}"]`);
+                if (cell) {
+                    cell.innerHTML = html;
+                }
+            });
+
+            editButton.innerText = "Edit";
+            editButton.onclick = () => editTask(taskId);
+            row.querySelector(".cancel-button").remove();
         }
 
 
@@ -241,6 +295,7 @@
             });
         }
 
+
         function loadTasks(game_Id) {
             fetch(`/tasks/game/${game_Id}/tasks`, {
                 method: 'GET',
@@ -255,28 +310,38 @@
             .then(data => {
                 const tasksBody = document.getElementById('tasksBody');
                 tasksBody.innerHTML = ''; // Clear the table before adding new rows
+
                 data.tasks.forEach(task => {
                     const row = document.createElement('tr');
                     row.id = `task-${task.id}`;
+
+                    const verificationTypeText = task.verification_type.toLowerCase();
+                    const badgeName = task.badge_name || 'None';
+                    const frequencyDisplayText = task.frequency ? task.frequency.charAt(0).toUpperCase() + task.frequency.slice(1) : 'Not Set';
+                    const categoryText = task.category || 'Not Set';
+
                     row.innerHTML = `
-                        <td>${task.title}</td>
-                        <td>${task.description}</td>
-                        <td>${task.tips}</td>
-                        <td>${task.points}</td>
-                        <td>${task.completion_limit}</td>
-                        <td>${task.enabled ? 'Yes' : 'No'}</td>
-                        <td>${task.verification_type}</td>
-                        <td>${task.badge_name}</td>
-                        <td>${task.frequency}</td>
-                        <td>${task.category}</td>
-                        <td><button onclick="editTask(${task.id})">Edit</button></td>
+                        <td class="editable" data-name="title">${task.title}</td>
+                        <td class="editable" data-name="description">${task.description}</td>
+                        <td class="editable" data-name="tips">${task.tips || ''}</td>
+                        <td class="editable" data-name="points">${task.points}</td>
+                        <td class="editable" data-name="completion_limit">${task.completion_limit}</td>
+                        <td class="editable" data-name="enabled">${task.enabled ? 'Yes' : 'No'}</td>
+                        <td class="editable" data-name="verification_type" data-value="${task.verification_type}">${verificationTypeText}</td>
+                        <td class="editable" data-name="badge_name">${badgeName}</td>
+                        <td class="editable" data-name="frequency" data-value="${task.frequency}">${frequencyDisplayText}</td>
+                        <td class="editable" data-name="category">${categoryText}</td>
+                        <td>
+                            <button class="edit-button" onclick="editTask(${task.id})">Edit</button>
+                            <button onclick="deleteTask(${task.id})">Delete</button>
+                            <button onclick="generateQRCode(${task.id})">Generate QR Code</button>
+                        </td>
                     `;
+
                     tasksBody.appendChild(row);
                 });
             })
-            .catch(error => {
-                console.error('Failed to load tasks:', error);
-            });
+            .catch(error => console.error('Failed to load tasks:', error));
         }
 
 
@@ -306,6 +371,7 @@
                 alert('Failed to delete task. Please check the console for more details.');
             });
         }
+
 
         function importTasks() {
             const form = document.getElementById('importTasksForm');
@@ -338,6 +404,7 @@
             });
         }
         
+
         function generateQRCode(taskId) {
             // Assuming you have an endpoint that generates and sends a QR code image
             const url = `/tasks/generate_qr/${taskId}`;

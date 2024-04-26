@@ -2,7 +2,7 @@ from flask import Blueprint, send_file, jsonify, render_template, request, flash
 from flask_login import login_required, current_user
 from app.utils import update_user_score, getLastRelevantCompletionTime, check_and_award_badges, revoke_badge, save_badge_image, save_submission_image, can_complete_task
 from app.forms import TaskForm, PhotoForm
-from .models import db, Game, Task, Badge, UserTask, TaskSubmission, Frequency, ShoutBoardMessage, VerificationType
+from .models import db, Game, Task, Badge, UserTask, TaskSubmission, ShoutBoardMessage
 from .utils import award_badges
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
@@ -32,26 +32,19 @@ def manage_game_tasks(game_id):
         if request.content_type == 'application/json':
             data = request.get_json()
             frequency_value = data.get('frequency')
+            verification_type = data.get('verification_type')
         else:
             # For non-JSON requests, this block can be adapted to process form data or other data types
             frequency_value = None
-
+            verification_type = None
         if form.validate_on_submit():
             task = Task(
                 title=form.title.data,
                 description=form.description.data,
+                frequency=frequency_value,
+                verification_type=verification_type,
                 game_id=game_id
             )
-
-            # If frequency value is provided and valid, set it here
-            if frequency_value:
-                try:
-                    # Ensure frequency_value is an integer and valid enum before assignment
-                    frequency_enum = Frequency(int(frequency_value))
-                    task.frequency = frequency_enum
-                except (ValueError, TypeError, KeyError):
-                    # Handle invalid frequency values (e.g., not an integer, not a valid enum value)
-                    flash('Invalid frequency value provided.', 'error')
 
             db.session.add(task)
             try:
@@ -221,16 +214,15 @@ def update_task(task_id):
     task.completion_limit = int(data.get('completion_limit', task.completion_limit))
     task.enabled = data.get('enabled', task.enabled)
     task.category = data.get('category', task.category)
+    
+    verification_type = data.get('verification_type')
+    if verification_type:
+        task.verification_type = verification_type.lower()
 
-    # Handling Frequency
-    if 'frequency' in data:
-        frequency_value = data['frequency'].lower()
-        if frequency_value in Frequency.__members__:
-            task.frequency = Frequency[frequency_value]
-
-    # Handling Verification Type
-    if 'verification_type' in data and data['verification_type'] in VerificationType.__members__:
-        task.verification_type = VerificationType[data['verification_type']]
+    # Handling Frequency directly as a string
+    frequency_value = data.get('frequency')
+    if frequency_value:
+        task.frequency = frequency_value.lower()  # Ensure consistency in string format
     
     # Handle badge_id conversion and validation
     badge_id = data.get('badge_id')
@@ -281,10 +273,10 @@ def get_tasks_for_game(game_id):
             'points': task.points,
             'completion_limit': task.completion_limit,
             'enabled': task.enabled,
-            'verification_type': task.verification_type.name if task.verification_type else 'Not Applicable',
+            'verification_type': task.verification_type,
             'badge_name': task.badge.name if task.badge else 'None',
             'badge_description': task.badge.description if task.badge else '',
-            'frequency': task.frequency.name if task.frequency else 'Not Set',  # Handling Frequency Enum
+            'frequency': task.frequency,  # Handling Frequency Enum
             'category': task.category if task.category else 'Not Set',  # Handling potentially undefined Category
         }
         for task in tasks
@@ -371,9 +363,9 @@ def task_user_completion(task_id):
         'tips': task.tips,
         'points': task.points,
         'completion_limit': task.completion_limit,
-        'frequency': task.frequency.name if task.frequency else 'Not Set', 
+        'frequency': task.frequency, 
         'enabled': task.enabled,
-        'verification_type': task.verification_type.name if task.verification_type else 'Not Applicable',
+        'verification_type': task.verification_type,
         'badge_name': task.badge.name if task.badge else 'None',
         'nextEligibleTime': next_eligible_time.isoformat() if next_eligible_time else None
 

@@ -1,5 +1,5 @@
 from flask import flash, current_app, jsonify
-from .models import db, Task, Badge, UserTask, User, ShoutBoardMessage, Frequency, TaskSubmission
+from .models import db, Task, Badge, UserTask, User, ShoutBoardMessage, TaskSubmission
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta, timezone
 
@@ -161,7 +161,7 @@ def can_complete_task(user_id, task_id):
         return False, None  # Task does not exist
     
     print(f"Current time: {now}")
-    print(f"Task found: {task.title} with frequency {task.frequency.name} and completion limit {task.completion_limit}")
+    print(f"Task found: {task.title} with frequency {task.frequency} and completion limit {task.completion_limit}")
 
     # Determine the start of the relevant period based on frequency
     period_start_map = {
@@ -169,7 +169,7 @@ def can_complete_task(user_id, task_id):
         'weekly': timedelta(minutes=4),
         'monthly': timedelta(days=30)  # Approximation for monthly
     }
-    period_start = now - period_start_map.get(task.frequency.name.lower(), timedelta(days=1))
+    period_start = now - period_start_map.get(task.frequency.lower(), timedelta(days=1))
     print(f"Period start calculated as: {period_start}")
 
     # Count completions in the defined period
@@ -199,7 +199,7 @@ def can_complete_task(user_id, task_id):
                 'weekly': timedelta(minutes=4),
                 'monthly': timedelta(days=30)
             }
-            next_eligible_time = first_completion_in_period.timestamp + increment_map.get(task.frequency.name.lower(), timedelta(days=1))
+            next_eligible_time = first_completion_in_period.timestamp + increment_map.get(task.frequency.lower(), timedelta(days=1))
             print(f"Next eligible time calculated as: {next_eligible_time}")
         else:
             print("No completions found within the period.")
@@ -217,11 +217,15 @@ def getLastRelevantCompletionTime(user_id, task_id):
         return None  # Task does not exist
 
     # Start of the period calculation must reflect the frequency
-    period_start = {
-        Frequency.daily: now - timedelta(days=1),
-        Frequency.weekly: now - timedelta(minutes=4),
-        Frequency.monthly: now - timedelta(days=30)
-    }.get(task.frequency, now)  # Default to immediate if frequency is not set
+    period_start_map = {
+        'daily': now - timedelta(days=1),
+        'weekly': now - timedelta(weeks=1),
+        'monthly': now - timedelta(days=30)
+    }
+    
+    # Get the period start time based on the task's frequency
+    period_start = period_start_map.get(task.frequency, now)  # Default to now if frequency is not recognized
+
 
     # Fetch the last completion that affects the current period
     last_relevant_completion = TaskSubmission.query.filter(
