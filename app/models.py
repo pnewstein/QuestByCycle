@@ -6,28 +6,7 @@ from enum import Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy import Enum as SQLAlchemyEnum
 
-
 db = SQLAlchemy()
-
-
-class Frequency(Enum):
-    daily = 1
-    weekly = 2
-    monthly = 3
-
-
-class VerificationType(Enum):
-    NOT_APPLICABLE = "Not Applicable",
-    QR_CODE = "QR Code"
-    PHOTO_UPLOAD = "Photo Upload"
-    SELFIE = "Selfie"
-    SCREENSHOT = "Screenshot"
-    COMMENT = "Comment"
-    PHOTO_COMMENT = "Photo Upload and Comment"
-    MANUAL_REVIEW = "Manual Review"
-    YOUTUBE_URL = "Youtube URL"
-    URL = "URL"
-
 
 class Badge(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -90,13 +69,13 @@ class Task(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     evidence_url = db.Column(db.String(500))
     enabled = db.Column(db.Boolean, default=True)
-    verification_type = db.Column(SQLAlchemyEnum(VerificationType))
+    verification_type = db.Column(db.String(50))  # Changed from SQLAlchemyEnum to String
     verification_comment = db.Column(db.String(1000), default="")
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))  # Make sure this line is within the class definition
     points = db.Column(db.Integer, default='')
     tips = db.Column(db.String(1000), default='')
     completion_limit = db.Column(db.Integer, default=1)  # Limit for how many times a task can be completed
-    frequency = db.Column(db.Enum(Frequency), nullable=False, default='daily')
+    frequency = db.Column(db.String(50), nullable=True)  # Store frequency as a string
     user_tasks = db.relationship('UserTask', back_populates='task', cascade="all, delete", passive_deletes=True)
     category = db.Column(db.String(50), nullable=True)
     badge_id = db.Column(db.Integer, db.ForeignKey('badge.id'), nullable=True)  # Foreign key to Badge
@@ -134,7 +113,6 @@ class ShoutBoardMessage(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.now(timezone.utc))
     
     user = db.relationship('User', backref='shoutboard_messages')
-    
     likes = db.relationship('ShoutBoardLike', backref='message', lazy='dynamic')
 
 class ShoutBoardLike(db.Model):

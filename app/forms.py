@@ -4,7 +4,7 @@ from wtforms import StringField, SelectField, SubmitField, IntegerField, Passwor
 from wtforms.validators import DataRequired, NumberRange, EqualTo, Optional, Email, Length
 from wtforms.fields import DateField
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from app.models import Badge, VerificationType, Frequency, Task
+from app.models import Badge, Task
 
 import os
 
@@ -54,7 +54,19 @@ class TaskForm(FlaskForm):
     enabled = BooleanField('Enabled', default=True)
     category_choices = [('Environment', 'Environment'), ('Community', 'Community')]  # Example categories
     category = SelectField('Category', choices=category_choices, validators=[DataRequired()])
-    verification_type = SelectField('Verification Type', choices=[(vt.name, vt.value) for vt in VerificationType], coerce=str, validators=[DataRequired()])
+    verification_type_choices = [
+        ('not_applicable', 'Not Applicable'),
+        ('qr_code', 'QR Code'),
+        ('photo_upload', 'Photo Upload'),
+        ('selfie', 'Selfie'),
+        ('screenshot', 'Screenshot'),
+        ('comment', 'Comment'),
+        ('photo_comment', 'Photo Upload and Comment'),
+        ('manual_review', 'Manual Review'),
+        ('youtube_url', 'YouTube URL'),
+        ('url', 'URL')
+    ]
+    verification_type = SelectField('Verification Type', choices=verification_type_choices, coerce=str, validators=[DataRequired()])
     title = StringField('Title', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
     tips = TextAreaField('Tips', validators=[Optional()])
