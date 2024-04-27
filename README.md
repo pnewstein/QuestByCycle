@@ -1,8 +1,8 @@
-# BikeHunt
+# QuestByCycle
 
 ## Overview
 
-BikeHunt is a Flask-based web application designed to engage and motivate the bicycling community through a gamified approach, promoting environmental sustainability and climate activism. Participants complete tasks or missions related to bicycling and environmental stewardship, earning badges and recognition among the community. The platform features a competitive yet collaborative environment where users can view their standings on a leaderboard, track their progress through profile pages, and contribute to a greener planet.
+QuestByCycle is a Flask-based web application designed to engage and motivate the bicycling community through a gamified approach, promoting environmental sustainability and climate activism. Participants complete tasks or missions related to bicycling and environmental stewardship, earning badges and recognition among the community. The platform features a competitive yet collaborative environment where users can view their standings on a leaderboard, track their progress through profile pages, and contribute to a greener planet.
 
 ## Features
 
@@ -23,11 +23,11 @@ BikeHunt is a Flask-based web application designed to engage and motivate the bi
 
 1. Clone the repository:
 
-```git clone https://github.com/yourusername/BikeHunt.git```
+```git clone https://github.com/yourusername/QuestByCycle.git```
 
 2. Navigate into the project directory:
 
-```cd BikeHunt```
+```cd QuestByCycle```
 
 3. Create and activate a virtual environment (optional):
 
@@ -83,16 +83,16 @@ BikeHunt is a Flask-based web application designed to engage and motivate the bi
 
 8. Update instructions:
 
-```ssh bikehunt.org```
-```cd BikeHunt/```
+```ssh questbycycle.org```
+```cd QuestByCycle/```
 ```git pull```
-```cd BikeHunt/```
+```cd QuestByCycle/```
 ```screen -r```
 
 ```Ctrl-c```
 
 ```sudo rm -rf *```
-```cp -r ~/BikeHunt/* /var/www/html```
+```cp -r ~/QuestByCycle/* /var/www/html```
 ```flask db migrate -m "pulled updates"```
 ```sudo su - postgres```
 ```psql```
@@ -105,7 +105,7 @@ BikeHunt is a Flask-based web application designed to engage and motivate the bi
 
 ## Contributing
 
-We welcome contributions from the community! Whether you're interested in adding new features, fixing bugs, or improving documentation, your help is appreciated. Please refer to CONTRIBUTING.md for guidelines on how to contribute to BikeHunt.
+We welcome contributions from the community! Whether you're interested in adding new features, fixing bugs, or improving documentation, your help is appreciated. Please refer to CONTRIBUTING.md for guidelines on how to contribute to QuestByCycle.
 
 ## License
 
@@ -114,5 +114,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Acknowledgments
 
 - The bicycling community for their endless passion and dedication to making the world a greener place.
-- All contributors who spend their time and effort to improve BikeHunt.
+- All contributors who spend their time and effort to improve QuestByCycle.
 
