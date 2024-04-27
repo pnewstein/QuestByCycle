@@ -46,8 +46,12 @@ function submitTaskDetails(game, taskId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            document.getElementById('total-points').innerText = `Total Completed Points: ${data.total_points}`;
-            alert('Submission successful!');
+            console.log('Checking total points element:', document.getElementById('total-points'));
+            if (document.getElementById('total-points')) {
+                document.getElementById('total-points').innerText = `Total Completed Points: ${data.total_points}`;
+            } else {
+                console.error('total-points element not found');
+            }            alert('Submission successful!');
             // Fetch the updated task details and submissions
             openTaskDetailModal(taskId);
         } else {
