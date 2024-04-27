@@ -74,24 +74,25 @@ function openTaskDetailModal(taskId) {
         });
 }
 
-function openUserProfile(userId) {
+
+function showUserProfileModal(userId) {
     fetch(`/profile/${userId}`)
-        .then(response => response.text())  // Assuming the server responds with HTML for the user profile
+        .then(response => response.text())
         .then(html => {
-            const userProfileModal = document.getElementById('userProfileModal');
             const userProfileDetails = document.getElementById('userProfileDetails');
-            if (userProfileDetails) {
-                userProfileDetails.innerHTML = html;
-                openModal('userProfileModal');
-            } else {
+            if (!userProfileDetails) {
                 console.error('User profile details container not found');
+                return;  // Exit if no container is found
             }
+            userProfileDetails.innerHTML = html;
+            openModal('userProfileModal');
         })
         .catch(error => {
-            console.error('Failed to fetch profile:', error);
+            console.error('Failed to load user profile:', error);
             alert('Could not load user profile. Please try again.');
         });
 }
+
 
 // Adding new DOMContentLoaded game listener for handling auto-opening of modal on page load
 document.addEventListener('DOMContentLoaded', () => {
