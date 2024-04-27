@@ -85,6 +85,22 @@
             <label for="beyond">Beyond the Game</label>
             {{ form.beyond(class_="form-control", id="beyond") }}
         </div>
+        <div class="form-group">
+            <label for="twitter_api_key">Twitter API Key</label>
+            {{ form.twitter_api_key(class_="form-control", id="twitter_api_key") }}
+        </div>
+        <div class="form-group">
+            <label for="twitter_api_secret">Twitter API Secret</label>
+            {{ form.twitter_api_secret(class_="form-control", id="twitter_api_secret") }}
+        </div>
+        <div class="form-group">
+            <label for="twitter_access_token">Twitter Access Token</label>
+            {{ form.twitter_access_token(class_="form-control", id="twitter_access_token") }}
+        </div>
+        <div class="form-group">
+            <label for="twitter_access_token_secret">Twitter Access Token Secret</label>
+            {{ form.twitter_access_token_secret(class_="form-control", id="twitter_access_token_secret") }}
+        </div>
         <button type="submit" class="btn btn-primary">Create Game</button>
     </form>
 </div>
