@@ -18,7 +18,7 @@ function showModal(tips) {
     if (modalText) {
         modalText.textContent = tips;
     }
-    const modal = document.getElementById("modal");
+    const modal = document.getElementById("tipsModal");
     if (modal) {
         modal.style.display = 'block';
     }
@@ -26,6 +26,10 @@ function showModal(tips) {
 
 function closeTaskDetailModal() {
     document.getElementById('taskDetailModal').style.display = 'none';
+}
+
+function closeTipsModal() {
+    document.getElementById('tipsModal').style.display = 'none';
 }
 
 function closeSubmissionModal() {

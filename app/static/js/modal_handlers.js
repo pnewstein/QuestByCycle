@@ -7,21 +7,12 @@ function openModal(modalId) {
     }
 }
 
-// Function to close a modal by ID
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = 'none';
-        document.body.classList.remove('body-no-scroll'); // Optional: Re-enable scrolling when modal is closed
-    }
-}
-
-
 // Close modals if the user clicks outside of the modal content
 window.onclick = function(game) {
     let submissionModal = document.getElementById('submissionDetailModal');
     let taskModal = document.getElementById('taskDetailModal');
     let userProfileModal = document.getElementById('userProfileModal');
+    let tipsModal = document.getElementById('tipsModal');
 
     if (submissionModal && game.target === submissionModal) {
         closeSubmissionModal();
@@ -31,6 +22,9 @@ window.onclick = function(game) {
         document.body.classList.remove('body-no-scroll');
     } else if (userProfileModal && game.target === userProfileModal) {
         closeUserProfileModal();
+        document.body.classList.remove('body-no-scroll');
+    } else if (tipsModal && game.target === tipsModal) {
+        closeTipsModal();
         document.body.classList.remove('body-no-scroll');
     }
 }
