@@ -23,7 +23,15 @@
                     {% if total_points is defined %}
                     <p>Your Total Points: {{ total_points }}</p>
                     {% endif %}
+
+                    {% if game_participation[game.id] %}
                     <a href="{{ url_for('games.game_detail', game_id=game.id) }}" class="blue_button">View Task List</a>
+                    {% else %}
+                    <form action="{{ url_for('games.register_game', game_id=game.id) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="button primary">Join Game</button>
+                    </form>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
