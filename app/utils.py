@@ -169,7 +169,7 @@ def can_complete_task(user_id, task_id):
         'weekly': timedelta(minutes=4),
         'monthly': timedelta(days=30)  # Approximation for monthly
     }
-    period_start = now - period_start_map.get(task.frequency.lower(), timedelta(days=1))
+    period_start = now - period_start_map.get(task.frequency, timedelta(days=1))
     print(f"Period start calculated as: {period_start}")
 
     # Count completions in the defined period
@@ -199,7 +199,7 @@ def can_complete_task(user_id, task_id):
                 'weekly': timedelta(minutes=4),
                 'monthly': timedelta(days=30)
             }
-            next_eligible_time = first_completion_in_period.timestamp + increment_map.get(task.frequency.lower(), timedelta(days=1))
+            next_eligible_time = first_completion_in_period.timestamp + increment_map.get(task.frequency, timedelta(days=1))
             print(f"Next eligible time calculated as: {next_eligible_time}")
         else:
             print("No completions found within the period.")

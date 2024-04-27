@@ -26,6 +26,10 @@ def create_game():
             details=form.details.data,
             awards=form.awards.data,
             beyond=form.beyond.data,
+            twitter_api_key=form.twitter_api_key.data,
+            twitter_api_secret=form.twitter_api_secret.data,
+            twitter_access_token=form.twitter_access_token.data,
+            twitter_access_token_secret=form.twitter_access_token_secret.data,
             admin_id=current_user.id
         )
         db.session.add(game)
@@ -87,7 +91,7 @@ def game_detail(game_id, task_id):
             'weekly': timedelta(minutes=4),
             'monthly': timedelta(days=30)
         }
-        period_start = now - period_start_map.get(task.frequency.lower(), timedelta(days=1))
+        period_start = now - period_start_map.get(task.frequency, timedelta(days=1))
 
         submissions = TaskSubmission.query.filter(
             TaskSubmission.user_id == current_user.id,
@@ -114,7 +118,7 @@ def game_detail(game_id, task_id):
                     'weekly': timedelta(minutes=4),
                     'monthly': timedelta(days=30)
                 }
-                task.next_eligible_time = last_completion.timestamp + increment_map.get(task.frequency.lower(), timedelta(days=1))
+                task.next_eligible_time = last_completion.timestamp + increment_map.get(task.frequency, timedelta(days=1))
     
     tasks.sort(key=lambda x: x.completions_within_period, reverse=True)
 

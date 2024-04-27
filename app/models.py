@@ -107,12 +107,17 @@ class Game(db.Model):
     end_date = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
     admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     tasks = db.relationship('Task', backref='game', lazy='dynamic')
-    participants = db.relationship('User', secondary='game_participants', lazy='subquery',
-                                   backref=db.backref('games', lazy=True))
+    participants = db.relationship('User', secondary='game_participants', lazy='subquery', backref=db.backref('games', lazy=True))
     game_goal = db.Column(db.Integer)
     details = db.Column(db.Text)  # New field for detailed game information
     awards = db.Column(db.Text)  # Information about awards
     beyond = db.Column(db.Text)  # Information on living a sustainable bicycle lifestyle
+    
+    # Twitter credentials
+    twitter_api_key = db.Column(db.String(500), nullable=True)
+    twitter_api_secret = db.Column(db.String(500), nullable=True)
+    twitter_access_token = db.Column(db.String(500), nullable=True)
+    twitter_access_token_secret = db.Column(db.String(500), nullable=True)
 
 game_participants = db.Table('game_participants',
     db.Column('game_id', db.Integer, db.ForeignKey('game.id'), primary_key=True),

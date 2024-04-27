@@ -2,6 +2,7 @@ from flask import Blueprint, send_file, jsonify, render_template, request, flash
 from flask_login import login_required, current_user
 from app.utils import update_user_score, getLastRelevantCompletionTime, check_and_award_badges, revoke_badge, save_badge_image, save_submission_image, can_complete_task
 from app.forms import TaskForm, PhotoForm
+from app.social import authenticate_twitter, post_to_twitter, upload_media_to_twitter
 from .models import db, Game, Task, Badge, UserTask, TaskSubmission, ShoutBoardMessage
 from .utils import award_badges
 from werkzeug.utils import secure_filename
@@ -139,7 +140,16 @@ def submit_task(task_id):
         return jsonify({'success': False, 'message': 'No file selected'})
     try:
         image_url = save_submission_image(image_file)
-        comment = request.form.get('verificationComment')
+        image_path = os.path.join(current_app.static_folder, image_url)
+        comment = request.form.get('verificationComment', '')
+        media_id, error = upload_media_to_twitter(image_path, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
+        if error:
+            return jsonify({'success': False, 'message': f"Failed to upload media: {error}"})
+
+        status = f"Check out this task completion for '{task.title}'! #QuestByCycle"
+        tweet_response, error = post_to_twitter(status, media_id, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
+        if error:
+            return jsonify({'success': False, 'message': f"Failed to post tweet: {error}"})
 
         new_submission = TaskSubmission(
             task_id=task_id,

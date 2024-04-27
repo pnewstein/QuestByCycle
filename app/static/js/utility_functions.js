@@ -1,15 +1,18 @@
 // utility_functions.js
 
-function shareOnFacebook(taskId) {
-    const url = `tasks/task/${taskId}/share`;
-    const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-    window.open(shareUrl, '_blank');
+function shareOnFacebook() {
+    const url = encodeURIComponent(document.getElementById('submissionImage').src); // Shares the URL of the page
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+    window.open(facebookUrl, '_blank', 'height=600,width=600,scrollbars=yes,status=yes');
 }
 
-function shareOnTwitter(taskId, text) {
-    const url = `tasks/task/${taskId}/share`;
-    const shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
-    window.open(shareUrl, '_blank');
+function shareOnTwitter() {
+    const imageUrl = encodeURIComponent(document.getElementById('submissionImage').src);
+    const text = encodeURIComponent("Check out my achievement!"); // Text to accompany the image in the tweet
+    const hashtags = encodeURIComponent("questbycycle"); // Relevant hashtags
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${text}&url=${imageUrl}&hashtags=${hashtags}`;
+
+    window.open(twitterUrl, '_blank', 'location=yes,height=570,width=520,scrollbars=yes,status=yes');
 }
 
 function formatTimeDiff(timeDiff) {
