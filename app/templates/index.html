@@ -4,11 +4,11 @@
     <div class="container">
 
         <div class="welcomeImage">
-            <img src="{{ url_for('static', filename='images/welcomeBikeHunt.png') }}" alt="Welcome to Bike Hunt" style="max-width: 600px; max-height: 300px;">
+            <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Bike Hunt" style="max-width: 600px; max-height: 300px;">
         </div>
 
         <div class="introduction">
-            <strong><p>BikeHunt is a community-wide motivational game designed to encourage cycling and outdoor activities. Participants can join the game, complete tasks, and earn points/”reduce carbon” in the atmosphere to climb up the leaderboard. It's a fun way to stay active, explore your surroundings, and connect with fellow cycling enthusiasts.
+            <strong><p>QuestByCycle is a community-wide motivational game designed to encourage cycling and outdoor activities. Participants can join the game, complete tasks, and earn points/”reduce carbon” in the atmosphere to climb up the leaderboard. It's a fun way to stay active, explore your surroundings, and connect with fellow cycling enthusiasts.
             </p></strong>
         </div>
         <div class="content-flex-container">
@@ -23,12 +23,10 @@
                 </div>
                 {% endfor %}
             </div>
-        
             <div class="shout-board-column">
                 <h2>Current Activities</h2>
                 <div class="game-item">
                     {% if current_user.is_admin %}
-
                         <form action="{{ url_for('main.shout_board') }}" method="post">
                             {{ form.hidden_tag() }}
                             <div class="form-group">
@@ -36,17 +34,39 @@
                             </div>
                             {{ form.submit() }}
                         </form>
-                    {% endif %}    
+                    {% endif %}
                     <div class="shout-messages">
-                        {% for message in messages %}
-                        <div class="message">
-                            <!-- Add an onclick game handler to call showUserProfileModal with the user ID -->
-                            <strong><a href="javascript:void(0)" onclick="showUserProfileModal('{{ message.user.id }}')">{{ message.user.username }}</a></strong>: {{ message.message }}
-                            <button type="button" class="blue_button" id="like-button-{{ message.id }}" onclick="likeMessage('{{ message.id }}')">
-                                {% if message.liked_by_user %}Liked{% else %}Like{% endif %}
-                            </button>
-                            <span id="like-count-{{ message.id }}">{{ message.likes.count() }}</span>👍🏾
-                        </div>
+                        {% for activity in activities %}
+                            {% if activity.__tablename__ == 'shout_board_message' %}
+                                <div class="message">
+                                    <strong><a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">{{ activity.user.username }}</a></strong>: {{ activity.message }}
+                                    <button type="button" class="blue_button" id="like-button-{{ activity.id }}" onclick="likeMessage('{{ activity.id }}')">
+                                        {% if activity.liked_by_user %}Liked{% else %}Like{% endif %}
+                                    </button>
+                                    <span id="like-count-{{ activity.id }}">{{ activity.likes.count() }}</span>👍🏾
+                                </div>
+                            {% elif activity.__tablename__ == 'user_tasks' %}
+                                <div class="task-completion">
+                                    <strong>
+                                        <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">{{ activity.user.username }}</a>
+                                    </strong> completed a task:
+                                    <strong>
+                                        <a href="javascript:void(0);" onclick="openTaskDetailModal('{{ activity.task.id }}')">
+                                            {{ activity.task.title }}
+                                        </a>
+                                        </strong>
+                                    on {{ activity.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                                    <div id="task-info-{{ activity.task.id }}">
+                                        <button class="blue_button" id="like-button-{{ activity.task.id }}" 
+                                                onclick="likeTask('{{ activity.task.id }}');" 
+                                                class="{{ 'liked-button-style' if activity.task.liked_by_user else '' }}"
+                                                {{ 'disabled' if activity.task.liked_by_user }}>
+                                            {{ 'Liked' if activity.task.liked_by_user else 'Like' }}
+                                        </button>
+                                        <span id="like-count-{{ activity.task.id }}">{{ activity.task.likes.count() }}</span>👍🏾
+                                    </div>
+                                </div>
+                            {% endif %}
                         {% endfor %}
                     </div>
                 </div>
@@ -120,5 +140,46 @@
                 likeButton.disabled = false;
             });
         }
+
+        function likeTask(taskId) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const likeButton = document.getElementById(`like-button-${taskId}`);
+            const likeCountSpan = document.getElementById(`like-count-${taskId}`);
+
+            // Check if the button is already disabled to prevent multiple submissions
+            if (likeButton.disabled) {
+                return;
+            }
+
+            // Immediately disable the button to prevent multiple clicks
+            likeButton.disabled = true;
+
+            fetch(`/like_task/${taskId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken,
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    likeButton.textContent = 'Liked';
+                    let likeCount = parseInt(likeCountSpan.textContent) || 0;
+                    likeCountSpan.textContent = likeCount + 1;
+                    likeButton.classList.add('liked-button-style');
+                } else {
+                    // Handle already liked status
+                    likeButton.textContent = 'Liked';
+                    alert('Already liked');
+                }
+            })
+            .catch(error => {
+                console.error('Error liking the task:', error);
+                likeButton.disabled = false;  // Re-enable the button in case of error to allow retrying
+            });
+        }
+
     </script>
 {% endblock %}

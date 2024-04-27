@@ -56,12 +56,17 @@ def update_game(game_id):
     return render_template('update_game.html', form=form, game_id=game_id)
 
 
-@games_bp.route('/game_detail/<int:game_id>')
+@games_bp.route('/game_detail/<int:game_id>/<int:task_id>')
+@games_bp.route('/game_detail/<int:game_id>', defaults={'task_id': None})
 @login_required
-def game_detail(game_id):
+def game_detail(game_id, task_id):
     game = Game.query.get_or_404(game_id)
     has_joined = game in current_user.participated_games
     tasks = Task.query.filter_by(game_id=game_id, enabled=True).all()
+
+    selected_task = None
+    if task_id:
+        selected_task = Task.query.get_or_404(task_id)
 
     user_tasks = UserTask.query.filter_by(user_id=current_user.id).all()
     total_points = sum(ut.points_awarded for ut in user_tasks if ut.task.game_id == game_id)
@@ -118,7 +123,8 @@ def game_detail(game_id):
         game=game,
         has_joined=has_joined,
         tasks=tasks,
-        total_points=total_points
+        total_points=total_points,
+        selected_task=selected_task
     )
 
 

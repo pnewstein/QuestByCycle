@@ -1,11 +1,12 @@
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app
 from flask_login import current_user, login_required, logout_user
 from app.utils import save_profile_picture, award_badges
-from app.models import db, Game, User, Task, UserTask, Badge, ShoutBoardMessage, ShoutBoardLike
+from app.models import db, Game, User, Task, UserTask, TaskLike, ShoutBoardMessage, ShoutBoardLike
 from app.forms import ProfileForm, ShoutBoardForm
 from .config import load_config
 from werkzeug.utils import secure_filename
 
+import pytz  # Make sure pytz is installed
 import os
 import logging
 
@@ -13,27 +14,46 @@ main_bp = Blueprint('main', __name__)
 
 config = load_config()
 
+utc = pytz.UTC  # Define UTC timezone
+
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
+def get_datetime(activity):
+    if hasattr(activity, 'timestamp'):
+        return activity.timestamp.replace(tzinfo=utc) if activity.timestamp.tzinfo is None else activity.timestamp
+    else:
+        return activity.completed_at
+
+
 @main_bp.route('/')
 def index():
     games = Game.query.all()
+    tasks = Task.query.all()
     form = ShoutBoardForm()
     messages = ShoutBoardMessage.query.order_by(ShoutBoardMessage.timestamp.desc()).all()
+    completed_tasks = UserTask.query.filter(UserTask.completions > 0).order_by(UserTask.completed_at.desc()).all()
+
     liked_message_ids = {like.message_id for like in ShoutBoardLike.query.filter_by(user_id=current_user.id)} if current_user.is_authenticated else set()
-    
+    liked_task_ids = {like.task_id for like in TaskLike.query.filter_by(user_id=current_user.id)} if current_user.is_authenticated else set()
+
     for message in messages:
         message.liked_by_user = message.id in liked_message_ids
 
+    for task in tasks:
+        task.liked_by_user = task.id in liked_task_ids
+
     if current_user.is_authenticated:
-        user_games = current_user.participated_games  # Directly access the games
+        user_games = current_user.participated_games
     else:
         user_games = []
 
-    return render_template('index.html', form=form, games=games, user_games=user_games, messages=messages)
+    activities = messages + completed_tasks
+    activities.sort(key=lambda x: get_datetime(x), reverse=True)
+
+    return render_template('index.html', form=form, games=games, user_games=user_games, activities=activities, tasks=tasks)
 
 
 @main_bp.route('/shout-board', methods=['POST'])
@@ -166,3 +186,24 @@ def user_profile(user_id):
         # Return the full page
         return render_template('_user_profile.html', user=user, user_tasks=user_tasks, badges=badges)
     
+
+@main_bp.route('/like_task/<int:task_id>', methods=['POST'])
+@login_required
+def like_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    # Check if the current user already liked this task
+    already_liked = TaskLike.query.filter_by(user_id=current_user.id, task_id=task.id).first() is not None
+
+    if not already_liked:
+        # User has not liked this task before, so create a new like
+        new_like = TaskLike(user_id=current_user.id, task_id=task.id)
+        db.session.add(new_like)
+        db.session.commit()
+        success = True
+    else:
+        # User already liked the task. Optionally, handle "unliking" here
+        success = False
+
+    # Fetch the new like count for the task
+    new_like_count = Task.query.get(task_id).likes.count()
+    return jsonify(success=success, new_like_count=new_like_count, already_liked=already_liked)
