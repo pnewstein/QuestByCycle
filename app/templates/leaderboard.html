@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container">
     <div class="welcomeImage">
-        <img src="{{ url_for('static', filename='images/leaderboardQuestByCycle.png') }}" alt="Bike Hunt Leaderboard" style="max-width: 600px; max-height: 200px;">
+        <img src="{{ url_for('static', filename='images/leaderboardQuestByCycle.png') }}" alt="QuestByCycle Leaderboard" style="max-width: 600px; max-height: 200px;">
     </div>
     {% if games|length > 1 %}
     <form method="get" action="{{ url_for('main.leaderboard') }}">
