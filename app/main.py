@@ -37,6 +37,7 @@ def index():
     messages = ShoutBoardMessage.query.order_by(ShoutBoardMessage.timestamp.desc()).all()
     completed_tasks = UserTask.query.filter(UserTask.completions > 0).order_by(UserTask.completed_at.desc()).all()
     total_points = UserTask.query.filter_by(user_id=current_user.id).with_entities(func.sum(UserTask.points_awarded)).scalar() if current_user.is_authenticated else 0
+    game_participation = {game.id: game in current_user.participated_games for game in games}
 
     liked_message_ids = {like.message_id for like in ShoutBoardLike.query.filter_by(user_id=current_user.id)} if current_user.is_authenticated else set()
     liked_task_ids = {like.task_id for like in TaskLike.query.filter_by(user_id=current_user.id)} if current_user.is_authenticated else set()
@@ -55,7 +56,7 @@ def index():
     activities = messages + completed_tasks
     activities.sort(key=lambda x: get_datetime(x), reverse=True)
 
-    return render_template('index.html', form=form, games=games, user_games=user_games, activities=activities, tasks=tasks, total_points=total_points)
+    return render_template('index.html', form=form, games=games, user_games=user_games, activities=activities, tasks=tasks, total_points=total_points, game_participation=game_participation)
 
 
 @main_bp.route('/shout-board', methods=['POST'])
