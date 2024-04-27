@@ -52,6 +52,7 @@ class User(UserMixin, db.Model):
     profile_picture = db.Column(db.String(200))  # Could be a URL or a path
     age_group = db.Column(db.String(50))
     interests = db.Column(db.String(500))  # This could be a comma-separated list or a many-to-many relationship with another table
+    task_likes = db.relationship('TaskLike', backref='user', lazy='dynamic')
 
     
     def set_password(self, password):
@@ -60,6 +61,8 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    def is_already_liking(self, task):
+        return TaskLike.query.filter_by(user_id=self.id, task_id=task.id).count() > 0
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -81,8 +84,18 @@ class Task(db.Model):
     badge_id = db.Column(db.Integer, db.ForeignKey('badge.id'), nullable=True)  # Foreign key to Badge
     badge = db.relationship('Badge', back_populates='tasks')
     submissions = db.relationship('TaskSubmission', back_populates='task', cascade='all, delete-orphan')
+    likes = db.relationship('TaskLike', backref='task', lazy='dynamic')
 
 Badge.tasks = db.relationship('Task', order_by=Task.id, back_populates='badge')
+
+
+class TaskLike(db.Model):
+    __tablename__ = 'task_likes'
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    __table_args__ = (db.UniqueConstraint('task_id', 'user_id', name='_task_user_uc'),)
 
 
 class Game(db.Model):
