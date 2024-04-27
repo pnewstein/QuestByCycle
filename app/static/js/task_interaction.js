@@ -127,7 +127,7 @@ function showSubmissionDetail(image) {
     document.getElementById('submissionImage').src = image.url;
     document.getElementById('submissionComment').textContent = image.comment || 'No comment provided.';
     document.getElementById('submissionUserLink').onclick = function() {
-        openUserProfile(image.user_id);
+        showUserProfileModal(image.user_id);
         return false; // prevent default link behavior
     };
     document.getElementById('downloadLink').href = image.url;

@@ -73,15 +73,6 @@
             </div>
         </div>
     </div>
-    <!-- User Profile Modal -->
-    <div id="userProfileModal" style="display:none;" class="modal">
-        <div class="modal-content">
-            <span class="close-button" onclick="closeModal()">&times;</span>
-            <div id="userProfileContent">
-                <!-- User profile details will be loaded here -->
-            </div>
-        </div>
-    </div>
     <script>
         document.addEventListener("DOMContentLoaded", function() {});
         
@@ -89,18 +80,19 @@
             fetch(`/profile/${userId}`)
                 .then(response => response.text())
                 .then(html => {
-                    document.getElementById('userProfileContent').innerHTML = html;
-                    document.getElementById('userProfileModal').style.display = 'block';
+                    const userProfileDetails = document.getElementById('userProfileDetails');
+                    if (!userProfileDetails) {
+                        console.error('User profile details container not found');
+                        return;  // Exit if no container is found
+                    }
+                    userProfileDetails.innerHTML = html;
+                    openModal('userProfileModal');
                 })
-                .catch(err => console.error('Failed to load user profile:', err));
+                .catch(error => {
+                    console.error('Failed to load user profile:', error);
+                    alert('Could not load user profile. Please try again.');
+                });
         }
-        
-        function closeModal() {
-            document.getElementById('userProfileModal').style.display = 'none';
-        }
-    </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {});
         
         function likeMessage(messageId) {
             const likeButton = document.getElementById(`like-button-${messageId}`);
@@ -182,4 +174,13 @@
         }
 
     </script>
+
+{% include 'modals/task_detail_modal.html' %}
+{% include 'modals/submission_detail_modal.html' %}
+{% include 'modals/user_profile_modal.html' %}
+
+<script src="{{ url_for('static', filename='js/modal_handlers.js') }}"></script>
+<script src="{{ url_for('static', filename='js/task_interaction.js') }}"></script>
+<script src="{{ url_for('static', filename='js/game_interaction.js') }}"></script>
+
 {% endblock %}
