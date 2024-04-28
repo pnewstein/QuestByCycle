@@ -37,21 +37,24 @@ def index():
     messages = ShoutBoardMessage.query.order_by(ShoutBoardMessage.timestamp.desc()).all()
     completed_tasks = UserTask.query.filter(UserTask.completions > 0).order_by(UserTask.completed_at.desc()).all()
     total_points = UserTask.query.filter_by(user_id=current_user.id).with_entities(func.sum(UserTask.points_awarded)).scalar() if current_user.is_authenticated else 0
-    game_participation = {game.id: game in current_user.participated_games for game in games}
 
-    liked_message_ids = {like.message_id for like in ShoutBoardLike.query.filter_by(user_id=current_user.id)} if current_user.is_authenticated else set()
-    liked_task_ids = {like.task_id for like in TaskLike.query.filter_by(user_id=current_user.id)} if current_user.is_authenticated else set()
+    # Check if the user is authenticated to safely access participated_games
+    if current_user.is_authenticated:
+        game_participation = {game.id: game in current_user.participated_games for game in games}
+        liked_message_ids = {like.message_id for like in ShoutBoardLike.query.filter_by(user_id=current_user.id)}
+        liked_task_ids = {like.task_id for like in TaskLike.query.filter_by(user_id=current_user.id)}
+        user_games = current_user.participated_games
+    else:
+        game_participation = {game.id: False for game in games}
+        liked_message_ids = set()
+        liked_task_ids = set()
+        user_games = []
 
     for message in messages:
         message.liked_by_user = message.id in liked_message_ids
 
     for task in tasks:
         task.liked_by_user = task.id in liked_task_ids
-
-    if current_user.is_authenticated:
-        user_games = current_user.participated_games
-    else:
-        user_games = []
 
     activities = messages + completed_tasks
     activities.sort(key=lambda x: get_datetime(x), reverse=True)
