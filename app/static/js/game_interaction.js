@@ -26,6 +26,8 @@ function showModal(tips) {
 
 function closeTaskDetailModal() {
     document.getElementById('taskDetailModal').style.display = 'none';
+    document.body.classList.remove('body-no-scroll');
+
 }
 
 function closeTipsModal() {
