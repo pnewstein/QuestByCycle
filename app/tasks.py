@@ -2,7 +2,7 @@ from flask import Blueprint, send_file, jsonify, render_template, request, flash
 from flask_login import login_required, current_user
 from app.utils import update_user_score, getLastRelevantCompletionTime, check_and_award_badges, revoke_badge, save_badge_image, save_submission_image, can_complete_task
 from app.forms import TaskForm, PhotoForm
-from app.social import authenticate_twitter, post_to_twitter, upload_media_to_twitter
+from app.social import authenticate_twitter, post_to_twitter, upload_media_to_twitter, authenticate_facebook, post_to_facebook_with_image, upload_image_to_facebook, post_photo_to_instagram
 from .models import db, Game, Task, Badge, UserTask, TaskSubmission, ShoutBoardMessage
 from .utils import award_badges
 from werkzeug.utils import secure_filename
@@ -142,6 +142,8 @@ def submit_task(task_id):
         image_url = save_submission_image(image_file)
         image_path = os.path.join(current_app.static_folder, image_url)
         comment = request.form.get('verificationComment', '')
+
+        #twitter
         media_id, error = upload_media_to_twitter(image_path, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
         if error:
             return jsonify({'success': False, 'message': f"Failed to upload media: {error}"})
@@ -150,6 +152,20 @@ def submit_task(task_id):
         tweet_response, error = post_to_twitter(status, media_id, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
         if error:
             return jsonify({'success': False, 'message': f"Failed to post tweet: {error}"})
+
+        # Post to Facebook
+        fb_access_token = authenticate_facebook(game.facebook_app_id, game.facebook_app_secret)
+        media_response = upload_image_to_facebook(game.instagram_page_id, image_path, fb_access_token)
+        if 'id' in media_response:
+            image_id = media_response['id']
+            fb_post_response = post_to_facebook_with_image(game.instagram_page_id, status, image_id, fb_access_token)
+        else:
+            return jsonify({'success': False, 'message': 'Failed to upload image to Facebook'})
+
+
+        # Post to Instagram
+        insta_post_response = post_photo_to_instagram(game.instagram_page_id, image_url, status, fb_access_token)
+
 
         new_submission = TaskSubmission(
             task_id=task_id,
