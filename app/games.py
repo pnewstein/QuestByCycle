@@ -30,6 +30,9 @@ def create_game():
             twitter_api_secret=form.twitter_api_secret.data,
             twitter_access_token=form.twitter_access_token.data,
             twitter_access_token_secret=form.twitter_access_token_secret.data,
+            facebook_app_id = form.facebook_app_id.data,
+            facebook_app_secret = form.facebook_app_secret.data,
+            instagram_page_id = form.instagram_page_id.data,
             admin_id=current_user.id
         )
         db.session.add(game)

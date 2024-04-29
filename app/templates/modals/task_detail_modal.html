@@ -16,16 +16,18 @@
                 <!-- User Task Data -->
                 <p id="modalTaskCompletions">Total Completions: </p>
                 <p id="modalCountdown"></p>
-                {% for task in tasks %}
-                    <button id="verifyButton-{{ task.id }}" class="verifyButton">Verify Task</button>
-                    <div id="verifyTaskForm-{{ task.id }}" style="display: none;">
-                        <form enctype="multipart/form-data">
-                            <input type="file" name="image" accept="image/*" required>
-                            <textarea name="verificationComment" placeholder="Enter a comment..." required></textarea>
-                            <button type="submit">Submit Verification</button>
-                        </form>
-                    </div>
-                {% endfor %}
+
+                    {% for task in tasks %}
+                        <button id="verifyButton-{{ task.id }}" class="verifyButton">Verify Task</button>
+                        <div id="verifyTaskForm-{{ task.id }}" style="display: none;">
+                            <form enctype="multipart/form-data">
+                                <input type="file" name="image" accept="image/*" required>
+                                <textarea name="verificationComment" placeholder="Enter a comment..." required></textarea>
+                                <button type="submit">Submit Verification</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+
             </div>
         </div>
         <div id="submissionBoard" class="photo-board">

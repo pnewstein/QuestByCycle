@@ -119,6 +119,10 @@ class Game(db.Model):
     twitter_access_token = db.Column(db.String(500), nullable=True)
     twitter_access_token_secret = db.Column(db.String(500), nullable=True)
 
+    facebook_app_id = db.Column(db.String(500), nullable=True)
+    facebook_app_secret = db.Column(db.String(500), nullable=True)
+    instagram_page_id = db.Column(db.String(500), nullable=True)
+    
 game_participants = db.Table('game_participants',
     db.Column('game_id', db.Integer, db.ForeignKey('game.id'), primary_key=True),
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
