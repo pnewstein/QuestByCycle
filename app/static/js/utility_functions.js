@@ -14,11 +14,3 @@ function shareOnTwitter() {
 
     window.open(twitterUrl, '_blank', 'location=yes,height=570,width=520,scrollbars=yes,status=yes');
 }
-
-function formatTimeDiff(timeDiff) {
-    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((timeDiff / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((timeDiff / (1000 * 60)) % 60);
-    const seconds = Math.floor((timeDiff / 1000) % 60);
-    return `${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
-}

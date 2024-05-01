@@ -9,28 +9,18 @@
                 <p id="modalTaskTips">Tips</p>
                 <p id="modalTaskPoints">Points</p>
                 <p id="modalTaskCompletionLimit">Completion Limit</p>
-                <p id="modalTaskCategory">Category: </p>
+                <p id="modalTaskCategory">Category</p>
                 <p id="modalTaskBadgeName">Badge Name</p>
             </div>
             <div class="user-task-data">
                 <!-- User Task Data -->
                 <p id="modalTaskCompletions">Total Completions: </p>
                 <p id="modalCountdown"></p>
-
-                    {% for task in tasks %}
-                        <button id="verifyButton-{{ task.id }}" class="verifyButton">Verify Task</button>
-                        <div id="verifyTaskForm-{{ task.id }}" style="display: none;">
-                            <form enctype="multipart/form-data">
-                                <input type="file" name="image" accept="image/*" required>
-                                <textarea name="verificationComment" placeholder="Enter a comment..." required></textarea>
-                                <button type="submit">Submit Verification</button>
-                            </form>
-                        </div>
-                    {% endfor %}
-
+                <!-- Verify Button and Form will be dynamically created by JavaScript -->
             </div>
         </div>
         <div id="submissionBoard" class="photo-board">
+            <!-- Optionally, submissions could be displayed here -->
         </div>
     </div>
 </div>

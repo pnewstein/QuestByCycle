@@ -62,16 +62,10 @@ class TaskForm(FlaskForm):
     category_choices = [('Environment', 'Environment'), ('Community', 'Community')]  # Example categories
     category = SelectField('Category', choices=category_choices, validators=[DataRequired()])
     verification_type_choices = [
-        ('not_applicable', 'Not Applicable'),
         ('qr_code', 'QR Code'),
-        ('photo_upload', 'Photo Upload'),
-        ('selfie', 'Selfie'),
-        ('screenshot', 'Screenshot'),
+        ('photo', 'Photo Upload'),
         ('comment', 'Comment'),
-        ('photo_comment', 'Photo Upload and Comment'),
-        ('manual_review', 'Manual Review'),
-        ('youtube_url', 'YouTube URL'),
-        ('url', 'URL')
+        ('photo_comment', 'Photo Upload and Comment')
     ]
     verification_type = SelectField('Verification Type', choices=verification_type_choices, coerce=str, validators=[DataRequired()])
     title = StringField('Title', validators=[DataRequired()])
