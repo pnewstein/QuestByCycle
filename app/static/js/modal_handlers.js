@@ -1,3 +1,6 @@
+// Combined Task Management and Modal Interaction Code
+let isSubmitting = false;
+
 // Function to open a modal by ID
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
@@ -7,60 +10,32 @@ function openModal(modalId) {
     }
 }
 
-// Close modals if the user clicks outside of the modal content
-window.onclick = function(game) {
-    let submissionModal = document.getElementById('submissionDetailModal');
-    let taskModal = document.getElementById('taskDetailModal');
-    let userProfileModal = document.getElementById('userProfileModal');
-    let tipsModal = document.getElementById('tipsModal');
-
-    if (submissionModal && game.target === submissionModal) {
-        closeSubmissionModal();
-        document.body.classList.remove('body-no-scroll');
-    } else if (taskModal && game.target === taskModal) {
-        closeTaskDetailModal();
-        document.body.classList.remove('body-no-scroll');
-    } else if (userProfileModal && game.target === userProfileModal) {
-        closeUserProfileModal();
-        document.body.classList.remove('body-no-scroll');
-    } else if (tipsModal && game.target === tipsModal) {
-        closeTipsModal();
-        document.body.classList.remove('body-no-scroll');
+// Reset all modal content and settings to initial state
+function resetModalContent() {
+    const modalTaskActions = document.getElementById('modalTaskActions');
+    if (modalTaskActions) {
+        modalTaskActions.innerHTML = '';
     }
+    document.querySelectorAll('[id^="verifyButton-"]').forEach(button => button.remove());
+    document.querySelectorAll('[id^="verifyTaskForm-"]').forEach(form => form.remove());
+    document.body.classList.remove('body-no-scroll');
 }
 
+// Open Task Detail Modal
 function openTaskDetailModal(taskId) {
     resetModalContent();
-    document.body.classList.add('body-no-scroll');
-
     fetch(`/tasks/detail/${taskId}/user_completion`)
         .then(response => response.json())
         .then(data => {
-            const task = data.task;
-            const userCompletion = data.userCompletion;
-            const canVerify = data.canVerify;
-            const frequency = task.frequency;
-            const lastRelevantCompletionTime = data.lastRelevantCompletionTime;
-            const nextEligibleTime = task.nextEligibleTime;
-            const verifyButton = document.getElementById(`verifyButton-${taskId}`);
-
-            verifyButton.disabled = !(userCompletion.completions < task.completionLimit);
-            if (verifyButton.disabled) {
-                updateCountdownFromLastRelevant(lastRelevantCompletionTime, frequency);
-            } else {
-                document.getElementById('modalCountdown').innerText = "Verify button is not disabled.";
+            const { task, userCompletion, canVerify, nextEligibleTime } = data;
+            if (!populateTaskDetails(task, userCompletion.completions, canVerify, taskId, nextEligibleTime)) {
+                console.error('Error: Required elements are missing to populate task details.');
+                return;
             }
+            ensureDynamicElementsExistAndPopulate(data.task, data.userCompletion.completions, data.nextEligibleTime, data.canVerify);
 
-            populateTaskDetails(task, userCompletion.completions, canVerify, taskId, nextEligibleTime);
             fetchSubmissions(taskId);
-
-            getImageUrl(taskId).then(imageUrl => {
-                document.getElementById('submissionImage').src = imageUrl;
-                document.getElementById('taskDetailModal').style.display = 'block';
-            }).catch(error => {
-                console.error('Error fetching image URL:', error);
-                document.getElementById('taskDetailModal').style.display = 'block';  // Display modal game if image fetch fails
-            });
+            openModal('taskDetailModal');
         })
         .catch(error => {
             console.error('Error opening task detail modal:', error);
@@ -68,7 +43,275 @@ function openTaskDetailModal(taskId) {
         });
 }
 
+// Populate Task Details in Modal
+function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextEligibleTime) {
+    const completeText = userCompletionCount >= task.completion_limit ? " - complete" : "";
+    const parentElement = document.querySelector('.user-task-data'); // Assuming this is where the elements should be added
+    const elementIds = [
+        'modalTaskTitle', 'modalTaskDescription', 'modalTaskTips', 'modalTaskPoints',
+        'modalTaskCompletionLimit', 'modalTaskCategory', 'modalTaskBadgeName'
+    ];
 
+    // Dynamically create 'modalTaskCompletions' and 'modalCountdown' if not present
+    const dynamicIds = ['modalTaskCompletions', 'modalCountdown'];
+    dynamicIds.forEach(id => {
+        if (!document.getElementById(id)) {
+            const newElement = document.createElement('p');
+            newElement.id = id;
+            parentElement.appendChild(newElement);
+        }
+    });
+
+    elementIds.push(...dynamicIds); // Add dynamic element IDs to the array for processing
+    const elements = {};
+
+    // Collect all elements now, including newly created ones if they were missing
+    elementIds.forEach(id => {
+        elements[id] = document.getElementById(id);
+    });
+
+    // Now, safely use the elements
+    elements['modalTaskTitle'].innerText = `${task.title}${completeText}`;
+    elements['modalTaskDescription'].innerText = task.description;
+    elements['modalTaskTips'].innerText = task.tips || 'No tips available';
+    elements['modalTaskPoints'].innerText = `Points: ${task.points}`;
+    elements['modalTaskCategory'].innerText = `Category: ${task.category || 'No category'}`;
+    elements['modalTaskBadgeName'].innerText = `Badge: ${task.badge_name || 'No badge'}`;
+    elements['modalTaskCompletions'].innerText = `Total Completions: ${userCompletionCount || 0}`;
+
+    if (task.completion_limit && task.frequency) {
+        const frequencyReadable = `${task.frequency[0].toUpperCase()}${task.frequency.slice(1).toLowerCase()}`;
+        elements['modalTaskCompletionLimit'].innerText = `Can be completed ${task.completion_limit} times ${frequencyReadable}`;
+    } else {
+        elements['modalTaskCompletionLimit'].innerText = 'No completion limits set.';
+    }
+
+    const nextAvailableTime = nextEligibleTime && new Date(nextEligibleTime);
+    elements['modalCountdown'].innerText = (!canVerify && nextAvailableTime && nextAvailableTime > new Date()) ?
+        `Next eligible time: ${nextAvailableTime.toLocaleString()}` :
+        (canVerify ? "You are eligible to verify!" : "You are currently eligible to verify!");
+
+    manageVerificationSection(taskId, canVerify, nextEligibleTime, nextAvailableTime);
+    return true; // Return true to indicate successful execution
+}
+
+// Manage Verification Section dynamically
+function manageVerificationSection(taskId, canVerify, nextEligibleTime, nextAvailableTime) {
+    const userTaskData = document.querySelector('.user-task-data');
+    userTaskData.innerHTML = '';
+
+    if (canVerify) {
+        const verifyButton = document.createElement('button');
+        verifyButton.id = `verifyButton-${taskId}`;
+        verifyButton.textContent = 'Verify Task';
+        verifyButton.className = 'verifyButton';
+        verifyButton.onclick = () => toggleVerificationForm(taskId);
+        userTaskData.appendChild(verifyButton);
+
+        const verifyForm = document.createElement('div');
+        verifyForm.id = `verifyTaskForm-${taskId}`;
+        verifyForm.innerHTML = `<form enctype="multipart/form-data">
+                                    <input type="file" name="image" accept="image/*" required>
+                                    <textarea name="verificationComment" placeholder="Enter a comment..." required></textarea>
+                                    <button type="submit">Submit Verification</button>
+                                </form>`;
+        verifyForm.style.display = 'none';
+        userTaskData.appendChild(verifyForm);
+
+        setupSubmissionForm(taskId);
+    }
+
+    console.log("Next Eligible Time:", nextEligibleTime);
+    console.log("Can Verify:", canVerify);
+    console.log("Next Available Time:", nextAvailableTime);
+    console.log("Current Time:", new Date());
+    console.log("Condition Result:", !canVerify && nextAvailableTime && nextAvailableTime > new Date());
+    console.log("Countdown Element:", document.getElementById('modalCountdown'));
+
+}
+
+// Toggle the display of the verification form
+function toggleVerificationForm(taskId) {
+    const verifyForm = document.getElementById(`verifyTaskForm-${taskId}`);
+    verifyForm.style.display = verifyForm.style.display === 'none' ? 'block' : 'none';
+}
+
+// Setup submission form with event listener
+function setupSubmissionForm(taskId) {
+    const submissionForm = document.getElementById(`verifyTaskForm-${taskId}`);
+    if (submissionForm) {
+        submissionForm.addEventListener('submit', function(event) {
+            submitTaskDetails(event, taskId);
+        });
+    } else {
+        console.error("Form not found for task ID:", taskId);
+    }
+}
+
+// Define verifyTask function to handle verification form toggling
+function verifyTask(taskId) {
+    const verifyForm = document.getElementById(`verifyTaskForm-${taskId}`);
+    if (verifyForm.style.display === 'none' || verifyForm.style.display === '') {
+        verifyForm.style.display = 'block';  // Show the form
+    } else {
+        verifyForm.style.display = 'none';  // Hide the form
+    }
+}
+
+// Handle Task Submissions with streamlined logic
+function submitTaskDetails(event, taskId) {
+    event.preventDefault();
+    if (isSubmitting) return;
+    isSubmitting = true;
+
+    const form = event.target;
+    const formData = new FormData(form);
+
+    fetch(`/tasks/task/${taskId}/submit`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+        headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Failed to submit task details.');
+        return response.json();
+    })
+    .then(data => {
+        alert(data.success ? 'Submission successful!' : `Submission failed: ${data.message}`);
+        if (data.total_points) {
+            const totalPointsElement = document.getElementById('total-points');
+            if (totalPointsElement) totalPointsElement.innerText = `Total Completed Points: ${data.total_points}`;
+        }
+        openTaskDetailModal(taskId);
+        form.reset();
+    })
+    .catch(error => {
+        console.error("Submission error:", error);
+        alert('Error during submission: Check console for more information.');
+    })
+    .finally(() => {
+        isSubmitting = false;
+        resetModalContent();
+    });
+}
+
+// Fetch and Display Submissions
+function fetchSubmissions(taskId) {
+    fetch(`/tasks/task/${taskId}/submissions`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Server responded with status ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(submissions => {
+            // Reverse the array to display newest submissions first
+            const images = submissions.reverse().map(submission => ({
+                url: submission.image_url,
+                alt: "Submission Image",
+                comment: submission.comment, 
+                user_id: submission.user_id
+            }));
+            distributeImages(images);
+        })
+        .catch(error => {
+            console.error('Failed to fetch submissions:', error.message);
+            alert('Could not load submissions. Please try again.');
+        });
+}
+
+function ensureDynamicElementsExistAndPopulate(task, userCompletionCount, nextEligibleTime, canVerify) {
+    const parentElement = document.querySelector('.user-task-data'); // Target the parent element correctly.
+
+    // Define IDs and initial values for dynamic elements.
+    const dynamicElements = [
+        { id: 'modalTaskCompletions', value: `Total Completions: ${userCompletionCount || 0}` },
+        { id: 'modalCountdown', value: "" } // Will be updated based on conditions
+    ];
+
+    dynamicElements.forEach(elem => {
+        let element = document.getElementById(elem.id);
+        if (!element) {
+            element = document.createElement('p');
+            element.id = elem.id;
+            parentElement.appendChild(element);
+        }
+        element.innerText = elem.value;
+    });
+
+    // Update the countdown only if necessary.
+    updateCountdownElement(document.getElementById('modalCountdown'), nextEligibleTime, canVerify);
+}
+
+function updateCountdownElement(countdownElement, nextEligibleTime, canVerify) {
+    if (!canVerify && nextEligibleTime) {
+        const nextTime = new Date(nextEligibleTime);
+        const now = new Date();
+        if (nextTime > now) {
+            const timeDiffMs = nextTime - now;
+            countdownElement.innerText = `Next eligible time: ${formatTimeDiff(timeDiffMs)}`;
+        } else {
+            countdownElement.innerText = "You are currently eligible to verify!";
+        }
+    } else {
+        countdownElement.innerText = "You are currently eligible to verify!";
+    }
+}
+
+function formatTimeDiff(ms) {
+    const seconds = Math.floor((ms / 1000) % 60);
+    const minutes = Math.floor((ms / (1000 * 60)) % 60);
+    const hours = Math.floor((ms / (1000 * 60 * 60)) % 24);
+    const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+}
+
+// Distribute images across columns in the modal
+function distributeImages(images) {
+    const board = document.getElementById('submissionBoard');
+    board.innerHTML = ''; 
+    const modalWidth = board.clientWidth; 
+    const desiredColumnWidth = 150;
+    const columnCount = Math.floor(modalWidth / desiredColumnWidth);
+    const columns = [];
+
+    for (let i = 0; i < columnCount; i++) {
+        const column = document.createElement('div');
+        column.className = 'photo-column';
+        board.appendChild(column);
+        columns.push(column);
+    }
+
+    images.forEach((image, index) => {
+        const img = document.createElement('img');
+        img.src = image.url;
+        img.alt = "Loaded Image";
+        img.onerror = () => img.src = document.getElementById('taskDetailModal').getAttribute('data-placeholder-url');
+        img.onclick = () => showSubmissionDetail(image);
+        columns[index % columnCount].prepend(img);
+    });
+}
+
+// Show detailed submission view
+function showSubmissionDetail(image) {
+    const submissionModal = document.getElementById('submissionDetailModal');
+    document.getElementById('submissionImage').src = image.url;
+    document.getElementById('submissionComment').textContent = image.comment || 'No comment provided.';
+    document.getElementById('submissionUserLink').onclick = function() {
+        showUserProfileModal(image.user_id);
+        return false;
+    };
+    document.getElementById('downloadLink').href = image.url;
+    document.getElementById('downloadLink').download = `Image-${image.user_id}`;
+
+    submissionModal.style.display = 'block';
+    submissionModal.style.backgroundColor = 'rgba(0,0,0,0.7)';
+}
+
+// User profile modal display
 function showUserProfileModal(userId) {
     fetch(`/profile/${userId}`)
         .then(response => response.text())
@@ -87,128 +330,47 @@ function showUserProfileModal(userId) {
         });
 }
 
+// Close modal helpers enhanced with specific targeting and cleanup
+function closeTaskDetailModal() {
+    document.getElementById('taskDetailModal').style.display = 'none';
+    resetModalContent();  // Ensure clean state on next open
+}
 
-// Adding new DOMContentLoaded game listener for handling auto-opening of modal on page load
-document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const shouldOpenModal = urlParams.get('open_modal');
+function closeTipsModal() {
+    document.getElementById('tipsModal').style.display = 'none';
+}
 
-    if (shouldOpenModal === 'true') {
-        const taskId = urlParams.get('task_id'); // assuming task_id is passed as a parameter
-        if(taskId) {
-            openTaskDetailModal(taskId);
+function closeSubmissionModal() {
+    const submissionModal = document.getElementById('submissionDetailModal');
+    submissionModal.style.display = 'none';
+    submissionModal.style.backgroundColor = ''; // Reset background color to default
+}
+
+function closeUserProfileModal() {
+    const userProfileModal = document.getElementById('userProfileModal');
+    if (!userProfileModal) {
+        console.error('User profile modal container not found');
+        return;  // Exit if no container is found
+    }
+    userProfileModal.style.display = 'none';
+}
+
+// Enhanced window click handling for modal closure
+window.onclick = function(event) {
+    if (event.target.className.includes('modal')) {
+        switch(event.target.id) {
+            case 'submissionDetailModal':
+                closeSubmissionModal();
+                break;
+            case 'taskDetailModal':
+                closeTaskDetailModal();
+                break;
+            case 'userProfileModal':
+                closeUserProfileModal();
+                break;
+            case 'tipsModal':
+                closeTipsModal();
+                break;
         }
     }
-});
-
-
-function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextEligibleTime) {
-    let completeText = userCompletionCount >= task.completion_limit ? " - complete" : "";
-    document.getElementById('modalTaskTitle').innerText = task.title + completeText;
-    document.getElementById('modalTaskDescription').innerText = task.description;
-    document.getElementById('modalTaskTips').innerText = task.tips || 'No tips available';
-    document.getElementById('modalTaskPoints').innerText = `Points: ${task.points}`;
-
-    if (task.completion_limit && task.frequency) {
-        let frequencyReadable = task.frequency.replace('Frequency.', ''); 
-        frequencyReadable = frequencyReadable[0].toUpperCase() + frequencyReadable.slice(1);
-        document.getElementById('modalTaskCompletionLimit').innerText = `Can be completed ${task.completion_limit} times ${frequencyReadable.toLowerCase()}.`;
-    } else {
-        document.getElementById('modalTaskCompletionLimit').innerText = 'No completion limits set.';
-    }
-
-    document.getElementById('modalTaskCategory').innerText = `Category: ${task.category || 'No category'}`;
-    document.getElementById('modalTaskBadgeName').innerText = `Badge: ${task.badge_name || 'No badge'}`;
-    document.getElementById('modalTaskCompletions').innerText = `Total Completions: ${userCompletionCount || 0}`;
-    console.log(`Populating details for Task ID ${taskId}, canVerify: ${canVerify}`);
-
-    const countdownDisplay = document.getElementById('modalCountdown');
-    if (!canVerify && nextEligibleTime) {
-        const nextAvailableTime = new Date(nextEligibleTime);
-        if (nextAvailableTime > new Date()) {
-            updateCountdown(countdownDisplay, nextAvailableTime);
-        } else {
-            countdownDisplay.innerText = "nextAvailableTime is greater than current time.";
-        }
-    } else {
-        countdownDisplay.innerText = "You are eligible to verify!";
-    }
-    
-    // Dynamically create verify button
-    const verifyButton = document.createElement('button');
-    verifyButton.id = `verifyButton-${taskId}`;
-    verifyButton.textContent = 'Verify Task';
-    verifyButton.className = 'verifyButton';
-    verifyButton.onclick = function() { verifyTask(taskId); };
-    verifyButton.style.display = canVerify ? 'block' : 'none';
-
-    const userTaskData = document.querySelector('.user-task-data');
-    userTaskData.appendChild(verifyButton);
-
-    // Create form for submission
-    const verifyForm = document.createElement('div');
-    verifyForm.id = `verifyTaskForm-${taskId}`;
-    verifyForm.innerHTML = `<form enctype="multipart/form-data">
-                                <input type="file" name="image" accept="image/*" required>
-                                <textarea name="verificationComment" placeholder="Enter a comment..." required></textarea>
-                                <button type="submit">Submit Verification</button>
-                            </form>`;
-    verifyForm.style.display = 'none'; // Hide by default
-    userTaskData.appendChild(verifyForm);
-
-    setupSubmissionForm(taskId);
-}
-
-function setupSubmissionForm(taskId) {
-    const submissionForm = document.getElementById(`verifyTaskForm-${taskId}`);
-
-    if (submissionForm) {
-        submissionForm.addEventListener('submit', function(game) {
-            submitTaskDetails(game, taskId);
-        });
-    } else {
-        console.error("Form not found for task ID:", taskId);
-    }
-}
-
-// Update countdown in the task modal
-function updateCountdown(displayElement, nextEligibleTime) {
-    const now = new Date();
-    const nextAvailableTime = new Date(nextEligibleTime);
-    if (nextAvailableTime > now) {
-        const timeDiff = nextAvailableTime - now;
-        displayElement.innerText = `You can verify in ${formatTimeDiff(timeDiff)}`;
-    } else {
-        displayElement.innerText = "UC nextAvailableTime is less than current time.";
-    }
-}
-
-// Convert time difference in milliseconds to a readable format
-function formatTimeDiff(timeDiff) {
-    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((timeDiff / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((timeDiff / (1000 * 60)) % 60);
-    const seconds = Math.floor((timeDiff / 1000) % 60);
-    return `${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
-}
-
-// Retrieve image URL and comments for sharing
-function getImageUrl(taskId) {
-    return fetch(`/get-image-url/${taskId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                return data.imageUrl;
-            } else {
-                throw new Error('Failed to get image URL');
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching image URL:', error);
-            return '';  // Return a default or error image path if needed
-        });
-}
-
-function getComment() {
-    return document.getElementById('submissionComment').textContent;
 }

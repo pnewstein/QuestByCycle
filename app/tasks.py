@@ -154,17 +154,17 @@ def submit_task(task_id):
             return jsonify({'success': False, 'message': f"Failed to post tweet: {error}"})
 
         # Post to Facebook
-        fb_access_token = authenticate_facebook(game.facebook_app_id, game.facebook_app_secret)
-        media_response = upload_image_to_facebook(game.instagram_page_id, image_path, fb_access_token)
-        if 'id' in media_response:
+        #fb_access_token = authenticate_facebook(game.facebook_app_id, game.facebook_app_secret)
+        #media_response = upload_image_to_facebook(game.instagram_page_id, image_path, fb_access_token)
+        #if 'id' in media_response:
             image_id = media_response['id']
             fb_post_response = post_to_facebook_with_image(game.instagram_page_id, status, image_id, fb_access_token)
-        else:
+        #else:
             return jsonify({'success': False, 'message': 'Failed to upload image to Facebook'})
 
 
         # Post to Instagram
-        insta_post_response = post_photo_to_instagram(game.instagram_page_id, image_url, status, fb_access_token)
+        #insta_post_response = post_photo_to_instagram(game.instagram_page_id, image_url, status, fb_access_token)
 
 
         new_submission = TaskSubmission(
