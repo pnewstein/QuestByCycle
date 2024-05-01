@@ -87,3 +87,15 @@ def register():
             current_app.logger.error(f'Failed to register user: {e}')
             
     return render_template('register.html', title='Register', form=form)
+
+@auth_bp.route('/privacy_policy')
+def privacy_policy():
+    return render_template('privacy_policy.html')
+
+@auth_bp.route('/terms_of_service')
+def terms_of_service():
+    return render_template('terms_of_service.html')
+
+@auth_bp.route('/license_agreement')
+def license_agreement():
+    return render_template('license_agreement.html')

@@ -93,17 +93,15 @@
                 <p>Supporting cycling initiatives for a greener planet.</p>
                 <!-- Add any additional details you want here -->
             </div>
+            <div class="footer-links">
+                <div><a href="{{ url_for('auth.privacy_policy') }}">Privacy Policy</a></div>
+                <div><a href="{{ url_for('auth.terms_of_service') }}">Terms of Service</a></div>
+                <div><a href="{{ url_for('auth.license_agreement') }}">License Agreement</a></div>
+            </div>            
         </div>
     </footer>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('#submissionCarousel').carousel({
-                interval: false // Stops the carousel from automatically cycling
-            });
-        });
-    </script>
 </body>
 </html>
