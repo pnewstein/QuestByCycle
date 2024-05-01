@@ -99,12 +99,6 @@ def like_message(message_id):
     return jsonify(success=success, new_like_count=new_like_count, already_liked=already_liked)
 
 
-@main_bp.route('/request_custom/<int:user_id>', methods=['GET', 'POST'])
-def custom_request(user_id):
-    user = User.query.get_or_404(user_id)
-    return render_template('request_custom.html', user=user)
-
-
 @main_bp.route('/leaderboard', methods=['GET'])
 @login_required
 def leaderboard():
