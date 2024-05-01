@@ -23,15 +23,6 @@
 
 <div class="modal-content">
     <h2>Edit Profile</h2>
-
-    <div>
-        {% if current_user.is_authenticated and not current_user.is_admin %}
-            <a href="{{ url_for('main.custom_request', user_id=current_user.id) }}" class="btn btn-detail">Request Game</a>
-        {% else %}
-            <!-- Display some alternative content for anonymous users or nothing -->
-        {% endif %}
-    </div>
-
     <form action="{{ url_for('main.profile') }}" method="post" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         <div class="form-group">
