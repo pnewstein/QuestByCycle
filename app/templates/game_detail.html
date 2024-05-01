@@ -13,7 +13,7 @@
     </div>
     <div class="game-item">
         {% if has_joined %}
-            <p id="total-points">Total Completed Points: {{ total_points }}</p>
+            <p id="total-points">Your Total Completed Points: {{ total_points }}</p>
             <p>
                 {% if current_user.is_admin %}
                     <a href="{{ url_for('tasks.manage_game_tasks', game_id=game.id) }}" class="button" style="margin-left: 10px;">Configure Tasks</a>
@@ -46,12 +46,11 @@
                                 None
                             {% endif %}
                         </td>
-                        <td><a href="javascript:void(0);" onclick="openTaskDetailModal('{{ task.id }}')">{{ task.title }}</a></td>
+                        <td>
+                            <button class="button" onclick="openTaskDetailModal('{{ task.id }}')">{{ task.title }}</button>
+                        </td>
                         <td>
                             {{ task.description }}
-                            {% if task.tips %}
-                                <a href="javascript:void(0);" onclick="showModal('{{ task.tips }}')">[...]</a>
-                            {% endif %}
                         </td>
                         <td>{{ task.points }}</td>
                     </tr>
@@ -73,8 +72,6 @@
 {% include 'modals/user_profile_modal.html' %}
 
 <script src="{{ url_for('static', filename='js/modal_handlers.js') }}"></script>
-<script src="{{ url_for('static', filename='js/task_interaction.js') }}"></script>
 <script src="{{ url_for('static', filename='js/utility_functions.js') }}"></script>
-<script src="{{ url_for('static', filename='js/game_interaction.js') }}"></script>
 
 {% endblock %}

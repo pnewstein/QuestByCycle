@@ -76,7 +76,7 @@ class Task(db.Model):
     verification_comment = db.Column(db.String(1000), default="")
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))  # Make sure this line is within the class definition
     points = db.Column(db.Integer, default='')
-    tips = db.Column(db.String(1000), default='')
+    tips = db.Column(db.String(1000), default='', nullable=True)
     completion_limit = db.Column(db.Integer, default=1)  # Limit for how many times a task can be completed
     frequency = db.Column(db.String(50), nullable=True)  # Store frequency as a string
     user_tasks = db.relationship('UserTask', back_populates='task', cascade="all, delete", passive_deletes=True)
