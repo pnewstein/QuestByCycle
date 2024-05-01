@@ -149,8 +149,8 @@ class TaskSubmission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id', ondelete='CASCADE'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    image_url = db.Column(db.String(500))
-    comment = db.Column(db.String(1000))
+    image_url = db.Column(db.String(500), nullable=True)
+    comment = db.Column(db.String(1000), nullable=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.now(timezone.utc))
 
     task = db.relationship('Task', back_populates='submissions')
