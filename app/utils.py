@@ -219,7 +219,7 @@ def getLastRelevantCompletionTime(user_id, task_id):
     # Start of the period calculation must reflect the frequency
     period_start_map = {
         'daily': now - timedelta(days=1),
-        'weekly': now - timedelta(weeks=1),
+        'weekly': now - timedelta(minutes=4),
         'monthly': now - timedelta(days=30)
     }
     

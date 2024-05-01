@@ -96,6 +96,14 @@ class TaskImportForm(FlaskForm):
     tips = TextAreaField('Tips', validators=[])
     points = IntegerField('Points', validators=[DataRequired(), NumberRange(min=1)], default=1)  # Assuming tasks have at least 1 point
     completion_limit = IntegerField('Completion Limit', validators=[DataRequired(), NumberRange(min=1)], default=1)
+    frequency = SelectField('Frequency', choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly')], validators=[DataRequired()])
+    verification_type_choices = [
+        ('qr_code', 'QR Code'),
+        ('photo', 'Photo Upload'),
+        ('comment', 'Comment'),
+        ('photo_comment', 'Photo Upload and Comment')
+    ]
+    verification_type = SelectField('Verification Type', choices=verification_type_choices, coerce=str, validators=[DataRequired()])
     badge_id = SelectField('Select Existing Badge', coerce=int, choices=[], default=0)
     badge_name = StringField('Badge Name', validators=[DataRequired()])
     badge_description = TextAreaField('Badge Description', validators=[DataRequired()])    
@@ -119,7 +127,7 @@ class ProfileForm(FlaskForm):
 
 
 class TaskSubmissionForm(FlaskForm):
-    evidence = FileField('Upload Evidence', validators=[FileRequired(), FileAllowed(['jpg', 'png', 'pdf'], 'Images and PDFs only!')])
+    evidence = FileField('Upload Evidence', validators=[FileAllowed(['jpg', 'png', 'pdf'], 'Images and PDFs only!')])
     comment = TextAreaField('Comment')  # Assuming you might also want to submit a comment
     submit = SubmitField('Submit Task')
 

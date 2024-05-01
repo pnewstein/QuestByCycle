@@ -29,21 +29,11 @@ def manage_game_tasks(game_id):
     form = TaskForm()
 
     if request.method == 'POST':
-        # Process JSON data if content type is application/json
-        if request.content_type == 'application/json':
-            data = request.get_json()
-            frequency_value = data.get('frequency')
-            verification_type = data.get('verification_type')
-        else:
-            # For non-JSON requests, this block can be adapted to process form data or other data types
-            frequency_value = None
-            verification_type = None
+
         if form.validate_on_submit():
             task = Task(
                 title=form.title.data,
                 description=form.description.data,
-                frequency=frequency_value,
-                verification_type=verification_type,
                 game_id=game_id
             )
 
@@ -132,47 +122,60 @@ def submit_task(task_id):
     if not (game_start <= now <= game_end):
         return jsonify({'success': False, 'message': 'This task cannot be completed outside of the game dates'}), 403
 
-    if 'image' not in request.files:
-        return jsonify({'success': False, 'message': 'File part missing'})
+    verification_type = task.verification_type
+    image_file = request.files.get('image')
+    comment = request.form.get('verificationComment', '')
 
-    image_file = request.files['image']
-    if image_file.filename == '':
-        return jsonify({'success': False, 'message': 'No file selected'})
+    if verification_type == 'qr_code':
+        return jsonify({'success': True, 'message': 'QR Code verification does not require any submission'}), 200
+    if verification_type == 'photo' and (not image_file or image_file.filename == ''):
+        return jsonify({'success': False, 'message': 'No file selected for photo verification'}), 400
+    if verification_type == 'comment' and not comment:
+        return jsonify({'success': False, 'message': 'Comment required for verification'}), 400
+    if verification_type == 'photo_comment' and (not image_file or image_file.filename == ''):
+        return jsonify({'success': False, 'message': 'Both photo and comment are required for verification'}), 400
+
+    image_path = None
+    image_url = None
+    media_id = None
+
     try:
-        image_url = save_submission_image(image_file)
-        image_path = os.path.join(current_app.static_folder, image_url)
-        comment = request.form.get('verificationComment', '')
+        if image_file and image_file.filename:
+            image_url = save_submission_image(image_file)
+            image_path = os.path.join(current_app.static_folder, image_url)
+        
+        if media_id:
 
-        #twitter
-        media_id, error = upload_media_to_twitter(image_path, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
-        if error:
-            return jsonify({'success': False, 'message': f"Failed to upload media: {error}"})
+            #twitter
+            media_id, error = upload_media_to_twitter(image_path, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
+            if error:
+                return jsonify({'success': False, 'message': f"Failed to upload media: {error}"})
 
-        status = f"Check out this task completion for '{task.title}'! #QuestByCycle"
-        tweet_response, error = post_to_twitter(status, media_id, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
-        if error:
-            return jsonify({'success': False, 'message': f"Failed to post tweet: {error}"})
+            status = f"Check out this task completion for '{task.title}'! #QuestByCycle"
+            tweet_response, error = post_to_twitter(status, media_id, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
+            if error:
+                return jsonify({'success': False, 'message': f"Failed to post tweet: {error}"})
 
-        # Post to Facebook
-        #fb_access_token = authenticate_facebook(game.facebook_app_id, game.facebook_app_secret)
-        #media_response = upload_image_to_facebook(game.instagram_page_id, image_path, fb_access_token)
-        #if 'id' in media_response:
-            image_id = media_response['id']
-            fb_post_response = post_to_facebook_with_image(game.instagram_page_id, status, image_id, fb_access_token)
-        #else:
-            return jsonify({'success': False, 'message': 'Failed to upload image to Facebook'})
+            # Post to Facebook
+            #fb_access_token = authenticate_facebook(game.facebook_app_id, game.facebook_app_secret)
+            #media_response = upload_image_to_facebook(game.instagram_page_id, image_path, fb_access_token)
+            #if 'id' in media_response:
+                image_id = media_response['id']
+                fb_post_response = post_to_facebook_with_image(game.instagram_page_id, status, image_id, fb_access_token)
+            #else:
+                return jsonify({'success': False, 'message': 'Failed to upload image to Facebook'})
 
 
-        # Post to Instagram
-        #insta_post_response = post_photo_to_instagram(game.instagram_page_id, image_url, status, fb_access_token)
+            # Post to Instagram
+            #insta_post_response = post_photo_to_instagram(game.instagram_page_id, image_url, status, fb_access_token)
 
 
         new_submission = TaskSubmission(
             task_id=task_id,
             user_id=current_user.id,
-            image_url=url_for('static', filename=image_url),
-            comment=request.form.get('verificationComment', ''),
-            timestamp=datetime.now(timezone.utc)  # Record the time of submission
+            image_url=url_for('static', filename=image_url) if image_url else None,
+            comment=comment,
+            timestamp=datetime.now(timezone.utc)
         )
         db.session.add(new_submission)
 
@@ -240,15 +243,8 @@ def update_task(task_id):
     task.completion_limit = int(data.get('completion_limit', task.completion_limit))
     task.enabled = data.get('enabled', task.enabled)
     task.category = data.get('category', task.category)
-    
-    verification_type = data.get('verification_type')
-    if verification_type:
-        task.verification_type = verification_type.lower()
-
-    # Handling Frequency directly as a string
-    frequency_value = data.get('frequency')
-    if frequency_value:
-        task.frequency = frequency_value.lower()  # Ensure consistency in string format
+    task.verification_type = data.get('verification_type', task.verification_type)
+    task.frequency = data.get('frequency', task.frequency)
     
     # Handle badge_id conversion and validation
     badge_id = data.get('badge_id')
@@ -348,6 +344,7 @@ def import_tasks(game_id):
                     tips=task_info['tips'],
                     points=int(task_info['points'].replace(',', '')),  # Removing commas in numbers
                     completion_limit=int(task_info['completion_limit']),
+                    frequency=task_info['frequency'],
                     verification_type=task_info['verification_type'],
                     badge_id=badge.id,
                     game_id=game_id

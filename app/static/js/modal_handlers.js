@@ -49,25 +49,19 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
     const parentElement = document.querySelector('.user-task-data'); // Assuming this is where the elements should be added
     const elementIds = [
         'modalTaskTitle', 'modalTaskDescription', 'modalTaskTips', 'modalTaskPoints',
-        'modalTaskCompletionLimit', 'modalTaskCategory', 'modalTaskBadgeName'
+        'modalTaskCompletionLimit', 'modalTaskCategory', 'modalTaskBadgeName',
+        'modalTaskCompletions', 'modalCountdown'
     ];
-
-    // Dynamically create 'modalTaskCompletions' and 'modalCountdown' if not present
-    const dynamicIds = ['modalTaskCompletions', 'modalCountdown'];
-    dynamicIds.forEach(id => {
-        if (!document.getElementById(id)) {
-            const newElement = document.createElement('p');
-            newElement.id = id;
-            parentElement.appendChild(newElement);
-        }
-    });
-
-    elementIds.push(...dynamicIds); // Add dynamic element IDs to the array for processing
     const elements = {};
 
     // Collect all elements now, including newly created ones if they were missing
     elementIds.forEach(id => {
         elements[id] = document.getElementById(id);
+        if (!elements[id]) { // Create element if not exists
+            elements[id] = document.createElement('div');
+            elements[id].id = id;
+            parentElement.appendChild(elements[id]); // Append new element to the parent container
+        }
     });
 
     // Now, safely use the elements
@@ -79,9 +73,11 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
     elements['modalTaskBadgeName'].innerText = `Badge: ${task.badge_name || 'No badge'}`;
     elements['modalTaskCompletions'].innerText = `Total Completions: ${userCompletionCount || 0}`;
 
+    console.log("Completion Limit:", task.completion_limit);
+    console.log("Frequency:", task.frequency);
+    
     if (task.completion_limit && task.frequency) {
-        const frequencyReadable = `${task.frequency[0].toUpperCase()}${task.frequency.slice(1).toLowerCase()}`;
-        elements['modalTaskCompletionLimit'].innerText = `Can be completed ${task.completion_limit} times ${frequencyReadable}`;
+        elements['modalTaskCompletionLimit'].innerText = `Can be completed ${task.completion_limit} times ${task.frequency}`;
     } else {
         elements['modalTaskCompletionLimit'].innerText = 'No completion limits set.';
     }
@@ -91,31 +87,27 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
         `Next eligible time: ${nextAvailableTime.toLocaleString()}` :
         (canVerify ? "You are eligible to verify!" : "You are currently eligible to verify!");
 
-    manageVerificationSection(taskId, canVerify, nextEligibleTime, nextAvailableTime);
+    manageVerificationSection(taskId, canVerify, task.verification_type, nextEligibleTime);
     return true; // Return true to indicate successful execution
 }
 
-// Manage Verification Section dynamically
-function manageVerificationSection(taskId, canVerify, nextEligibleTime, nextAvailableTime) {
+
+// Function to manage the dynamic creation and adjustment of the verification form
+function manageVerificationSection(taskId, canVerify, verificationType, nextEligibleTime, nextAvailableTime) {
     const userTaskData = document.querySelector('.user-task-data');
     userTaskData.innerHTML = '';
 
     if (canVerify) {
-        const verifyButton = document.createElement('button');
-        verifyButton.id = `verifyButton-${taskId}`;
-        verifyButton.textContent = 'Verify Task';
-        verifyButton.className = 'verifyButton';
-        verifyButton.onclick = () => toggleVerificationForm(taskId);
-        userTaskData.appendChild(verifyButton);
+        createVerificationButton(taskId);
 
         const verifyForm = document.createElement('div');
         verifyForm.id = `verifyTaskForm-${taskId}`;
-        verifyForm.innerHTML = `<form enctype="multipart/form-data">
-                                    <input type="file" name="image" accept="image/*" required>
-                                    <textarea name="verificationComment" placeholder="Enter a comment..." required></textarea>
-                                    <button type="submit">Submit Verification</button>
-                                </form>`;
-        verifyForm.style.display = 'none';
+        verifyForm.className = 'verify-task-form';
+        verifyForm.style.display = 'none'; // Hide by default
+
+        // Ensure verificationType is correctly passed and utilized
+        const formHTML = getVerificationFormHTML(verificationType.trim().toLowerCase());
+        verifyForm.innerHTML = formHTML;
         userTaskData.appendChild(verifyForm);
 
         setupSubmissionForm(taskId);
@@ -129,6 +121,53 @@ function manageVerificationSection(taskId, canVerify, nextEligibleTime, nextAvai
     console.log("Countdown Element:", document.getElementById('modalCountdown'));
 
 }
+
+// Function to create and append the Verify Task button to the modal
+function createVerificationButton(taskId) {
+    const verifyButton = document.createElement('button');
+    verifyButton.id = `verifyButton-${taskId}`;
+    verifyButton.textContent = 'Verify Task';
+    verifyButton.className = 'verifyButton';
+    verifyButton.onclick = () => toggleVerificationForm(taskId);
+    document.querySelector('.user-task-data').appendChild(verifyButton);
+}
+
+// Function to return the appropriate form HTML based on the verification type
+function getVerificationFormHTML(verificationType) {
+    let formHTML = '<form enctype="multipart/form-data">';
+
+    // Explicitly handle each case
+    switch (verificationType) {
+        case 'photo':
+            formHTML += `<input type="file" name="image" accept="image/*" required>`;
+            formHTML += '<button type="submit">Submit Verification</button>';
+            break;
+        case 'comment':
+            formHTML += `<textarea name="verificationComment" placeholder="Enter a comment..." required></textarea>`;
+            formHTML += '<button type="submit">Submit Verification</button>';
+            break;
+        case 'photo_comment':
+            formHTML += `
+                <input type="file" name="image" accept="image/*" required>
+                <textarea name="verificationComment" placeholder="Enter a comment..." required></textarea>
+            `;
+            formHTML += '<button type="submit">Submit Verification</button>';
+            break;
+        case 'qr_code':
+            formHTML += `<p>Find and scan the QR code. No submission required here.</p>`;
+            // No button is added for QR code case
+            break;
+        default:
+            // Handle cases where no verification is needed or provide a default case
+            formHTML += '<p>No verification required for this task.</p>';
+            formHTML += '<button type="submit">Submit Verification</button>';
+            break;
+    }
+
+    formHTML += '</form>';
+    return formHTML;
+}
+
 
 // Toggle the display of the verification form
 function toggleVerificationForm(taskId) {

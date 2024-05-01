@@ -154,7 +154,6 @@ def register_game(game_id):
         flash('An error occurred. Please try again.', 'error')
     return redirect(url_for('games.game_detail', game_id=game_id))
 
-
 @games_bp.route('/delete_game/<int:game_id>', methods=['POST'])
 @login_required
 def delete_game(game_id):
@@ -164,10 +163,15 @@ def delete_game(game_id):
 
     game = Game.query.get_or_404(game_id)
     try:
-        # Optional: Delete related data (e.g., tasks) if necessary
-        for task in game.tasks:
+        # First, handle dependent records in task_likes
+        TaskLike = db.Table('task_likes', db.metadata, autoload_with=db.engine)
+        tasks = Task.query.filter(Task.game_id == game_id).all()
+        for task in tasks:
+            # Delete likes associated with each task
+            db.session.query(TaskLike).filter(TaskLike.c.task_id == task.id).delete(synchronize_session='fetch')
             db.session.delete(task)
         
+        # Now safe to delete the game
         db.session.delete(game)
         db.session.commit()
         flash('Game deleted successfully!', 'success')
@@ -176,7 +180,6 @@ def delete_game(game_id):
         flash(f'An error occurred while deleting the game: {e}', 'error')
     
     return redirect(url_for('admin.admin_dashboard'))
-
 
 @games_bp.route('/get_game_points/<int:game_id>', methods=['GET'])
 @login_required

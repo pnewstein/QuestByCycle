@@ -311,7 +311,7 @@
 
                     const verificationTypeText = task.verification_type.toLowerCase();
                     const badgeName = task.badge_name || 'None';
-                    const frequencyDisplayText = task.frequency ? task.frequency.charAt(0).toUpperCase() + task.frequency.slice(1) : 'Not Set';
+                    const frequencyDisplayText = task.frequency || 'Not Set';
                     const categoryText = task.category || 'Not Set';
 
                     row.innerHTML = `
