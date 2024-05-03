@@ -114,6 +114,7 @@ class Game(db.Model):
     beyond = db.Column(db.Text)  # Information on living a sustainable bicycle lifestyle
     
     # Twitter credentials
+    twitter_username = db.Column(db.String(500), nullable=True)
     twitter_api_key = db.Column(db.String(500), nullable=True)
     twitter_api_secret = db.Column(db.String(500), nullable=True)
     twitter_access_token = db.Column(db.String(500), nullable=True)
@@ -121,6 +122,7 @@ class Game(db.Model):
 
     facebook_app_id = db.Column(db.String(500), nullable=True)
     facebook_app_secret = db.Column(db.String(500), nullable=True)
+    facebook_access_token = db.Column(db.String(500), nullable=True)
     instagram_page_id = db.Column(db.String(500), nullable=True)
     
 game_participants = db.Table('game_participants',
@@ -152,6 +154,7 @@ class TaskSubmission(db.Model):
     image_url = db.Column(db.String(500), nullable=True)
     comment = db.Column(db.String(1000), nullable=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.now(timezone.utc))
-
+    twitter_url = db.Column(db.String(1024), nullable=True) 
+    
     task = db.relationship('Task', back_populates='submissions')
     user = db.relationship('User', backref='task_submissions')

@@ -117,6 +117,7 @@ def submit_task(task_id):
     now = datetime.now()
     game_start = game.start_date.replace(tzinfo=None)
     game_end = game.end_date.replace(tzinfo=None)
+    user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
 
     # Check if current time is within the game's active period
     if not (game_start <= now <= game_end):
@@ -135,52 +136,43 @@ def submit_task(task_id):
     if verification_type == 'photo_comment' and (not image_file or image_file.filename == ''):
         return jsonify({'success': False, 'message': 'Both photo and comment are required for verification'}), 400
 
-    image_path = None
-    image_url = None
-    media_id = None
-
     try:
+        image_url = None
         if image_file and image_file.filename:
             image_url = save_submission_image(image_file)
             image_path = os.path.join(current_app.static_folder, image_url)
         
-        if media_id:
-
-            #twitter
+        status = f"Check out this task completion for '{task.title}'! #QuestByCycle"
+        
+        if image_url != None:
             media_id, error = upload_media_to_twitter(image_path, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
             if error:
                 return jsonify({'success': False, 'message': f"Failed to upload media: {error}"})
 
-            status = f"Check out this task completion for '{task.title}'! #QuestByCycle"
-            tweet_response, error = post_to_twitter(status, media_id, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
+            tweet_url, error = post_to_twitter(status, media_id, game.twitter_username, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
             if error:
                 return jsonify({'success': False, 'message': f"Failed to post tweet: {error}"})
 
             # Post to Facebook
-            #fb_access_token = authenticate_facebook(game.facebook_app_id, game.facebook_app_secret)
-            #media_response = upload_image_to_facebook(game.instagram_page_id, image_path, fb_access_token)
+            #media_response = upload_image_to_facebook(game.instagram_page_id, image_path, game.facebook_access_token)
             #if 'id' in media_response:
                 image_id = media_response['id']
-                fb_post_response = post_to_facebook_with_image(game.instagram_page_id, status, image_id, fb_access_token)
+                fb_post_response = post_to_facebook_with_image(game.instagram_page_id, status, image_id, game.facebook_access_token)
             #else:
                 return jsonify({'success': False, 'message': 'Failed to upload image to Facebook'})
 
-
             # Post to Instagram
-            #insta_post_response = post_photo_to_instagram(game.instagram_page_id, image_url, status, fb_access_token)
-
+            #insta_post_response = post_photo_to_instagram(game.instagram_page_id, image_url, status, game.facebook_access_token)
 
         new_submission = TaskSubmission(
             task_id=task_id,
             user_id=current_user.id,
-            image_url=url_for('static', filename=image_url) if image_url else None,
+            image_url=url_for('static', filename=image_url) if image_url else url_for('static', filename='clickComment.png'),
             comment=comment,
-            timestamp=datetime.now(timezone.utc)
+            twitter_url=tweet_url,
+            timestamp=datetime.now(timezone.utc),
         )
         db.session.add(new_submission)
-
-        task = Task.query.get_or_404(task_id)
-        user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
 
         if not user_task:
             print(f"No existing UserTask entry, creating new for task ID: {task_id}")
@@ -203,23 +195,21 @@ def submit_task(task_id):
         user_task.completions += 1
         user_task.points_awarded += task.points
         user_task.completed = True
-        print(f"Task {task_id} completed {user_task.completions} times; Total points now {user_task.points_awarded}")
 
         db.session.commit()
 
-        print("Submission processed, updating user score...")
         update_user_score(current_user.id)  # This function should recalculate and update the user's score
         check_and_award_badges(user_id=current_user.id, task_id=task_id)
 
         total_points = sum(ut.points_awarded for ut in UserTask.query.filter_by(user_id=current_user.id))
-        print(f"Total points after update: {total_points}")
 
         return jsonify({
             'success': True,
             'new_completion_count': user_task.completions,
             'total_points': total_points,
             'image_url': image_url,
-            'comment': comment
+            'comment': comment,
+            'tweet_url': tweet_url
         })
     except Exception as e:
         db.session.rollback()
@@ -366,7 +356,8 @@ def get_task_submissions(task_id):
     submissions_data = [{
         'image_url': submission.image_url,
         'comment': submission.comment,
-        'user_id': submission.user_id
+        'user_id': submission.user_id,
+        'twitter_url': submission.twitter_url  # Include the Twitter URL in the response
     } for submission in submissions]
     return jsonify(submissions_data)
 

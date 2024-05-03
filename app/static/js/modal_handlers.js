@@ -12,6 +12,10 @@ function openModal(modalId) {
 
 // Reset all modal content and settings to initial state
 function resetModalContent() {
+    const twitterLink = document.getElementById('twitterLink');
+    twitterLink.style.display = 'none';
+    twitterLink.href = '#'; // Reset to default or placeholder link
+
     const modalTaskActions = document.getElementById('modalTaskActions');
     if (modalTaskActions) {
         modalTaskActions.innerHTML = '';
@@ -127,7 +131,7 @@ function createVerificationButton(taskId) {
     const verifyButton = document.createElement('button');
     verifyButton.id = `verifyButton-${taskId}`;
     verifyButton.textContent = 'Verify Task';
-    verifyButton.className = 'verifyButton';
+    verifyButton.className = 'button';
     verifyButton.onclick = () => toggleVerificationForm(taskId);
     document.querySelector('.user-task-data').appendChild(verifyButton);
 }
@@ -224,6 +228,9 @@ function submitTaskDetails(event, taskId) {
             const totalPointsElement = document.getElementById('total-points');
             if (totalPointsElement) totalPointsElement.innerText = `Total Completed Points: ${data.total_points}`;
         }
+        if (data.tweet_url) {
+            updateTwitterLink(data.tweet_url);  // Update the Twitter link using the URL from the response
+        }
         openTaskDetailModal(taskId);
         form.reset();
     })
@@ -247,12 +254,42 @@ function fetchSubmissions(taskId) {
             return response.json();
         })
         .then(submissions => {
-            // Reverse the array to display newest submissions first
+            const twitterLink = document.getElementById('twitterLink');
+
+            if (submissions && submissions.length > 0) {
+                const submission = submissions[0];
+                const submissionImage = document.getElementById('submissionImage');
+                const submissionComment = document.getElementById('submissionComment');
+                const submissionUserLink = document.getElementById('submissionUserLink');
+                const downloadLink = document.getElementById('downloadLink');
+
+                submissionImage.src = submission.image_url || 'path/to/default/image.png';
+                submissionComment.textContent = submission.comment || 'No comment provided.';
+                submissionUserLink.href = `/user/profile/${submission.user_id}`;
+                downloadLink.href = submission.image_url || '#';
+                downloadLink.download = `SubmissionImage-${submission.user_id}`;
+
+                console.log("Twitter URL: ", submission.twitter_url); // Debugging
+
+                if (submission.twitter_url && submission.twitter_url.trim() !== '') {
+                    twitterLink.href = submission.twitter_url;
+                    twitterLink.style.display = 'inline';
+                    console.log("Displaying Twitter link."); // Debugging
+                } else {
+                    twitterLink.style.display = 'none';
+                    console.log("Hiding Twitter link."); // Debugging
+                }
+            } else {
+                twitterLink.style.display = 'none';
+                console.log("No submissions found, hiding Twitter link."); // Debugging
+            }
+
             const images = submissions.reverse().map(submission => ({
                 url: submission.image_url,
                 alt: "Submission Image",
                 comment: submission.comment, 
-                user_id: submission.user_id
+                user_id: submission.user_id,
+                twitter_url: submission.twitter_url // Ensure twitter_url is included in the object
             }));
             distributeImages(images);
         })
@@ -346,6 +383,15 @@ function showSubmissionDetail(image) {
     document.getElementById('downloadLink').href = image.url;
     document.getElementById('downloadLink').download = `Image-${image.user_id}`;
 
+    // Update the Twitter link if available
+    const twitterLink = document.getElementById('twitterLink');
+    if (image.twitter_url) {
+        twitterLink.href = image.twitter_url;
+        twitterLink.style.display = 'inline';  // Show the Twitter link if a URL is available
+    } else {
+        twitterLink.style.display = 'none';  // Hide the Twitter link if there is no URL
+    }
+
     submissionModal.style.display = 'block';
     submissionModal.style.backgroundColor = 'rgba(0,0,0,0.7)';
 }
@@ -379,7 +425,7 @@ function closeTipsModal() {
     document.getElementById('tipsModal').style.display = 'none';
 }
 
-function closeSubmissionModal() {
+function closeSubmissionDetailModal() {
     const submissionModal = document.getElementById('submissionDetailModal');
     submissionModal.style.display = 'none';
     submissionModal.style.backgroundColor = ''; // Reset background color to default
@@ -399,7 +445,7 @@ window.onclick = function(event) {
     if (event.target.className.includes('modal')) {
         switch(event.target.id) {
             case 'submissionDetailModal':
-                closeSubmissionModal();
+                closeSubmissionDetailModal();
                 break;
             case 'taskDetailModal':
                 closeTaskDetailModal();

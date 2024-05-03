@@ -26,12 +26,14 @@ def create_game():
             details=form.details.data,
             awards=form.awards.data,
             beyond=form.beyond.data,
+            twitter_username=form.twitter_username.data,
             twitter_api_key=form.twitter_api_key.data,
             twitter_api_secret=form.twitter_api_secret.data,
             twitter_access_token=form.twitter_access_token.data,
             twitter_access_token_secret=form.twitter_access_token_secret.data,
             facebook_app_id = form.facebook_app_id.data,
             facebook_app_secret = form.facebook_app_secret.data,
+            facebook_access_token = form.facebook_access_token.data,
             instagram_page_id = form.instagram_page_id.data,
             admin_id=current_user.id
         )
