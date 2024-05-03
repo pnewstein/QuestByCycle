@@ -201,6 +201,27 @@ function verifyTask(taskId) {
     }
 }
 
+function updateTwitterLink(tweetUrl) {
+    const twitterLink = document.getElementById('twitterLink');
+    if (tweetUrl) {
+        twitterLink.href = tweetUrl;
+        twitterLink.style.display = 'inline';  // Show the button if the URL is available
+    } else {
+        twitterLink.style.display = 'none';  // Hide the button if there is no URL
+    }
+}
+
+function setTwitterLink(url) {
+    const twitterLink = document.getElementById('twitterLink');
+    if (url) {
+        twitterLink.href = url;  // Set the href attribute with the received Twitter URL
+        twitterLink.textContent = 'Link to Twitter';  // Optional: Update button text if necessary
+    } else {
+        twitterLink.href = '#';  // Reset or provide a fallback URL
+        twitterLink.textContent = 'Link Unavailable';  // Handle cases where the URL isn't available
+    }
+}
+
 // Handle Task Submissions with streamlined logic
 function submitTaskDetails(event, taskId) {
     event.preventDefault();
