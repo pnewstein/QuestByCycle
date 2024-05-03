@@ -283,7 +283,7 @@ function fetchSubmissions(taskId) {
                 const submissionUserLink = document.getElementById('submissionUserLink');
                 const downloadLink = document.getElementById('downloadLink');
 
-                submissionImage.src = submission.image_url || 'path/to/default/image.png';
+                submissionImage.src = submission.image_url || 'image/placeholdersubmission.png';
                 submissionComment.textContent = submission.comment || 'No comment provided.';
                 submissionUserLink.href = `/user/profile/${submission.user_id}`;
                 downloadLink.href = submission.image_url || '#';
@@ -405,15 +405,24 @@ function showSubmissionDetail(image) {
 
     // Update the Twitter link if available
     const twitterLink = document.getElementById('twitterLink');
-    if (submission.verification_type !== 'comment' && submission.twitter_url) {
+    if (image.verification_type !== 'comment' && image.twitter_url && isValidUrl(image.twitter_url)) {
         twitterLink.href = image.twitter_url;
-        twitterLink.style.display = 'inline';  // Show the Twitter link if a URL is available
+        twitterLink.style.display = 'inline';  // Show the Twitter link if a URL is available and not using the placeholder image
     } else {
-        twitterLink.style.display = 'none';  // Hide the Twitter link if there is no URL
+        twitterLink.style.display = 'none';  // Hide the Twitter link if using the placeholder image or no URL is available
     }
 
     submissionModal.style.display = 'block';
     submissionModal.style.backgroundColor = 'rgba(0,0,0,0.7)';
+}
+
+function isValidUrl(string) {
+    try {
+        new URL(string);
+        return true;
+    } catch (_) {
+        return false;  // Fails to construct a URL, it's likely not a valid URL
+    }
 }
 
 // User profile modal display

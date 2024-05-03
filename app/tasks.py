@@ -138,6 +138,7 @@ def submit_task(task_id):
 
     try:
         image_url = None
+        tweet_url = None
         if image_file and image_file.filename:
             image_url = save_submission_image(image_file)
             image_path = os.path.join(current_app.static_folder, image_url)
