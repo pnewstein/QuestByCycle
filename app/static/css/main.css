@@ -343,6 +343,42 @@ article h3 {
     z-index: 3;
 }
 
+/* Specific styles for the Submission Detail Modal */
+#submissionDetailModal .modal-content {
+    text-align: center; /* Center align the content inside the modal */
+    padding: 20px;
+}
+
+#submissionDetailModal #submissionComment {
+    font-size: 18px; /* Increase the font size */
+    margin-top: 20px; /* Add some space above the comment */
+    color: #333; /* Dark grey color for better readability */
+    font-weight: bold; /* Make the text bold */
+}
+
+#submissionDetailModal .button {
+    margin: 10px 5px; /* Space around buttons */
+    display: inline-block; /* Ensure buttons are in a line */
+    width: auto; /* Allow the button to grow as per its content */
+}
+
+/* Container for buttons to manage alignment and distribution */
+#submissionDetailModal div {
+    text-align: center; /* Center-align the button container */
+    margin-top: 20px; /* Space above the button container */
+}
+
+/* Enhance mobile responsiveness */
+@media (max-width: 768px) {
+    #submissionDetailModal .modal-content {
+        padding: 10px; /* Reduce padding on smaller screens */
+    }
+
+    #submissionDetailModal #submissionComment {
+        font-size: 16px; /* Slightly smaller font size on mobile */
+    }
+}
+
 #taskDetailModal {
     z-index: 2;
 }
@@ -350,6 +386,8 @@ article h3 {
 .modal-content img {
     display: block;
     /*margin: 0 auto; /* Centers the image in the modal */
+    margin-bottom: 20px; /* Space between the image and the text/comment below it */
+    size: 200px;
 }
 
 .body-no-scroll {
@@ -365,6 +403,7 @@ article h3 {
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
+    opacity: 0.6;
 }
 
 .close-button:hover,
@@ -372,6 +411,7 @@ article h3 {
     color: black;
     text-decoration: none;
     cursor: pointer;
+    opacity: 1;
 }
 
 footer {

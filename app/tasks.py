@@ -118,7 +118,7 @@ def submit_task(task_id):
     game_start = game.start_date.replace(tzinfo=None)
     game_end = game.end_date.replace(tzinfo=None)
     user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
-
+    tweet_url = None
     # Check if current time is within the game's active period
     if not (game_start <= now <= game_end):
         return jsonify({'success': False, 'message': 'This task cannot be completed outside of the game dates'}), 403
@@ -144,7 +144,7 @@ def submit_task(task_id):
         
         status = f"Check out this task completion for '{task.title}'! #QuestByCycle"
         
-        if image_url != None:
+        if image_url is not None:
             media_id, error = upload_media_to_twitter(image_path, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
             if error:
                 return jsonify({'success': False, 'message': f"Failed to upload media: {error}"})
@@ -164,10 +164,13 @@ def submit_task(task_id):
             # Post to Instagram
             #insta_post_response = post_photo_to_instagram(game.instagram_page_id, image_url, status, game.facebook_access_token)
 
+        if tweet_url is None:
+            tweet_url = "No tweet URL available due to errors or conditions not met."
+
         new_submission = TaskSubmission(
             task_id=task_id,
             user_id=current_user.id,
-            image_url=url_for('static', filename=image_url) if image_url else url_for('static', filename='clickComment.png'),
+            image_url=url_for('static', filename=image_url) if image_url else url_for('static', filename='images/commentPlaceholder.png'),
             comment=comment,
             twitter_url=tweet_url,
             timestamp=datetime.now(timezone.utc),
