@@ -25,8 +25,8 @@ def upload_media_to_twitter(file_path, api_key, api_secret, access_token, access
             return None, response.text
 
 
-def post_to_twitter(status, media_ids, api_key, api_secret, access_token, access_token_secret):
-    """Post a tweet with media using the Twitter API v2."""
+def post_to_twitter(status, media_ids, twitter_username, api_key, api_secret, access_token, access_token_secret):
+    """Post a tweet with media using the Twitter API and return the tweet URL."""
     url = "https://api.twitter.com/2/tweets"
     payload = {
         "text": status,
@@ -37,10 +37,12 @@ def post_to_twitter(status, media_ids, api_key, api_secret, access_token, access
     twitter = authenticate_twitter(api_key, api_secret, access_token, access_token_secret)
     response = twitter.post(url, json=payload)
     if response.status_code == 201:
-        return response.json(), None
+        tweet_id = response.json().get('data').get('id')  # Capture the tweet ID from the response
+        tweet_url = f"https://twitter.com/{twitter_username}/status/{tweet_id}"
+        return tweet_url, None  # Return the tweet URL
     else:
         return None, response.text
-    
+
 
 def authenticate_facebook(app_id, app_secret):
     """Get a Facebook access token."""
@@ -51,8 +53,11 @@ def authenticate_facebook(app_id, app_secret):
         'grant_type': 'client_credentials'
     }
     response = requests.get(url, params=params)
-    return response.json()['access_token']
-
+    if response.status_code == 200:
+        return response.json().get('access_token')
+    else:
+        print("Failed to authenticate Facebook:", response.text)
+        return None
 
 def upload_image_to_facebook(page_id, image_path, access_token):
     """Upload an image to a Facebook Page and return the media object ID."""
@@ -62,27 +67,34 @@ def upload_image_to_facebook(page_id, image_path, access_token):
     data = {
         'access_token': access_token
     }
-    url = f"https://graph.facebook.com/{page_id}/photos"
+    url = f"https://graph.facebook.com/v19.0/{page_id}/photos"
     response = requests.post(url, files=files, data=data)
-    return response.json()  # This response contains 'id' which is the media object ID
-
+    if response.status_code == 200:
+        return response.json()  # This response contains 'id' which is the media object ID
+    else:
+        print("Failed to upload image to Facebook:", response.text)
+        return None
 
 def post_to_facebook_with_image(page_id, message, image_id, access_token):
     """Post a message with an image to a Facebook Page."""
-    url = f"https://graph.facebook.com/{page_id}/feed"
+    url = f"https://graph.facebook.com/v19.0/{page_id}/feed"
     payload = {
         'message': message,
-        'attached_media[0]': f'{{"media_fbid":"{image_id}"}}',
+        'attached_media': f'[{{"media_fbid":"{image_id}"}}]',
         'access_token': access_token
     }
     response = requests.post(url, data=payload)
-    return response.json()
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print("Failed to post to Facebook:", response.text)
+        return None
 
 
 def post_photo_to_instagram(page_id, image_url, caption, access_token):
     """Post a photo to Instagram via the connected Facebook Page."""
     # Create a container
-    url = f'https://graph.facebook.com/{page_id}/media'
+    url = f'https://graph.facebook.com/v19.0/{page_id}/media'
     payload = {
         'image_url': image_url,
         'caption': caption,
@@ -92,7 +104,7 @@ def post_photo_to_instagram(page_id, image_url, caption, access_token):
     container_id = container_response.json()['id']
 
     # Publish the container
-    publish_url = f'https://graph.facebook.com/{page_id}/media_publish'
+    publish_url = f'https://graph.facebook.com/v19.0/{page_id}/media_publish'
     publish_payload = {
         'creation_id': container_id,
         'access_token': access_token

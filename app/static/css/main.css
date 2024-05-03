@@ -51,7 +51,7 @@ main {
 .container {
     width: 95%;
     margin: 20px auto;
-    background-color: #cecce6;
+    background-color: #D0E6B5;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -98,15 +98,30 @@ main {
 
 .button, input[type="submit"] {
     padding: 10px 15px;
-    background-color: #007bff;
-    border: none;
-    border-radius: 4px;
-    color: white;
+    background-color: #edecb9;
+    border:  3px solid #ddd;;
+    border-radius: 10px;
+    color: black;
     cursor: pointer;
+    text-align: left;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    line-height: 20px;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.12);
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+    transition: background-color 0.3s, box-shadow 0.3s;
 }
 
 .button:hover, input[type="submit"]:hover {
-    background-color: #0056b3;
+    background-color: #dba364;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.button:active, input[type="submit"]:active {
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2);
+    position: relative;
+    top: 1px;
 }
 
 .alert {
@@ -182,7 +197,7 @@ main {
 
 .introduction, .skill-building {
     margin-bottom: 30px;
-    background-color: #c9dbee;
+    background-color: #eef6ff;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);

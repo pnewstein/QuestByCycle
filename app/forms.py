@@ -47,12 +47,14 @@ class GameForm(FlaskForm):
     awards = TextAreaField('Awards Details')
     beyond = TextAreaField('Sustainability Details')
     game_goal = IntegerField('Game Goal')  # Add a default value or make it required
+    twitter_username = StringField('Twitter Username')
     twitter_api_key = StringField('Twitter API Key')
     twitter_api_secret = StringField('Twitter API Secret')
     twitter_access_token = StringField('Twitter Access Token')
     twitter_access_token_secret = StringField('Twitter Access Token Secret')
     facebook_app_id = StringField('Facebook App ID')
     facebook_app_secret = StringField('Facebook App Secret')
+    facebook_access_token = StringField('Facebook Access Token')
     instagram_page_id = StringField('Instagram Page ID')
     submit = SubmitField('Create Game')
 
