@@ -163,8 +163,7 @@ function getVerificationFormHTML(verificationType) {
             break;
         default:
             // Handle cases where no verification is needed or provide a default case
-            formHTML += '<p>No verification required for this task.</p>';
-            formHTML += '<button type="submit">Submit Verification</button>';
+            formHTML += '<p>Verification type not set correctly.</p>';
             break;
     }
 
