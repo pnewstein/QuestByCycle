@@ -405,7 +405,7 @@ function showSubmissionDetail(image) {
 
     // Update the Twitter link if available
     const twitterLink = document.getElementById('twitterLink');
-    if (image.twitter_url) {
+    if (submission.verification_type !== 'comment' && submission.twitter_url) {
         twitterLink.href = image.twitter_url;
         twitterLink.style.display = 'inline';  // Show the Twitter link if a URL is available
     } else {
