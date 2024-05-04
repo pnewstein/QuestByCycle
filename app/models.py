@@ -155,6 +155,7 @@ class TaskSubmission(db.Model):
     comment = db.Column(db.String(1000), nullable=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.now(timezone.utc))
     twitter_url = db.Column(db.String(1024), nullable=True) 
+    fb_url = db.Column(db.String(1024), nullable=True) 
     
     task = db.relationship('Task', back_populates='submissions')
     user = db.relationship('User', backref='task_submissions')

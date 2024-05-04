@@ -119,6 +119,7 @@ def submit_task(task_id):
     game_end = game.end_date.replace(tzinfo=None)
     user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
     tweet_url = None
+    fb_url = None
 
     if not (game_start <= now <= game_end):
         # Directly return the message in the JSON response
@@ -140,6 +141,8 @@ def submit_task(task_id):
     try:
         image_url = None
         tweet_url = None
+        fb_url = None
+
         if image_file and image_file.filename:
             image_url = save_submission_image(image_file)
             image_path = os.path.join(current_app.static_folder, image_url)
@@ -148,27 +151,22 @@ def submit_task(task_id):
         
         if image_url is not None:
             media_id, error = upload_media_to_twitter(image_path, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
-            if error:
-                return jsonify({'success': False, 'message': f"Failed to upload media: {error}"})
-
-            tweet_url, error = post_to_twitter(status, media_id, game.twitter_username, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
-            if error:
-                return jsonify({'success': False, 'message': f"Failed to post tweet: {error}"})
+            if not error:
+                tweet_url, error = post_to_twitter(status, media_id, game.twitter_username, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
+                if error:
+                    print(f"Failed to post tweet: {error}")  # Log the error but do not return
 
             media_response = upload_image_to_facebook(game.facebook_page_id, image_path, game.facebook_access_token)
             if 'id' in media_response:
                 image_id = media_response['id']
-                fb_post_response = post_to_facebook_with_image(game.facebook_page_id, status, image_id, game.facebook_access_token)
-                if not fb_post_response:
-                    return jsonify({'success': False, 'message': 'Failed to post image to Facebook'})
+                fb_url, error = post_to_facebook_with_image(game.facebook_page_id, status, image_id, game.facebook_access_token)
+                if error:
+                    print(f"Failed to post image to Facebook: {error}")  # Log the error but do not return
             else:
-                return jsonify({'success': False, 'message': 'Failed to upload image to Facebook'})
+                print('Failed to upload image to Facebook')
 
             # Post to Instagram
             #insta_post_response = post_photo_to_instagram(game.instagram_page_id, image_url, status, game.facebook_access_token)
-
-        if tweet_url is None:
-            tweet_url = "No tweet URL available due to errors or conditions not met."
 
         new_submission = TaskSubmission(
             task_id=task_id,
@@ -176,6 +174,7 @@ def submit_task(task_id):
             image_url=url_for('static', filename=image_url) if image_url else url_for('static', filename='images/commentPlaceholder.png'),
             comment=comment,
             twitter_url=tweet_url,
+            fb_url=fb_url,
             timestamp=datetime.now(timezone.utc),
         )
         db.session.add(new_submission)
@@ -215,7 +214,8 @@ def submit_task(task_id):
             'total_points': total_points,
             'image_url': image_url,
             'comment': comment,
-            'tweet_url': tweet_url
+            'tweet_url': tweet_url,
+            'fb_url': fb_url
         })
     except Exception as e:
         db.session.rollback()
