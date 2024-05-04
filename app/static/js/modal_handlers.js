@@ -221,6 +221,27 @@ function setTwitterLink(url) {
     }
 }
 
+function updateFacebookLink(fbUrl) {
+    const facebookLink = document.getElementById('facebookLink');
+    if (fbUrl) {
+        facebookLink.href = fbUrl;
+        facebookLink.style.display = 'inline';  // Show the button if the URL is available
+    } else {
+        facebookLink.style.display = 'none';  // Hide the button if there is no URL
+    }
+}
+
+function setFacebookLink(url) {
+    const facebookLink = document.getElementById('facebookLink');
+    if (url) {
+        facebookLink.href = url;  // Set the href attribute with the received FB URL
+        facebookLink.textContent = 'Link to Facebook';  // Optional: Update button text if necessary
+    } else {
+        facebookLink.href = '#';  // Reset or provide a fallback URL
+        facebookLink.textContent = 'Link Unavailable';  // Handle cases where the URL isn't available
+    }
+}
+
 // Handle Task Submissions with streamlined logic
 function submitTaskDetails(event, taskId) {
     event.preventDefault();
@@ -252,6 +273,9 @@ function submitTaskDetails(event, taskId) {
         }
         if (data.tweet_url) {
             updateTwitterLink(data.tweet_url);
+        }
+        if (data.fb_url) {
+            updateFacebookLink(data.fb_url);
         }
         openTaskDetailModal(taskId);
         form.reset();

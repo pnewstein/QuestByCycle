@@ -3,6 +3,7 @@ from .models import db, Game
 import requests
 import json
 import mimetypes
+import datetime
 
 def authenticate_twitter(api_key, api_secret, access_token, access_token_secret):
     """Create and return an OAuth1Session object for Twitter API."""
@@ -86,7 +87,7 @@ def upload_image_to_facebook(page_id, image_path, access_token):
 
 
 def post_to_facebook_with_image(page_id, message, media_object_id, access_token):
-
+    """Creates a post on Facebook using the previously uploaded media object ID and returns the post URL."""
     url = f"https://graph.facebook.com/v19.0/{page_id}/feed"
     payload = {
         'message': message,
@@ -95,8 +96,11 @@ def post_to_facebook_with_image(page_id, message, media_object_id, access_token)
     }
     response = requests.post(url, json=payload)
     if response.status_code == 200:
-        return True
-    return False
+        post_id = response.json().get('id')  # Capture the post ID from the response
+        fb_url = f"https://www.facebook.com/{post_id}"  # Construct the URL to the Facebook post
+        return fb_url, None  # Return the Facebook post URL
+    else:
+        return None, response.text  # Handle errors by returning None and the error text
 
 
 def post_photo_to_instagram(page_id, image_url, caption, access_token):
