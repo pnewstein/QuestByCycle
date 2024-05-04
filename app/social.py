@@ -56,29 +56,14 @@ def get_facebook_page_access_token(game_id):
     if response.status_code == 200:
         page_access_token = response.json().get('access_token')
         # Optionally update the stored token in database or configuration
-        #game.facebook_access_token = page_access_token
-        #db.session.commit()
+        game.facebook_access_token = page_access_token
+        db.session.commit()
         return page_access_token
     else:
         return None  # Log this error or handle it accordingly
 
 
-
-def upload_image_to_facebook(page_id, image_path, game_id):
-    """
-    Uploads an image to Facebook to get a media object ID.
-    Args:
-    page_id (str): The Facebook Page ID.
-    image_path (str): Local path to the image file.
-    access_token (str): Access token for the Facebook Page.
-    Returns:
-    dict: Response from the Facebook API.
-    """
-    page_token = get_facebook_page_access_token(game_id)
-    if not page_token:
-        print("Failed to get access token for page.")
-        return None
-
+def upload_image_to_facebook(page_id, image_path, access_token):
     # Detect MIME type of the file
     mime_type, _ = mimetypes.guess_type(image_path)
     if not mime_type:
@@ -86,7 +71,7 @@ def upload_image_to_facebook(page_id, image_path, game_id):
 
     files = {'file': (image_path, open(image_path, 'rb'), mime_type)}
     data = {
-        'access_token': page_token,
+        'access_token': access_token,
         'published': 'false'  # Set to 'false' to upload the image without posting it
     }
 
@@ -100,26 +85,13 @@ def upload_image_to_facebook(page_id, image_path, game_id):
         return None
 
 
-def post_to_facebook_with_image(page_id, message, media_object_id, game_id):
-    """
-    Creates a post on Facebook using the previously uploaded media object ID.
-
-    Args:
-    page_id (str): The Facebook Page ID.
-    message (str): The message to post.
-    media_object_id (str): The media object ID returned by the Facebook image upload.
-    access_token (str): Access token for the Facebook Page.
-
-    Returns:
-    bool: True if the post was successful, False otherwise.
-    """
-    page_token = get_facebook_page_access_token(game_id)
+def post_to_facebook_with_image(page_id, message, media_object_id, access_token):
 
     url = f"https://graph.facebook.com/v19.0/{page_id}/feed"
     payload = {
         'message': message,
         'attached_media': json.dumps([{'media_fbid': media_object_id}]),
-        'access_token': page_token
+        'access_token': access_token
     }
     response = requests.post(url, json=payload)
     if response.status_code == 200:
