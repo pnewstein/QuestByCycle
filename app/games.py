@@ -34,7 +34,7 @@ def create_game():
             facebook_app_id = form.facebook_app_id.data,
             facebook_app_secret = form.facebook_app_secret.data,
             facebook_access_token = form.facebook_access_token.data,
-            instagram_page_id = form.instagram_page_id.data,
+            facebook_page_id = form.facebook_page_id.data,
             admin_id=current_user.id
         )
         db.session.add(game)
