@@ -1,9 +1,8 @@
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from app.models import db, Game, Task, UserTask, TaskSubmission
-from app.forms import GameForm, TaskForm, TaskSubmissionForm
-from app.utils import can_complete_task
-from werkzeug.utils import secure_filename
+from app.forms import GameForm
+from app.social import get_facebook_page_access_token
 from datetime import datetime, timedelta, timezone
 
 import os
@@ -41,6 +40,12 @@ def create_game():
         try:
             db.session.commit()
             flash('Game created successfully!', 'success')
+
+            # Attempt to extend and fetch new tokens after update
+            if not get_facebook_page_access_token(game.id):
+                flash('Failed to fetch Facebook page access token.', 'error')
+
+
             return redirect(url_for('admin.admin_dashboard'))
         except Exception as e:
             db.session.rollback()
@@ -58,6 +63,11 @@ def update_game(game_id):
         try:
             db.session.commit()
             flash('Game updated successfully!', 'success')
+
+            # Attempt to extend and fetch new tokens after update
+            if not get_facebook_page_access_token(game_id):
+                flash('Failed to fetch Facebook page access token.', 'error')
+
             return redirect(url_for('games.game_detail', game_id=game_id))
         except Exception as e:
             db.session.rollback()
