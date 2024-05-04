@@ -55,7 +55,7 @@ class GameForm(FlaskForm):
     facebook_app_id = StringField('Facebook App ID')
     facebook_app_secret = StringField('Facebook App Secret')
     facebook_access_token = StringField('Facebook Access Token')
-    instagram_page_id = StringField('Instagram Page ID')
+    facebook_page_id = StringField('Facebook Page ID')
     submit = SubmitField('Create Game')
 
 

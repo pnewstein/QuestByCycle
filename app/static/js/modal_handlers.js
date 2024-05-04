@@ -238,10 +238,12 @@ function submitTaskDetails(event, taskId) {
             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
-    .then(response => {
-        if (!response.ok) throw new Error('Failed to submit task details.');
-        return response.json();
-    })
+    .then(response => response.json().then(data => {
+        if (!response.ok) {
+            throw new Error(data.message);
+        }
+        return data;
+    }))
     .then(data => {
         alert(data.success ? 'Submission successful!' : `Submission failed: ${data.message}`);
         if (data.total_points) {
@@ -249,14 +251,14 @@ function submitTaskDetails(event, taskId) {
             if (totalPointsElement) totalPointsElement.innerText = `Total Completed Points: ${data.total_points}`;
         }
         if (data.tweet_url) {
-            updateTwitterLink(data.tweet_url);  // Update the Twitter link using the URL from the response
+            updateTwitterLink(data.tweet_url);
         }
         openTaskDetailModal(taskId);
         form.reset();
     })
     .catch(error => {
         console.error("Submission error:", error);
-        alert('Error during submission: Check console for more information.');
+        alert('Error during submission: ' + error.message);
     })
     .finally(() => {
         isSubmitting = false;
