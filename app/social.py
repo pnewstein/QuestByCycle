@@ -118,7 +118,7 @@ def post_to_facebook_with_image(page_id, message, media_object_id, game_id):
     url = f"https://graph.facebook.com/v19.0/{page_id}/feed"
     payload = {
         'message': message,
-        'attached_media[0]': f'{{"media_fbid":"{media_object_id}"}}',
+        'attached_media': json.dumps([{'media_fbid': media_object_id}]),
         'access_token': page_token
     }
     response = requests.post(url, json=payload)
