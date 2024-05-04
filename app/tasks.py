@@ -2,7 +2,7 @@ from flask import Blueprint, send_file, jsonify, render_template, request, flash
 from flask_login import login_required, current_user
 from app.utils import update_user_score, getLastRelevantCompletionTime, check_and_award_badges, revoke_badge, save_badge_image, save_submission_image, can_complete_task
 from app.forms import TaskForm, PhotoForm
-from app.social import authenticate_twitter, post_to_twitter, upload_media_to_twitter, authenticate_facebook, post_to_facebook_with_image, upload_image_to_facebook, post_photo_to_instagram
+from app.social import authenticate_twitter, post_to_twitter, upload_media_to_twitter, post_to_facebook_with_image, upload_image_to_facebook, post_photo_to_instagram
 from .models import db, Game, Task, Badge, UserTask, TaskSubmission, ShoutBoardMessage
 from .utils import award_badges
 from werkzeug.utils import secure_filename
@@ -119,8 +119,9 @@ def submit_task(task_id):
     game_end = game.end_date.replace(tzinfo=None)
     user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
     tweet_url = None
-    # Check if current time is within the game's active period
+
     if not (game_start <= now <= game_end):
+        # Directly return the message in the JSON response
         return jsonify({'success': False, 'message': 'This task cannot be completed outside of the game dates'}), 403
 
     verification_type = task.verification_type
@@ -154,12 +155,13 @@ def submit_task(task_id):
             if error:
                 return jsonify({'success': False, 'message': f"Failed to post tweet: {error}"})
 
-            # Post to Facebook
-            #media_response = upload_image_to_facebook(game.instagram_page_id, image_path, game.facebook_access_token)
-            #if 'id' in media_response:
+            media_response = upload_image_to_facebook(game.facebook_page_id, image_path, game.id)
+            if 'id' in media_response:
                 image_id = media_response['id']
-                fb_post_response = post_to_facebook_with_image(game.instagram_page_id, status, image_id, game.facebook_access_token)
-            #else:
+                fb_post_response = post_to_facebook_with_image(game.facebook_page_id, status, image_id, game.id)
+                if not fb_post_response:
+                    return jsonify({'success': False, 'message': 'Failed to post image to Facebook'})
+            else:
                 return jsonify({'success': False, 'message': 'Failed to upload image to Facebook'})
 
             # Post to Instagram
