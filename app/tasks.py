@@ -1,4 +1,4 @@
-from flask import Blueprint, send_file, jsonify, render_template, request, flash, redirect, url_for, current_app
+from flask import Blueprint, make_response, jsonify, render_template, request, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
 from app.utils import update_user_score, getLastRelevantCompletionTime, check_and_award_badges, revoke_badge, save_badge_image, save_submission_image, can_complete_task
 from app.forms import TaskForm, PhotoForm
@@ -8,8 +8,9 @@ from .utils import award_badges
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 from datetime import datetime, timezone, timedelta
+from io import BytesIO
 
-import pytz
+import base64
 import csv
 import os
 import qrcode
@@ -419,6 +420,7 @@ def get_last_relevant_completion_time(task_id, user_id):
 
 @tasks_bp.route('/generate_qr/<int:task_id>')
 def generate_qr(task_id):
+    task = Task.query.get_or_404(task_id)
     url = url_for('tasks.submit_photo', task_id=task_id, _external=True)
     qr = qrcode.QRCode(
         version=1,
@@ -428,16 +430,43 @@ def generate_qr(task_id):
     )
     qr.add_data(url)
     qr.make(fit=True)
-    img = qr.make_image(fill_color="black", back_color="white")
+    img = qr.make_image(fill_color="white", back_color="black")
+    img_buffer = BytesIO()
+    img.save(img_buffer, format="PNG")
+    img_data = base64.b64encode(img_buffer.getvalue()).decode('utf-8')
 
-    # Ensure the directory exists
-    qr_code_dir = os.path.join(current_app.static_folder, 'qr_codes')
-    if not os.path.exists(qr_code_dir):
-        os.makedirs(qr_code_dir)
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>QR Code - {task.title}</title>
+        <style>
+            body {{ text-align: center; padding: 20px; font-family: Arial, sans-serif; }}
+            .qrcodeHeader img {{ max-width: 100%; height: auto; }}
+            h1, h2 {{ margin: 10px 0; }}
+            img {{ margin-top: 20px; }}
+            @media print {{
+                .no-print {{ display: none; }}
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="qrcodeHeader">
+            <img src="{url_for('static', filename='images/welcomeQuestByCycle.png')}" alt="Welcome">
+        </div>
+        <h1>Congratulations! You made it!</h1>
+        <h2>Scan to complete '{task.title}' and gain {task.points} points!</h2>
+        <img src="data:image/png;base64,{img_data}" alt="QR Code">
+        <br>
+        <button class="no-print" onclick="window.print();">Print this page</button>
+    </body>
+    </html>
+    """
 
-    file_path = os.path.join(qr_code_dir, f'qr_task_{task_id}.png')
-    img.save(file_path)
-    return send_file(file_path, mimetype='image/png')
+    response = make_response(html_content)
+    response.headers['Content-Type'] = 'text/html'
+    return response
 
 
 @tasks_bp.route('/submit_photo/<int:task_id>', methods=['GET', 'POST'])

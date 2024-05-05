@@ -114,6 +114,8 @@ pages_read_user_content
 pages_manage_posts
 pages_manage_engagement
 
+get code put here to get page access:
+https://graph.facebook.com/v12.0/oauth/access_token?grant_type=fb_exchange_token&client_id=CLIENTID&client_secret=CLIENTSECRET&fb_exchange_token=EXPLORERGENERATEDTOKEN
 
 Put page access token in edit game
 ## Contributing
