@@ -13,8 +13,9 @@ class Badge(db.Model):
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(500), nullable=True)
     image = db.Column(db.String(500), nullable=True)
-    tasks = db.relationship('Task', backref='badge', lazy=True)
     category = db.Column(db.String(150), nullable=True) 
+
+    tasks = db.relationship('Task', backref='badge', lazy=True)
     
 user_badges = db.Table('user_badges',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
@@ -74,7 +75,8 @@ class Task(db.Model):
     enabled = db.Column(db.Boolean, default=True)
     verification_type = db.Column(db.String(50))  # Changed from SQLAlchemyEnum to String
     verification_comment = db.Column(db.String(1000), default="")
-    game_id = db.Column(db.Integer, db.ForeignKey('game.id'))  # Make sure this line is within the class definition
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id', ondelete='CASCADE'))
+    game = db.relationship('Game', back_populates='tasks')  # Ensures bidirectional access
     points = db.Column(db.Integer, default='')
     tips = db.Column(db.String(1000), default='', nullable=True)
     completion_limit = db.Column(db.Integer, default=1)  # Limit for how many times a task can be completed
@@ -84,7 +86,7 @@ class Task(db.Model):
     badge_id = db.Column(db.Integer, db.ForeignKey('badge.id'), nullable=True)  # Foreign key to Badge
     badge = db.relationship('Badge', back_populates='tasks')
     submissions = db.relationship('TaskSubmission', back_populates='task', cascade='all, delete-orphan')
-    likes = db.relationship('TaskLike', backref='task', lazy='dynamic')
+    likes = db.relationship('TaskLike', backref='task', cascade="all, delete-orphan")
 
 Badge.tasks = db.relationship('Task', order_by=Task.id, back_populates='badge')
 
@@ -92,7 +94,7 @@ Badge.tasks = db.relationship('Task', order_by=Task.id, back_populates='badge')
 class TaskLike(db.Model):
     __tablename__ = 'task_likes'
     id = db.Column(db.Integer, primary_key=True)
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id', ondelete='CASCADE'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     __table_args__ = (db.UniqueConstraint('task_id', 'user_id', name='_task_user_uc'),)
@@ -106,7 +108,7 @@ class Game(db.Model):
     start_date = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
     end_date = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
     admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    tasks = db.relationship('Task', backref='game', lazy='dynamic')
+    tasks = db.relationship('Task', back_populates='game', cascade="all, delete-orphan", lazy='dynamic')
     participants = db.relationship('User', secondary='game_participants', lazy='subquery', backref=db.backref('games', lazy=True))
     game_goal = db.Column(db.Integer)
     details = db.Column(db.Text)  # New field for detailed game information

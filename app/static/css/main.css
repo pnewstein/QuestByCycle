@@ -49,25 +49,29 @@ main {
 }
 
 .container {
-    width: 95%;
-    margin: 20px auto;
+    width: 100%; /* Makes sure the container fits within the viewport */
+    max-width: 95%; /* Limits maximum width while allowing some margin */
+    margin: auto; /* Centers the container */
     background-color: #D0E6B5;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden; /* Ensures no internal content spills over */
 }
 
 .table {
-    width: 100%;
-    border-collapse: collapse;
+    width: 100%; /* Full width of its container */
+    border-collapse: collapse; /* Ensures borders between cells are merged */
     background-color: #ffffff;
-
+    table-layout: fixed; /* Helps in maintaining a uniform column width */
+    overflow-x: auto; /* Allows horizontal scrolling if needed */
 }
 
 .table th, .table td {
     text-align: left;
     padding: 8px;
     border-bottom: 1px solid #ddd;
+    word-wrap: break-word; /* Ensures text goes to the next line if needed */
 }
 
 .table th {
@@ -154,6 +158,16 @@ main {
 
     .modal-content, .footer-container, .dropdown-content {
         width: 90%; /* Adjust width for smaller screens */
+    }
+
+    .table, .container {
+        width: 100%;
+    }
+
+    .table th, .table td {
+        font-size: x-small;
+        word-wrap: normal; /* Ensures text goes to the next line if needed */
+
     }
 }
 

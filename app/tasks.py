@@ -157,14 +157,14 @@ def submit_task(task_id):
                 if error:
                     print(f"Failed to post tweet: {error}")  # Log the error but do not return
 
-            media_response = upload_image_to_facebook(game.facebook_page_id, image_path, game.facebook_access_token)
-            if 'id' in media_response:
-                image_id = media_response['id']
-                fb_url, error = post_to_facebook_with_image(game.facebook_page_id, status, image_id, game.facebook_access_token)
-                if error:
-                    print(f"Failed to post image to Facebook: {error}")  # Log the error but do not return
-            else:
-                print('Failed to upload image to Facebook')
+            #media_response = upload_image_to_facebook(game.facebook_page_id, image_path, game.facebook_access_token)
+            #if 'id' in media_response:
+                #image_id = media_response['id']
+                #fb_url, error = post_to_facebook_with_image(game.facebook_page_id, status, image_id, game.facebook_access_token)
+                #if error:
+                    #print(f"Failed to post image to Facebook: {error}")  # Log the error but do not return
+            #else:
+                #print('Failed to upload image to Facebook')
 
             # Post to Instagram
             #insta_post_response = post_photo_to_instagram(game.instagram_page_id, image_url, status, game.facebook_access_token)
