@@ -205,5 +205,5 @@ def like_task(task_id):
         success = False
 
     # Fetch the new like count for the task
-    new_like_count = Task.query.get(task_id).likes.count()
+    new_like_count = TaskLike.query.filter_by(task_id=task.id).count()
     return jsonify(success=success, new_like_count=new_like_count, already_liked=already_liked)
