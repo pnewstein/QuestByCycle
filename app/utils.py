@@ -8,6 +8,12 @@ import uuid
 import os
 
 MAX_POINTS_INT = 2**63 - 1
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def update_user_score(user_id):
@@ -123,20 +129,13 @@ def save_profile_picture(profile_picture_file):
     return os.path.join(current_app.config['main']['UPLOAD_FOLDER'], filename)
 
 
-def save_badge_image(badge_image_file):
-    ext = badge_image_file.filename.rsplit('.', 1)[-1]
-    filename = secure_filename(f"{uuid.uuid4()}.{ext}")
-    # Specify the upload directory for badge images, which might be different from profile pictures
-    uploads_path = os.path.join(current_app.root_path, 'static', 'badge_images')
-    
-    if not os.path.exists(uploads_path):
-        os.makedirs(uploads_path)
-    
-    # Save the badge image file
-    badge_image_file.save(os.path.join(uploads_path, filename))
-    
-    # Return the relative path to the badge image for storing in the database
-    return os.path.join('badge_images', filename)
+def save_badge_image(image_file):
+    filename = secure_filename(image_file.filename)
+    rel_path = os.path.join('images', 'badge_images', filename)  # No leading slashes
+    abs_path = os.path.join(current_app.root_path, current_app.static_folder, rel_path)
+    image_file.save(abs_path)
+    return rel_path  # Correct relative path from 'static' directory
+
 
 
 def save_submission_image(submission_image_file):

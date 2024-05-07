@@ -3,6 +3,11 @@
 {% block content %}
 <div class="container">
     <h2>Manage Badges</h2>
+    <form id="uploadForm" method="post" enctype="multipart/form-data" action="/badges/upload_images">
+        {{ form.hidden_tag() }}
+        <input type="file" id="imageUpload" name="file" multiple webkitdirectory>
+        <button type="submit">Upload Images</button>
+    </form>
     
     <div class="badge-form">
         <form action="{{ url_for('badges.manage_badges') }}" method="post" enctype="multipart/form-data">
@@ -60,116 +65,168 @@
     </div>
 </div>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    loadBadges();
-});
-
-function loadBadges() {
-    fetch('/badges/badges')
-    .then(response => response.json())
-    .then(data => {
-        const badgesBody = document.getElementById('badgesBody');
-        badgesBody.innerHTML = ''; // Clear the table first
-        data.badges.forEach(badge => {
-            const row = document.createElement('tr');
-            row.setAttribute('data-badge-id', badge.id); // Important for identifying rows for edit/delete
-
-            // Handling image display
-            const imageHTML = badge.image ? `<img src="/static/${badge.image}" height="50">` : 'No Image';
-
-            row.innerHTML = `
-                <td class="badge-image">${imageHTML}</td>
-                <td class="badge-name">${badge.name}</td>
-                <td class="badge-description">${badge.description}</td>
-                <td class="badge-category">${badge.category || 'No Category'}</td>
-                <td>
-                    <button class="edit-badge" data-badge-id="${badge.id}" onclick="editBadge(${badge.id})">Edit</button>
-                    <button onclick="deleteBadge(${badge.id})">Delete</button>
-                </td>
-            `;
-            badgesBody.appendChild(row);
-        });
-    })
-    .catch(error => console.error('Failed to load badges:', error));
-}
-
-function editBadge(badgeId) {
-    const row = document.querySelector(`tr[data-badge-id='${badgeId}']`);
-    if (!row) {
-        console.error(`Badge row with ID ${badgeId} not found.`);
-        return;
-    }
-    const nameCell = row.querySelector('.badge-name');
-    const descriptionCell = row.querySelector('.badge-description');
-    const imageCell = row.querySelector('.badge-image img');
-    const imageSrc = imageCell ? imageCell.src : '';
-    nameCell.innerHTML = `<input type="text" value="${nameCell.innerText.trim()}" class="form-control badge-name-input">`;
-    descriptionCell.innerHTML = `<textarea class="form-control badge-description-textarea">${descriptionCell.innerText.trim()}</textarea>`;
-    imageCell.innerHTML = `<input type="file" class="form-control-file badge-image-input">`;
-    const editButton = row.querySelector(`button.edit-badge`);
-    editButton.innerText = 'Save';
-    editButton.onclick = () => saveBadge(badgeId);
-}
-
-function saveBadge(badgeId) {
-    const row = document.querySelector(`tr[data-badge-id='${badgeId}']`);
-    const nameInput = row.querySelector('.badge-name-input');
-    const descriptionTextarea = row.querySelector('.badge-description-textarea');
-    const imageInput = row.querySelector('.badge-image-input').files[0];
-    if (!nameInput || !descriptionTextarea) {
-        console.error('Cannot find input fields for name or description.');
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('name', nameInput.value);
-    formData.append('description', descriptionTextarea.value);
-    if (imageInput) formData.append('image', imageInput);
-
-    fetch(`/badges/badges/update/${badgeId}`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-        },
-    })
-
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Badge updated successfully');
-            window.location.reload(); // Reload to show updated data
-        } else {
-            alert('Failed to update badge: ' + data.message);
-        }
-    })
-    .catch(error => console.error('Error updating badge:', error));
-}
-
-function deleteBadge(badgeId) {
-    if (!confirm("Are you sure you want to delete this badge?")) return;
-
-    fetch(`/badges/delete/${badgeId}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-        },
-    })
-    .then(response => response.json()) // Ensure the server responds with JSON.
-    .then(data => {
-        if (data.success) {
-            alert('Badge deleted successfully');
-            window.location.reload();
-        } else {
-            alert(`Failed to delete badge: ${data.message}`);
-        }
-    })
-    .catch(error => {
-        console.error('Error deleting badge:', error);
-        alert('Error deleting badge. Please check console for details.');
+    document.addEventListener('DOMContentLoaded', function() {
+        loadBadges();
     });
-}
+    
+    function loadBadges() {
+        fetch('/badges/badges')
+            .then(response => response.json())
+            .then(data => {
+                const badgesBody = document.getElementById('badgesBody');
+                badgesBody.innerHTML = '';
+                data.badges.forEach(badge => {
+                    const row = document.createElement('tr');
+                    row.setAttribute('data-badge-id', badge.id);
 
-</script>
+                    const imageHTML = badge.image ? `<img src="${badge.image}" height="50" alt="Badge Image">` : 'No Image';
+
+                    row.innerHTML = `
+                        <td class="badge-image">${imageHTML}</td>
+                        <td class="badge-name">${badge.name}</td>
+                        <td class="badge-description">${badge.description}</td>
+                        <td class="badge-category">${badge.category}</td>
+                        <td>
+                            <button class="edit-badge" onclick="editBadge(${badge.id})">Edit</button>
+                            <button onclick="deleteBadge(${badge.id})">Delete</button>
+                        </td>
+                    `;
+                    badgesBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Failed to load badges:', error));
+    }
+
+    
+    // Global variable to store category options to prevent multiple API calls
+    let globalCategoriesOptions = null;
+
+    function loadCategories() {
+        if (!globalCategoriesOptions) { // If not already loaded
+            return fetch('/badges/categories')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(categories => {
+                    globalCategoriesOptions = categories.map(category => 
+                        `<option value="${category}">${category}</option>`
+                    ).join('');
+                    return globalCategoriesOptions;
+                });
+        } else {
+            // Immediately resolve with cached categories if already loaded
+            return Promise.resolve(globalCategoriesOptions);
+        }
+    }
+
+    function setCategoryOptions(selectedCategory) {
+        return loadCategories().then(optionsHtml => {
+            const selectHtml = `<select class="form-control badge-category-select">${optionsHtml}</select>`;
+            return selectHtml.replace(
+                `value="${selectedCategory}"`, 
+                `value="${selectedCategory}" selected`
+            );
+        });
+    }
+
+    function editBadge(badgeId) {
+        const row = document.querySelector(`tr[data-badge-id='${badgeId}']`);
+        if (!row) {
+            console.error(`Badge row with ID ${badgeId} not found.`);
+            return;
+        }
+        const nameCell = row.querySelector('.badge-name');
+        const descriptionCell = row.querySelector('.badge-description');
+        const categoryCell = row.querySelector('.badge-category');
+        const imageCell = row.querySelector('.badge-image img');
+
+        nameCell.innerHTML = `<input type="text" value="${nameCell.innerText.trim()}" class="form-control badge-name-input">`;
+        descriptionCell.innerHTML = `<textarea class="form-control badge-description-textarea">${descriptionCell.innerText.trim()}</textarea>`;
+        imageCell.parentNode.innerHTML = `<input type="file" class="form-control-file badge-image-input">`;
+
+        setCategoryOptions(categoryCell.innerText.trim()).then(categoryHtml => {
+            categoryCell.innerHTML = categoryHtml;
+            const editButton = row.querySelector(`button.edit-badge`);
+            editButton.innerText = 'Save';
+            editButton.onclick = () => saveBadge(badgeId);
+        });
+    }
+
+    function saveBadge(badgeId) {
+        const row = document.querySelector(`tr[data-badge-id='${badgeId}']`);
+        const formData = new FormData();
+        formData.append('name', row.querySelector('.badge-name-input').value);
+        formData.append('description', row.querySelector('.badge-description-textarea').value);
+        formData.append('category', row.querySelector('.badge-category-select').value);
+        const imageInput = row.querySelector('.badge-image-input');
+        if (imageInput.files.length > 0) {
+            formData.append('image', imageInput.files[0]);
+        }
+
+        fetch(`/badges/update/${badgeId}`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Badge updated successfully');
+                window.location.reload();
+            } else {
+                alert('Failed to update badge: ' + data.message);
+            }
+        })
+        .catch(error => console.error('Error updating badge:', error));
+    }
+    
+
+    function deleteBadge(badgeId) {
+        if (!confirm("Are you sure you want to delete this badge?")) return;
+
+        fetch(`/badges/delete/${badgeId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Badge deleted successfully');
+                window.location.reload();
+            } else {
+                alert(`Failed to delete badge: ${data.message}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting badge:', error);
+            alert('Error deleting badge. Please check console for details.');
+        });
+    }
+
+    function uploadImages() {
+        const formData = new FormData(document.getElementById('uploadForm'));
+        fetch('/badges/upload_images', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Images uploaded successfully');
+            } else {
+                alert('Failed to upload images: ' + data.message);
+            }
+        })
+        .catch(error => console.error('Error uploading images:', error));
+    }
+    </script>
 {% endblock %}

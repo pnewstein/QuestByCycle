@@ -34,11 +34,13 @@ def create_app():
     # Apply configurations from the TOML file
     app.config['UPLOAD_FOLDER'] = app.config['main']['UPLOAD_FOLDER']
     app.config['VERIFICATIONS'] = app.config['main']['VERIFICATIONS']
-    app.config['TASKCSV'] = app.config['main']['TASKCSV']
+    app.config['BADGE_IMAGE_DIR'] = app.config['main']['BADGE_IMAGE_DIR']
+
     app.config['SQLALCHEMY_ECHO'] = app.config['main']['SQLALCHEMY_ECHO']
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config['flask']['SQLALCHEMY_DATABASE_URI']
     app.config['DEBUG'] = app.config['flask']['DEBUG']
     
+    app.config['TASKCSV'] = app.config['main']['TASKCSV']
     # Apply encryption related settings
     app.config['SECRET_KEY'] = app.config['encryption']['SECRET_KEY']
     app.config['SESSION_COOKIE_SECURE'] = app.config['encryption']['SESSION_COOKIE_SECURE']

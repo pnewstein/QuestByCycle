@@ -1,8 +1,9 @@
 [main]
 UPLOAD_FOLDER = "images"
 VERIFICATIONS = "verifications"
-TASKCSV = "csv"
 SQLALCHEMY_ECHO = false
+BADGE_IMAGE_DIR = "badge_images"
+TASKCSV = "csv"
 
 [encryption]
 DEFAULT_ADMIN_PASSWORD = "password"
