@@ -75,7 +75,7 @@
                                                 {{ 'disabled' if activity.task.liked_by_user }}>
                                             {{ 'Liked' if activity.task.liked_by_user else 'Like' }}
                                         </button>
-                                        <span id="like-count-{{ activity.task.id }}">{{ activity.task.likes.count() }}</span>👍🏾
+                                        <span id="like-count-{{ activity.task.id }}">{{ activity.task.likes | length }}</span>👍🏾
                                     </div>
                                 </div>
                             {% endif %}
