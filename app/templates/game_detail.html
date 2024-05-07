@@ -40,8 +40,8 @@
                         <td>
                             {% if task.badge %}
                                 {% if task.badge.image %}
-                                    <img src="{{ url_for('static', filename='images/badge_images/' + task.badge.image) }}" alt="Badge" style="width: 50px;">
-                                    {% endif %}
+                                    <img src="{{ url_for('static', filename='images/badge_images/' + task.badge.image) }}" alt="Badge" class="badge-image">
+                                {% endif %}
                             {% else %}
                                 None
                             {% endif %}

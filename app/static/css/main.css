@@ -835,3 +835,13 @@ footer {
     background-color: transparent; /* Initially no background */
     transition: background-color 0.3s; /* Smooth transition for background color */
 }
+
+.badge-image {
+    width: 100px;
+    transition: transform 0.3s ease; /* Smooth transformation */
+}
+
+.badge-image:hover {
+    transform: scale(2); /* Adjust scale as needed */
+    z-index: 10; /* Ensure the image is above other content */
+}
