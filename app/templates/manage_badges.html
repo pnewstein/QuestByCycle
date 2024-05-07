@@ -197,7 +197,6 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Badge deleted successfully');
                 window.location.reload();
             } else {
                 alert(`Failed to delete badge: ${data.message}`);
