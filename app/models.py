@@ -28,10 +28,6 @@ user_games = db.Table('user_games',
 )
 
 class UserTask(db.Model):
-    def __init__(self, task_title, completed_at):
-        self.task_title = task_title
-        self.completed_at = completed_at
-
     __tablename__ = 'user_tasks'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True, nullable=False)
@@ -40,6 +36,10 @@ class UserTask(db.Model):
     points_awarded = db.Column(db.Integer, default=0)  # Points awarded for the task
     completed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
     task = db.relationship("Task", back_populates="user_tasks")
+
+    def __init__(self, **kwargs):
+        super(UserTask, self).__init__(**kwargs)  # Initialize all fields from passed keyword arguments
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -137,16 +137,14 @@ game_participants = db.Table('game_participants',
 )
 
 class ShoutBoardMessage(db.Model):
-    def __init__(self, message, timestamp):
-        self.message = message
-        self.timestamp = timestamp
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(500), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.now())
-    
+
     user = db.relationship('User', backref='shoutboard_messages')
     likes = db.relationship('ShoutBoardLike', backref='message', lazy='dynamic')
+
 
 class ShoutBoardLike(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -163,8 +161,8 @@ class TaskSubmission(db.Model):
     image_url = db.Column(db.String(500), nullable=True)
     comment = db.Column(db.String(1000), nullable=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.now())
-    twitter_url = db.Column(db.String(1024), nullable=True) 
-    fb_url = db.Column(db.String(1024), nullable=True) 
-    
+    twitter_url = db.Column(db.String(1024), nullable=True)
+    fb_url = db.Column(db.String(1024), nullable=True)
+
     task = db.relationship('Task', back_populates='submissions')
     user = db.relationship('User', backref='task_submissions')

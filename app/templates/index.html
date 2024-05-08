@@ -11,31 +11,66 @@
         </div>
 
         <div class="content-flex-container">
-            <div class="profile-column">
-                <h2>Profile</h2>
-                <div class="game-item">
-                    {% if profile %}
-                    <div class="profile-item">
-                        <h3>{{ profile.username }}</h3>
-                        <p>{{ profile.email }}</p>
-                        <div class="profile-details">
-                            <p><strong>Participated Games:</strong> {{ user_games | length }}</p>
-                            <p><strong>Completed Tasks:</strong> {{ user_tasks | length }}</p>
-                            <ul>
-                                <li><strong>Badges Earned:</strong></li>
-                                {% for badge in badges %}
-                                <li>{{ badge.name }} - <img src="{{ url_for('static', filename='images/badge_images/' + badge.image) }}" alt="{{ badge.name }}" style="height: 30px;"></li>
-                                {% endfor %}
-                            </ul>
+
+            <div class="game-item">
+                <div id="taskImageCarousel" class="carousel" data-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for image in carousel_images %}
+                        <div class="carousel-item{% if loop.first %} active{% endif %}">
+                            <img src="{{ url_for('static', filename=image) }}" class="carousel-image" alt="Carousel Image">
                         </div>
+                        {% endfor %}
                     </div>
-                    {% else %}
-                    <p>No profile details available.</p>
-                    {% endif %}
+                    <a class="carousel-control-prev" href="#taskImageCarousel" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#taskImageCarousel" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
                 </div>
             </div>
-        </div>
 
+            <div class="game-item">
+                {% if profile %}
+                    {% if profile.profile_picture %}
+                        <img src="{{ url_for('static', filename=profile.profile_picture) }}" alt="Profile Picture" class="profile-image">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='images/default_profile_picture.png') }}" alt="Default Profile Picture" class="profile-image">
+                    {% endif %}
+                <h2>{{ profile.display_name }}</h2>
+                <p><strong>Email:</strong> {{ profile.email }}</p>
+                <p><strong>Age Group:</strong> {{ profile.age_group }}</p>
+                <p><strong>Interests:</strong> {{ profile.interests }}</p>
+                <div>
+                    <h3>Participated Games:</h3>
+                    <ul>
+                        {% for game in user_games %}
+                        <li>{{ game.title }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div>
+                    <h3>Badges Earned:</h3>
+                    <ul>
+                        {% for badge in badges %}
+                            <li>
+                                {{ badge.name }} - 
+                                {% if badge.image %}
+                                <img src="{{ url_for('static', filename='images/badge_images/' + badge.image) }}" alt="{{ badge.name }}" class="badge-image-pri-pro">
+                                {% else %}
+                                <img src="{{ url_for('static', filename='images/badge_images/default_badge.png') }}" alt="Default Badge" class="badge-image-pri-pro">
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% else %}
+                <p>No profile details available.</p>
+                {% endif %}
+            </div>
         <div class="shout-board-column">
             <h2>Current Activities</h2>
             <div class="game-item">

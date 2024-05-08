@@ -36,37 +36,38 @@ def get_datetime(activity):
 @main_bp.route('/<int:game_id>/<int:task_id>', defaults={'user_id': None})
 @main_bp.route('/<int:game_id>/<int:task_id>/<int:user_id>')
 def index(game_id, task_id, user_id):
-
-    # If no specific user_id is provided and user is authenticated, use the current user's id
     if user_id is None and current_user.is_authenticated:
         user_id = current_user.id
 
-    # Redirect to a joined game if no specific game_id is provided
     if game_id is None and current_user.is_authenticated:
+        # If user is part of a game, redirect to the latest joined game
         joined_games = current_user.participated_games
-        if not joined_games:  # If the user has not joined any game
-            latest_game = Game.query.order_by(Game.start_date.desc()).first()  # Get the latest game
+        if joined_games:
+            game_id = joined_games[-1].id  # Assuming the latest joined game is the last in the list
+        else:
+            # Automatically join the latest game if not part of any
+            latest_game = Game.query.order_by(Game.start_date.desc()).first()
             if latest_game:
-                # Join the user to the latest game
                 current_user.participated_games.append(latest_game)
-                db.session.commit()  # Commit the changes to the database
-                return redirect(url_for('main.index', game_id=latest_game.id, task_id='0', user_id=user_id))
+                db.session.commit()
+                game_id = latest_game.id
 
+    game = Game.query.get(game_id) if game_id else None
 
-    game = None
-    tasks = []
-    has_joined = False
-    game_participation = {}
-    profile = None
-    user_tasks = []
-    badges = []
+    if not game:
+        return render_template('no_game.html'), 404  # You might need a template to handle no game scenario
 
-    if game_id is not None:
-        game = Game.query.get(game_id)
-        if game:
-            tasks = Task.query.filter_by(game_id=game.id, enabled=True).all()
-            has_joined = game in current_user.participated_games
-            game_participation[game.id] = has_joined
+    carousel_images_dir = os.path.join(current_app.root_path, 'static', current_app.config['CAROUSEL_IMAGES_DIR'])
+
+    if not os.path.exists(carousel_images_dir):
+        os.makedirs(carousel_images_dir)
+
+    carousel_images = os.listdir(carousel_images_dir)
+    carousel_images = [os.path.join(current_app.config['CAROUSEL_IMAGES_DIR'], filename) for filename in carousel_images]
+
+    tasks = Task.query.filter_by(game_id=game.id, enabled=True).all() if game else []
+    has_joined = game in current_user.participated_games if game else False
+    game_participation = {game.id: has_joined} if game else {}
 
     form = ShoutBoardForm()
     messages = ShoutBoardMessage.query.order_by(ShoutBoardMessage.timestamp.desc()).all()
@@ -123,7 +124,7 @@ def index(game_id, task_id, user_id):
             if last_completion:
                 increment_map = {
                     'daily': timedelta(days=1),
-                    'weekly': timedelta(minutes=4),  # Adjusted for coherence; it seems there was a typo earlier
+                    'weekly': timedelta(weeks=1),
                     'monthly': timedelta(days=30)
                 }
                 task.next_eligible_time = last_completion.timestamp + increment_map.get(task.frequency, timedelta(days=1))
@@ -146,7 +147,9 @@ def index(game_id, task_id, user_id):
                            has_joined=has_joined,
                            profile=profile,
                            user_tasks=user_tasks,
-                           badges=badges)
+                           badges=badges,
+                           carousel_images=carousel_images)
+
 
 @main_bp.route('/shout-board', methods=['POST'])
 @login_required
@@ -293,3 +296,4 @@ def like_task(task_id):
     # Fetch the new like count for the task
     new_like_count = TaskLike.query.filter_by(task_id=task.id).count()
     return jsonify(success=success, new_like_count=new_like_count, already_liked=already_liked)
+
