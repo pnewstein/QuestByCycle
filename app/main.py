@@ -44,8 +44,14 @@ def index(game_id, task_id, user_id):
     # Redirect to a joined game if no specific game_id is provided
     if game_id is None and current_user.is_authenticated:
         joined_games = current_user.participated_games
-        if joined_games:
-            return redirect(url_for('main.index', game_id=joined_games[0].id, task_id='0', user_id=user_id))
+        if not joined_games:  # If the user has not joined any game
+            latest_game = Game.query.order_by(Game.start_date.desc()).first()  # Get the latest game
+            if latest_game:
+                # Join the user to the latest game
+                current_user.participated_games.append(latest_game)
+                db.session.commit()  # Commit the changes to the database
+                return redirect(url_for('main.index', game_id=latest_game.id, task_id='0', user_id=user_id))
+
 
     game = None
     tasks = []
