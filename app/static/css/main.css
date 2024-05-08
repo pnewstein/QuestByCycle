@@ -522,13 +522,9 @@ footer {
 
 .content-flex-container {
     display: flex;
-    justify-content: space-between;
-}
-
-.games-column, .shout-board-column {
-    flex: 1;
-    padding: 10px;
-    margin: 5px;
+    flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+    align-items: stretch; /* Stretches items to fill the container height */
+    justify-content: space-between; /* Adds space between the flex items */
 }
 
 .message {
@@ -839,12 +835,27 @@ footer {
 }
 
 .badge-image {
-    width: 100px;
+    width: 70px;
     transition: transform 0.3s ease; /* Smooth transformation */
 }
 
 .badge-image:hover {
-    transform: scale(2); /* Adjust scale as needed */
+    transform: scale(6); /* Adjust scale as needed */
+    z-index: 10; /* Ensure the image is above other content */
+}
+
+.badge-image-manage {
+    width: 70px;
+    transition: transform 0.3s ease; /* Smooth transformation */
+}
+
+.badge-image-pri-pro {
+    width: 30px;
+    transition: transform 0.3s ease; /* Smooth transformation */
+}
+
+.badge-image-pri-pro:hover {
+    transform: scale(14); /* Adjust scale as needed */
     z-index: 10; /* Ensure the image is above other content */
 }
 
@@ -857,4 +868,26 @@ footer {
     display: flex;
     align-items: center;
     margin-bottom: 10px;    
+}
+
+.profile-container {
+    display: flex;
+    justify-content: space-between; /* Space out the two columns */
+    align-items: flex-start; /* Align items at the top */
+}
+.profile-details-column {
+    max-width: 50%; /* Limit the profile details column to half of the container width */
+}
+
+/* Additional styles for visual enhancement */
+.profile-image {
+    max-width: 100%; /* Limits the width to the parent container size */
+    max-height: 200px; /* Adjust this value based on your design preference */
+    height: auto; /* Maintains the aspect ratio */
+    border-radius: 50%; /* Keeps the circular shape */
+    object-fit: cover; /* Covers the frame without distorting the image */
+}
+
+.carousel-control-prev, .carousel-control-next {
+    width: 5%;
 }

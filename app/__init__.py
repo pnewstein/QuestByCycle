@@ -35,6 +35,7 @@ def create_app():
     app.config['UPLOAD_FOLDER'] = app.config['main']['UPLOAD_FOLDER']
     app.config['VERIFICATIONS'] = app.config['main']['VERIFICATIONS']
     app.config['BADGE_IMAGE_DIR'] = app.config['main']['BADGE_IMAGE_DIR']
+    app.config['CAROUSEL_IMAGES_DIR'] = app.config['main']['CAROUSEL_IMAGES_DIR']
 
     app.config['SQLALCHEMY_ECHO'] = app.config['main']['SQLALCHEMY_ECHO']
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config['flask']['SQLALCHEMY_DATABASE_URI']

@@ -474,18 +474,38 @@ def generate_qr(task_id):
 def submit_photo(task_id):
     form = PhotoForm()
     task = Task.query.get_or_404(task_id)
-    
+    game = Game.query.get_or_404(task.game_id)
+    game_start = game.start_date
+    game_end = game.end_date
+    now = datetime.now()
+
+    if not (game_start <= now <= game_end):
+        # Directly return the message in the JSON response
+        return jsonify({'success': False, 'message': 'This task cannot be completed outside of the game dates'}), 403
+
     if request.method == 'POST':
         photo = request.files.get('photo')
         if photo:
-            filename = secure_filename(photo.filename)
             image_url = save_submission_image(photo)  # Assuming this returns the path
+            image_path = os.path.join(current_app.static_folder, image_url)
+
+            status = f"Check out this task completion for '{task.title}'! #QuestByCycle"
+            
+            if image_url is not None:
+                media_id, error = upload_media_to_twitter(image_path, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
+                if not error:
+                    tweet_url, error = post_to_twitter(status, media_id, game.twitter_username, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
+                    if error:
+                        print(f"Failed to post tweet: {error}")  # Log the error but do not return
 
             new_submission = TaskSubmission(
-                user_id=current_user.id,
                 task_id=task_id,
-                image_url=url_for('static', filename=image_url),
-                timestamp=datetime.now()
+                user_id=current_user.id,
+                image_url=url_for('static', filename=image_url) if image_url else url_for('static', filename='images/commentPlaceholder.png'),
+                #comment=comment,
+                #twitter_url=tweet_url,
+                #fb_url=fb_url,
+                timestamp=datetime.now(),
             )
             db.session.add(new_submission)
 

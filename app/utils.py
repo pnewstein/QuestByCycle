@@ -117,14 +117,17 @@ def revoke_badge(user_id):
         return False
 
 
-def save_profile_picture(profile_picture_file):
+def save_profile_picture(profile_picture_file, old_filename=None):
+    if old_filename:
+        old_path = os.path.join(current_app.root_path, 'static', old_filename)
+        if os.path.exists(old_path):
+            os.remove(old_path)  # Remove the old file
+
     ext = profile_picture_file.filename.rsplit('.', 1)[-1]
     filename = secure_filename(f"{uuid.uuid4()}.{ext}")
-    # Ensure 'uploads' directory exists under 'static'
     uploads_path = os.path.join(current_app.root_path, 'static', current_app.config['main']['UPLOAD_FOLDER'])
     if not os.path.exists(uploads_path):
         os.makedirs(uploads_path)
-    # Save file
     profile_picture_file.save(os.path.join(uploads_path, filename))
     return os.path.join(current_app.config['main']['UPLOAD_FOLDER'], filename)
 

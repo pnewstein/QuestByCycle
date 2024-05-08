@@ -3,6 +3,7 @@ UPLOAD_FOLDER = "images"
 VERIFICATIONS = "verifications"
 SQLALCHEMY_ECHO = false
 BADGE_IMAGE_DIR = "badge_images"
+CAROUSEL_IMAGES_DIR = "carousel_images"
 TASKCSV = "csv"
 
 [encryption]
