@@ -100,7 +100,7 @@ def game_detail(game_id, task_id):
         task.next_eligible_time = None
         task.completion_timestamps = []
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now()
         period_start_map = {
             'daily': timedelta(days=1),
             'weekly': timedelta(minutes=4),
