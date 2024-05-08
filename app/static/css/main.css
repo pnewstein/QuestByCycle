@@ -296,10 +296,12 @@ article h3 {
     display: inline-block;
     background-color: #007bff;
     color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
+    padding: 3px 5px; /* Reduced padding */
+    border-radius: 1px;
     text-decoration: none;
-    margin-top: 10px;
+    margin-top: 3px; /* Reduced margin */
+    font-size: 11px; /* Adjust font size if necessary */
+    vertical-align: middle; /* Aligns button with the text vertically */
 }
 
 .blue_button:hover {
@@ -844,4 +846,15 @@ footer {
 .badge-image:hover {
     transform: scale(2); /* Adjust scale as needed */
     z-index: 10; /* Ensure the image is above other content */
+}
+
+.shout-messages {
+    max-height: 100px;  /* Adjust the height as needed */
+    overflow-y: auto;  /* Enables vertical scrolling */
+}
+
+.activity {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;    
 }

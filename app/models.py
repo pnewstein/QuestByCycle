@@ -28,13 +28,17 @@ user_games = db.Table('user_games',
 )
 
 class UserTask(db.Model):
+    def __init__(self, task_title, completed_at):
+        self.task_title = task_title
+        self.completed_at = completed_at
+
     __tablename__ = 'user_tasks'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True, nullable=False)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id', ondelete='CASCADE'), primary_key=True, nullable=False)
     completions = db.Column(db.Integer, default=0)  # Track number of completions
     points_awarded = db.Column(db.Integer, default=0)  # Points awarded for the task
-    completed_at = db.Column(db.DateTime(timezone=True), default=datetime.now(timezone.utc))
+    completed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
     task = db.relationship("Task", back_populates="user_tasks")
 
 class User(UserMixin, db.Model):
@@ -105,8 +109,8 @@ class Game(db.Model):
     title = db.Column(db.String(250), nullable=False)
     description = db.Column(db.String(1000))
     description2 = db.Column(db.String(1000))
-    start_date = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
-    end_date = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
+    start_date = db.Column(db.DateTime, nullable=False, default=datetime.now())
+    end_date = db.Column(db.DateTime, nullable=False, default=datetime.now())
     admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     tasks = db.relationship('Task', back_populates='game', cascade="all, delete-orphan", lazy='dynamic')
     participants = db.relationship('User', secondary='game_participants', lazy='subquery', backref=db.backref('games', lazy=True))
@@ -133,10 +137,13 @@ game_participants = db.Table('game_participants',
 )
 
 class ShoutBoardMessage(db.Model):
+    def __init__(self, message, timestamp):
+        self.message = message
+        self.timestamp = timestamp
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(500), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.now(timezone.utc))
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.now())
     
     user = db.relationship('User', backref='shoutboard_messages')
     likes = db.relationship('ShoutBoardLike', backref='message', lazy='dynamic')
@@ -155,7 +162,7 @@ class TaskSubmission(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     image_url = db.Column(db.String(500), nullable=True)
     comment = db.Column(db.String(1000), nullable=True)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.now(timezone.utc))
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.now())
     twitter_url = db.Column(db.String(1024), nullable=True) 
     fb_url = db.Column(db.String(1024), nullable=True) 
     

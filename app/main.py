@@ -1,11 +1,12 @@
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app
 from flask_login import current_user, login_required, logout_user
 from app.utils import save_profile_picture, award_badges
-from app.models import db, Game, User, Task, UserTask, TaskLike, ShoutBoardMessage, ShoutBoardLike
+from app.models import db, Game, User, Task, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike
 from app.forms import ProfileForm, ShoutBoardForm
 from .config import load_config
 from werkzeug.utils import secure_filename
 from sqlalchemy import func
+from datetime import datetime, timedelta, timezone
 
 import pytz  # Make sure pytz is installed
 import os
@@ -15,7 +16,6 @@ main_bp = Blueprint('main', __name__)
 
 config = load_config()
 
-utc = pytz.UTC  # Define UTC timezone
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -23,44 +23,124 @@ logger = logging.getLogger(__name__)
 
 
 def get_datetime(activity):
-    if hasattr(activity, 'timestamp'):
-        return activity.timestamp.replace(tzinfo=utc) if activity.timestamp.tzinfo is None else activity.timestamp
+    if hasattr(activity, 'timestamp') and isinstance(activity.timestamp, datetime):
+        return activity.timestamp.replace(tzinfo=None) if activity.timestamp.tzinfo is not None else activity.timestamp
+    elif hasattr(activity, 'completed_at') and isinstance(activity.completed_at, datetime):
+        return activity.completed_at.replace(tzinfo=None)
     else:
-        return activity.completed_at
+        raise ValueError("Activity object does not contain valid timestamp information.")
 
 
-@main_bp.route('/')
-def index():
-    games = Game.query.all()
-    tasks = Task.query.all()
+@main_bp.route('/', defaults={'game_id': None, 'task_id': None, 'user_id': None})
+@main_bp.route('/<int:game_id>', defaults={'task_id': None, 'user_id': None})
+@main_bp.route('/<int:game_id>/<int:task_id>', defaults={'user_id': None})
+@main_bp.route('/<int:game_id>/<int:task_id>/<int:user_id>')
+def index(game_id, task_id, user_id):
+
+    # If no specific user_id is provided and user is authenticated, use the current user's id
+    if user_id is None and current_user.is_authenticated:
+        user_id = current_user.id
+
+    # Redirect to a joined game if no specific game_id is provided
+    if game_id is None and current_user.is_authenticated:
+        joined_games = current_user.participated_games
+        if joined_games:
+            return redirect(url_for('main.index', game_id=joined_games[0].id, task_id='0', user_id=user_id))
+
+    game = None
+    tasks = []
+    has_joined = False
+    game_participation = {}
+    profile = None
+    user_tasks = []
+    badges = []
+
+    if game_id is not None:
+        game = Game.query.get(game_id)
+        if game:
+            tasks = Task.query.filter_by(game_id=game.id, enabled=True).all()
+            has_joined = game in current_user.participated_games
+            game_participation[game.id] = has_joined
+
     form = ShoutBoardForm()
     messages = ShoutBoardMessage.query.order_by(ShoutBoardMessage.timestamp.desc()).all()
     completed_tasks = UserTask.query.filter(UserTask.completions > 0).order_by(UserTask.completed_at.desc()).all()
-    total_points = UserTask.query.filter_by(user_id=current_user.id).with_entities(func.sum(UserTask.points_awarded)).scalar() if current_user.is_authenticated else 0
-
-    # Check if the user is authenticated to safely access participated_games
-    if current_user.is_authenticated:
-        game_participation = {game.id: game in current_user.participated_games for game in games}
-        liked_message_ids = {like.message_id for like in ShoutBoardLike.query.filter_by(user_id=current_user.id)}
-        liked_task_ids = {like.task_id for like in TaskLike.query.filter_by(user_id=current_user.id)}
-        user_games = current_user.participated_games
-    else:
-        game_participation = {game.id: False for game in games}
-        liked_message_ids = set()
-        liked_task_ids = set()
-        user_games = []
-
-    for message in messages:
-        message.liked_by_user = message.id in liked_message_ids
-
-    for task in tasks:
-        task.liked_by_user = task.id in liked_task_ids
-
     activities = messages + completed_tasks
     activities.sort(key=lambda x: get_datetime(x), reverse=True)
 
-    return render_template('index.html', form=form, games=games, user_games=user_games, activities=activities, tasks=tasks, total_points=total_points, game_participation=game_participation)
+    selected_task = Task.query.get(task_id) if task_id else None
 
+    if current_user.is_authenticated:
+        liked_message_ids = {like.message_id for like in ShoutBoardLike.query.filter_by(user_id=current_user.id)}
+        liked_task_ids = {like.task_id for like in TaskLike.query.filter_by(user_id=current_user.id)}
+        user_games = current_user.participated_games
+        profile = User.query.get_or_404(user_id)
+        user_tasks = UserTask.query.filter_by(user_id=profile.id).all()
+        badges = profile.badges
+
+    for task in tasks:
+        completions = sum(1 for ut in user_tasks if ut.task_id == task.id and ut.completions > 0)
+        task.completions_within_period = completions
+        task.can_verify = False
+        task.last_completion = None
+        task.first_completion_in_period = None
+        task.next_eligible_time = None
+        task.completion_timestamps = []
+
+        now = datetime.now()
+        period_start_map = {
+            'daily': timedelta(days=1),
+            'weekly': timedelta(weeks=1),
+            'monthly': timedelta(days=30)
+        }
+        period_start = now - period_start_map.get(task.frequency, timedelta(days=1))
+
+        submissions = TaskSubmission.query.filter(
+            TaskSubmission.user_id == current_user.id,
+            TaskSubmission.task_id == task.id,
+            TaskSubmission.timestamp >= period_start
+        ).all()
+
+        if submissions:
+            task.completions_within_period = len(submissions)
+            task.first_completion_in_period = min(submissions, key=lambda x: x.timestamp).timestamp
+            task.completion_timestamps = [sub.timestamp for sub in submissions]
+
+        relevant_user_tasks = [ut for ut in user_tasks if ut.task_id == task.id]
+        task.total_completions = len(relevant_user_tasks)
+        task.last_completion = max((ut.completed_at for ut in relevant_user_tasks), default=None)
+
+        if task.total_completions < task.completion_limit:
+            task.can_verify = True
+        else:
+            last_completion = max(submissions, key=lambda x: x.timestamp, default=None)
+            if last_completion:
+                increment_map = {
+                    'daily': timedelta(days=1),
+                    'weekly': timedelta(minutes=4),  # Adjusted for coherence; it seems there was a typo earlier
+                    'monthly': timedelta(days=30)
+                }
+                task.next_eligible_time = last_completion.timestamp + increment_map.get(task.frequency, timedelta(days=1))
+
+    tasks.sort(key=lambda x: (x.completions_within_period if hasattr(x, 'completions_within_period') else 0), reverse=True)
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' and user_id:
+        # Return only the part of the page needed for the modal if AJAX request
+        return render_template('_user_profile_modal_content.html', user=profile, user_tasks=user_tasks, badges=badges)
+
+    return render_template('index.html',
+                           form=form,
+                           games=user_games,
+                           game=game,
+                           user_games=user_games,
+                           activities=activities,
+                           tasks=tasks,
+                           game_participation=game_participation,
+                           selected_task=selected_task,
+                           has_joined=has_joined,
+                           profile=profile,
+                           user_tasks=user_tasks,
+                           badges=badges)
 
 @main_bp.route('/shout-board', methods=['POST'])
 @login_required

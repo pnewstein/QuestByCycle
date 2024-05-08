@@ -116,8 +116,8 @@ def submit_task(task_id):
     task = Task.query.get_or_404(task_id)
     game = Game.query.get_or_404(task.game_id)
     now = datetime.now()
-    game_start = game.start_date.replace(tzinfo=None)
-    game_end = game.end_date.replace(tzinfo=None)
+    game_start = game.start_date
+    game_end = game.end_date
     user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
     tweet_url = None
     fb_url = None
@@ -176,7 +176,7 @@ def submit_task(task_id):
             comment=comment,
             twitter_url=tweet_url,
             fb_url=fb_url,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(),
         )
         db.session.add(new_submission)
 
@@ -188,7 +188,7 @@ def submit_task(task_id):
                 task_id=task_id,
                 completions=0,
                 points_awarded=0,
-                completed_at=datetime.now(timezone.utc)
+                completed_at=datetime.now()
             )
             db.session.add(user_task)
 
@@ -485,7 +485,7 @@ def submit_photo(task_id):
                 user_id=current_user.id,
                 task_id=task_id,
                 image_url=url_for('static', filename=image_url),
-                timestamp=datetime.now(timezone.utc)
+                timestamp=datetime.now()
             )
             db.session.add(new_submission)
 

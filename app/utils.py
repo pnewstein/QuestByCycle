@@ -152,7 +152,7 @@ def save_submission_image(submission_image_file):
 
 
 def can_complete_task(user_id, task_id):
-    now = datetime.now(timezone.utc)
+    now = datetime.now()
     task = Task.query.get(task_id)
     
     if not task:
@@ -209,7 +209,7 @@ def can_complete_task(user_id, task_id):
 
 
 def getLastRelevantCompletionTime(user_id, task_id):
-    now = datetime.now(timezone.utc)
+    now = datetime.now()
     task = Task.query.get(task_id)
     
     if not task:
@@ -253,7 +253,7 @@ def check_and_award_badges(user_id, task_id):
         if task.badge and task.badge not in user.badges:
             user.badges.append(task.badge)
             db.session.add(ShoutBoardMessage(
-                message=f"{user.username} earned the badge '{task.badge.name}' for task '{task.title}'.",
+                message=f" earned the badge '{task.badge.name}' for task '{task.title}'.",
                 user_id=user_id
             ))
             db.session.commit()
@@ -278,7 +278,7 @@ def check_and_award_badges(user_id, task_id):
                 if badge not in user.badges:
                     user.badges.append(badge)
                     db.session.add(ShoutBoardMessage(
-                        message=f"{user.username} earned the badge '{badge.name}' for completing all tasks in category '{task.category}' within game ID {task.game_id}.",
+                        message=f" earned the badge '{badge.name}' for completing all tasks in category '{task.category}' within game ID {task.game_id}.",
                         user_id=user_id
                     ))
                     db.session.commit()
