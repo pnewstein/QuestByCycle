@@ -1,0 +1,25 @@
+<!-- leaderboard_partial.html -->
+<div class="leaderboard-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Points</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user_id, username, total_points in top_users %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ username }}</td>
+                <td>{{ total_points }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3">No leaderboard data available.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div>Total Points: {{ total_game_points }}</div>
+    <div>Goal: {{ game_goal }}</div>
+</div>

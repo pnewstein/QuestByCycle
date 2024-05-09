@@ -129,7 +129,10 @@
                 <a href="{{ url_for('tasks.manage_game_tasks', game_id=game.id) }}" class="button" style="margin-left: 10px;">Configure Tasks</a>
                 <a href="{{ url_for('badges.manage_badges', game_id=game.id) }}" class="button" style="margin-left: 10px;">Configure Badges</a>
                 {% endif %}
+                <button onclick="showLeaderboardModal('{{ game.id }}')" class="button" style="margin-left: 10px;">View Leaderboard</button>
+
             </p>
+
             <table class="table">
                 <colgroup>
                     <col style="width: 5%;"> <!-- Checkbox column -->
@@ -276,6 +279,7 @@
 {% include 'modals/task_detail_modal.html' %}
 {% include 'modals/submission_detail_modal.html' %}
 {% include 'modals/user_profile_modal.html' %}
+{% include 'modals/leaderboard_modal.html' %}
 
 <script src="{{ url_for('static', filename='js/modal_handlers.js') }}"></script>
 {% endblock %}
