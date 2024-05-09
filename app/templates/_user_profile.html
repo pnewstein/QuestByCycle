@@ -21,7 +21,7 @@
             <h3>{{ badge.name }}</h3>
             <p>{{ badge.description }}</p>
             {% if badge.image %}
-            <img src="{{ url_for('static', filename=badge.image) }}" alt="{{ badge.name }}" style="width: 100px;">
+            <img src="{{ url_for('static', filename='images/badge_images/' + badge.image) }}" alt="{{ badge.name }}" style="width: 100px;">
             {% endif %}
         </div>
         {% else %}

@@ -10,6 +10,12 @@ function openModal(modalId) {
     }
 }
 
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto'; // Re-enable scrolling
+}
+
 // Reset all modal content and settings to initial state
 function resetModalContent() {
     const twitterLink = document.getElementById('twitterLink');
@@ -470,6 +476,121 @@ function showUserProfileModal(userId) {
         });
 }
 
+function showLeaderboardModal(selectedGameId) {
+    fetch('/leaderboard_partial?game_id=' + selectedGameId)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch leaderboard data');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const leaderboardContent = document.getElementById('leaderboardContent');
+            leaderboardContent.innerHTML = '';  // Clear previous content
+
+            // Create and append the game selector if applicable
+            if (data.games && data.games.length > 1) {
+                const form = document.createElement('form');
+                form.method = 'get';
+                form.action = '#';  // Update with correct endpoint if needed
+
+                const selectLabel = document.createElement('label');
+                selectLabel.for = 'game_Select';
+                selectLabel.textContent = 'Select Game:';
+                form.appendChild(selectLabel);
+
+                const select = document.createElement('select');
+                select.name = 'game_id';
+                select.id = 'game_Select';
+                select.className = 'form-control';
+                select.onchange = () => this.form.submit();  // Adjust as needed for actual use
+                data.games.forEach(game => {
+                    const option = document.createElement('option');
+                    option.value = game.id;
+                    option.textContent = game.title;
+                    if (game.id === selectedGameId) option.selected = true;
+                    select.appendChild(option);
+                });
+                form.appendChild(select);
+                leaderboardContent.appendChild(form);
+            }
+
+            // Create and append the leaderboard table
+            if (data.top_users && data.top_users.length > 0) {
+                const table = document.createElement('table');
+                table.className = 'table table-striped';
+
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                ['Rank', 'Player', 'Carbon “Reduction” Points'].forEach(text => {
+                    const th = document.createElement('th');
+                    th.textContent = text;
+                    headerRow.appendChild(th);
+                });
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+
+                const tbody = document.createElement('tbody');
+                data.top_users.forEach((user, index) => {
+                    const row = document.createElement('tr');
+                    const rankCell = document.createElement('td');
+                    rankCell.textContent = index + 1;
+                    row.appendChild(rankCell);
+
+                    const nameCell = document.createElement('td');
+                    const nameLink = document.createElement('a');
+                    nameLink.href = "javascript:void(0)";
+                    nameLink.onclick = () => showUserProfileModal(user.user_id);
+                    nameLink.textContent = user.username;
+                    nameCell.appendChild(nameLink);
+                    row.appendChild(nameCell);
+
+                    const pointsCell = document.createElement('td');
+                    pointsCell.textContent = user.total_points;
+                    row.appendChild(pointsCell);
+
+                    tbody.appendChild(row);
+                });
+                table.appendChild(tbody);
+                leaderboardContent.appendChild(table);
+            } else {
+                const p = document.createElement('p');
+                p.textContent = 'Join a game to see the leaderboard!';
+                leaderboardContent.appendChild(p);
+            }
+
+            // Append the completion meter if applicable
+            if (data.total_game_points && data.game_goal) {
+                const meterContainer = document.createElement('div');
+                meterContainer.className = 'completion-meter-container';
+
+                const meterLabel = document.createElement('div');
+                meterLabel.className = 'meter-label';
+                meterLabel.textContent = `Group Completion: ${data.total_game_points} / ${data.game_goal}`;
+                meterContainer.appendChild(meterLabel);
+
+                const completionMeter = document.createElement('div');
+                completionMeter.className = 'completion-meter';
+
+                const meterBar = document.createElement('div');
+                meterBar.className = 'meter-bar';
+                meterBar.style.height = `${(data.total_game_points / data.game_goal * 100)}%`;
+                completionMeter.appendChild(meterBar);
+
+                meterContainer.appendChild(completionMeter);
+                leaderboardContent.appendChild(meterContainer);
+            }
+
+            openModal('leaderboardModal');  // Make sure this is the correct ID of your modal
+        })
+        .catch(error => {
+            console.error('Failed to load leaderboard:', error);
+            alert('Failed to load leaderboard data. Please try again.');
+        });
+}
+
+
+
 // Close modal helpers enhanced with specific targeting and cleanup
 function closeTaskDetailModal() {
     document.getElementById('taskDetailModal').style.display = 'none';
@@ -493,6 +614,19 @@ function closeUserProfileModal() {
         return;  // Exit if no container is found
     }
     userProfileModal.style.display = 'none';
+    document.body.classList.remove('body-no-scroll');
+
+}
+
+function closeLeaderboardModal() {
+    const leaderboardModal = document.getElementById('leaderboardModal');
+    if (!leaderboardModal) {
+        console.error('Leaderboard modal container not found');
+        return;  // Exit if no container is found
+    }
+    leaderboardModal.style.display = 'none';
+    document.body.classList.remove('body-no-scroll');
+
 }
 
 // Enhanced window click handling for modal closure
@@ -507,6 +641,9 @@ window.onclick = function(event) {
                 break;
             case 'userProfileModal':
                 closeUserProfileModal();
+                break;
+            case 'leaderboardModal':
+                closeLeaderboardModal();
                 break;
             case 'tipsModal':
                 closeTipsModal();

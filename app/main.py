@@ -226,6 +226,54 @@ def leaderboard():
 
     return render_template('leaderboard.html', games=user_games, top_users=top_users, selected_game_id=selected_game_id, total_game_points=total_game_points, game_goal=game_goal)
 
+@main_bp.route('/leaderboard_partial')
+@login_required
+def leaderboard_partial():
+    user_games = current_user.participated_games
+    selected_game_id = request.args.get('game_id', type=int)
+
+    if len(user_games) == 1:
+        single_game_id = user_games[0].id
+        if selected_game_id is None or selected_game_id != single_game_id:
+            return redirect(url_for('main.leaderboard', game_id=single_game_id))
+
+    if selected_game_id:
+        game = Game.query.get(selected_game_id)
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+
+        top_users_query = db.session.query(
+            User.id,
+            User.username,
+            db.func.sum(UserTask.points_awarded).label('total_points')
+        ).join(UserTask, UserTask.user_id == User.id
+        ).join(Task, Task.id == UserTask.task_id
+        ).filter(Task.game_id == selected_game_id
+        ).group_by(User.id, User.username
+        ).order_by(db.func.sum(UserTask.points_awarded).desc()
+        ).all()
+
+        top_users = [{
+            'user_id': user_id,
+            'username': username,
+            'total_points': total_points
+        } for user_id, username, total_points in top_users_query]
+
+        total_game_points = db.session.query(
+            db.func.sum(UserTask.points_awarded)
+        ).join(Task, UserTask.task_id == Task.id
+        ).filter(Task.game_id == selected_game_id
+        ).scalar() or 0
+
+        return jsonify({
+            'top_users': top_users,
+            'total_game_points': total_game_points,
+            'game_goal': game.game_goal if game.game_goal else None
+        })
+
+    return jsonify({'error': 'No game selected'}), 400
+
+
 @main_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
