@@ -856,7 +856,7 @@ footer {
 
 .badge-image-pri-pro:hover {
     transform: scale(14); /* Adjust scale as needed */
-    z-index: 10; /* Ensure the image is above other content */
+    z-index: 1; /* Ensure the image is above other content */
 }
 
 .shout-messages {
@@ -872,22 +872,38 @@ footer {
 
 .profile-container {
     display: flex;
-    justify-content: space-between; /* Space out the two columns */
-    align-items: flex-start; /* Align items at the top */
+    justify-content: space-between;
+    height: 200px;       /* Set the maximum height */
+    padding: 10px;       /* Optional: adds some space inside the box */
+    border: 1px solid #ccc; /* Optional: adds a border around the profile container */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Optional: adds subtle shadow for depth */
+    align-items: flex-start; 
 }
+
 .profile-details-column {
     max-width: 50%; /* Limit the profile details column to half of the container width */
 }
 
 /* Additional styles for visual enhancement */
 .profile-image {
-    max-width: 100%; /* Limits the width to the parent container size */
-    max-height: 200px; /* Adjust this value based on your design preference */
+    max-width: 400px; /* Limits the width to the parent container size */
+    max-height: 300px; /* Adjust this value based on your design preference */
     height: auto; /* Maintains the aspect ratio */
+    width: 400px;
     border-radius: 50%; /* Keeps the circular shape */
     object-fit: cover; /* Covers the frame without distorting the image */
 }
 
 .carousel-control-prev, .carousel-control-next {
     width: 5%;
+}
+
+.carousel-inner {
+    height: 300px;                  /* Fixed height */
+    max-width: 400px;               /* Maximum width */
+    width: 80%;                     /* Percentage width for responsiveness */
+    overflow: hidden;   
+    position: relative;      /* For positioning inner elements absolutely */
+    margin: auto;                   /* Center the carousel horizontally */
+    display: block;                 /* Use block to apply auto margins */
 }
