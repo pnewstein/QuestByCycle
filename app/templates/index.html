@@ -129,7 +129,7 @@
                 <a href="{{ url_for('tasks.manage_game_tasks', game_id=game.id) }}" class="button" style="margin-left: 10px;">Configure Tasks</a>
                 <a href="{{ url_for('badges.manage_badges', game_id=game.id) }}" class="button" style="margin-left: 10px;">Configure Badges</a>
                 {% endif %}
-                <button onclick="showLeaderboardModal('{{ game.id }}')" class="button" style="margin-left: 10px;">View Leaderboard</button>
+                <button id="leaderboardButton" data-game-id="{{ game.id }}" class="button">View Leaderboard</button>
 
             </p>
 
@@ -176,7 +176,15 @@
         </div>
     </div>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {});
+        document.addEventListener("DOMContentLoaded", function() {
+            const leaderboardButton = document.getElementById('leaderboardButton'); // Ensure you have an ID on your button
+            if (leaderboardButton) {
+                leaderboardButton.addEventListener('click', function() {
+                    const gameId = this.getAttribute('data-game-id'); // Ensure you set data-game-id attribute in HTML
+                    showLeaderboardModal(gameId);
+                });
+            }   
+        });
         
         function showUserProfileModal(userId) {
             fetch(`/profile/${userId}`)
