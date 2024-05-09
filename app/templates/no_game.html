@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container text-center">
+    <h1>Welcome to Bike Hunt</h1>
+    <p>Currently, there are no active games available. Please check back later or contact the admin for more information.</p>
+    {% if not current_user.is_authenticated %}
+    <p>You may need to <a href="{{ url_for('auth.login') }}">log in</a> or <a href="{{ url_for('auth.register') }}">register</a> to access games.</p>
+    {% endif %}
+</div>
+{% endblock %}
