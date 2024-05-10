@@ -3,6 +3,8 @@ instance/
 app/static/badge_images/
 app/static/images/
 
+app/static/images/carousel_images
+app/static/carousel_images/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
