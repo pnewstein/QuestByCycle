@@ -305,19 +305,15 @@ def profile():
 @main_bp.route('/profile/<int:user_id>')
 def user_profile(user_id):
     user = User.query.get_or_404(user_id)
-    user_tasks = UserTask.query.filter_by(user_id=user.id).all()
+    user_tasks = UserTask.query.filter(UserTask.user_id == user.id, UserTask.completions > 0).all()
     badges = user.badges
 
     # Debug prints to verify the data being sent to the template
     print(f"Loading profile for user: {user.username}, ID: {user_id}")
     print(f"Tasks loaded: {len(user_tasks)}")
     print(f"Badges loaded: {len(badges)}")
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        # Return only the part of the page needed for the modal
-        return render_template('_user_profile_modal_content.html', user=user)
-    else:
-        # Return the full page
-        return render_template('_user_profile.html', user=user, user_tasks=user_tasks, badges=badges)
+    
+    return render_template('_user_profile.html', user=user, user_tasks=user_tasks, badges=badges)
     
 
 @main_bp.route('/like_task/<int:task_id>', methods=['POST'])

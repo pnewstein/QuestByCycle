@@ -476,36 +476,6 @@ function showUserProfileModal(userId) {
         });
 }
 
-function showLeaderboardModal(selectedGameId) {
-    console.log("Attempting to show leaderboard modal for game ID:", selectedGameId);
-
-    // Update the ID to match the modal content ID in the HTML template
-    const leaderboardContent = document.getElementById('leaderboardModalContent');
-    if (!leaderboardContent) {
-        console.error('Leaderboard content element not found. Cannot proceed with displaying leaderboard.');
-        alert('Leaderboard content element not found. Please ensure the page has loaded completely.');
-        return; // Exit the function if no content element is found
-    }
-
-    fetch('/leaderboard_partial?game_id=' + selectedGameId)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to fetch leaderboard data');
-            }
-            return response.json();
-        })
-        .then(data => {
-            leaderboardContent.innerHTML = '';  // Clear previous content
-            appendGameSelector(leaderboardContent, data, selectedGameId);
-            appendCompletionMeter(leaderboardContent, data);
-            appendLeaderboardTable(leaderboardContent, data);
-            openModal('leaderboardModal');
-        })
-        .catch(error => {
-            console.error('Failed to load leaderboard:', error);
-            alert('Failed to load leaderboard data. Please try again.');
-        });
-}
 
 function showLeaderboardModal(selectedGameId) {
     console.log("Attempting to show leaderboard modal for game ID:", selectedGameId);
