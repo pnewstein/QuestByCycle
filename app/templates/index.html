@@ -3,13 +3,15 @@
 {% block content %}
     <div class="container">
 
-        <div class="welcomeImage">
-            <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Bike Hunt" style="max-width: 600px; max-height: 300px;">
-        </div>
+        {% if not current_user.is_authenticated %}
+            <div class="welcomeImage">
+                <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Bike Hunt" style="max-width: 600px; max-height: 300px;">
+            </div>
 
-        <div class="introduction">
-            <strong><p>QuestByCycle is a community-wide motivational game designed to encourage cycling and outdoor activities. Participants can join the game, complete tasks, and earn points/”reduce carbon” in the atmosphere to climb up the leaderboard. It's a fun way to stay active, explore your surroundings, and connect with fellow cycling enthusiasts.</p></strong>
-        </div>
+            <div class="introduction">
+                <strong><p>QuestByCycle is a community-wide motivational game designed to encourage cycling and outdoor activities. Participants can join the game, complete tasks, and earn points/”reduce carbon” in the atmosphere to climb up the leaderboard. It's a fun way to stay active, explore your surroundings, and connect with fellow cycling enthusiasts.</p></strong>
+            </div>
+        {% endif %}
 
         <div class="content-flex-container">
 
@@ -74,7 +76,7 @@
                     </div>
                 </div>
                 {% else %}
-                <p>No profile details available.</p>
+                <p>Login to begin...</p>
                 {% endif %}
                 {% if not current_user.is_authenticated %}
                     <a href="{{ url_for('auth.login') }}" class="button" style="margin-left: 10px;">Login</a>
