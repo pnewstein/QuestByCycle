@@ -1,7 +1,11 @@
-<!-- Leaderboard Modal -->
-<div id="leaderboardModal" class="modal">
-    <div class="modal-content">
-        <span class="close-button" onclick="closeLeaderboardModal()">&times;</span>
-        <div id="leaderboardContent">Loading...</div>
+<!-- Leaderboard Modal Structure -->
+<div id="leaderboardModal" class="modal"> <!-- Added modal class for general styling/behavior -->
+    <div id="leaderboardModalContent" class="modal-content">
+        <div class="completion-meter-container">
+            <div class="meter-label"></div>
+            <div class="completion-meter">
+                <div class="meter-bar" id="meterBar" style="width: 0%;"></div>
+            </div>
+        </div>
     </div>
 </div>

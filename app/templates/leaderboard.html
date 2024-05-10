@@ -19,6 +19,13 @@
     {% endif %}
     <div class="game-item">
         <div class="leaderboard-container">
+            <!-- Group Completion Meter -->
+            <div class="completion-meter-container">
+                <div class="meter-label">Group Completion: {{ total_game_points }} / {{ game_goal }}</div>
+                <div class="completion-meter">
+                    <div class="meter-bar" id="meterBar"></div>
+                </div>
+            </div>
             <!-- Leaderboard Table -->
             <div class="leaderboard-table">
                 {% if top_users %}
@@ -47,13 +54,6 @@
                 {% else %}
                 <p>Join an game to see the leaderboard!</p>
                 {% endif %}
-            </div>
-            <!-- Group Completion Meter -->
-            <div class="completion-meter-container">
-                <div class="meter-label">Group Completion: {{ total_game_points }} / {{ game_goal }}</div>
-                <div class="completion-meter">
-                    <div class="meter-bar" id="meterBar"></div>
-                </div>
             </div>
         </div>
     </div>
