@@ -2,22 +2,25 @@
 
 {% block content %}
     <div class="container">
-        <div class="welcomeImage">
-            <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Bike Hunt" style="max-width: 600px; max-height: 300px;">
-        </div>
 
-        <div class="introduction">
-            <strong><p>QuestByCycle is a community-wide motivational game designed to encourage cycling and outdoor activities. Participants can join the game, complete tasks, and earn points/”reduce carbon” in the atmosphere to climb up the leaderboard. It's a fun way to stay active, explore your surroundings, and connect with fellow cycling enthusiasts.</p></strong>
-        </div>
+        {% if not current_user.is_authenticated %}
+            <div class="welcomeImage">
+                <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Bike Hunt" style="max-width: 600px; max-height: 300px;">
+            </div>
+
+            <div class="introduction">
+                <strong><p>QuestByCycle is a community-wide motivational game designed to encourage cycling and outdoor activities. Participants can join the game, complete tasks, and earn points/”reduce carbon” in the atmosphere to climb up the leaderboard. It's a fun way to stay active, explore your surroundings, and connect with fellow cycling enthusiasts.</p></strong>
+            </div>
+        {% endif %}
 
         <div class="content-flex-container">
 
             <div class="game-item">
-                <div id="taskImageCarousel" class="carousel" data-ride="carousel">
+                <div id="taskImageCarousel" class="carousel slide" data-ride="carousel">
                     <div class="carousel-inner">
                         {% for image in carousel_images %}
-                        <div class="carousel-item{% if loop.first %} active{% endif %}">
-                            <img src="{{ url_for('static', filename=image) }}" class="carousel-image" alt="Carousel Image">
+                        <div class="carousel-item{% if loop.first %} active{% endif %}" style="height: 300px;">
+                            <img src="{{ url_for('static', filename=image) }}" class="d-block w-100 h-100" alt="Carousel Image" style="height: 300px; width: 100%; object-fit: cover;">
                         </div>
                         {% endfor %}
                     </div>
