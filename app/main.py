@@ -41,7 +41,7 @@ def index(game_id, task_id, user_id):
     user_tasks = []  # Initialize user_tasks here
     badges = []
     total_points = None
-    
+
     if user_id is None and current_user.is_authenticated:
         user_id = current_user.id
 
@@ -275,37 +275,42 @@ def leaderboard_partial():
         })
 
 
-@main_bp.route('/profile', methods=['GET', 'POST'])
+@main_bp.route('/profile', methods=['GET', 'POST', 'DELETE'])
 @login_required
 def profile():
     form = ProfileForm()
 
-    if form.validate_on_submit():
-        current_user.display_name = form.display_name.data
-        current_user.age_group = form.age_group.data
-        current_user.interests = form.interests.data
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            current_user.display_name = form.display_name.data
+            current_user.age_group = form.age_group.data
+            current_user.interests = form.interests.data
 
-        # Check if 'profile_picture' is in request.files
-        if 'profile_picture' in request.files:
-            profile_picture_file = request.files['profile_picture']
-            if profile_picture_file.filename != '':
-                filename = save_profile_picture(profile_picture_file)  # Using your save_profile_picture function
-                current_user.profile_picture = filename  # Save just the filename or relative path
-                db.session.commit()
-                flash('Profile updated successfully.', 'success')
-            else:
-                flash('No file selected for upload.', 'error')
-        else:
-            flash('No file part in the request.', 'error')
+            # Handle profile picture
+            if 'profile_picture' in request.files:
+                profile_picture_file = request.files['profile_picture']
+                if profile_picture_file.filename != '':
+                    filename = save_profile_picture(profile_picture_file)
+                    current_user.profile_picture = filename
 
-        return redirect(url_for('main.profile'))
+            db.session.commit()
+            flash('Profile updated successfully.', 'success')
+            return redirect(url_for('main.profile'))
+
+    elif request.method == 'DELETE':
+        db.session.delete(current_user)
+        db.session.commit()
+        logout_user()
+        flash('Profile deleted successfully.', 'info')
+        return redirect(url_for('main.index'))
+
     elif request.method == 'GET':
         form.display_name.data = current_user.display_name
         form.age_group.data = current_user.age_group
         form.interests.data = current_user.interests
-        # Load other fields if necessary
 
     return render_template('profile.html', form=form)
+
 
 @main_bp.route('/profile/<int:user_id>')
 def user_profile(user_id):
@@ -342,3 +347,31 @@ def like_task(task_id):
     new_like_count = TaskLike.query.filter_by(task_id=task.id).count()
     return jsonify(success=success, new_like_count=new_like_count, already_liked=already_liked)
 
+
+@main_bp.route('/update_profile', methods=['POST'])
+@login_required
+def update_profile():
+    if 'profile_picture' in request.files:
+        file = request.files['profile_picture']
+        if file:
+            old_filename = current_user.profile_picture
+            current_user.profile_picture = save_profile_picture(file, old_filename)
+    
+    # Assuming you have a form or JSON data to update other user attributes
+    current_user.display_name = request.form.get('display_name', current_user.display_name)
+    current_user.age_group = request.form.get('age_group', current_user.age_group)
+    current_user.interests = request.form.get('interests', current_user.interests)
+
+    db.session.commit()
+    return jsonify(success=True)
+
+
+@main_bp.route('/delete_profile/<int:profile_id>', methods=['DELETE'])
+@login_required
+def delete_profile(profile_id):
+    if current_user.id == profile_id:  # Ensure the user can only delete their own profile
+        db.session.delete(current_user)
+        db.session.commit()
+        logout_user()
+        return jsonify(success=True)
+    return jsonify(success=False), 403

@@ -1,75 +1,80 @@
 {% extends "layout.html" %}
 
 {% block content %}
-    <div class="container">
+<div class="container">
+    {% if not current_user.is_authenticated %}
+    <div class="welcomeImage">
+        <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Bike Hunt" style="max-width: 600px; max-height: 300px;">
+    </div>
+    <div class="introduction">
+        <strong><p>QuestByCycle is a community-wide motivational game designed to encourage cycling and outdoor activities. Participants can join the game, complete tasks, and earn points/”reduce carbon” in the atmosphere to climb up the leaderboard. It's a fun way to stay active, explore your surroundings, and connect with fellow cycling enthusiasts.</p></strong>
+    </div>
+    {% endif %}
 
-        {% if not current_user.is_authenticated %}
-            <div class="welcomeImage">
-                <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Bike Hunt" style="max-width: 600px; max-height: 300px;">
-            </div>
-
-            <div class="introduction">
-                <strong><p>QuestByCycle is a community-wide motivational game designed to encourage cycling and outdoor activities. Participants can join the game, complete tasks, and earn points/”reduce carbon” in the atmosphere to climb up the leaderboard. It's a fun way to stay active, explore your surroundings, and connect with fellow cycling enthusiasts.</p></strong>
-            </div>
-        {% endif %}
-
-        <div class="content-flex-container">
-
-            <div class="game-item">
-                <div id="taskImageCarousel" class="carousel slide" data-ride="carousel">
-                    <div class="carousel-inner">
-                        {% for image in carousel_images %}
-                        <div class="carousel-item{% if loop.first %} active{% endif %}" style="height: 300px;">
-                            <img src="{{ url_for('static', filename=image) }}" class="d-block w-100 h-100" alt="Carousel Image" style="height: 300px; width: 100%; object-fit: cover;">
-                        </div>
-                        {% endfor %}
+    <div class="content-flex-container">
+        <div class="game-item">
+            <div id="taskImageCarousel" class="carousel slide" data-ride="carousel">
+                <div class="carousel-inner">
+                    {% for image in carousel_images %}
+                    <div class="carousel-item{% if loop.first %} active{% endif %}" style="height: 300px;">
+                        <img src="{{ url_for('static', filename=image) }}" class="d-block w-100 h-100" alt="Carousel Image" style="height: 300px; width: 100%; object-fit: cover;">
                     </div>
-                    <a class="carousel-control-prev" href="#taskImageCarousel" role="button" data-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Previous</span>
-                    </a>
-                    <a class="carousel-control-next" href="#taskImageCarousel" role="button" data-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Next</span>
-                    </a>
+                    {% endfor %}
                 </div>
+                <a class="carousel-control-prev" href="#taskImageCarousel" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Previous</span>
+                </a>
+                <a class="carousel-control-next" href="#taskImageCarousel" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Next</span>
+                </a>
             </div>
+        </div>
 
-            <div class="game-item">
-                {% if profile %}
-                    {% if profile.profile_picture %}
-                        <img src="{{ url_for('static', filename=profile.profile_picture) }}" alt="Profile Picture" class="profile-image">
-                    {% else %}
-                        <img src="{{ url_for('static', filename='images/default_profile_picture.png') }}" alt="Default Profile Picture" class="profile-image">
-                    {% endif %}
-                <h2>{{ profile.display_name }}</h2>
+        <div class="game-item">
+            {% if profile %}
+            <div id="profileDisplay">
+                <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="profile-image">
+                <p><strong>Name:</strong> {{ profile.display_name }}</p>
                 <p><strong>Email:</strong> {{ profile.email }}</p>
                 <p><strong>Age Group:</strong> {{ profile.age_group }}</p>
                 <p><strong>Interests:</strong> {{ profile.interests }}</p>
-                <div>
-                    <h3>Participated Games:</h3>
-                    <ul>
-                        {% for game in user_games %}
-                        <li>{{ game.title }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div>
-                    <h3>Badges Earned:</h3>
-                    <ul>
-                        {% for badge in badges %}
-                            <li>
-                                {{ badge.name }} - 
-                                {% if badge.image %}
-                                <img src="{{ url_for('static', filename='images/badge_images/' + badge.image) }}" alt="{{ badge.name }}" class="badge-image-pri-pro">
-                                {% else %}
-                                <img src="{{ url_for('static', filename='images/badge_images/default_badge.png') }}" alt="Default Badge" class="badge-image-pri-pro">
-                                {% endif %}
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    <div>
+            </div>
+            <button id="editProfileBtn" onclick="toggleEditProfile()">Edit Profile</button>
+            
+            <form id="editProfileForm" method="post" action="{{ url_for('main.update_profile') }}" enctype="multipart/form-data" style="display: none;">
+                <input type="file" name="profile_picture" accept="image/*"><br>
+                <input type="text" name="display_name" value="{{ profile.display_name }}" style="width: 90px;"><br>
+                <input type="text" name="age_group" value="{{ profile.age_group }}" style="width: 90px;"><br>
+                <input type="text" name="interests" value="{{ profile.interests }}" style="width: 90px;"><br>
+                <button type="submit">Save Changes</button><br>
+                <button type="button" onclick="deleteProfile({ profile.id });">Delete Profile</button>
+            </form>
+            <div>
+                <h3>Participated Games:</h3>
+                <ul>
+                    {% for game in user_games %}
+                    <li>{{ game.title }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
+                <h3>Badges Earned:</h3>
+                <ul>
+                    {% for badge in badges %}
+                    <li>
+                        {{ badge.name }} - 
+                        {% if badge.image %}
+                        <img src="{{ url_for('static', filename='images/badge_images/' + badge.image) }}" alt="{{ badge.name }}" class="badge-image-pri-pro">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='images/badge_images/default_badge.png') }}" alt="Default Badge" class="badge-image-pri-pro">
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
                         {% if current_user.is_authenticated %}
                             <a href="{{ url_for('auth.logout') }}" class="button" style="margin-left: 10px;">Logout</a>               
                         {% endif %}
@@ -199,6 +204,42 @@
                     updateMeter(gameId);
                 });
             }
+
+            const editProfileForm = document.getElementById('editProfileForm');
+            const profileDisplay = document.getElementById('profileDisplay');
+            const editProfileBtn = document.getElementById('editProfileBtn');
+
+            function toggleEditProfile() {
+                if (editProfileForm.style.display === 'none') {
+                    editProfileForm.style.display = 'block';
+                    profileDisplay.style.display = 'none';
+                    editProfileBtn.textContent = 'Cancel Edit';
+                } else {
+                    editProfileForm.style.display = 'none';
+                    profileDisplay.style.display = 'block';
+                    editProfileBtn.textContent = 'Edit Profile';
+                }
+            }
+            window.toggleEditProfile = toggleEditProfile; // Make it available globally if needed
+        });
+
+        document.getElementById('editProfileForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            fetch('{{ url_for("main.update_profile") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Profile updated successfully.');
+                    location.reload();  // Reload the page to reflect changes
+                } else {
+                    alert('Failed to update profile.');
+                }
+            })
+            .catch(error => alert('Error updating profile: ' + error));
         });
 
         function updateMeter(gameId) {
@@ -245,7 +286,37 @@
                     alert('Could not load user profile. Please try again.');
                 });
         }
-        
+        function toggleEditProfile() {
+            var form = document.getElementById('editProfileForm');
+            var display = document.getElementById('profileDisplay');
+            var editBtn = document.getElementById('editProfileBtn');
+            
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+                display.style.display = 'none';
+                editBtn.textContent = 'Cancel Edit';
+            } else {
+                form.style.display = 'none';
+                display.style.display = 'block';
+                editBtn.textContent = 'Edit Profile';
+            }
+        }
+
+        function deleteProfile(profileId) {
+            if (confirm("Are you sure you want to delete your profile? This action cannot be undone.")) {
+                fetch(`/delete_profile/${profileId}`, { method: 'DELETE' })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Profile deleted successfully.');
+                        window.location.href = "{{ url_for('auth.login') }}";  // Redirect after delete
+                    } else {
+                        alert('Failed to delete profile.');
+                    }
+                })
+                .catch(error => alert('Error deleting profile: ' + error));
+            }
+        }
+
         function likeMessage(messageId) {
             const likeButton = document.getElementById(`like-button-${messageId}`);
             const likeCount = document.getElementById(`like-count-${messageId}`);
