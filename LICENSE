@@ -1,21 +1,36 @@
-MIT License
+# License
 
-Copyright (c) 2024 Jaron Rosenau
+"Quest by Cycle" is dual-licensed under the terms of both the GNU Affero General Public License (AGPL) v3.0 and a separate Commercial License for users who require the software for commercial use.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+## Section 1: GNU Affero General Public License (AGPL) v3.0
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The open-source version of "Quest by Cycle" is available under the terms of the GNU Affero General Public License (AGPL) v3.0. A copy of the AGPL v3.0 can be found in the `AGPL.md` file included with this distribution or you can visit [GNU AGPL License](https://www.gnu.org/licenses/agpl-3.0.html) to see the full text.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+### Key Provisions of AGPL v3.0:
+- You may copy, distribute, and modify the software as long as you track changes/dates in source files.
+- Any modifications to or software including (via compiler) AGPL-licensed code must also be made available under the AGPL along with build & install instructions.
+
+### Network Use:
+- If you run a modified program on a server and let other users communicate with it there, your server must also allow them to download the source code corresponding to the modified version running there.
+
+## Section 2: Commercial License
+
+For individuals or entities wishing to incorporate "Quest by Cycle" into commercial ventures, such as by creating proprietary software or services based on "Quest by Cycle," a separate Commercial License is required.
+
+### Key Provisions of the Commercial License:
+- Provides rights to use, modify, and integrate "Quest by Cycle" into commercial products without the obligations of the AGPL.
+- Includes support and updates as per the terms negotiated in the license agreement.
+
+### Obtaining a Commercial License:
+- To inquire about obtaining a commercial license, please contact Denuo Web, LLC at [jaron@rosenau.info](mailto:jaron@rosenau.info) for more details on pricing and terms.
+
+## Choice of License
+
+The choice of license depends on your use case:
+- If you are using "Quest by Cycle" for open-source applications and are willing to comply with the AGPL, you do not need a commercial license.
+- If you intend to use "Quest by Cycle" for proprietary applications, you are required to obtain a commercial license.
+
+## Questions?
+If you have any questions about which license is right for you, please contact us at [jaron@rosenau.info](mailto:jaron@rosenau.info).
+
+Please see the individual license files for more detailed information about each type of license.
