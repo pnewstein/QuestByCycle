@@ -36,6 +36,12 @@ def get_datetime(activity):
 @main_bp.route('/<int:game_id>/<int:task_id>', defaults={'user_id': None})
 @main_bp.route('/<int:game_id>/<int:task_id>/<int:user_id>')
 def index(game_id, task_id, user_id):
+    user_games = [] 
+    profile = None  # Initialize profile here
+    user_tasks = []  # Initialize user_tasks here
+    badges = []
+    total_points = None
+    
     if user_id is None and current_user.is_authenticated:
         user_id = current_user.id
 
@@ -53,13 +59,12 @@ def index(game_id, task_id, user_id):
                 game_id = latest_game.id
 
     game = Game.query.get(game_id) if game_id else None
-    user_tasks = UserTask.query.filter_by(user_id=current_user.id).all()
-    total_points = sum(ut.points_awarded for ut in user_tasks if ut.task.game_id == game_id)
-
-    if not game:
-        return render_template('no_game.html'), 404  # You might need a template to handle no game scenario
 
     carousel_images_dir = os.path.join(current_app.root_path, 'static', current_app.config['CAROUSEL_IMAGES_DIR'])
+    
+    if current_user.is_authenticated:
+        user_tasks = UserTask.query.filter_by(user_id=current_user.id).all()
+        total_points = sum(ut.points_awarded for ut in user_tasks if ut.task.game_id == game_id)
 
     if not os.path.exists(carousel_images_dir):
         os.makedirs(carousel_images_dir)
