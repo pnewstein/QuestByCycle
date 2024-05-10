@@ -1,43 +1,46 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1>User Profile</h1>
-
-<div class="container">
-    <div class="user-profile">
-        <h2>Current Profile</h2>
-        <div class="profile-details">
-            <p><strong>Player/Team Name:</strong> {{ current_user.display_name }}</p>
-            {% if current_user.profile_picture %}
-            <div class="profile-picture">
-                <img src="{{ url_for('static', filename=current_user.profile_picture) }}" alt="Profile Picture" style="max-width: 200px; max-height: 200px;">
-            </div>
-            {% endif %}
-            <p><strong>Age Group:</strong> {{ current_user.age_group }}</p>
-            <p><strong>Interests:</strong> {{ current_user.interests }}</p>
-        </div>
+<form method="post" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <div>
+        <label for="display_name">Player/Team Name:</label>
+        {{ form.display_name }}
     </div>
-</div>
-
-<hr>
-
-<div class="modal-content">
-    <h2>Edit Profile</h2>
-    <form action="{{ url_for('main.profile') }}" method="post" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.display_name.label }} {{ form.display_name() }}
-        </div>
-        <div class="form-group">
-            {{ form.profile_picture.label }} {{ form.profile_picture() }}
-        </div>
-        <div class="form-group">
-            {{ form.age_group.label }} {{ form.age_group() }}
-        </div>
-        <div class="form-group">
-            {{ form.interests.label }} {{ form.interests() }}
-        </div>
-        {{ form.submit() }}
-    </form>
-</div>
+    <div>
+        <label for="age_group">Age Group:</label>
+        {{ form.age_group }}
+    </div>
+    <div>
+        <label for="interests">Interests:</label>
+        {{ form.interests }}
+    </div>
+    <div>
+        <label for="profile_picture">Profile Picture:</label>
+        {{ form.profile_picture }}
+        {% if current_user.profile_picture %}
+        <img src="{{ url_for('static', filename=current_user.profile_picture) }}" alt="Profile Picture" style="width:100px;">
+        {% endif %}
+    </div>
+    <button type="submit">Save Profile</button>
+</form>
+<button type="button" onclick="deleteProfile()">Delete Profile</button>
+<script>
+    function deleteProfile() {
+        if (confirm("Are you sure you want to delete your profile? This action cannot be undone.")) {
+            fetch("{{ url_for('main.profile') }}", {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            }).then(response => {
+                if (response.ok) {
+                    window.location.href = "{{ url_for('main.index') }}";
+                } else {
+                    alert("Failed to delete profile.");
+                }
+            });
+        }
+    }
+</script>
 {% endblock %}
