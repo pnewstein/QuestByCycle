@@ -53,6 +53,8 @@ def index(game_id, task_id, user_id):
                 game_id = latest_game.id
 
     game = Game.query.get(game_id) if game_id else None
+    user_tasks = UserTask.query.filter_by(user_id=current_user.id).all()
+    total_points = sum(ut.points_awarded for ut in user_tasks if ut.task.game_id == game_id)
 
     if not game:
         return render_template('no_game.html'), 404  # You might need a template to handle no game scenario
@@ -148,7 +150,8 @@ def index(game_id, task_id, user_id):
                            profile=profile,
                            user_tasks=user_tasks,
                            badges=badges,
-                           carousel_images=carousel_images)
+                           carousel_images=carousel_images,
+                           total_points=total_points)
 
 
 @main_bp.route('/shout-board', methods=['POST'])
@@ -232,11 +235,6 @@ def leaderboard_partial():
     user_games = current_user.participated_games
     selected_game_id = request.args.get('game_id', type=int)
 
-    if len(user_games) == 1:
-        single_game_id = user_games[0].id
-        if selected_game_id is None or selected_game_id != single_game_id:
-            return redirect(url_for('main.leaderboard', game_id=single_game_id))
-
     if selected_game_id:
         game = Game.query.get(selected_game_id)
         if not game:
@@ -270,8 +268,6 @@ def leaderboard_partial():
             'total_game_points': total_game_points,
             'game_goal': game.game_goal if game.game_goal else None
         })
-
-    return jsonify({'error': 'No game selected'}), 400
 
 
 @main_bp.route('/profile', methods=['GET', 'POST'])
