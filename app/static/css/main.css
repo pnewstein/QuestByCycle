@@ -736,7 +736,12 @@ footer {
 }
 
 .completion-meter-container {
-    width: 200px; /* Fixed width for the meter */
+    width: 100%; /* Flexible container width */
+    padding: 10px;
+    background: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .completion-meter {
@@ -751,13 +756,19 @@ footer {
 }
 
 .meter-bar {
-    background-color: #4CAF50;
-    background-image: linear-gradient(to top, #76ff03, #66bb6a); /* Gradient on the bar */
-    width: 100%;
+    background: linear-gradient(to right, #4caf50, #8bc34a);
+    box-shadow: inset 0 -1px 1px rgba(0,0,0,0.2);
+    width: 0;
+    height: 100%;
+    border-radius: 5px;
     position: absolute;
     bottom: 0;
-    transition: height 0.5s ease-in-out; /* Smooth transition for height change */
-    box-shadow: 0 0 10px #76ff03; /* Glow effect */
+    left: 0;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
 }
 
 .meter-label {
@@ -785,7 +796,12 @@ footer {
     /* Other styles remain the same */
     animation: fillMeter 2s ease-out forwards; /* Apply the animation */
 }
-
+/* Enhance appearance with transitions */
+.meter-bar::after {
+    content: attr(data-label);
+    color: white;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+}
 /* Base style for the checkbox container */
 .disabled-checkbox {
     position: relative;

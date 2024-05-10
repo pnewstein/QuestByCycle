@@ -477,6 +477,16 @@ function showUserProfileModal(userId) {
 }
 
 function showLeaderboardModal(selectedGameId) {
+    console.log("Attempting to show leaderboard modal for game ID:", selectedGameId);
+
+    // Update the ID to match the modal content ID in the HTML template
+    const leaderboardContent = document.getElementById('leaderboardModalContent');
+    if (!leaderboardContent) {
+        console.error('Leaderboard content element not found. Cannot proceed with displaying leaderboard.');
+        alert('Leaderboard content element not found. Please ensure the page has loaded completely.');
+        return; // Exit the function if no content element is found
+    }
+
     fetch('/leaderboard_partial?game_id=' + selectedGameId)
         .then(response => {
             if (!response.ok) {
@@ -485,103 +495,11 @@ function showLeaderboardModal(selectedGameId) {
             return response.json();
         })
         .then(data => {
-            const leaderboardContent = document.getElementById('leaderboardContent');
             leaderboardContent.innerHTML = '';  // Clear previous content
-
-            // Create and append the game selector if applicable
-            if (data.games && data.games.length > 1) {
-                const form = document.createElement('form');
-                form.method = 'get';
-                form.action = '#';  // Update with correct endpoint if needed
-
-                const selectLabel = document.createElement('label');
-                selectLabel.for = 'game_Select';
-                selectLabel.textContent = 'Select Game:';
-                form.appendChild(selectLabel);
-
-                const select = document.createElement('select');
-                select.name = 'game_id';
-                select.id = 'game_Select';
-                select.className = 'form-control';
-                select.onchange = () => this.form.submit();  // Adjust as needed for actual use
-                data.games.forEach(game => {
-                    const option = document.createElement('option');
-                    option.value = game.id;
-                    option.textContent = game.title;
-                    if (game.id === selectedGameId) option.selected = true;
-                    select.appendChild(option);
-                });
-                form.appendChild(select);
-                leaderboardContent.appendChild(form);
-            }
-
-            // Create and append the leaderboard table
-            if (data.top_users && data.top_users.length > 0) {
-                const table = document.createElement('table');
-                table.className = 'table table-striped';
-
-                const thead = document.createElement('thead');
-                const headerRow = document.createElement('tr');
-                ['Rank', 'Player', 'Carbon “Reduction” Points'].forEach(text => {
-                    const th = document.createElement('th');
-                    th.textContent = text;
-                    headerRow.appendChild(th);
-                });
-                thead.appendChild(headerRow);
-                table.appendChild(thead);
-
-                const tbody = document.createElement('tbody');
-                data.top_users.forEach((user, index) => {
-                    const row = document.createElement('tr');
-                    const rankCell = document.createElement('td');
-                    rankCell.textContent = index + 1;
-                    row.appendChild(rankCell);
-
-                    const nameCell = document.createElement('td');
-                    const nameLink = document.createElement('a');
-                    nameLink.href = "javascript:void(0)";
-                    nameLink.onclick = () => showUserProfileModal(user.user_id);
-                    nameLink.textContent = user.username;
-                    nameCell.appendChild(nameLink);
-                    row.appendChild(nameCell);
-
-                    const pointsCell = document.createElement('td');
-                    pointsCell.textContent = user.total_points;
-                    row.appendChild(pointsCell);
-
-                    tbody.appendChild(row);
-                });
-                table.appendChild(tbody);
-                leaderboardContent.appendChild(table);
-            } else {
-                const p = document.createElement('p');
-                p.textContent = 'Join a game to see the leaderboard!';
-                leaderboardContent.appendChild(p);
-            }
-
-            // Append the completion meter if applicable
-            if (data.total_game_points && data.game_goal) {
-                const meterContainer = document.createElement('div');
-                meterContainer.className = 'completion-meter-container';
-
-                const meterLabel = document.createElement('div');
-                meterLabel.className = 'meter-label';
-                meterLabel.textContent = `Group Completion: ${data.total_game_points} / ${data.game_goal}`;
-                meterContainer.appendChild(meterLabel);
-
-                const completionMeter = document.createElement('div');
-                completionMeter.className = 'completion-meter';
-
-                const meterBar = document.createElement('div');
-                meterBar.className = 'meter-bar';
-                meterBar.style.height = `${(data.total_game_points / data.game_goal * 100)}%`;
-                completionMeter.appendChild(meterBar);
-
-                meterContainer.appendChild(completionMeter);
-                leaderboardContent.appendChild(meterContainer);
-            }
-
-            openModal('leaderboardModal');  // Make sure this is the correct ID of your modal
+            appendGameSelector(leaderboardContent, data, selectedGameId);
+            appendCompletionMeter(leaderboardContent, data);
+            appendLeaderboardTable(leaderboardContent, data);
+            openModal('leaderboardModal');
         })
         .catch(error => {
             console.error('Failed to load leaderboard:', error);
@@ -589,6 +507,141 @@ function showLeaderboardModal(selectedGameId) {
         });
 }
 
+function showLeaderboardModal(selectedGameId) {
+    console.log("Attempting to show leaderboard modal for game ID:", selectedGameId);
+
+    const leaderboardContent = document.getElementById('leaderboardModalContent');
+    if (!leaderboardContent) {
+        console.error('Leaderboard modal content element not found. Cannot proceed with displaying leaderboard.');
+        alert('Leaderboard modal content element not found. Please ensure the page has loaded completely and the correct ID is used.');
+        return; // Exit the function if no content element is found
+    }
+
+    fetch('/leaderboard_partial?game_id=' + selectedGameId)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch leaderboard data');
+            }
+            return response.json();
+        })
+        .then(data => {
+            leaderboardContent.innerHTML = '';  // Clear previous content
+            appendGameSelector(leaderboardContent, data, selectedGameId);
+            appendCompletionMeter(leaderboardContent, data);
+            appendLeaderboardTable(leaderboardContent, data);
+            openModal('leaderboardModal');  // Use the correct modal ID
+        })
+        .catch(error => {
+            console.error('Failed to load leaderboard:', error);
+            alert('Failed to load leaderboard data. Please try again.');
+        });
+}
+
+function appendGameSelector(parentElement, data, selectedGameId) {
+    if (data.games && data.games.length > 1) {
+        const form = document.createElement('form');
+        form.method = 'get';
+        form.action = '#';  // Update with correct endpoint if needed
+
+        const selectLabel = document.createElement('label');
+        selectLabel.for = 'game_Select';
+        selectLabel.textContent = 'Select Game:';
+        form.appendChild(selectLabel);
+
+        const select = document.createElement('select');
+        select.name = 'game_id';
+        select.id = 'game_Select';
+        select.className = 'form-control';
+        select.onchange = () => form.submit();  // Adjust as needed for actual use
+        data.games.forEach(game => {
+            const option = document.createElement('option');
+            option.value = game.id;
+            option.textContent = game.title;
+            option.selected = (game.id === selectedGameId);
+            select.appendChild(option);
+        });
+        form.appendChild(select);
+        parentElement.appendChild(form);
+    }
+}
+
+function appendLeaderboardTable(parentElement, data) {
+    if (data.top_users && data.top_users.length > 0) {
+        const table = document.createElement('table');
+        table.className = 'table table-striped';
+
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        ['Rank', 'Player', 'Carbon “Reduction” Points'].forEach(text => {
+            const th = document.createElement('th');
+            th.textContent = text;
+            headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        data.top_users.forEach((user, index) => {
+            const row = document.createElement('tr');
+            appendTableCell(row, index + 1);
+            appendTableCell(row, user.username, true, user.user_id);
+            appendTableCell(row, user.total_points);
+            tbody.appendChild(row);
+        });
+        table.appendChild(tbody);
+        parentElement.appendChild(table);
+    } else {
+        const p = document.createElement('p');
+        p.textContent = 'Join a game to see the leaderboard!';
+        parentElement.appendChild(p);
+    }
+}
+
+function appendTableCell(row, content, isLink = false, userId = null) {
+    const cell = document.createElement('td');
+    if (isLink) {
+        const link = document.createElement('a');
+        link.href = "javascript:void(0)";
+        link.onclick = () => showUserProfileModal(userId);
+        link.textContent = content;
+        cell.appendChild(link);
+    } else {
+        cell.textContent = content;
+    }
+    row.appendChild(cell);
+}
+
+function appendCompletionMeter(parentElement, data) {
+    if (data.total_game_points && data.game_goal) {
+        const meterContainer = document.createElement('div');
+        meterContainer.className = 'completion-meter-container';
+
+        const meterLabel = document.createElement('div');
+        meterLabel.className = 'meter-label';
+        meterLabel.textContent = `Group Completion: ${data.total_game_points} / ${data.game_goal}`;
+        meterContainer.appendChild(meterLabel);
+
+        const completionMeter = document.createElement('div');
+        completionMeter.className = 'completion-meter';
+
+        const meterBar = document.createElement('div');
+        meterBar.className = 'meter-bar';
+        let percent = Math.min(data.total_game_points / data.game_goal * 100, 100);
+        meterBar.style.width = '100%'; // Bar fills the width of the container
+        meterBar.style.height = `${percent}%`; // Dynamic height based on completion
+        meterBar.dataset.label = `${percent.toFixed(1)}% Complete`; // Optional: Show completion percentage
+        completionMeter.appendChild(meterBar);
+
+        meterContainer.appendChild(completionMeter);
+        parentElement.appendChild(meterContainer);
+
+        // Animation to visually fill the meter
+        setTimeout(() => {
+            meterBar.style.transition = 'height 2s ease-in-out, background-color 2s';
+            meterBar.style.height = `${percent}%`;
+        }, 100);
+    }
+}
 
 
 // Close modal helpers enhanced with specific targeting and cleanup

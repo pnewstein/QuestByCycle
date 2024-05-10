@@ -175,17 +175,46 @@
             {% endif %}
         </div>
     </div>
+    <div id="game_IdHolder" data-game-id="{{ selected_game_id | safe }}" style="display:none;"></div>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            const leaderboardButton = document.getElementById('leaderboardButton'); // Ensure you have an ID on your button
+            const leaderboardButton = document.getElementById('leaderboardButton');
             if (leaderboardButton) {
                 leaderboardButton.addEventListener('click', function() {
-                    const gameId = this.getAttribute('data-game-id'); // Ensure you set data-game-id attribute in HTML
+                    const gameId = this.getAttribute('data-game-id');
                     showLeaderboardModal(gameId);
+                    updateMeter(gameId);
                 });
-            }   
+            }
         });
-        
+
+        function updateMeter(gameId) {
+            if (!gameId) return;  // Check if gameId is available
+
+            fetch(`/games/get_game_points/${gameId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data || !data.total_game_points || !data.game_goal) {
+                        console.error('Data missing from response');
+                        return;  // Check if the necessary data is available
+                    }
+
+                    const totalPoints = data.total_game_points;
+                    const game_Goal = data.game_goal;
+                    const heightPercentage = Math.min((totalPoints / game_Goal) * 100, 100); // Ensure it doesn't exceed 100%
+                    
+                    const meterBar = document.getElementById('meterBar');
+                    if (meterBar) {
+                        meterBar.style.height = heightPercentage + '%';
+                        document.documentElement.style.setProperty('--meter-fill-height', heightPercentage + '%');
+                        document.querySelector('.meter-label').innerText = `Group Completion: ${totalPoints} / ${game_Goal}`;
+                    } else {
+                        console.error('Meter bar element not found');
+                    }
+                })
+                .catch(err => console.error('Failed to update meter:', err));
+        }
+
         function showUserProfileModal(userId) {
             fetch(`/profile/${userId}`)
                 .then(response => response.text())
