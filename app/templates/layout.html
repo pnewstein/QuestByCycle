@@ -30,9 +30,6 @@
                             </div>
                         </div>
                     </div>                    
-                    {% if current_user.is_admin %}
-                        <a href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a>
-                    {% endif %}
                 {% else %}
                     <a href="{{ url_for('auth.login') }}">Login</a>
                     <a href="{{ url_for('auth.register') }}">Register</a>
