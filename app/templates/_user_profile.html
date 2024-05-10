@@ -1,47 +1,43 @@
 {% block content %}
 <div class="user-profile">
-    {% if user.display_name %}
-        <h1>{{ user.display_name }}'s Profile</h1>
-    {% else %}
-        <h1>{{ user.username }}'s Profile</h1>
-    {% endif %}
-    <div class="profile-details">
+    <header class="profile-header">
         {% if user.profile_picture %}
-        <div class="profile-picture">
-            <img src="{{ url_for('static', filename=user.profile_picture) }}" alt="Profile Picture" style="max-width: 150px; max-height: 150px;">
-        </div>
+            <img src="{{ url_for('static', filename=user.profile_picture) }}" alt="Profile Picture" class="profile-picture">
         {% endif %}
-        <p><strong>Interests:</strong> {{ user.interests }}</p>
-    </div>
-    <hr>
-    <h2>Badges Earned</h2>
-    <div class="badges-list">
-        {% for badge in user.badges %}
-        <div class="badge-item">
-            <h3>{{ badge.name }}</h3>
-            <p>{{ badge.description }}</p>
-            {% if badge.image %}
-            <img src="{{ url_for('static', filename='images/badge_images/' + badge.image) }}" alt="{{ badge.name }}" style="width: 100px;">
+        <h1>{{ user.display_name or user.username }}</h1>
+        <p class="user-interests"><strong>Interests:</strong> {{ user.interests }}</p>
+    </header>
+    <section class="badges-earned">
+        <h2>Badges Earned</h2>
+        <div class="badges-container">
+            {% for badge in user.badges %}
+            <div class="badge-item">
+                <img src="{{ url_for('static', filename='images/badge_images/' + badge.image) }}" alt="{{ badge.name }}" class="badge-icon">
+                <div>
+                    <h3>{{ badge.name }}</h3>
+                    <p>{{ badge.description }}</p>
+                </div>
+            </div>
+            {% else %}
+            <p>No badges earned yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+    <section class="tasks-completed">
+        <h2>Tasks Completed</h2>
+        <div class="tasks-container">
+            {% if user_tasks %}
+                {% for user_task in user_tasks %}
+                <div class="task-item">
+                    <h3>{{ user_task.task.title }}</h3>
+                    <p>{{ user_task.task.description }}</p>
+                    <p>Points Awarded: {{ user_task.points_awarded }}</p>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>No tasks completed yet.</p>
             {% endif %}
         </div>
-        {% else %}
-        <p>No badges earned yet.</p>
-        {% endfor %}
-    </div>
-    <hr>
-    <h2>Tasks Completed</h2>
-    <div class="tasks-list">
-        {% for user_task in user.user_tasks %}
-        {% if user_task.completed %}
-        <div class="task-item">
-            <h3>{{ user_task.task.title }}</h3>
-            <p>{{ user_task.task.description }}</p>
-            <p>Points Awarded: {{ user_task.points_awarded }}</p>
-        </div>
-        {% endif %}
-        {% else %}
-        <p>No tasks completed yet.</p>
-        {% endfor %}
-    </div>
+    </section>
 </div>
 {% endblock %}

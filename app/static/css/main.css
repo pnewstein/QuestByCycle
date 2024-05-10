@@ -923,3 +923,68 @@ footer {
     margin: auto;                   /* Center the carousel horizontally */
     display: block;                 /* Use block to apply auto margins */
 }
+
+
+.user-profile {
+    max-width: 800px;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    border-radius: 8px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-picture {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin-right: 20px;
+}
+
+.user-interests {
+    flex-grow: 1;
+}
+
+.badges-earned, .tasks-completed {
+    margin-top: 20px;
+}
+
+.badges-container, .tasks-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    padding: 10px;
+}
+
+.badge-item, .task-item {
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.badge-icon {
+    width: 100px;
+    display: block;
+    margin: 0 auto;
+}
+
+.badge-item h3, .task-item h3 {
+    margin-top: 10px;
+    color: #333;
+}
+
+.badge-item p, .task-item p {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.tasks-item p {
+    margin: 5px 0;
+}
