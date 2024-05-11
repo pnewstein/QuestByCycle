@@ -40,13 +40,15 @@ class UserTask(db.Model):
     def __init__(self, **kwargs):
         super(UserTask, self).__init__(**kwargs)  # Initialize all fields from passed keyword arguments
 
-
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(512))
     is_admin = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    tos_agreed = db.Column(db.Boolean, default=False, nullable=False)
+    privacy_agreed = db.Column(db.Boolean, default=False, nullable=False)
     user_tasks = db.relationship('UserTask', backref='user', lazy='dynamic')
     badges = db.relationship('Badge', secondary=user_badges, lazy='subquery',
         backref=db.backref('users', lazy=True))

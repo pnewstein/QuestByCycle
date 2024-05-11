@@ -46,7 +46,7 @@ def login():
 def logout():
     logout_user()
     flash('Logged out successfully.', 'success')
-    return redirect(url_for('auth.login'))
+    return redirect(url_for('main.index'))
 
 
 def encrypt_message(message, key):
@@ -65,28 +65,38 @@ def decrypt_message(encrypted_message, key):
 def register():
     form = RegistrationForm(request.form)
     if form.validate_on_submit():
+        if not form.accept_tos.data or not form.accept_privacy.data:
+            flash('You must agree to the terms of service and privacy policy.', 'warning')
+            return render_template('register.html', form=form)
+
         email = form.email.data
         username = email.split('@')[0]  # Derive username from email
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
             flash('Email already registered. Please use a different email.', 'warning')
             return redirect(url_for('auth.register'))
-        
-        user = User(username=username, email=email)
+
+        user = User(
+            username=username, 
+            email=email, 
+            tos_agreed=form.accept_tos.data,
+            privacy_agreed=form.accept_privacy.data
+        )
         user.set_password(form.password.data)
         db.session.add(user)
-        
+
         try:
             db.session.commit()
             login_user(user)
             flash('Congratulations, you are now a registered user and logged in!', 'success')
-            return redirect(url_for('main.profile'))
+            return redirect(url_for('main.index'))
         except Exception as e:
             db.session.rollback()
             flash('Registration failed due to an unexpected error. Please try again.', 'error')
             current_app.logger.error(f'Failed to register user: {e}')
             
     return render_template('register.html', title='Register', form=form)
+
 
 @auth_bp.route('/privacy_policy')
 def privacy_policy():

@@ -15,6 +15,14 @@
             {{ form.confirm_password.label }} {{ form.confirm_password() }}
         </div>
         <div>
+            {{ form.accept_tos() }} {{ form.accept_tos.label }}
+            <a href="{{ url_for('auth.terms_of_service') }}">Terms of Service</a>
+        </div>
+        <div>
+            {{ form.accept_privacy() }} {{ form.accept_privacy.label }}
+            <a href="{{ url_for('auth.privacy_policy') }}">Privacy Policy</a><br>
+        </div>
+        <div>
             {{ form.submit() }}
         </div>
     </form>

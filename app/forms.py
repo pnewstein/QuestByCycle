@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask import current_app
 from wtforms import StringField, SelectField, SubmitField, IntegerField, PasswordField, TextAreaField, BooleanField
-from wtforms.validators import DataRequired, NumberRange, EqualTo, Optional, Email, Length
+from wtforms.validators import DataRequired, NumberRange, EqualTo, Optional, Email, Length, ValidationError
 from wtforms.fields import DateField
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from app.models import Badge, Task
@@ -16,9 +16,17 @@ class RegistrationForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    accept_tos = BooleanField('I agree to the ', validators=[DataRequired()])
+    accept_privacy = BooleanField('I agree to the ', validators=[DataRequired()])
     submit = SubmitField('Register')
 
+    def validate_accept_tos(form, field):
+        if not field.data:
+            raise ValidationError('You must agree to the terms of service to register.')
 
+    def validate_accept_privacy(form, field):
+        if not field.data:
+            raise ValidationError('You must agree to the privacy policy to register.')
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
