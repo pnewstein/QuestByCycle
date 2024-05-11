@@ -9,7 +9,7 @@
     <div class="introduction">
         <strong><p>QuestByCycle is a community-wide motivational game designed to encourage cycling and outdoor activities. Participants can join the game, complete tasks, and earn points/”reduce carbon” in the atmosphere to climb up the leaderboard. It's a fun way to stay active, explore your surroundings, and connect with fellow cycling enthusiasts.</p></strong>
     </div>
-    {% else %}
+    {% endif %}
     <div class="content-flex-container">
         <div class="game-item">
             <div id="taskImageCarousel" class="carousel slide" data-ride="carousel">
@@ -32,29 +32,43 @@
         </div>
 
         <div class="game-item">
-            <div id="profileDisplay">
-                <form id="editProfileForm" method="post" enctype="multipart/form-data" style="display: none;">
-                    {{ form.hidden_tag() }}
-                    <p><img id="profileImageDisplay" src="{{ url_for('static', filename=current_user.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="profile-image"></p>
-                    <p><input type="file" name="profile_picture" onchange="previewFile()"></p>
-                    <p><input type="text" name="display_name" placeholder="Player/Team Name" value="{{ profile.display_name }}"></p>
-                    <p><input type="text" name="email" placeholder="Email" value="{{ profile.email }}"></p>
-                    <p><input type="text" name="age_group" placeholder="Age Group" value="{{ profile.age_group }}"></p>
-                    <p><input type="text" name="interests" placeholder="Interests" value="{{ profile.interests }}"></p>
-                    <button type="submit">Save Profile</button>
-                </form>
-                <div id="profileView">
-                    <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="profile-image">
-                    <p><strong>Name:</strong> {{ profile.display_name }}</p>
-                    <p><strong>Email:</strong> {{ profile.email }}</p>
-                    <p><strong>Age Group:</strong> {{ profile.age_group }}</p>
-                    <p><strong>Interests:</strong> {{ profile.interests }}</p>
-                    <button id="editProfileBtn" onclick="toggleEditProfile()">Edit Profile</button>
+            {% if profile %}
+                <div id="profileDisplay">
+                    <form id="editProfileForm" method="post" enctype="multipart/form-data" style="display: none;">
+                        {{ form.hidden_tag() }}
+                        <p><img id="profileImageDisplay" src="{{ url_for('static', filename=current_user.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="profile-image"></p>
+                        <p><strong>Profile Photo: </strong><input type="file" name="profile_picture" onchange="previewFile()"></p>
+                        <p><strong>Player/Team Name: </strong><input type="text" name="display_name" placeholder="Player/Team Name" value="{{ profile.display_name }}"></p>
+                        <p><strong>Age Group: </strong><input type="text" name="age_group" placeholder="Age Group" value="{{ profile.age_group }}"></p>
+                        <p><strong>Interests: </strong><input type="text" name="interests" placeholder="Interests" value="{{ profile.interests }}"></p>
+                        <button type="submit" class="button">Save Profile</button>
+                    </form>
+                    <div id="profileView">
+                        <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="profile-image">
+                        <p><strong>Name:</strong> {{ profile.display_name }}</p>
+                        <p id="total-points"><strong>Your Total Completed Points:</strong> {{ total_points }}</p>
+                        <p><strong>Email:</strong> {{ profile.email }}</p>
+                        <p><strong>Age Group:</strong> {{ profile.age_group }}</p>
+                        <p><strong>Interests:</strong> {{ profile.interests }}</p>
+                        <button id="editProfileBtn" onclick="toggleEditProfile()" class="button">Edit Profile</button>
+                        <a href="{{ url_for('auth.logout') }}" class="button">Logout</a>
+                    </div>
                 </div>
-            </div>
+            {% endif %}
+            {% if not current_user.is_authenticated %}
+            <div id="profileView">
+                <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="profile-image">
+                <p><strong>Name:</strong></p>
+                <p id="total-points"><strong>Your Total Completed Points:</strong></p>
+                <p><strong>Email:</strong></p>
+                <p><strong>Age Group:</strong></p>
+                <p><strong>Interests:</strong></p>
+                <a href="{{ url_for('auth.login') }}" class="button" style="margin-left: 10px;">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="button" style="margin-left: 10px;">Register</a>
+            {% endif %}
         </div>
+
     </div>
-    {% endif %}
     <div class="shout-board-column">
         <h2>Current Activities</h2>
         <div class="game-item">
@@ -107,7 +121,6 @@
 
     <div class="game-item">
         {% if has_joined %}
-        <p id="total-points">Your Total Completed Points: {{ total_points }}</p>
         <p>
             {% if current_user.is_admin %}
             <a href="{{ url_for('tasks.manage_game_tasks', game_id=game.id) }}" class="button" style="margin-left: 10px;">Configure Tasks</a>

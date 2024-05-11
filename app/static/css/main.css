@@ -359,6 +359,16 @@ article h3 {
     z-index: 3;
 }
 
+/* Ensure the submission detail modal appears above the task detail modal */
+#userProfileModal {
+    z-index: 4;
+}
+
+/* Ensure the submission detail modal appears above the task detail modal */
+#leaderboardModal {
+    z-index: 3;
+}
+
 /* Specific styles for the Submission Detail Modal */
 #submissionDetailModal .modal-content {
     text-align: center; /* Center align the content inside the modal */
