@@ -138,9 +138,37 @@ def index(game_id, task_id, user_id):
 
     tasks.sort(key=lambda x: (x.completions_within_period if hasattr(x, 'completions_within_period') else 0), reverse=True)
 
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' and user_id:
-        # Return only the part of the page needed for the modal if AJAX request
-        return render_template('_user_profile_modal_content.html', user=profile, user_tasks=user_tasks, badges=badges)
+    profform = ProfileForm()
+
+    if request.method == 'POST':
+        if profform.validate_on_submit():
+            current_user.display_name = profform.display_name.data
+            current_user.age_group = profform.age_group.data
+            current_user.interests = profform.interests.data
+
+            # Handle profile picture
+            if 'profile_picture' in request.files:
+                profile_picture_file = request.files['profile_picture']
+                if profile_picture_file.filename != '':
+                    filename = save_profile_picture(profile_picture_file)
+                    current_user.profile_picture = filename
+
+            db.session.commit()
+            flash('Profile updated successfully.', 'success')
+            return redirect(url_for('main.profile'))
+
+    elif request.method == 'DELETE':
+        db.session.delete(current_user)
+        db.session.commit()
+        logout_user()
+        flash('Profile deleted successfully.', 'info')
+        return redirect(url_for('main.index'))
+
+    elif request.method == 'GET':
+        profform.display_name.data = current_user.display_name
+        profform.age_group.data = current_user.age_group
+        profform.interests.data = current_user.interests
+
 
     return render_template('index.html',
                            form=form,
