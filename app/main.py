@@ -137,37 +137,31 @@ def index(game_id, task_id, user_id):
                 task.next_eligible_time = last_completion.timestamp + increment_map.get(task.frequency, timedelta(days=1))
 
     tasks.sort(key=lambda x: (x.completions_within_period if hasattr(x, 'completions_within_period') else 0), reverse=True)
+   
+    if current_user.is_authenticated:
+        profform = ProfileForm()
 
-    profform = ProfileForm()
+        if request.method == 'POST':
+            if profform.validate_on_submit():
+                current_user.display_name = profform.display_name.data
+                current_user.age_group = profform.age_group.data
+                current_user.interests = profform.interests.data
 
-    if request.method == 'POST':
-        if profform.validate_on_submit():
-            current_user.display_name = profform.display_name.data
-            current_user.age_group = profform.age_group.data
-            current_user.interests = profform.interests.data
+                # Handle profile picture
+                if 'profile_picture' in request.files:
+                    profile_picture_file = request.files['profile_picture']
+                    if profile_picture_file.filename != '':
+                        filename = save_profile_picture(profile_picture_file)
+                        current_user.profile_picture = filename
 
-            # Handle profile picture
-            if 'profile_picture' in request.files:
-                profile_picture_file = request.files['profile_picture']
-                if profile_picture_file.filename != '':
-                    filename = save_profile_picture(profile_picture_file)
-                    current_user.profile_picture = filename
+                db.session.commit()
+                flash('Profile updated successfully.', 'success')
+                return redirect(url_for('main.profile'))
 
-            db.session.commit()
-            flash('Profile updated successfully.', 'success')
-            return redirect(url_for('main.profile'))
-
-    elif request.method == 'DELETE':
-        db.session.delete(current_user)
-        db.session.commit()
-        logout_user()
-        flash('Profile deleted successfully.', 'info')
-        return redirect(url_for('main.index'))
-
-    elif request.method == 'GET':
-        profform.display_name.data = current_user.display_name
-        profform.age_group.data = current_user.age_group
-        profform.interests.data = current_user.interests
+        elif request.method == 'GET':
+            profform.display_name.data = current_user.display_name
+            profform.age_group.data = current_user.age_group
+            profform.interests.data = current_user.interests
 
 
     return render_template('index.html',
