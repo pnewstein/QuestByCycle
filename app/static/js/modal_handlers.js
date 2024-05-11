@@ -296,6 +296,8 @@ function submitTaskDetails(event, taskId) {
     });
 }
 
+const userToken = localStorage.getItem('userToken');
+
 // Fetch and Display Submissions
 function fetchSubmissions(taskId) {
     fetch(`/tasks/task/${taskId}/submissions`, {
