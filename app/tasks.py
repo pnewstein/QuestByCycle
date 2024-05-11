@@ -559,3 +559,24 @@ def get_image_url(taskId):
     # Assume the image URL is stored in a Task model attribute
     imageUrl = task.image_url if task.image_url else url_for('static', filename='default.jpg')
     return jsonify(success=True, imageUrl=imageUrl)
+
+
+@tasks_bp.route('/tasks/submissions/<int:user_id>', methods=['GET'])
+def get_user_submissions(user_id):
+    if user_id != current_user.id:
+        return jsonify({'error': 'Unauthorized'}), 403
+    try:
+        submissions = TaskSubmission.query.filter_by(user_id=user_id).all()
+        return jsonify([{'id': sub.id, 'image_url': sub.image_url} for sub in submissions])
+    except Exception as e:
+        print(f"Error fetching submissions: {e}")
+        return jsonify({'error': 'Failed to fetch submissions'}), 500
+
+@tasks_bp.route('/tasks/delete_submission/<int:submission_id>', methods=['DELETE'])
+def delete_submission(submission_id):
+    submission = TaskSubmission.query.get(submission_id)
+    if submission.user_id != current_user.id:
+        return jsonify({'error': 'Unauthorized'}), 403
+    db.session.delete(submission)
+    db.session.commit()
+    return jsonify({'success': True})
