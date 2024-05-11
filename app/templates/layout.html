@@ -12,30 +12,6 @@
 </head>
 <body>
     <div class="content-wrap">
-        <header>
-            <nav>
-                <div class="dropdown">
-                    <a href="{{ url_for('main.index') }}"><button class="dropbtn">Home</button></a>
-                </div>
-                {% if current_user.is_authenticated %}
-                    <div class="dropdown">
-                        <a href="{{ url_for('main.profile') }}">
-                            <button class="dropbtn">
-                                {{ current_user.username }}'s Profile
-                            </button>
-                        </a>
-                        <div class="dropdown-content">
-                            <div>
-                                <a href="{{ url_for('auth.logout') }}">Logout</a>
-                            </div>
-                        </div>
-                    </div>                    
-                {% else %}
-                    <a href="{{ url_for('auth.login') }}">Login</a>
-                    <a href="{{ url_for('auth.register') }}">Register</a>
-                {% endif %}
-            </nav>
-        </header>
         <main>
             <!-- Display Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
