@@ -496,7 +496,7 @@ function showLeaderboardModal(selectedGameId) {
     if (!leaderboardContent) {
         console.error('Leaderboard modal content element not found. Cannot proceed with displaying leaderboard.');
         alert('Leaderboard modal content element not found. Please ensure the page has loaded completely and the correct ID is used.');
-        return; // Exit the function if no content element is found
+        return;
     }
 
     fetch('/leaderboard_partial?game_id=' + selectedGameId)
@@ -507,11 +507,11 @@ function showLeaderboardModal(selectedGameId) {
             return response.json();
         })
         .then(data => {
-            leaderboardContent.innerHTML = '';  // Clear previous content
+            leaderboardContent.innerHTML = '';
             appendGameSelector(leaderboardContent, data, selectedGameId);
             appendCompletionMeter(leaderboardContent, data);
             appendLeaderboardTable(leaderboardContent, data);
-            openModal('leaderboardModal');  // Use the correct modal ID
+            openModal('leaderboardModal');
         })
         .catch(error => {
             console.error('Failed to load leaderboard:', error);
@@ -530,7 +530,7 @@ function showMySubmissionsModal() {
         })
         .then(data => {
             if (Array.isArray(data)) {
-                displaySubmissions(data);
+                displayMySubmissions(data);
             } else {
                 console.error('Expected an array of submissions, but got:', data);
                 alert('Error: ' + data.error);
@@ -632,16 +632,16 @@ function appendCompletionMeter(parentElement, data) {
 
         const meterBar = document.createElement('div');
         meterBar.className = 'meter-bar';
+        meterBar.id = 'meterBar';  // Ensure the id is correctly set
         let percent = Math.min(data.total_game_points / data.game_goal * 100, 100);
-        meterBar.style.width = '100%'; // Bar fills the width of the container
-        meterBar.style.height = `${percent}%`; // Dynamic height based on completion
-        meterBar.dataset.label = `${percent.toFixed(1)}% Complete`; // Optional: Show completion percentage
+        meterBar.style.width = '100%';
+        meterBar.style.height = `${percent}%`;
+        meterBar.dataset.label = `${percent.toFixed(1)}% Complete`;
         completionMeter.appendChild(meterBar);
 
         meterContainer.appendChild(completionMeter);
         parentElement.appendChild(meterContainer);
 
-        // Animation to visually fill the meter
         setTimeout(() => {
             meterBar.style.transition = 'height 2s ease-in-out, background-color 2s';
             meterBar.style.height = `${percent}%`;
@@ -664,12 +664,21 @@ function closeSubmissionDetailModal() {
     const submissionModal = document.getElementById('submissionDetailModal');
     submissionModal.style.display = 'none';
     submissionModal.style.backgroundColor = ''; // Reset background color to default
+    document.body.classList.remove('body-no-scroll');
+}
+
+function closeAllSubmissionsModal() {
+    const allSubmissionsModal = document.getElementById('allSubmissionsModal');
+    allSubmissionsModal.style.display = 'none';
+    allSubmissionsModal.style.backgroundColor = ''; // Reset background color to default
+    document.body.classList.remove('body-no-scroll');
 }
 
 function closeMySubmissionsModal() {
     const mySubmissionsModal = document.getElementById('mySubmissionsModal');
     mySubmissionsModal.style.display = 'none';
     mySubmissionsModal.style.backgroundColor = ''; // Reset background color to default
+    document.body.classList.remove('body-no-scroll');
 }
 
 function closeUserProfileModal() {
@@ -701,9 +710,11 @@ window.onclick = function(event) {
             case 'submissionDetailModal':
                 closeSubmissionDetailModal();
                 break;
-
             case 'mySubmissionsModal':
                 closeMySubmissionsModal();
+                break;
+            case 'allSubmissionsModal':
+                closeAllSubmissionsModal();
                 break;
             case 'taskDetailModal':
                 closeTaskDetailModal();
@@ -721,54 +732,144 @@ window.onclick = function(event) {
     }
 }
 
+function showAllSubmissionsModal() {
+    fetch('/tasks/task/all_submissions')  // Adjusted to the new endpoint for fetching all submissions
+        .then(response => response.json())
+        .then(data => {
+            displayAllSubmissions(data);
+            openModal('allSubmissionsModal');
+        })
+        .catch(error => {
+            console.error('Error fetching all submissions:', error);
+            alert('Error fetching all submissions: ' + error.message);
+        });
+}
 
-// Function to display submissions in a grid
-function displaySubmissions(submissions) {
-    const container = document.getElementById('submissionsContainer');
+function displayAllSubmissions(submissions) {
+    const container = document.getElementById('allSubmissionsContainer');
     container.innerHTML = ''; // Clear previous submissions
-    console.log('Submissions received:', submissions); // Debug: Log received submissions
-
     submissions.forEach(submission => {
+        const card = document.createElement('div');
+        card.className = 'submission-card';
+
         const img = document.createElement('img');
         img.src = submission.image_url || 'path/to/default/image.png';
         img.alt = 'Task Submission';
-        img.classList.add('grid-item');
+        img.className = 'submission-image';
+
+        const info = document.createElement('div');
+        info.className = 'submission-info';
+
+        const userDetails = document.createElement('p');
+        userDetails.textContent = `User ID: ${submission.user_id}`;
+        userDetails.className = 'submission-user-details';
+
+        const taskDetails = document.createElement('p');
+        taskDetails.textContent = `Task ID: ${submission.task_id}`;
+        taskDetails.className = 'submission-task-details';
+
+        const timestamp = document.createElement('p');
+        timestamp.textContent = `Submitted on: ${submission.timestamp}`;
+        timestamp.className = 'submission-timestamp';
+
+        const comment = document.createElement('p');
+        comment.textContent = `Comment: ${submission.comment}`;
+        comment.className = 'submission-comment';
+    
+        const twitterLink = document.createElement('p');
+        twitterLink.textContent = `Twitter: ${submission.tweet_url}`;
+        twitterLink.className = 'submission-comment';
 
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
+        deleteButton.className = 'button delete-button';
+        deleteButton.addEventListener('click', function() {
+            deleteSubmission(submission.id);
+        });
 
-        // Check if the submission ID is defined
-        if (submission.id) {
-            deleteButton.addEventListener('click', function() {
-                deleteSubmission(submission.id);
-            });
-        } else {
-            console.error('Undefined Submission ID:', submission);
-            deleteButton.disabled = true;
-        }
+        info.appendChild(userDetails);
+        info.appendChild(taskDetails);
+        info.appendChild(timestamp);
+        info.appendChild(comment);    
+        info.appendChild(twitterLink);
+        card.appendChild(img);
+        card.appendChild(info);
+        card.appendChild(deleteButton);
 
-        const div = document.createElement('div');
-        div.appendChild(img);
-        div.appendChild(deleteButton);
-        container.appendChild(div);
+        container.appendChild(card);
+    });
+}
+
+
+// Function to display submissions in a grid
+function displayMySubmissions(submissions) {
+    const container = document.getElementById('submissionsContainer');
+    container.innerHTML = ''; // Clear previous submissions
+
+    submissions.forEach(submission => {
+        const card = document.createElement('div');
+        card.className = 'submission-card';
+
+        const img = document.createElement('img');
+        img.src = submission.image_url || 'path/to/default/image.png';
+        img.alt = 'Task Submission';
+        img.className = 'submission-image';
+
+        const info = document.createElement('div');
+        info.className = 'submission-info';
+
+        const timestamp = document.createElement('p');
+        timestamp.textContent = `Submitted on: ${submission.timestamp}`;
+        timestamp.className = 'submission-timestamp';
+
+        const comment = document.createElement('p');
+        comment.textContent = `Comment: ${submission.comment}`;
+        comment.className = 'submission-comment';
+
+        const twitterLink = document.createElement('p');
+        twitterLink.textContent = `Twitter: ${submission.tweet_url}`;
+        twitterLink.className = 'submission-comment';
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.className = 'button delete-button';
+        deleteButton.addEventListener('click', function() {
+            deleteSubmission(submission.id);
+        });
+
+        info.appendChild(timestamp);
+        info.appendChild(comment);
+        info.appendChild(twitterLink);
+        card.appendChild(img);
+        card.appendChild(info);
+        card.appendChild(deleteButton);
+
+        container.appendChild(card);
     });
 }
 
 // Function to delete a submission
 function deleteSubmission(submissionId) {
-    console.log('Deleting submission with ID:', submissionId);
-    fetch(`/tasks/task/delete_submission/${submissionId}`, { 
+    fetch(`/tasks/task/delete_submission/${submissionId}`, {
         method: 'DELETE',
         headers: {
             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
-    .then(response => {
-        if (response.ok) {
+    .then(response => response.json().then(data => ({ data, ok: response.ok }))) // Create an object that includes both data and the ok status
+    .then(result => {
+        if (result.ok) {
             alert('Submission deleted successfully');
-            showMySubmissionsModal(currentUserId);  // Use currentUserId here
+            // Optionally, remove the submission's element from the DOM to update the UI instantly
+            // Make sure you have an element with the id formatted as `submission-${submissionId}`
+            const element = document.getElementById(`submission-${submissionId}`);
+            if (element) {
+                element.remove();
+            } else {
+                console.log('Element not found:', `submission-${submissionId}`);
+            }
         } else {
-            response.json().then(data => alert(`Failed to delete submission: ${data.message}`));
+            alert(`Failed to delete submission: ${result.data.error}`);
         }
     })
     .catch(error => console.error('Error deleting submission:', error));

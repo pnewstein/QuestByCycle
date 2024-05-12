@@ -126,6 +126,8 @@
             <a href="{{ url_for('tasks.manage_game_tasks', game_id=game.id) }}" class="button" style="margin-left: 10px;">Configure Tasks</a>
             <a href="{{ url_for('badges.manage_badges', game_id=game.id) }}" class="button" style="margin-left: 10px;">Configure Badges</a>
             <a href="{{ url_for('admin.admin_dashboard') }}" class="button" style="margin-left: 10px;">Admin Dashboard</a>
+            <button id="allSubmissionsButton" class="button" style="margin-left: 10px;">All Submissions</button>
+
             {% endif %}
             <button id="leaderboardButton" data-game-id="{{ game.id }}" class="button">View Leaderboard</button>
             <button id="submissionsButton" data-game-id="{{ game.id }}" class="button">Your Submissions</button>
@@ -197,6 +199,17 @@
                 }
             });
         }
+
+        const allSubmissionsButton = document.getElementById('allSubmissionsButton'); // Correct the typo here
+        if (allSubmissionsButton) {
+            allSubmissionsButton.addEventListener('click', function() {
+                if (userId !== 'none') {
+                    showAllSubmissionsModal(userId);
+                } else {
+                    console.log('No user ID found or user not logged in');
+                }
+            });
+        }
     });
 
     document.getElementById('editProfileForm').addEventListener('submit', function(event) {
@@ -219,25 +232,25 @@
     });
 
     function updateMeter(gameId) {
-        if (!gameId) return;  // Check if gameId is available
+        if (!gameId) return;
 
         fetch(`/games/get_game_points/${gameId}`)
             .then(response => response.json())
             .then(data => {
                 if (!data || !data.total_game_points || !data.game_goal) {
                     console.error('Data missing from response');
-                    return;  // Check if the necessary data is available
+                    return;
                 }
 
                 const totalPoints = data.total_game_points;
-                const game_Goal = data.game_goal;
-                const heightPercentage = Math.min((totalPoints / game_Goal) * 100, 100); // Ensure it doesn't exceed 100%
-                
+                const gameGoal = data.game_goal;
+                const heightPercentage = Math.min((totalPoints / gameGoal) * 100, 100);
+
                 const meterBar = document.getElementById('meterBar');
                 if (meterBar) {
-                    meterBar.style.height = heightPercentage + '%';
-                    document.documentElement.style.setProperty('--meter-fill-height', heightPercentage + '%');
-                    document.querySelector('.meter-label').innerText = `Group Completion: ${totalPoints} / ${game_Goal}`;
+                    meterBar.style.height = `${heightPercentage}%`;
+                    document.documentElement.style.setProperty('--meter-fill-height', `${heightPercentage}%`);
+                    document.querySelector('.meter-label').innerText = `Group Completion: ${totalPoints} / ${gameGoal}`;
                 } else {
                     console.error('Meter bar element not found');
                 }
@@ -364,6 +377,8 @@
 {% include 'modals/user_profile_modal.html' %}
 {% include 'modals/leaderboard_modal.html' %}
 {% include 'modals/my_submissions_modal.html' %}
+{% include 'modals/all_submissions_modal.html' %}
+
 
 <script src="{{ url_for('static', filename='js/modal_handlers.js') }}"></script>
 {% endblock %}
