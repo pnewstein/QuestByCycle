@@ -10,7 +10,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
 </head>
-<body>
+<body data-user-id="{{ current_user.id if current_user.is_authenticated else 'none' }}">
     <div class="content-wrap">
         <main>
             <!-- Display Flash Messages -->

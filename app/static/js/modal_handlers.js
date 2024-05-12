@@ -1,6 +1,9 @@
 // Combined Task Management and Modal Interaction Code
 let isSubmitting = false;
 
+const userToken = localStorage.getItem('userToken');
+const currentUserId = localStorage.getItem(' current_user_id ');
+
 // Function to open a modal by ID
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
@@ -272,7 +275,9 @@ function submitTaskDetails(event, taskId) {
         return data;
     }))
     .then(data => {
-        alert(data.success ? 'Submission successful!' : `Submission failed: ${data.message}`);
+        if (!data.success) {
+            alert(`Submission failed: ${data.message}`);
+        }
         if (data.total_points) {
             const totalPointsElement = document.getElementById('total-points');
             if (totalPointsElement) totalPointsElement.innerText = `Total Completed Points: ${data.total_points}`;
@@ -295,8 +300,6 @@ function submitTaskDetails(event, taskId) {
         resetModalContent();
     });
 }
-
-const userToken = localStorage.getItem('userToken');
 
 // Fetch and Display Submissions
 function fetchSubmissions(taskId) {
@@ -517,33 +520,26 @@ function showLeaderboardModal(selectedGameId) {
 }
 
 
-function showSubmissionsModal(selectedGameId) {
-    console.log("Attempting to show users submissions modal for game ID:", selectedGameId);
-
-    const submissionsContent = document.getElementById('submissionsModalContent');
-    if (!submissionsContent) {
-        console.error('Leaderboard modal content element not found. Cannot proceed with displaying leaderboard.');
-        alert('Leaderboard modal content element not found. Please ensure the page has loaded completely and the correct ID is used.');
-        return; // Exit the function if no content element is found
-    }
-
-    fetch('/submissions_partial?game_id=' + selectedGameId)
+function showMySubmissionsModal() {
+    fetch('/tasks/task/my_submissions')  // Adjusted to the new endpoint
         .then(response => {
             if (!response.ok) {
-                throw new Error('Failed to fetch submission data');
+                throw new Error('Failed to fetch data: ' + response.statusText);
             }
             return response.json();
         })
         .then(data => {
-            submissionsContent.innerHTML = '';  // Clear previous content
-            appendGameSelector(submissionsContent, data, selectedGameId);
-            appendCompletionMeter(submissionsContent, data);
-            appendLeaderboardTable(submissionsContent, data);
-            openModal('submissionsModal');  // Use the correct modal ID
+            if (Array.isArray(data)) {
+                displaySubmissions(data);
+            } else {
+                console.error('Expected an array of submissions, but got:', data);
+                alert('Error: ' + data.error);
+            }
+            openModal('mySubmissionsModal');
         })
         .catch(error => {
-            console.error('Failed to load submissions:', error);
-            alert('Failed to load submission data. Please try again.');
+            console.error('Error fetching submissions:', error);
+            alert('Error fetching submissions: ' + error.message);
         });
 }
 
@@ -670,6 +666,12 @@ function closeSubmissionDetailModal() {
     submissionModal.style.backgroundColor = ''; // Reset background color to default
 }
 
+function closeMySubmissionsModal() {
+    const mySubmissionsModal = document.getElementById('mySubmissionsModal');
+    mySubmissionsModal.style.display = 'none';
+    mySubmissionsModal.style.backgroundColor = ''; // Reset background color to default
+}
+
 function closeUserProfileModal() {
     const userProfileModal = document.getElementById('userProfileModal');
     if (!userProfileModal) {
@@ -699,6 +701,10 @@ window.onclick = function(event) {
             case 'submissionDetailModal':
                 closeSubmissionDetailModal();
                 break;
+
+            case 'mySubmissionsModal':
+                closeMySubmissionsModal();
+                break;
             case 'taskDetailModal':
                 closeTaskDetailModal();
                 break;
@@ -715,35 +721,31 @@ window.onclick = function(event) {
     }
 }
 
-// Function to show the submissions modal and fetch data
-function showSubmissionsModal(userId) {
-    fetch(`/tasks/tasks/submissions/${userId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (Array.isArray(data)) {  // Checking if the data is actually an array
-                displaySubmissions(data);
-            } else {
-                console.error('Expected an array of submissions, but got:', data);
-            }
-            openModal('submissionsModal');
-        })
-        .catch(error => console.error('Error fetching submissions:', error));
-}
 
 // Function to display submissions in a grid
 function displaySubmissions(submissions) {
     const container = document.getElementById('submissionsContainer');
     container.innerHTML = ''; // Clear previous submissions
+    console.log('Submissions received:', submissions); // Debug: Log received submissions
+
     submissions.forEach(submission => {
         const img = document.createElement('img');
-        img.src = submission.image_url;
+        img.src = submission.image_url || 'path/to/default/image.png';
         img.alt = 'Task Submission';
         img.classList.add('grid-item');
 
-        // Optionally add a delete button
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
-        deleteButton.onclick = function() { deleteSubmission(submission.id); };
+
+        // Check if the submission ID is defined
+        if (submission.id) {
+            deleteButton.addEventListener('click', function() {
+                deleteSubmission(submission.id);
+            });
+        } else {
+            console.error('Undefined Submission ID:', submission);
+            deleteButton.disabled = true;
+        }
 
         const div = document.createElement('div');
         div.appendChild(img);
@@ -754,14 +756,20 @@ function displaySubmissions(submissions) {
 
 // Function to delete a submission
 function deleteSubmission(submissionId) {
-    fetch(`/tasks/tasks/delete_submission/${submissionId}`, { method: 'DELETE' })
-        .then(response => {
-            if (response.ok) {
-                alert('Submission deleted successfully');
-                showSubmissionsModal(current_user.id); // Refresh the list
-            } else {
-                alert('Failed to delete submission');
-            }
-        })
-        .catch(error => console.error('Error deleting submission:', error));
+    console.log('Deleting submission with ID:', submissionId);
+    fetch(`/tasks/task/delete_submission/${submissionId}`, { 
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            alert('Submission deleted successfully');
+            showMySubmissionsModal(currentUserId);  // Use currentUserId here
+        } else {
+            response.json().then(data => alert(`Failed to delete submission: ${data.message}`));
+        }
+    })
+    .catch(error => console.error('Error deleting submission:', error));
 }
