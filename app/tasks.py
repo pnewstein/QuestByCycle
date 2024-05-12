@@ -573,7 +573,9 @@ def get_user_submissions():
             'image_url': submission.image_url,
             'comment': submission.comment,
             'user_id': submission.user_id,
-            'twitter_url': submission.twitter_url  # Assume twitter_url is an attribute
+            'task_id': submission.task_id,
+            'twitter_url': submission.twitter_url,  # Assume twitter_url is an attribute
+            'timestamp': submission.timestamp.isoformat()  # Adjusted to string format for JSON serialization
         } for submission in submissions]
         return jsonify(submissions_data)
     except Exception as e:
@@ -585,14 +587,17 @@ def get_user_submissions():
 @login_required
 def delete_submission(submission_id):
     submission = TaskSubmission.query.get(submission_id)
+
+    # Check if the current user is the admin or the user who created the submission.
+    if not current_user.is_admin:
+        if not submission.user_id == current_user.id:
+            return jsonify({'error': 'Unauthorized'}), 403
+
     if not submission:
         return jsonify({'error': 'Submission not found'}), 404
 
-    if submission.user_id != current_user.id:
-        return jsonify({'error': 'Unauthorized'}), 403
-
     # Find the UserTask entry
-    user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=submission.task_id).first()
+    user_task = UserTask.query.filter_by(user_id=submission.user_id, task_id=submission.task_id).first()
 
     if user_task:
         # Decrement completions and update points
@@ -604,7 +609,7 @@ def delete_submission(submission_id):
             user_task.points_awarded = max(user_task.points_awarded - task.points, 0)  # Adjust the points accordingly
 
         # Check if badges need to be revoked
-        check_and_revoke_badges(current_user.id)
+        check_and_revoke_badges(submission.user_id)
 
         # Commit UserTask changes
         db.session.commit()
@@ -613,3 +618,25 @@ def delete_submission(submission_id):
     db.session.delete(submission)
     db.session.commit()
     return jsonify({'success': True})
+
+
+@tasks_bp.route('/task/all_submissions')
+@login_required
+def all_submissions():
+    # Ensure only admins can access this route
+    if not current_user.is_admin:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    submissions = TaskSubmission.query.all()
+    submissions_data = [
+        {
+            'id': submission.id,
+            'user_id': submission.user_id,
+            'task_id': submission.task_id,
+            'image_url': submission.image_url,
+            'comment': submission.comment,
+            'twitter_url': submission.twitter_url,
+            'timestamp': submission.timestamp.isoformat()  # Adjusted to string format for JSON serialization
+        } for submission in submissions
+    ]
+    return jsonify(submissions_data)
