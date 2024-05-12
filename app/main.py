@@ -178,7 +178,8 @@ def index(game_id, task_id, user_id):
                            user_tasks=user_tasks,
                            badges=badges,
                            carousel_images=carousel_images,
-                           total_points=total_points)
+                           total_points=total_points,
+                           current_user_id=current_user.id)
 
 
 @main_bp.route('/shout-board', methods=['POST'])
@@ -386,14 +387,3 @@ def update_profile():
 
     db.session.commit()
     return jsonify(success=True)
-
-
-@main_bp.route('/delete_profile/<int:profile_id>', methods=['DELETE'])
-@login_required
-def delete_profile(profile_id):
-    if current_user.id == profile_id:  # Ensure the user can only delete their own profile
-        db.session.delete(current_user)
-        db.session.commit()
-        logout_user()
-        return jsonify(success=True)
-    return jsonify(success=False), 403

@@ -290,3 +290,34 @@ def check_and_award_badges(user_id, task_id):
                     print(f"User already has badge '{badge.name}', not awarded again")
         else:
             print("Condition not met for awarding badge based on category completion.")
+
+
+def check_and_revoke_badges(user_id):
+    user = User.query.get(user_id)
+    badges_to_remove = []
+
+    for badge in user.badges:
+        # Determine the logic to check if the badge should still be held
+        # This depends heavily on how badge conditions are defined. Here's a generic example:
+
+        # Check if all tasks required for the badge are still completed as required
+        all_tasks_completed = True
+        for task in badge.tasks:
+            user_task = UserTask.query.filter_by(user_id=user_id, task_id=task.id).first()
+            if not user_task or user_task.completions < task.completion_limit:
+                all_tasks_completed = False
+                break
+
+        if not all_tasks_completed:
+            badges_to_remove.append(badge)
+
+    for badge in badges_to_remove:
+        user.badges.remove(badge)
+        db.session.add(ShoutBoardMessage(
+            message=f" has lost the badge '{badge.name}' due to updated task completions.",
+            user_id=user_id
+        ))
+        print(f"Badge '{badge.name}' removed from user '{user.username}'")
+
+    db.session.commit()
+

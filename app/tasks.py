@@ -1,8 +1,8 @@
 from flask import Blueprint, make_response, jsonify, render_template, request, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
-from app.utils import update_user_score, getLastRelevantCompletionTime, check_and_award_badges, revoke_badge, save_badge_image, save_submission_image, can_complete_task
+from app.utils import update_user_score, getLastRelevantCompletionTime, check_and_award_badges, check_and_revoke_badges, save_badge_image, save_submission_image, can_complete_task
 from app.forms import TaskForm, PhotoForm
-from app.social import authenticate_twitter, post_to_twitter, upload_media_to_twitter, post_to_facebook_with_image, upload_image_to_facebook, post_photo_to_instagram
+from app.social import post_to_twitter, upload_media_to_twitter, post_to_facebook_with_image, upload_image_to_facebook, post_photo_to_instagram
 from .models import db, Game, Task, Badge, UserTask, TaskSubmission, ShoutBoardMessage
 from .utils import award_badges
 from werkzeug.utils import secure_filename
@@ -561,22 +561,55 @@ def get_image_url(taskId):
     return jsonify(success=True, imageUrl=imageUrl)
 
 
-@tasks_bp.route('/task/submissions/<int:user_id>', methods=['GET'])
-def get_user_submissions(user_id):
-    if user_id != current_user.id:
+@tasks_bp.route('/task/my_submissions', methods=['GET'])
+def get_user_submissions():
+    if not current_user.is_authenticated:
         return jsonify({'error': 'Unauthorized'}), 403
+
     try:
-        submissions = TaskSubmission.query.filter_by(user_id=user_id).all()
-        return jsonify([submission.to_dict() for submission in submissions])
+        submissions = TaskSubmission.query.filter_by(user_id=current_user.id).all()
+        submissions_data = [{
+            'id': submission.id,
+            'image_url': submission.image_url,
+            'comment': submission.comment,
+            'user_id': submission.user_id,
+            'twitter_url': submission.twitter_url  # Assume twitter_url is an attribute
+        } for submission in submissions]
+        return jsonify(submissions_data)
     except Exception as e:
         print(f"Error fetching submissions: {e}")
         return jsonify({'error': 'Failed to fetch submissions'}), 500
+    
 
 @tasks_bp.route('/task/delete_submission/<int:submission_id>', methods=['DELETE'])
+@login_required
 def delete_submission(submission_id):
     submission = TaskSubmission.query.get(submission_id)
+    if not submission:
+        return jsonify({'error': 'Submission not found'}), 404
+
     if submission.user_id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
+
+    # Find the UserTask entry
+    user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=submission.task_id).first()
+
+    if user_task:
+        # Decrement completions and update points
+        user_task.completions = max(user_task.completions - 1, 0)  # Ensure it doesn't go negative
+        if user_task.completions == 0:
+            user_task.points_awarded = 0
+        else:
+            task = Task.query.get(submission.task_id)
+            user_task.points_awarded = max(user_task.points_awarded - task.points, 0)  # Adjust the points accordingly
+
+        # Check if badges need to be revoked
+        check_and_revoke_badges(current_user.id)
+
+        # Commit UserTask changes
+        db.session.commit()
+
+    # Now remove the submission
     db.session.delete(submission)
     db.session.commit()
     return jsonify({'success': True})

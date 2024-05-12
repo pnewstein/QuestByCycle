@@ -81,24 +81,6 @@
             })
             .catch(err => console.error('Failed to update meter:', err));
     }
-    
-    function showUserProfileModal(userId) {
-            fetch(`/profile/${userId}`)
-                .then(response => response.text())
-                .then(html => {
-                    const userProfileDetails = document.getElementById('userProfileDetails');
-                    if (!userProfileDetails) {
-                        console.error('User profile details container not found');
-                        return;  // Exit if no container is found
-                    }
-                    userProfileDetails.innerHTML = html;
-                    openModal('userProfileModal');
-                })
-                .catch(error => {
-                    console.error('Failed to load user profile:', error);
-                    alert('Could not load user profile. Please try again.');
-                });
-        }
 </script>
 {% include 'modals/user_profile_modal.html' %}
 
