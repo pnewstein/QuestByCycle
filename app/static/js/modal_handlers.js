@@ -65,21 +65,43 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
         'modalTaskTips': document.getElementById('modalTaskTips'),
         'modalTaskPoints': document.getElementById('modalTaskPoints'),
         'modalTaskCompletionLimit': document.getElementById('modalTaskCompletionLimit'),
-        'modalTaskBadgeImage': document.getElementById('modalTaskBadgeImage'), // Badge image element
+        'modalTaskCategory': document.getElementById('modalTaskCategory'),
+        'modalTaskVerificationType': document.getElementById('modalTaskVerificationType'),
+        'modalTaskBadgeImage': document.getElementById('modalTaskBadgeImage'),
         'modalTaskCompletions': document.getElementById('modalTaskCompletions'),
         'modalCountdown': document.getElementById('modalCountdown')
     };
-    console.log("Badge Data:", task.badge);
 
     // Update text content for elements
     elements['modalTaskTitle'].innerText = `${task.title}${completeText}`;
     elements['modalTaskDescription'].innerText = task.description;
     elements['modalTaskTips'].innerText = task.tips || 'No tips available';
     elements['modalTaskPoints'].innerText = `${task.points}`;
-    elements['modalTaskCompletionLimit'].innerText = task.completion_limit && task.frequency ?
-        `Can be completed ${task.completion_limit} ${task.completion_limit > 1 ? 'times' : 'time'} ${task.frequency}` :
-        'No completion limits set.';
-    elements['modalTaskCompletions'].innerText = `Total Completions: ${userCompletionCount || 0}`;
+    // Update completion limit text based on the number of completions
+    const completionText = task.completion_limit > 1 ? `${task.completion_limit} times` : `${task.completion_limit} time`;
+    const completionText2 = task.completion_limit > 1 ? `${task.completion_limit} completions` : `${task.completion_limit} completion`;
+
+    elements['modalTaskCompletionLimit'].innerText = `Earn the badge after ${completionText2}. Can be completed ${completionText} ${task.frequency}.`;
+    elements['modalTaskCategory'].innerText = task.category || 'No category set';
+
+    // Handling different verification types with descriptive sentences
+    switch (task.verification_type) {
+        case 'photo_comment':
+            elements['modalTaskVerificationType'].innerText = "Photo and Comment are required.";
+            break;
+        case 'photo':
+            elements['modalTaskVerificationType'].innerText = "Photo is required.";
+            break;
+        case 'comment':
+            elements['modalTaskVerificationType'].innerText = "Comment is required.";
+            break;
+        case 'qr_code':
+            elements['modalTaskVerificationType'].innerText = "Find the QR code and post a photo!";
+            break;
+        default:
+            elements['modalTaskVerificationType'].innerText = 'Not specified';
+            break;
+    }
 
     // Set badge image if available, else default
     const badgeImagePath = task.badge && task.badge.image ? 
@@ -98,6 +120,8 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
     manageVerificationSection(taskId, canVerify, task.verification_type, nextEligibleTime);
     return true; // Return true to indicate successful execution
 }
+
+
 // Function to manage the dynamic creation and adjustment of the verification form
 function manageVerificationSection(taskId, canVerify, verificationType, nextEligibleTime, nextAvailableTime) {
     const userTaskData = document.querySelector('.user-task-data');

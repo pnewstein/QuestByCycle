@@ -394,6 +394,7 @@ def task_user_completion(task_id):
         'tips': task.tips,
         'points': task.points,
         'completion_limit': task.completion_limit,
+        'category' : task.category,
         'frequency': task.frequency, 
         'enabled': task.enabled,
         'verification_type': task.verification_type,
