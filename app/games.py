@@ -75,79 +75,6 @@ def update_game(game_id):
     return render_template('update_game.html', form=form, game_id=game_id)
 
 
-@games_bp.route('/game_detail/<int:game_id>/<int:task_id>')
-@games_bp.route('/game_detail/<int:game_id>', defaults={'task_id': None})
-@login_required
-def game_detail(game_id, task_id):
-    game = Game.query.get_or_404(game_id)
-    has_joined = game in current_user.participated_games
-    tasks = Task.query.filter_by(game_id=game_id, enabled=True).all()
-
-    selected_task = None
-    if task_id:
-        selected_task = Task.query.get_or_404(task_id)
-
-    user_tasks = UserTask.query.filter_by(user_id=current_user.id).all()
-    total_points = sum(ut.points_awarded for ut in user_tasks if ut.task.game_id == game_id)
-
-    for task in tasks:
-        completions = sum(1 for ut in user_tasks if ut.task_id == task.id and ut.completions > 0)
-
-        task.completions_within_period = completions
-        task.can_verify = False
-        task.last_completion = None
-        task.first_completion_in_period = None
-        task.next_eligible_time = None
-        task.completion_timestamps = []
-
-        now = datetime.now()
-        period_start_map = {
-            'daily': timedelta(days=1),
-            'weekly': timedelta(minutes=4),
-            'monthly': timedelta(days=30)
-        }
-        period_start = now - period_start_map.get(task.frequency, timedelta(days=1))
-
-        submissions = TaskSubmission.query.filter(
-            TaskSubmission.user_id == current_user.id,
-            TaskSubmission.task_id == task.id,
-            TaskSubmission.timestamp >= period_start
-        ).all()
-
-        if submissions:
-            task.completions_within_period = len(submissions)
-            task.first_completion_in_period = min(submissions, key=lambda x: x.timestamp).timestamp
-            task.completion_timestamps = [sub.timestamp for sub in submissions]
-
-        relevant_user_tasks = [ut for ut in user_tasks if ut.task_id == task.id]
-        task.total_completions = len(relevant_user_tasks)
-        task.last_completion = max((ut.completed_at for ut in relevant_user_tasks), default=None)
-
-        if task.total_completions < task.completion_limit:
-            task.can_verify = True
-        else:
-            last_completion = max(submissions, key=lambda x: x.timestamp, default=None)
-            if last_completion:
-                increment_map = {
-                    'daily': timedelta(days=1),
-                    'weekly': timedelta(minutes=4),
-                    'monthly': timedelta(days=30)
-                }
-                task.next_eligible_time = last_completion.timestamp + increment_map.get(task.frequency, timedelta(days=1))
-    
-    tasks.sort(key=lambda x: x.completions_within_period, reverse=True)
-
-    return render_template(
-        'game_detail.html',
-        game=game,
-        has_joined=has_joined,
-        tasks=tasks,
-        total_points=total_points,
-        selected_task=selected_task
-    )
-
-
-
 @games_bp.route('/register_game/<int:game_id>', methods=['POST'])
 @login_required
 def register_game(game_id):
@@ -159,12 +86,12 @@ def register_game(game_id):
             flash('You have successfully joined the game.', 'success')
         else:
             flash('You are already registered for this game.', 'info')
-        return redirect(url_for('games.game_detail', game_id=game_id))
+        return redirect(url_for('main.index', game_id=game_id))
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f'Failed to register user for game {game_id}: {e}')
         flash('An error occurred. Please try again.', 'error')
-    return redirect(url_for('games.game_detail', game_id=game_id))
+    return redirect(url_for('main.index', game_id=game_id))
 
 @games_bp.route('/delete_game/<int:game_id>', methods=['POST'])
 @login_required
