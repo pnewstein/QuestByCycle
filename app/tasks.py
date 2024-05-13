@@ -156,6 +156,8 @@ def submit_task(task_id):
                 tweet_url, error = post_to_twitter(status, media_id, game.twitter_username, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
                 if error:
                     print(f"Failed to post tweet: {error}")  # Log the error but do not return
+                else:
+                    print(f"Tweet URL: {tweet_url}")  # Log the tweet URL for verification
 
             #media_response = upload_image_to_facebook(game.facebook_page_id, image_path, game.facebook_access_token)
             #if 'id' in media_response:
@@ -366,7 +368,7 @@ def get_task_submissions(task_id):
         'comment': sub.comment,
         'timestamp': sub.timestamp.strftime('%Y-%m-%d %H:%M'),
         'user_id': sub.user_id,
-        'tweet_url': sub.twitter_url
+        'twitter_url': sub.twitter_url
     } for sub in submissions]
     return jsonify(submissions_data)
 
@@ -514,7 +516,7 @@ def submit_photo(task_id):
                 user_id=current_user.id,
                 image_url=url_for('static', filename=image_url) if image_url else url_for('static', filename='images/commentPlaceholder.png'),
                 #comment=comment,
-                #twitter_url=tweet_url,
+                twitter_url=tweet_url,
                 #fb_url=fb_url,
                 timestamp=datetime.now(),
             )
