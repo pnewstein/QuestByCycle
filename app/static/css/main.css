@@ -385,7 +385,7 @@ article h3 {
 
 .task-details-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
     margin-top: 10px;
     margin-bottom: 10px;
@@ -401,14 +401,15 @@ article h3 {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start; /* Align children to the top */
 }
 
 .task-detail-item h4 {
-    margin-bottom: 5px;
+    margin-bottom: 5px; /* Adjust spacing as needed */
     font-size: 16px;
     color: #333;
     font-weight: 600;
+    text-align: center;
 }
 
 

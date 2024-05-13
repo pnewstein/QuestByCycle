@@ -2,13 +2,15 @@
 
 {% block content %}
 <div class="container">
-    <h2>Manage Badges</h2>
+    <h2>Upload Badge Images</h2>
     <form id="uploadForm" method="post" enctype="multipart/form-data" action="/badges/upload_images">
         {{ form.hidden_tag() }}
-        <input type="file" id="imageUpload" name="file" multiple webkitdirectory>
-        <button type="submit">Upload Images</button>
+        <input type="file" id="imageUpload" name="file" class="button" multiple webkitdirectory>
+        <button type="submit" class="button">Upload Images</button>
     </form>
-    
+
+    <p><h2>Add (Category) Badge</h2></p>
+
     <div class="badge-form">
         <form action="{{ url_for('badges.manage_badges') }}" method="post" enctype="multipart/form-data">
             {{ form.hidden_tag() }}
