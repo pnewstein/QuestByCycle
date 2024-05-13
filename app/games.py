@@ -42,8 +42,8 @@ def create_game():
             flash('Game created successfully!', 'success')
 
             # Attempt to extend and fetch new tokens after update
-            if not get_facebook_page_access_token(game.id):
-                flash('Failed to fetch Facebook page access token.', 'error')
+            #if not get_facebook_page_access_token(game.id):
+            #   flash('Failed to fetch Facebook page access token.', 'error')
 
 
             return redirect(url_for('admin.admin_dashboard'))
@@ -65,10 +65,10 @@ def update_game(game_id):
             flash('Game updated successfully!', 'success')
 
             # Attempt to extend and fetch new tokens after update
-            if not get_facebook_page_access_token(game_id):
-                flash('Failed to fetch Facebook page access token.', 'error')
+            #if not get_facebook_page_access_token(game_id):
+            #    flash('Failed to fetch Facebook page access token.', 'error')
 
-            return redirect(url_for('games.game_detail', game_id=game_id))
+            return redirect(url_for('main.index', game_id=game_id))
         except Exception as e:
             db.session.rollback()
             flash(f'An error occurred while updating the game: {e}', 'error')
