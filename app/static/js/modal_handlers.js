@@ -777,7 +777,7 @@ function displayAllSubmissions(submissions) {
         deleteButton.textContent = 'Delete';
         deleteButton.className = 'button delete-button';
         deleteButton.addEventListener('click', function() {
-            deleteSubmission(submission.id);
+            deleteSubmission(submission.id, 'allSubmissions');
         });
 
         info.appendChild(userDetails);
@@ -793,6 +793,21 @@ function displayAllSubmissions(submissions) {
     });
 }
 
+function fetchMySubmissions() {
+    fetch('/tasks/task/my_submissions')
+    .then(response => response.json())
+    .then(data => {
+        if (data.length > 0) {
+            displayMySubmissions(data);
+        } else {
+            document.getElementById('submissionsContainer').innerHTML = 'No submissions to display.';
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching submissions:', error);
+        alert('Failed to fetch submissions: ' + error.message);
+    });
+}
 
 // Function to display submissions in a grid
 function displayMySubmissions(submissions) {
@@ -827,7 +842,7 @@ function displayMySubmissions(submissions) {
         deleteButton.textContent = 'Delete';
         deleteButton.className = 'button delete-button';
         deleteButton.addEventListener('click', function() {
-            deleteSubmission(submission.id);
+            deleteSubmission(submission.id, 'mySubmissions');
         });
 
         info.appendChild(timestamp);
@@ -842,28 +857,41 @@ function displayMySubmissions(submissions) {
 }
 
 // Function to delete a submission
-function deleteSubmission(submissionId) {
+function deleteSubmission(submissionId, modalType) {
     fetch(`/tasks/task/delete_submission/${submissionId}`, {
         method: 'DELETE',
         headers: {
             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
-    .then(response => response.json().then(data => ({ data, ok: response.ok }))) // Create an object that includes both data and the ok status
-    .then(result => {
-        if (result.ok) {
-            alert('Submission deleted successfully');
-            // Optionally, remove the submission's element from the DOM to update the UI instantly
-            // Make sure you have an element with the id formatted as `submission-${submissionId}`
-            const element = document.getElementById(`submission-${submissionId}`);
-            if (element) {
-                element.remove();
-            } else {
-                console.log('Element not found:', `submission-${submissionId}`);
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Submission deleted successfully.');
+            // Refresh based on modal type
+            if (modalType === 'mySubmissions') {
+                fetchMySubmissions();  // Fetch and refresh my submissions
+            } else if (modalType === 'allSubmissions') {
+                fetchAllSubmissions();  // Fetch and refresh all submissions
             }
         } else {
-            alert(`Failed to delete submission: ${result.data.error}`);
+            throw new Error(data.message);
         }
     })
-    .catch(error => console.error('Error deleting submission:', error));
+    .catch(error => {
+        console.error('Error deleting submission:', error);
+        alert('Error during deletion: ' + error.message);
+    });
+}
+
+function fetchAllSubmissions() {
+    fetch('/tasks/task/all_submissions')
+    .then(response => response.json())
+    .then(data => {
+        displayAllSubmissions(data);
+    })
+    .catch(error => {
+        console.error('Error fetching all submissions:', error);
+        alert('Failed to fetch all submissions: ' + error.message);
+    });
 }
