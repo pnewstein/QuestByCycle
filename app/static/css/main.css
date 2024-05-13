@@ -54,9 +54,10 @@ main {
     margin: auto; /* Centers the container */
     background-color: #D0E6B5;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     overflow: hidden; /* Ensures no internal content spills over */
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease;
 }
 
 .table {
@@ -126,6 +127,10 @@ main {
     box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2);
     position: relative;
     top: 1px;
+}
+
+.button, a {
+    transition: transform 0.3s ease-in-out;
 }
 
 .alert {
@@ -385,8 +390,8 @@ article h3 {
 
 .task-details-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Responsive grid layout */
+    gap: 15px;
     margin-top: 10px;
     margin-bottom: 10px;
     border-bottom: 1px solid #eee;
@@ -1142,4 +1147,42 @@ footer {
 
 .delete-button:hover {
     background-color: #ff6666;
+}
+
+.game-title-section h1 {
+    color: #0056b3;
+    font-size: 2.5rem;
+}
+
+.game-title-section p {
+    font-size: 1.2rem;
+    color: #666;
+    line-height: 1.4;
+    margin-top: 10px;
+}
+
+.game-info-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.game-info-card {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.game-info-card strong {
+    display: block;
+    color: #007bff;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.game-info-card span {
+    font-size: 1rem;
+    color: #333;
 }
