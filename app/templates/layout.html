@@ -25,26 +25,31 @@
             {% block content %}{% endblock %}
         </main>
     </div>
-    <footer>
-        <div class="footer-container">
-            <a href="https://climaterevolutions.org" target="_blank">
-                <img src="{{ url_for('static', filename='images/climate-revolutions-logo.png') }}" alt="Climate Revolutions by Bike Logo" class="footer-logo">
-            </a>
-            <a href="https://www.350eugene.org/" target="_blank">
-                <img src="{{ url_for('static', filename='images/350EUG-logo.png') }}" alt="350Eugene Logo" class="footer-logo">
-            </a>
-            <div class="footer-text">
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section logos">
+                <a href="https://climaterevolutions.org" target="_blank">
+                    <img src="{{ url_for('static', filename='images/climate-revolutions-logo.png') }}" alt="Climate Revolutions by Bike Logo" class="footer-logo">
+                </a>
+                <a href="https://www.350eugene.org/" target="_blank">
+                    <img src="{{ url_for('static', filename='images/350EUG-logo.png') }}" alt="350Eugene Logo" class="footer-logo">
+                </a>
+            </div>
+            <div class="footer-section text">
                 Sponsored by Climate Revolutions by Bike and 350Eugene.
                 <p>Supporting cycling initiatives for a greener planet.</p>
-                <!-- Add any additional details you want here -->
             </div>
-            <div class="footer-links">
-                <div><a href="{{ url_for('auth.privacy_policy') }}">Privacy Policy</a></div>
-                <div><a href="{{ url_for('auth.terms_of_service') }}">Terms of Service</a></div>
-                <div><a href="{{ url_for('auth.license_agreement') }}">License Agreement</a></div>
-            </div>            
+            <div class="footer-section links">
+                <a href="{{ url_for('auth.privacy_policy') }}">Privacy Policy</a>
+                <a href="{{ url_for('auth.terms_of_service') }}">Terms of Service</a>
+                <a href="{{ url_for('auth.license_agreement') }}">License Agreement</a>
+            </div>
+        </div>
+        <div class="footer-section legal">
+            &copy; {{ current_year }} QuestByCycle. All rights reserved.
         </div>
     </footer>
+      
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
