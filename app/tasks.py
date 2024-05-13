@@ -373,9 +373,17 @@ def get_task_submissions(task_id):
 @login_required
 def task_user_completion(task_id):
     task = Task.query.get_or_404(task_id)
+    badge = Badge.query.get(task.badge_id) if task.badge_id else None
     user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
     can_verify, next_eligible_time = can_complete_task(current_user.id, task_id)
     last_relevant_completion_time = getLastRelevantCompletionTime(current_user.id, task_id)
+
+    badge_info = {
+        'id': badge.id,
+        'name': badge.name,
+        'description': badge.description,
+        'image': badge.image
+    } if badge else {'name': 'Default', 'image': 'default_badge.png'}
 
     task_details = {
         'id': task.id,
@@ -387,7 +395,7 @@ def task_user_completion(task_id):
         'frequency': task.frequency, 
         'enabled': task.enabled,
         'verification_type': task.verification_type,
-        'badge_name': task.badge.name if task.badge else 'None',
+        'badge': badge_info,
         'nextEligibleTime': next_eligible_time.isoformat() if next_eligible_time else None
 
     }
