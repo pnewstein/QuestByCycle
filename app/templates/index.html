@@ -47,12 +47,26 @@
                         <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="profile-image">
                         <p><strong>Name:</strong> {{ profile.display_name }}</p>
                         <p id="total-points"><strong>Your Total Completed Points:</strong> {{ total_points }}</p>
-                        <p><strong>Email:</strong> {{ profile.email }}</p>
-                        <p><strong>Age Group:</strong> {{ profile.age_group }}</p>
                         <p><strong>Interests:</strong> {{ profile.interests }}</p>
-                        <button id="editProfileBtn" onclick="toggleEditProfile()" class="button">Edit Profile</button>
-                        <a href="{{ url_for('auth.logout') }}" class="button">Logout</a>
                     </div>
+                </div>
+
+                <div>
+                    <p><strong>Badges Earned:</strong></p>
+                    <ul>
+                        {% for badge in badges %}
+                        <li>
+                            {{ badge.name }} -
+                            {% if badge.image %}
+                            <img src="{{ url_for('static', filename='images/badge_images/' + badge.image) }}" alt="{{ badge.name }}" class="badge-image-pri-pro">
+                            {% else %}
+                            <img src="{{ url_for('static', filename='images/badge_images/default_badge.png') }}" alt="Default Badge" class="badge-image-pri-pro">
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <button id="editProfileBtn" onclick="toggleEditProfile()" class="button">Edit Profile</button>
+                    <a href="{{ url_for('auth.logout') }}" class="button">Logout</a>
                 </div>
             {% endif %}
             {% if not current_user.is_authenticated %}
@@ -85,22 +99,31 @@
                 {% for activity in activities %}
                 <div class="activity" style="display: flex; align-items: center; margin-bottom: 10px;">
                     {% if activity.__tablename__ == 'shout_board_message' %}
-                    <strong style="margin-right: 10px;"><a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">{{ activity.user.username }}</a></strong>  
+                    <strong style="margin-right: 10px;">
+                        {{ activity.timestamp.strftime('%m-%d %H:%M') }} - 
+                        <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
+                            {{ activity.user.username }}
+                        </a>
+                    </strong>
                     <span style="flex-grow: 1;">{{ activity.message }}</span>
                     <button type="button" class="blue_button" id="like-button-{{ activity.id }}" onclick="likeMessage('{{ activity.id }}')">
-                        {% if activity.liked_by_user %}Liked{% else %}Like{% endif %}
+                        {{ 'Liked' if activity.liked_by_user else 'Like' }}
                     </button>
                     <span id="like-count-{{ activity.id }}">{{ activity.likes.count() }}</span>👍
                     {% elif activity.__tablename__ == 'user_tasks' %}
                     <strong style="margin-right: 10px;">
-                        <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">{{ activity.user.username }}</a>
-                    </strong> completed a task:
-                    <strong style="margin-right: 10px;">
-                        <a href="javascript:void(0);" onclick="openTaskDetailModal('{{ activity.task.id }}')">
-                            {{ activity.task.title }}
+                        {{ activity.completed_at.strftime('%m-%d %H:%M') }} -
+                        <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
+                            {{ activity.user.username }}
                         </a>
-                    </strong>
-                    on {{ activity.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                    </strong> completed a task:
+                    <span style="flex-grow: 1;">
+                        <strong style="margin-right: 10px;">
+                            <a href="javascript:void(0);" onclick="openTaskDetailModal('{{ activity.task.id }}')">
+                                {{ activity.task.title }}
+                            </a>
+                        </strong>
+                    </span>
                     <button class="blue_button" id="like-button-{{ activity.task.id }}" onclick="likeTask('{{ activity.task.id }}');" class="{{ 'liked-button-style' if activity.task.liked_by_user else '' }}" {{ 'disabled' if activity.task.liked_by_user }}>
                         {{ 'Liked' if activity.task.liked_by_user else 'Like' }}
                     </button>
@@ -144,9 +167,9 @@
             <thead>
                 <tr>
                     <th></th>
-                    <th>Badge</th>
-                    <th>Task</th>
-                    <th>Points</th>
+                    <th style="vertical-align: middle;  text-align: center;">Badge</th>
+                    <th style="vertical-align: middle;   text-align: left;">Task</th>
+                    <th style="padding-top: 0px; padding-bottom: 0px; text-align: center;">Carbon Reduction Points</th>
                 </tr>
             </thead>
             <tbody>
@@ -168,7 +191,7 @@
                     <td>
                         <button class="button" onclick="openTaskDetailModal('{{ task.id }}')">{{ task.title }}</button>
                     </td>
-                    <td>{{ task.points }}</td>
+                    <td style="text-align: center;">{{ task.points }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
