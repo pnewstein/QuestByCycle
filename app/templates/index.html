@@ -12,22 +12,27 @@
     {% endif %}
     <div class="content-flex-container">
         <div class="game-item">
-            <div id="taskImageCarousel" class="carousel slide" data-ride="carousel">
-                <div class="carousel-inner">
-                    {% for image in carousel_images %}
-                    <div class="carousel-item{% if loop.first %} active{% endif %}" style="height: 300px;">
-                        <img src="{{ url_for('static', filename=image) }}" class="d-block w-100 h-100" alt="Carousel Image" style="height: 300px; width: 100%; object-fit: cover;">
+            <div class="top-half">
+                <div id="taskImageCarousel" class="carousel slide" data-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for image in carousel_images %}
+                        <div class="carousel-item{% if loop.first %} active{% endif %}" style="height: 300px;">
+                            <img src="{{ url_for('static', filename=image) }}" class="d-block w-100 h-100" alt="Carousel Image" style="height: 300px; width: 100%; object-fit: cover;">
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
+                    <a class="carousel-control-prev" href="#taskImageCarousel" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#taskImageCarousel" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
                 </div>
-                <a class="carousel-control-prev" href="#taskImageCarousel" role="button" data-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="sr-only">Previous</span>
-                </a>
-                <a class="carousel-control-next" href="#taskImageCarousel" role="button" data-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="sr-only">Next</span>
-                </a>
+            </div>
+            <div class="bottom-half" style="text-align: center; padding-top: 20px;">
+                <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Quest by Cycle" style="max-width: 400px; height: auto; bottom: 0">
             </div>
         </div>
 

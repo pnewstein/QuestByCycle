@@ -3,8 +3,7 @@ from flask_login import login_required, current_user
 from app.utils import update_user_score, getLastRelevantCompletionTime, check_and_award_badges, check_and_revoke_badges, save_badge_image, save_submission_image, can_complete_task
 from app.forms import TaskForm, PhotoForm
 from app.social import post_to_twitter, upload_media_to_twitter, post_to_facebook_with_image, upload_image_to_facebook, post_photo_to_instagram
-from .models import db, Game, Task, Badge, UserTask, TaskSubmission, ShoutBoardMessage
-from .utils import award_badges
+from .models import db, Game, Task, Badge, UserTask, TaskSubmission
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 from datetime import datetime, timezone, timedelta
