@@ -59,42 +59,39 @@ function openTaskDetailModal(taskId) {
 // Populate Task Details in Modal
 function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextEligibleTime) {
     const completeText = userCompletionCount >= task.completion_limit ? " - complete" : "";
-    const parentElement = document.querySelector('.user-task-data'); // Assuming this is where the elements should be added
-    const elementIds = [
-        'modalTaskTitle', 'modalTaskDescription', 'modalTaskTips', 'modalTaskPoints',
-        'modalTaskCompletionLimit', 'modalTaskCategory', 'modalTaskBadgeName',
-        'modalTaskCompletions', 'modalCountdown'
-    ];
-    const elements = {};
+    const parentElement = document.querySelector('.modal-body'); // Ensure you target the modal body correctly
+    const elements = {
+        'modalTaskTitle': document.getElementById('modalTaskTitle'),
+        'modalTaskDescription': document.getElementById('modalTaskDescription'),
+        'modalTaskTips': document.getElementById('modalTaskTips'),
+        'modalTaskPoints': document.getElementById('modalTaskPoints'),
+        'modalTaskCompletionLimit': document.getElementById('modalTaskCompletionLimit'),
+        'modalTaskBadgeImage': document.getElementById('modalTaskBadgeImage'), // Badge image element
+        'modalTaskCompletions': document.getElementById('modalTaskCompletions'),
+        'modalCountdown': document.getElementById('modalCountdown')
+    };
 
-    // Collect all elements now, including newly created ones if they were missing
-    elementIds.forEach(id => {
-        elements[id] = document.getElementById(id);
-        if (!elements[id]) { // Create element if not exists
-            elements[id] = document.createElement('div');
-            elements[id].id = id;
-            parentElement.appendChild(elements[id]); // Append new element to the parent container
-        }
-    });
-
-    // Now, safely use the elements
+    // Update text content for elements
     elements['modalTaskTitle'].innerText = `${task.title}${completeText}`;
     elements['modalTaskDescription'].innerText = task.description;
     elements['modalTaskTips'].innerText = task.tips || 'No tips available';
-    elements['modalTaskPoints'].innerText = `Points: ${task.points}`;
-    elements['modalTaskCategory'].innerText = `Category: ${task.category || 'No category'}`;
-    elements['modalTaskBadgeName'].innerText = `Badge: ${task.badge_name || 'No badge'}`;
-    elements['modalTaskCompletions'].innerText = `Total Completions: ${userCompletionCount || 0}`;
-
-    console.log("Completion Limit:", task.completion_limit);
-    console.log("Frequency:", task.frequency);
-    
+    elements['modalTaskPoints'].innerText = task.points || 'No points available';
     if (task.completion_limit && task.frequency) {
         elements['modalTaskCompletionLimit'].innerText = `Can be completed ${task.completion_limit} times ${task.frequency}`;
     } else {
         elements['modalTaskCompletionLimit'].innerText = 'No completion limits set.';
     }
+    elements['modalTaskCompletions'].innerText = `Total Completions: ${userCompletionCount || 0}`;
 
+    // Set badge image if available, else default
+    const badgeImagePath = task.badge && task.badge.image ? 
+                           `/static/images/badge_images/${task.badge.image}` : 
+                           '/static/images/badge_images/default_badge.png'; // Default image path
+    elements['modalTaskBadgeImage'].src = badgeImagePath;
+    elements['modalTaskBadgeImage'].alt = task.badge && task.badge.name ? 
+                                           `Badge: ${task.badge.name}` : 'Default Badge';
+
+    // Update the countdown
     const nextAvailableTime = nextEligibleTime && new Date(nextEligibleTime);
     elements['modalCountdown'].innerText = (!canVerify && nextAvailableTime && nextAvailableTime > new Date()) ?
         `Next eligible time: ${nextAvailableTime.toLocaleString()}` :
@@ -103,7 +100,6 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
     manageVerificationSection(taskId, canVerify, task.verification_type, nextEligibleTime);
     return true; // Return true to indicate successful execution
 }
-
 
 // Function to manage the dynamic creation and adjustment of the verification form
 function manageVerificationSection(taskId, canVerify, verificationType, nextEligibleTime, nextAvailableTime) {

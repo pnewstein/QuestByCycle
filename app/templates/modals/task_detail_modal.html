@@ -1,26 +1,36 @@
-<!-- Task Detail Modal Structure -->
-<div id="taskDetailModal" class="modal" data-placeholder-url="{{ url_for('static', filename='images/placeholdersubmission.png') }}">
-    <div class="modal-content">
-        <span class="close-button" onclick="closeTaskDetailModal()">&times;</span>
-        <div class="task-modal-columns">
-            <div class="task-details">
+<!-- Task Detail Modal -->
+<div id="taskDetailModal" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <button class="close-button" onclick="closeTaskDetailModal()">&times;</button>
+            <div class="modal-header">
                 <h2 id="modalTaskTitle">Task Title</h2>
+            </div>
+            <div class="modal-body">
                 <p id="modalTaskDescription">Description</p>
+                <div class="task-details-grid">
+                    <div class="task-detail-item">
+                        <h4>Points</h4>
+                        <span id="modalTaskPoints"></span>
+                    </div>
+                    <div class="task-detail-item">
+                        <h4>Badge</h4>
+                        <img id="modalTaskBadgeImage" src="{{ url_for('static', filename='path/to/badge/image.png') }}" alt="Badge Image" class="badge-image">
+                    </div>
+                    <div class="task-detail-item">
+                        <h4>Completion Limit</h4>
+                        <span id="modalTaskCompletionLimit"></span>
+                    </div>
+                </div>
                 <p id="modalTaskTips">Tips</p>
-                <p id="modalTaskPoints">Points</p>
-                <p id="modalTaskCompletionLimit">Completion Limit</p>
-                <p id="modalTaskCategory">Category</p>
-                <p id="modalTaskBadgeName">Badge Name</p>
+                <div class="user-task-data">
+                    <p id="modalTaskCompletions">Total Completions:</p>
+                    <p id="modalCountdown"></p>
+                </div>
             </div>
-            <div class="user-task-data">
-                <!-- User Task Data -->
-                <p id="modalTaskCompletions">Total Completions: </p>
-                <p id="modalCountdown"></p>
-                <!-- Verify Button and Form will be dynamically created by JavaScript -->
+            <div id="submissionBoard" class="photo-board">
+                <!-- Submissions displayed here -->
             </div>
-        </div>
-        <div id="submissionBoard" class="photo-board">
-            <!-- Optionally, submissions could be displayed here -->
         </div>
     </div>
 </div>
