@@ -988,7 +988,7 @@ footer {
 }
 
 .shout-messages {
-    max-height: 100px;  /* Adjust the height as needed */
+    max-height: 200px;  /* Adjust the height as needed */
     overflow-y: auto;  /* Enables vertical scrolling */
 }
 
