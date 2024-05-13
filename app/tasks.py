@@ -25,7 +25,7 @@ def manage_game_tasks(game_id):
 
     if not current_user.is_admin:
         flash('Access denied: Only administrators can manage tasks.', 'danger')
-        return redirect(url_for('games.game_detail', game_id=game_id))
+        return redirect(url_for('main.index', game_id=game_id))
     
     form = TaskForm()
 
@@ -540,7 +540,7 @@ def submit_photo(task_id):
             update_user_score(current_user.id)  # Recalculate and update user score
 
             flash('Photo submitted successfully!', 'success')
-            return redirect(url_for('games.game_detail', game_id=task.game_id))
+            return redirect(url_for('main.index', game_id=task.game_id))
         else:
             flash('No photo detected, please try again.', 'error')
 
