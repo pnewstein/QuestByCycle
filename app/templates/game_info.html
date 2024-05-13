@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <a href="{{ url_for('main.index') }}" class="button">Back to Home</a> <!-- Back button to home -->
+    <h1>{{ game.title }}</h1>
+    <p>{{ game.description }}</p>
+    <p>{{ game.description2 }}</p>
+    <div>
+        <strong>Start Date:</strong> {{ game.start_date.strftime('%Y-%m-%d') }}
+        <strong>End Date:</strong> {{ game.end_date.strftime('%Y-%m-%d') }}
+    </div>
+    <div>
+        <strong>Game Goal:</strong> {{ game.game_goal }}
+    </div>
+    <div>
+        <strong>Details:</strong> {{ game.details }}
+    </div>
+    <div>
+        <strong>Awards:</strong> {{ game.awards }}
+    </div>
+    <div>
+        <strong>Beyond:</strong> {{ game.beyond }}
+    </div>
+</div>
+{% endblock %}
