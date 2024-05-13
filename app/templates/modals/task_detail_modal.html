@@ -1,44 +1,42 @@
 <!-- Task Detail Modal -->
 <div id="taskDetailModal" class="modal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <button class="close-button" onclick="closeTaskDetailModal()">&times;</button>
-            <div class="modal-header">
-                <h2 id="modalTaskTitle">Task Title</h2>
-            </div>
-            <div class="modal-body">
-                <p id="modalTaskDescription">Description</p>
-                <div class="task-details-grid">
-                    <div class="task-detail-item">
-                        <h4>Points</h4>
-                        <span id="modalTaskPoints"></span>
-                    </div>
-                    <div class="task-detail-item">
-                        <h4>Badge</h4>
-                        <img id="modalTaskBadgeImage" src="" alt="Badge Image" class="badge-image">
-                    </div>
-                    <div class="task-detail-item">
-                        <h4>Category</h4>
-                        <span id="modalTaskCategory"></span>
-                    </div>
-                    <div class="task-detail-item">
-                        <h4>Completion Limit</h4>
-                        <span id="modalTaskCompletionLimit"></span>
-                    </div>
-                    <div class="task-detail-item">
-                        <h4>Verification Type</h4>
-                        <span id="modalTaskVerificationType"></span>
-                    </div>
+    <div class="modal-content">
+        <button class="close-button" onclick="closeTaskDetailModal()">&times;</button>
+        <div class="modal-header">
+            <h2 id="modalTaskTitle">Task Title</h2>
+        </div>
+        <div class="modal-body">
+            <p id="modalTaskDescription">Description</p>
+            <div class="task-details-grid">
+                <div class="task-detail-item">
+                    <h4>Points</h4>
+                    <span id="modalTaskPoints"></span>
                 </div>
-                <p id="modalTaskTips">Tips</p>
-                <div class="user-task-data">
-                    <p id="modalTaskCompletions">Total Completions:</p>
-                    <p id="modalCountdown"></p>
+                <div class="task-detail-item">
+                    <h4>Badge</h4>
+                    <img id="modalTaskBadgeImage" src="" alt="Badge Image" class="badge-image"style="padding-top: 0%;padding-bottom: 0%;margin-bottom: 0px;margin-top: 0px;">
+                </div>
+                <div class="task-detail-item">
+                    <h4>Category</h4>
+                    <span id="modalTaskCategory"></span>
+                </div>
+                <div class="task-detail-item">
+                    <h4>Completion Limit</h4>
+                    <span id="modalTaskCompletionLimit"></span>
+                </div>
+                <div class="task-detail-item">
+                    <h4>Verification Type</h4>
+                    <span id="modalTaskVerificationType"></span>
                 </div>
             </div>
-            <div id="submissionBoard" class="photo-board">
-                <!-- Submissions displayed here -->
+            <p id="modalTaskTips">Tips</p>
+            <div class="user-task-data">
+                <p id="modalTaskCompletions">Total Completions:</p>
+                <p id="modalCountdown"></p>
             </div>
+        </div>
+        <div id="submissionBoard" class="photo-board">
+            <!-- Submissions displayed here -->
         </div>
     </div>
 </div>
