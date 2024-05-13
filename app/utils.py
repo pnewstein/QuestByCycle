@@ -256,7 +256,7 @@ def check_and_award_badges(user_id, task_id):
         if task.badge and task.badge not in user.badges:
             user.badges.append(task.badge)
             db.session.add(ShoutBoardMessage(
-                message=f" earned the badge '{task.badge.name}' for task '{task.title}'.",
+                message=f" earned the badge '{task.badge.name}' for task <strong><a href='javascript:void(0);' onclick='openTaskDetailModal({task.id})'>{task.title}</a></strong>.",
                 user_id=user_id
             ))
             db.session.commit()
