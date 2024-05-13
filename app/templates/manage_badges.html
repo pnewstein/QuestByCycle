@@ -2,6 +2,7 @@
 
 {% block content %}
 <div class="container">
+    <a href="{{ url_for('main.index') }}" class="button">Back to Home</a>
     <h2>Upload Badge Images</h2>
     <form id="uploadForm" method="post" enctype="multipart/form-data" action="/badges/upload_images">
         {{ form.hidden_tag() }}
