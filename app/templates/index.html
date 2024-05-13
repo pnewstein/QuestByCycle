@@ -70,9 +70,11 @@
                         </li>
                         {% endfor %}
                     </ul>
-                    <a href="{{ url_for('main.game_info') }}" class="button">Game Info</a>
-                    <button id="editProfileBtn" onclick="toggleEditProfile()" class="button">Edit Profile</button>
-                    <a href="{{ url_for('auth.logout') }}" class="button">Logout</a>
+                    <div style="text-align: center">
+                        <a href="{{ url_for('main.game_info') }}" class="button">Game Info</a>
+                        <button id="editProfileBtn" onclick="toggleEditProfile()" class="button">Edit Profile</button>
+                        <a href="{{ url_for('auth.logout') }}" class="button">Logout</a>
+                    </div>
                 </div>
             {% endif %}
             {% if not current_user.is_authenticated %}
