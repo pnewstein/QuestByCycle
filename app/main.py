@@ -386,3 +386,11 @@ def update_profile():
 
     db.session.commit()
     return jsonify(success=True)
+
+@main_bp.route('/game-info')
+def game_info():
+    game_details = Game.query.first()  # Simplified for example, adjust based on how you want to select the game
+    if not game_details:
+        flash("Game details are not available.", "error")
+        return redirect(url_for('main.index'))
+    return render_template('game_info.html', game=game_details)
