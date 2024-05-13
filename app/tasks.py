@@ -361,11 +361,13 @@ def import_tasks(game_id):
 def get_task_submissions(task_id):
     submissions = TaskSubmission.query.filter_by(task_id=task_id).all()
     submissions_data = [{
-        'image_url': submission.image_url,
-        'comment': submission.comment,
-        'user_id': submission.user_id,
-        'twitter_url': submission.twitter_url  # Include the Twitter URL in the response
-    } for submission in submissions]
+        'id': sub.id,
+        'image_url': sub.image_url,
+        'comment': sub.comment,
+        'timestamp': sub.timestamp.strftime('%Y-%m-%d %H:%M'),
+        'user_id': sub.user_id,
+        'tweet_url': sub.twitter_url
+    } for sub in submissions]
     return jsonify(submissions_data)
 
 
