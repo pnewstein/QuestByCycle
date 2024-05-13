@@ -5,8 +5,8 @@
     <a href="{{ url_for('main.index') }}" class="button">Back to Home</a>
     <div class="game-title-section">
         <h1>{{ game.title }}</h1>
-        <p>{{ game.description }}</p>
-        <p>{{ game.description2 }}</p>
+        <p>{{ game.description | safe }}</p>
+        <p>{{ game.description2 | safe }}</p>
     </div>
     <div class="game-info-section">
         <div class="game-info-card">
@@ -23,15 +23,15 @@
         </div>
         <div class="game-info-card">
             <strong>Details:</strong>
-            <span>{{ game.details }}</span>
+            <span>{{ game.details | safe }}</span>
         </div>
         <div class="game-info-card">
             <strong>Awards:</strong>
-            <span>{{ game.awards }}</span>
+            <span>{{ game.awards | safe }}</span>
         </div>
         <div class="game-info-card">
             <strong>Beyond:</strong>
-            <span>{{ game.beyond }}</span>
+            <span>{{ game.beyond | safe }}</span>
         </div>
     </div>
 </div>
