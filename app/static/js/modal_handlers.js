@@ -75,9 +75,9 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
     elements['modalTaskTitle'].innerText = `${task.title}${completeText}`;
     elements['modalTaskDescription'].innerText = task.description;
     elements['modalTaskTips'].innerText = task.tips || 'No tips available';
-    elements['modalTaskPoints'].innerText = `Points: ${task.points}`;
-    elements['modalTaskCompletionLimit'].innerText = task.completion_limit && task.frequency ? 
-        `Can be completed ${task.completion_limit} times ${task.frequency}` : 
+    elements['modalTaskPoints'].innerText = `${task.points}`;
+    elements['modalTaskCompletionLimit'].innerText = task.completion_limit && task.frequency ?
+        `Can be completed ${task.completion_limit} ${task.completion_limit > 1 ? 'times' : 'time'} ${task.frequency}` :
         'No completion limits set.';
     elements['modalTaskCompletions'].innerText = `Total Completions: ${userCompletionCount || 0}`;
 
