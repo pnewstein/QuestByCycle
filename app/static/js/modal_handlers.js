@@ -59,7 +59,6 @@ function openTaskDetailModal(taskId) {
 // Populate Task Details in Modal
 function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextEligibleTime) {
     const completeText = userCompletionCount >= task.completion_limit ? " - complete" : "";
-    const parentElement = document.querySelector('.modal-body'); // Ensure you target the modal body correctly
     const elements = {
         'modalTaskTitle': document.getElementById('modalTaskTitle'),
         'modalTaskDescription': document.getElementById('modalTaskDescription'),
@@ -70,23 +69,22 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
         'modalTaskCompletions': document.getElementById('modalTaskCompletions'),
         'modalCountdown': document.getElementById('modalCountdown')
     };
+    console.log("Badge Data:", task.badge);
 
     // Update text content for elements
     elements['modalTaskTitle'].innerText = `${task.title}${completeText}`;
     elements['modalTaskDescription'].innerText = task.description;
     elements['modalTaskTips'].innerText = task.tips || 'No tips available';
-    elements['modalTaskPoints'].innerText = task.points || 'No points available';
-    if (task.completion_limit && task.frequency) {
-        elements['modalTaskCompletionLimit'].innerText = `Can be completed ${task.completion_limit} times ${task.frequency}`;
-    } else {
-        elements['modalTaskCompletionLimit'].innerText = 'No completion limits set.';
-    }
+    elements['modalTaskPoints'].innerText = `Points: ${task.points}`;
+    elements['modalTaskCompletionLimit'].innerText = task.completion_limit && task.frequency ? 
+        `Can be completed ${task.completion_limit} times ${task.frequency}` : 
+        'No completion limits set.';
     elements['modalTaskCompletions'].innerText = `Total Completions: ${userCompletionCount || 0}`;
 
     // Set badge image if available, else default
     const badgeImagePath = task.badge && task.badge.image ? 
                            `/static/images/badge_images/${task.badge.image}` : 
-                           '/static/images/badge_images/default_badge.png'; // Default image path
+                           '/static/images/badge_images/default_badge.png';
     elements['modalTaskBadgeImage'].src = badgeImagePath;
     elements['modalTaskBadgeImage'].alt = task.badge && task.badge.name ? 
                                            `Badge: ${task.badge.name}` : 'Default Badge';
@@ -100,7 +98,6 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
     manageVerificationSection(taskId, canVerify, task.verification_type, nextEligibleTime);
     return true; // Return true to indicate successful execution
 }
-
 // Function to manage the dynamic creation and adjustment of the verification form
 function manageVerificationSection(taskId, canVerify, verificationType, nextEligibleTime, nextAvailableTime) {
     const userTaskData = document.querySelector('.user-task-data');
