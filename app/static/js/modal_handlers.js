@@ -169,19 +169,19 @@ function getVerificationFormHTML(verificationType) {
     // Explicitly handle each case
     switch (verificationType) {
         case 'photo':
-            formHTML += `<input type="file" name="image" accept="image/*" required>`;
-            formHTML += '<button type="submit">Submit Verification</button>';
+            formHTML += `<input type="file" name="image" class="button" accept="image/*" required>`;
+            formHTML += '<button type="submit" class="button">Submit Verification</button>';
             break;
         case 'comment':
             formHTML += `<textarea name="verificationComment" placeholder="Enter a comment..." required></textarea>`;
-            formHTML += '<button type="submit">Submit Verification</button>';
+            formHTML += '<button type="submit" class="button">Submit Verification</button>';
             break;
         case 'photo_comment':
             formHTML += `
-                <input type="file" name="image" accept="image/*" required>
+                <input type="file" name="image" class="button" accept="image/*" required>
                 <textarea name="verificationComment" placeholder="Enter a comment..." required></textarea>
             `;
-            formHTML += '<button type="submit">Submit Verification</button>';
+            formHTML += '<button type="submit" class="button">Submit Verification</button>';
             break;
         case 'qr_code':
             formHTML += `<p>Find and scan the QR code. No submission required here.</p>`;
