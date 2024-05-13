@@ -105,7 +105,7 @@
                             {{ activity.user.username }}
                         </a>
                     </strong>
-                    <span style="flex-grow: 1;">{{ activity.message }}</span>
+                    <span style="flex-grow: 1;">{{ activity.message | safe }}</span>  <!-- Here is where you apply the |safe filter -->
                     <button type="button" class="blue_button" id="like-button-{{ activity.id }}" onclick="likeMessage('{{ activity.id }}')">
                         {{ 'Liked' if activity.liked_by_user else 'Like' }}
                     </button>
@@ -131,7 +131,7 @@
                     {% endif %}
                 </div>
                 {% endfor %}
-            </div>
+            </div>            
         </div>
     </div>
     <div class="game-item">
