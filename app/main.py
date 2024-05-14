@@ -218,48 +218,9 @@ def like_message(message_id):
     return jsonify(success=success, new_like_count=new_like_count, already_liked=already_liked)
 
 
-@main_bp.route('/leaderboard', methods=['GET'])
-@login_required
-def leaderboard():
-    user_games = current_user.participated_games
-    selected_game_id = request.args.get('game_id', type=int)
-
-    if len(user_games) == 1:
-        single_game_id = user_games[0].id
-        if selected_game_id is None or selected_game_id != single_game_id:
-            return redirect(url_for('main.leaderboard', game_id=single_game_id))
-
-    top_users = []
-    total_game_points = 0
-    game_goal = None  # Initialize game goal as None
-
-    if selected_game_id:
-        game = Game.query.get(selected_game_id)
-        game_goal = game.game_goal if game else None
-
-        top_users = db.session.query(
-            User.id,
-            User.username,
-            db.func.sum(UserTask.points_awarded).label('total_points')
-        ).join(UserTask, UserTask.user_id == User.id
-        ).join(Task, Task.id == UserTask.task_id
-        ).filter(Task.game_id == selected_game_id
-        ).group_by(User.id, User.username
-        ).order_by(db.func.sum(UserTask.points_awarded).desc()
-        ).all()
-
-        total_game_points = db.session.query(
-            db.func.sum(UserTask.points_awarded)
-        ).join(Task, UserTask.task_id == Task.id
-        ).filter(Task.game_id == selected_game_id
-        ).scalar() or 0
-
-    return render_template('leaderboard.html', games=user_games, top_users=top_users, selected_game_id=selected_game_id, total_game_points=total_game_points, game_goal=game_goal)
-
 @main_bp.route('/leaderboard_partial')
 @login_required
 def leaderboard_partial():
-    user_games = current_user.participated_games
     selected_game_id = request.args.get('game_id', type=int)
 
     if selected_game_id:
