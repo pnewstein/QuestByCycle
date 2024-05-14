@@ -147,7 +147,8 @@ def submit_task(task_id):
             image_url = save_submission_image(image_file)
             image_path = os.path.join(current_app.static_folder, image_url)
         
-        status = f"Check out this task completion for '{task.title}'! #QuestByCycle"
+        display_name = current_user.display_name or current_user.username
+        status = f"{display_name} completed '{task.title}'! #QuestByCycle"
         
         if image_url is not None:
             media_id, error = upload_media_to_twitter(image_path, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)

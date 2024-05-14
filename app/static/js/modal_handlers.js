@@ -56,7 +56,6 @@ function openTaskDetailModal(taskId) {
         });
 }
 
-// Populate Task Details in Modal
 function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextEligibleTime) {
     const completeText = userCompletionCount >= task.completion_limit ? " - complete" : "";
     const elements = {
@@ -74,8 +73,8 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
 
     // Update text content for elements
     elements['modalTaskTitle'].innerText = `${task.title}${completeText}`;
-    elements['modalTaskDescription'].innerText = task.description;
-    elements['modalTaskTips'].innerText = task.tips || 'No tips available';
+    elements['modalTaskDescription'].innerHTML = task.description; // Changed to innerHTML
+    elements['modalTaskTips'].innerHTML = task.tips || 'No tips available'; // Changed to innerHTML
     elements['modalTaskPoints'].innerText = `${task.points}`;
     // Update completion limit text based on the number of completions
     const completionText = task.completion_limit > 1 ? `${task.completion_limit} times` : `${task.completion_limit} time`;
