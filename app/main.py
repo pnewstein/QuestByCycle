@@ -231,19 +231,21 @@ def leaderboard_partial():
         top_users_query = db.session.query(
             User.id,
             User.username,
+            User.display_name,
             db.func.sum(UserTask.points_awarded).label('total_points')
         ).join(UserTask, UserTask.user_id == User.id
         ).join(Task, Task.id == UserTask.task_id
         ).filter(Task.game_id == selected_game_id
-        ).group_by(User.id, User.username
+        ).group_by(User.id, User.username, User.display_name
         ).order_by(db.func.sum(UserTask.points_awarded).desc()
         ).all()
 
         top_users = [{
             'user_id': user_id,
             'username': username,
+            'display_name': display_name,
             'total_points': total_points
-        } for user_id, username, total_points in top_users_query]
+        } for user_id, username, display_name, total_points in top_users_query]
 
         total_game_points = db.session.query(
             db.func.sum(UserTask.points_awarded)

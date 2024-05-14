@@ -607,7 +607,8 @@ function appendLeaderboardTable(parentElement, data) {
         data.top_users.forEach((user, index) => {
             const row = document.createElement('tr');
             appendTableCell(row, index + 1);
-            appendTableCell(row, user.username, true, user.user_id);
+            const displayName = user.display_name || user.username;  // Use display name or fallback to username
+            appendTableCell(row, displayName, true, user.user_id);
             appendTableCell(row, user.total_points);
             tbody.appendChild(row);
         });
