@@ -254,32 +254,22 @@
         .catch(error => alert('Error updating profile: ' + error));
     });
 
-    function updateMeter(gameId) {
-        if (!gameId) return;
+    function updateMeter() {
+    const game_Id = document.getElementById('game_IdHolder').getAttribute('data-game-id');
+    fetch(`games/get_game_points/${game_Id}`)
+        .then(response => response.json())
+        .then(data => {
+            const totalPoints = data.total_game_points;
+            const game_Goal = data.game_goal;
+            const remainingPoints = game_Goal - totalPoints;
+            const heightPercentage = Math.min((totalPoints / game_Goal) * 100, 100);
+            document.getElementById('meterBar').style.height = heightPercentage + '%';
+            document.documentElement.style.setProperty('--meter-fill-height', heightPercentage + '%');
 
-        fetch(`/games/get_game_points/${gameId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (!data || !data.total_game_points || !data.game_goal) {
-                    console.error('Data missing from response');
-                    return;
-                }
-
-                const totalPoints = data.total_game_points;
-                const gameGoal = data.game_goal;
-                const heightPercentage = Math.min((totalPoints / gameGoal) * 100, 100);
-
-                const meterBar = document.getElementById('meterBar');
-                if (meterBar) {
-                    meterBar.style.height = `${heightPercentage}%`;
-                    document.documentElement.style.setProperty('--meter-fill-height', `${heightPercentage}%`);
-                    document.querySelector('.meter-label').innerText = `Group Completion: ${totalPoints} / ${gameGoal}`;
-                } else {
-                    console.error('Meter bar element not found');
-                }
-            })
-            .catch(err => console.error('Failed to update meter:', err));
-    }
+            document.querySelector('.meter-label').innerText = `Remaining Reduction: ${remainingPoints} / ${game_Goal}`;
+        })
+        .catch(err => console.error('Failed to update meter:', err));
+}
 
     function toggleEditProfile() {
         var form = document.getElementById('editProfileForm');

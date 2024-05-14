@@ -639,9 +639,19 @@ function appendCompletionMeter(parentElement, data) {
         const meterContainer = document.createElement('div');
         meterContainer.className = 'completion-meter-container';
 
+        // Adding the inspirational text
+        const inspirationalText = document.createElement('div');
+        inspirationalText.className = 'inspirational-text';
+        inspirationalText.textContent = 'It takes a village to enact change…';
+        meterContainer.appendChild(inspirationalText);
+
+        // Calculate remaining points and percentage reduction
+        const remainingPoints = data.game_goal - data.total_game_points;
+        const percentReduction = Math.min((data.total_game_points / data.game_goal) * 100, 100);
+
         const meterLabel = document.createElement('div');
         meterLabel.className = 'meter-label';
-        meterLabel.textContent = `Group Completion: ${data.total_game_points} / ${data.game_goal}`;
+        meterLabel.textContent = `Carbon Reduction Points: ${data.total_game_points} / ${data.game_goal} (Remaining: ${remainingPoints})`;
         meterContainer.appendChild(meterLabel);
 
         const completionMeter = document.createElement('div');
@@ -649,23 +659,22 @@ function appendCompletionMeter(parentElement, data) {
 
         const meterBar = document.createElement('div');
         meterBar.className = 'meter-bar';
-        meterBar.id = 'meterBar';  // Ensure the id is correctly set
-        let percent = Math.min(data.total_game_points / data.game_goal * 100, 100);
+        meterBar.id = 'meterBar';
         meterBar.style.width = '100%';
-        meterBar.style.height = `${percent}%`;
-        meterBar.dataset.label = `${percent.toFixed(1)}% Complete`;
+        meterBar.style.height = `${percentReduction}%`;
+        meterBar.dataset.label = `${percentReduction.toFixed(1)}% Reduced`;
         completionMeter.appendChild(meterBar);
+
 
         meterContainer.appendChild(completionMeter);
         parentElement.appendChild(meterContainer);
 
         setTimeout(() => {
             meterBar.style.transition = 'height 2s ease-in-out, background-color 2s';
-            meterBar.style.height = `${percent}%`;
+            meterBar.style.height = `${percentReduction}%`;
         }, 100);
     }
 }
-
 
 // Close modal helpers enhanced with specific targeting and cleanup
 function closeTaskDetailModal() {
