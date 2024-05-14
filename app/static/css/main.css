@@ -48,6 +48,16 @@ main {
     padding: 20px;
 }
 
+.top-half {
+    border: 5px solid #ccc; /* Light grey border to act as a frame */
+    padding: 10px; /* Space between the border and the content */
+    border-radius: 8px; /* Rounded corners for a more polished look */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a 3D effect */
+    background-color: #fff; /* Optional: white background for contrast */
+    margin-bottom: 20px; /* Space below the framed section */
+}
+
+
 .container {
     width: 100%; /* Makes sure the container fits within the viewport */
     max-width: 95%; /* Limits maximum width while allowing some margin */
@@ -1038,7 +1048,6 @@ footer {
     max-width: 50%; /* Limit the profile details column to half of the container width */
 }
 
-/* Additional styles for visual enhancement */
 .profile-image {
     max-width: 400px; /* Limits the width to the parent container size */
     max-height: 300px; /* Adjust this value based on your design preference */
@@ -1046,7 +1055,12 @@ footer {
     width: 400px;
     border-radius: 50%; /* Keeps the circular shape */
     object-fit: cover; /* Covers the frame without distorting the image */
+    border: 5px solid #ccc; /* Light grey border to act as a frame */
+    padding: 10px; /* Space between the border and the content */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a 3D effect */
+    background-color: #fff; /* Optional: white background for contrast */
 }
+
 
 .carousel-control-prev, .carousel-control-next {
     width: 5%;
@@ -1225,10 +1239,39 @@ footer {
     margin-bottom: 20px;
 }
 
+.footer-section.logos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.footer-section.logos p {
+    margin-right: 10px;
+}
+
 .footer-section {
     flex: 1;
     padding: 10px;
     min-width: 300px; /* ensures wrapping on smaller screens */
+}
+
+.see-more {
+    margin-left: 10px;
+    text-decoration: none;
+    color: #007bff; /* Example color for the link */
+}
+
+.footer-section.text {
+    margin-bottom: 20px;
+}
+
+.footer-section.links {
+    margin-bottom: 20px;
+}
+
+.footer-section.legal {
+    margin-top: 20px;
 }
 
 .logos {
