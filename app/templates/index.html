@@ -110,7 +110,7 @@
                     <strong style="margin-right: 10px;">
                         {{ activity.timestamp.strftime('%m-%d %H:%M') }} - 
                         <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
-                            {{ activity.user.username }}
+                            {{ activity.user.display_name or activity.user.username }}
                         </a>
                     </strong>
                     <span style="flex-grow: 1;">{{ activity.message | safe }}</span>  <!-- Here is where you apply the |safe filter -->
@@ -122,13 +122,13 @@
                     <strong style="margin-right: 10px;">
                         {{ activity.completed_at.strftime('%m-%d %H:%M') }} -
                         <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
-                            {{ activity.user.username }}
+                            {{ activity.user.display_name or activity.user.username }}
                         </a>
-                    </strong> completed a task:
+                    </strong> completed a task
                     <span style="flex-grow: 1;">
                         <strong style="margin-right: 10px;">
                             <a href="javascript:void(0);" onclick="openTaskDetailModal('{{ activity.task.id }}')">
-                                {{ activity.task.title }}
+                                 {{ activity.task.title }}
                             </a>
                         </strong>
                     </span>
@@ -141,7 +141,7 @@
                 {% endfor %}
             </div>            
         </div>
-    </div>
+    </div>    
     <div class="game-item">
         {% if has_joined %}
         <p>

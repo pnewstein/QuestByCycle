@@ -256,11 +256,11 @@ def check_and_award_badges(user_id, task_id):
         if task.badge and task.badge not in user.badges:
             user.badges.append(task.badge)
             db.session.add(ShoutBoardMessage(
-                message=f" earned the badge '{task.badge.name}' for task <strong><a href='javascript:void(0);' onclick='openTaskDetailModal({task.id})'>{task.title}</a></strong>.",
+                message=f"{user.display_name} earned the badge '{task.badge.name}' for task <strong><a href='javascript:void(0);' onclick='openTaskDetailModal({task.id})'>{task.title}</a></strong>.",
                 user_id=user_id
             ))
             db.session.commit()
-            print(f"Badge '{task.badge.name}' awarded to user '{user.username}' for completing task '{task.title}'")
+            print(f"Badge '{task.badge.name}' awarded to user '{user.display_name}' for completing task '{task.title}'")
         else:
             print(f"No badge awarded: either no badge assigned for task or user already has the badge")
     else:
@@ -281,7 +281,7 @@ def check_and_award_badges(user_id, task_id):
                 if badge not in user.badges:
                     user.badges.append(badge)
                     db.session.add(ShoutBoardMessage(
-                        message=f" earned the badge '{badge.name}' for completing all tasks in category '{task.category}' within game ID {task.game_id}.",
+                        message=f"{user.display_name} earned the badge '{badge.name}' for completing all tasks in category '{task.category}' within game ID {task.game_id}.",
                         user_id=user_id
                     ))
                     db.session.commit()
@@ -290,7 +290,6 @@ def check_and_award_badges(user_id, task_id):
                     print(f"User already has badge '{badge.name}', not awarded again")
         else:
             print("Condition not met for awarding badge based on category completion.")
-
 
 def check_and_revoke_badges(user_id):
     user = User.query.get(user_id)
