@@ -27,6 +27,7 @@ class RegistrationForm(FlaskForm):
     def validate_accept_privacy(form, field):
         if not field.data:
             raise ValidationError('You must agree to the privacy policy to register.')
+        
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
