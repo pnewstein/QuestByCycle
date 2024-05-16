@@ -74,7 +74,7 @@ class User(UserMixin, db.Model):
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(140))
-    description = db.Column(db.String(750))
+    description = db.Column(db.String(2000))
     completed = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     evidence_url = db.Column(db.String(500))
@@ -84,7 +84,7 @@ class Task(db.Model):
     game_id = db.Column(db.Integer, db.ForeignKey('game.id', ondelete='CASCADE'))
     game = db.relationship('Game', back_populates='tasks')  # Ensures bidirectional access
     points = db.Column(db.Integer, default='')
-    tips = db.Column(db.String(1000), default='', nullable=True)
+    tips = db.Column(db.String(2000), default='', nullable=True)
     completion_limit = db.Column(db.Integer, default=1)  # Limit for how many times a task can be completed
     frequency = db.Column(db.String(50), nullable=True)  # Store frequency as a string
     user_tasks = db.relationship('UserTask', back_populates='task', cascade="all, delete", passive_deletes=True)
