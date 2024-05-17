@@ -1491,7 +1491,6 @@ footer {
 .bottom-half img {
     max-width: 500px;
     height: auto;
-    margin-top: 100px;
     display: block; /* Ensures the image is centered */
     margin-left: auto;
     margin-right: auto;
@@ -1501,7 +1500,7 @@ footer {
 @media (max-width: 768px) {
     .bottom-half img {
         width: 400px; /* Slightly smaller than the default */
-        margin-top: 50px; /* Reduced top margin */
+        margin-top: 25px; /* Reduced top margin */
     }
 }
 
@@ -1509,7 +1508,7 @@ footer {
 @media (max-width: 480px) {
     .bottom-half img {
         width: 400px; /* Further reduce the size for small screens */
-        margin-top: 20px; /* Minimal top margin */
+        margin-top: 10px; /* Minimal top margin */
     }
 }
 
