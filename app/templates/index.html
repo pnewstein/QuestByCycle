@@ -12,9 +12,16 @@
     {% endif %}
     <div class="content-flex-container">
         <div class="game-item">
-            <div class="bottom-half" style="text-align: center">
-                <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Quest by Cycle">
-            </div>
+
+            {% if not current_user.is_authenticated %}
+                <div class="welcomeMedia">
+                    <video src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}" autoplay loop controls style="max-width: 600px; max-height: 300px;"></video>
+                </div>
+            {% else %}
+                <div class="bottom-half" style="text-align: center">
+                    <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Quest by Cycle">
+                </div>
+            {% endif %}
             <div class="top-half">
                 <div id="taskImageCarousel" class="carousel slide" data-ride="carousel">
                     <div class="carousel-inner">
