@@ -8,7 +8,6 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import func
 from datetime import datetime, timedelta, timezone
 
-import pytz  # Make sure pytz is installed
 import os
 import logging
 
