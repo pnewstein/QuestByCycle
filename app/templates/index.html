@@ -15,7 +15,7 @@
 
             {% if not current_user.is_authenticated %}
                 <div class="welcomeMedia">
-                    <video src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}" autoplay loop controls style="max-width: 600px; max-height: 300px;"></video>
+                    <video class="welcomeMedia" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}" autoplay loop controls></video>
                 </div>
             {% else %}
                 <div class="bottom-half" style="text-align: center">
@@ -115,11 +115,11 @@
                 {{ form.submit() }}
             </form>
             {% endif %}
-            <div class="shout-messages" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">
+            <div class="shout-messages">
                 {% for activity in activities %}
-                <div class="activity{% if activity.is_pinned %} pinned{% endif %}" style="display: flex; align-items: center; margin-bottom: 10px;">
+                <div class="activity{% if activity.is_pinned %} pinned{% endif %}">
                     {% if activity.__tablename__ == 'shout_board_message' %}
-                    <strong style="margin-right: 10px;">
+                    <strong>
                         {{ activity.timestamp.strftime('%m-%d %H:%M') }} - 
                         <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
                             {{ activity.user.display_name or activity.user.username }}
@@ -127,7 +127,7 @@
                     </strong>
                     <span style="flex-grow: 1;">{{ activity.message | safe }}</span>
                     {% if current_user.is_admin %}
-                    <form action="{{ url_for('main.pin_message', message_id=activity.id) }}" method="post" style="margin-left: 10px;">
+                    <form action="{{ url_for('main.pin_message', message_id=activity.id) }}" method="post">
                         {{ form.hidden_tag() }}
                         <button type="submit" class="blue_button">{{ 'Unpin' if activity.is_pinned else 'Pin' }}</button>
                     </form>
@@ -137,14 +137,14 @@
                     </button>
                     <span id="like-count-{{ activity.id }}">{{ activity.likes.count() }}</span>👍
                     {% elif activity.__tablename__ == 'user_tasks' %}
-                    <strong style="margin-right: 10px;">
+                    <strong>
                         {{ activity.completed_at.strftime('%m-%d %H:%M') }} -
                         <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
                             {{ activity.user.display_name or activity.user.username }}
                         </a>
                     </strong>
                     <span style="flex-grow: 1;">
-                        <strong style="margin-right: 10px;">
+                        <strong>
                             completed a task
                             <a href="javascript:void(0);" onclick="openTaskDetailModal('{{ activity.task.id }}')">
                                  {{ activity.task.title }}
@@ -158,9 +158,9 @@
                     {% endif %}
                 </div>
                 {% endfor %}
-            </div>
+            </div>            
         </div>
-    </div>    
+    </div>      
     <div class="game-item">
         {% if has_joined %}
         <p>
