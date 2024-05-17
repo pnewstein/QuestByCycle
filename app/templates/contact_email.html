@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Contact Form Submission</title>
+</head>
+<body>
+    <h2>New Contact Form Submission</h2>
+    <p><strong>Message:</strong></p>
+    <p>{{ message }}</p>
+
+    {% if user_info %}
+    <h3>User Information</h3>
+    <ul>
+        <li><strong>Username:</strong> {{ user_info.username }}</li>
+        <li><strong>Email:</strong> {{ user_info.email }}</li>
+        <li><strong>Is Admin:</strong> {{ user_info.is_admin }}</li>
+        <li><strong>Created At:</strong> {{ user_info.created_at }}</li>
+        <li><strong>TOS Agreed:</strong> {{ user_info.tos_agreed }}</li>
+        <li><strong>Privacy Agreed:</strong> {{ user_info.privacy_agreed }}</li>
+        <li><strong>Display Name:</strong> {{ user_info.display_name }}</li>
+        <li><strong>Age Group:</strong> {{ user_info.age_group }}</li>
+        <li><strong>Interests:</strong> {{ user_info.interests }}</li>
+        <li><strong>Email Verified:</strong> {{ user_info.email_verified }}</li>
+    </ul>
+    {% else %}
+    <p>No user information available.</p>
+    {% endif %}
+</body>
+</html>

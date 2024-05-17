@@ -735,6 +735,18 @@ function closeLeaderboardModal() {
 
 }
 
+function closeContactModal() {
+    const contactModal = document.getElementById('contactModal');
+    if (!contactModal) {
+        console.error('Leaderboard modal container not found');
+        return;  // Exit if no container is found
+    }
+    contactModal.style.display = 'none';
+    document.body.classList.remove('body-no-scroll');
+
+}
+
+
 // Enhanced window click handling for modal closure
 window.onclick = function(event) {
     if (event.target.className.includes('modal')) {
@@ -756,6 +768,9 @@ window.onclick = function(event) {
                 break;
             case 'leaderboardModal':
                 closeLeaderboardModal();
+                break;
+            case 'contactModal':
+                closeContactModal();
                 break;
             case 'tipsModal':
                 closeTipsModal();
