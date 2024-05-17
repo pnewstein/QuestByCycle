@@ -71,19 +71,24 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
         'modalCountdown': document.getElementById('modalCountdown')
     };
 
+    // Ensure all required elements exist
+    for (let key in elements) {
+        if (!elements[key]) {
+            console.error(`Error: Missing element ${key}`);
+            return false;
+        }
+    }
+
     // Update text content for elements
     elements['modalTaskTitle'].innerText = `${task.title}${completeText}`;
-    elements['modalTaskDescription'].innerHTML = task.description; // Changed to innerHTML
-    elements['modalTaskTips'].innerHTML = task.tips || 'No tips available'; // Changed to innerHTML
+    elements['modalTaskDescription'].innerHTML = task.description;
+    elements['modalTaskTips'].innerHTML = task.tips || 'No tips available';
     elements['modalTaskPoints'].innerText = `${task.points}`;
-    // Update completion limit text based on the number of completions
     const completionText = task.completion_limit > 1 ? `${task.completion_limit} times` : `${task.completion_limit} time`;
     const completionText2 = task.completion_limit > 1 ? `${task.completion_limit} completions` : `${task.completion_limit} completion`;
-
     elements['modalTaskCompletionLimit'].innerText = `Earn the badge after ${completionText2}. Can be completed ${completionText} ${task.frequency}.`;
     elements['modalTaskCategory'].innerText = task.category || 'No category set';
 
-    // Handling different verification types with descriptive sentences
     switch (task.verification_type) {
         case 'photo_comment':
             elements['modalTaskVerificationType'].innerText = "Photo and Comment are required.";
@@ -102,22 +107,23 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
             break;
     }
 
-    // Set badge image if available, else default
-    const badgeImagePath = task.badge && task.badge.image ? 
-                           `/static/images/badge_images/${task.badge.image}` : 
-                           '/static/images/badge_images/default_badge.png';
+    const badgeImagePath = task.badge && task.badge.image ? `/static/images/badge_images/${task.badge.image}` : '/static/images/badge_images/default_badge.png';
     elements['modalTaskBadgeImage'].src = badgeImagePath;
-    elements['modalTaskBadgeImage'].alt = task.badge && task.badge.name ? 
-                                           `Badge: ${task.badge.name}` : 'Default Badge';
+    elements['modalTaskBadgeImage'].alt = task.badge && task.badge.name ? `Badge: ${task.badge.name}` : 'Default Badge';
 
-    // Update the countdown
+    elements['modalTaskCompletions'].innerText = `Total Completions: ${userCompletionCount}`;
+
     const nextAvailableTime = nextEligibleTime && new Date(nextEligibleTime);
-    elements['modalCountdown'].innerText = (!canVerify && nextAvailableTime && nextAvailableTime > new Date()) ?
-        `Next eligible time: ${nextAvailableTime.toLocaleString()}` :
-        (canVerify ? "You are eligible to verify!" : "You are currently eligible to verify!");
+    if (!canVerify && nextAvailableTime && nextAvailableTime > new Date()) {
+        elements['modalCountdown'].innerText = `Next eligible time: ${nextAvailableTime.toLocaleString()}`;
+        elements['modalCountdown'].style.color = 'red';
+    } else {
+        elements['modalCountdown'].innerText = "You are currently eligible to verify!";
+        elements['modalCountdown'].style.color = 'green';
+    }
 
     manageVerificationSection(taskId, canVerify, task.verification_type, nextEligibleTime);
-    return true; // Return true to indicate successful execution
+    return true;
 }
 
 
@@ -384,7 +390,7 @@ function ensureDynamicElementsExistAndPopulate(task, userCompletionCount, nextEl
 
     // Define IDs and initial values for dynamic elements.
     const dynamicElements = [
-        { id: 'modalTaskCompletions', value: `Total Completions: ${userCompletionCount || 0}` },
+        { id: 'modalTaskCompletions', value: `${userCompletionCount || 0}` },
         { id: 'modalCountdown', value: "" } // Will be updated based on conditions
     ];
 
