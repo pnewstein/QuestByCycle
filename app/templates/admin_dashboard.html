@@ -33,14 +33,6 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const userId = document.body.getAttribute('data-user-id'); // Get user ID from the body tag
-        const leaderboardButton = document.getElementById('leaderboardButton');
-        if (leaderboardButton) {
-            leaderboardButton.addEventListener('click', function() {
-                const gameId = this.getAttribute('data-game-id');
-                showLeaderboardModal(gameId);
-                updateMeter(gameId);
-            });
-        }
 
         const allSubmissionsButton = document.getElementById('allSubmissionsButton'); // Correct the typo here
         if (allSubmissionsButton) {
