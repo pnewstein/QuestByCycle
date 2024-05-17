@@ -179,7 +179,6 @@ def index(game_id, task_id, user_id):
                            carousel_images=carousel_images,
                            total_points=total_points)
 
-
 @main_bp.route('/shout-board', methods=['POST'])
 @login_required
 def shout_board():
