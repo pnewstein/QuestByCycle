@@ -29,15 +29,14 @@ def get_datetime(activity):
     else:
         raise ValueError("Activity object does not contain valid timestamp information.")
 
-
 @main_bp.route('/', defaults={'game_id': None, 'task_id': None, 'user_id': None})
 @main_bp.route('/<int:game_id>', defaults={'task_id': None, 'user_id': None})
 @main_bp.route('/<int:game_id>/<int:task_id>', defaults={'user_id': None})
 @main_bp.route('/<int:game_id>/<int:task_id>/<int:user_id>')
 def index(game_id, task_id, user_id):
     user_games = [] 
-    profile = None  # Initialize profile here
-    user_tasks = []  # Initialize user_tasks here
+    profile = None
+    user_tasks = []
     badges = []
     total_points = None
 
@@ -45,12 +44,10 @@ def index(game_id, task_id, user_id):
         user_id = current_user.id
 
     if game_id is None and current_user.is_authenticated:
-        # If user is part of a game, redirect to the latest joined game
         joined_games = current_user.participated_games
         if joined_games:
-            game_id = joined_games[-1].id  # Assuming the latest joined game is the last in the list
+            game_id = joined_games[-1].id
         else:
-            # Automatically join the latest game if not part of any
             latest_game = Game.query.order_by(Game.start_date.desc()).first()
             if latest_game:
                 current_user.participated_games.append(latest_game)
@@ -76,10 +73,15 @@ def index(game_id, task_id, user_id):
     game_participation = {game.id: has_joined} if game else {}
 
     form = ShoutBoardForm()
-    messages = ShoutBoardMessage.query.order_by(ShoutBoardMessage.timestamp.desc()).all()
+    pinned_messages = ShoutBoardMessage.query.filter_by(is_pinned=True).order_by(ShoutBoardMessage.timestamp.desc()).all()
+    unpinned_messages = ShoutBoardMessage.query.filter_by(is_pinned=False).order_by(ShoutBoardMessage.timestamp.desc()).all()
     completed_tasks = UserTask.query.filter(UserTask.completions > 0).order_by(UserTask.completed_at.desc()).all()
-    activities = messages + completed_tasks
-    activities.sort(key=lambda x: get_datetime(x), reverse=True)
+
+    # Combine and sort activities
+    pinned_activities = pinned_messages
+    unpinned_activities = unpinned_messages + completed_tasks
+    unpinned_activities.sort(key=lambda x: get_datetime(x), reverse=True)
+    activities = pinned_activities + unpinned_activities
 
     selected_task = Task.query.get(task_id) if task_id else None
 
@@ -146,7 +148,6 @@ def index(game_id, task_id, user_id):
                 current_user.age_group = profform.age_group.data
                 current_user.interests = profform.interests.data
 
-                # Handle profile picture
                 if 'profile_picture' in request.files:
                     profile_picture_file = request.files['profile_picture']
                     if profile_picture_file.filename != '':
@@ -161,7 +162,6 @@ def index(game_id, task_id, user_id):
             profform.display_name.data = current_user.display_name
             profform.age_group.data = current_user.age_group
             profform.interests.data = current_user.interests
-
 
     return render_template('index.html',
                            form=form,
@@ -185,13 +185,13 @@ def index(game_id, task_id, user_id):
 def shout_board():
     form = ShoutBoardForm()
     if form.validate_on_submit():
-        shout_message = ShoutBoardMessage(message=form.message.data, user_id=current_user.id)
+        is_pinned = 'is_pinned' in request.form  # Check if the pin checkbox was checked
+        shout_message = ShoutBoardMessage(message=form.message.data, user_id=current_user.id, is_pinned=is_pinned)
         db.session.add(shout_message)
         db.session.commit()
         flash('Your message has been posted!', 'success')
         return redirect(url_for('main.index'))
-    messages = ShoutBoardMessage.query.order_by(ShoutBoardMessage.timestamp.desc()).all()
-    return render_template('shout_board.html', form=form, messages=messages)
+    return render_template('shout_board.html', form=form)
 
 
 @main_bp.route('/like-message/<int:message_id>', methods=['POST'])
@@ -356,3 +356,17 @@ def game_info():
         flash("Game details are not available.", "error")
         return redirect(url_for('main.index'))
     return render_template('game_info.html', game=game_details)
+
+
+@main_bp.route('/pin_message/<int:message_id>', methods=['POST'])
+@login_required
+def pin_message(message_id):
+    message = ShoutBoardMessage.query.get_or_404(message_id)
+    if not current_user.is_admin:
+        flash('You do not have permission to perform this action.', 'danger')
+        return redirect(url_for('main.index'))
+    
+    message.is_pinned = not message.is_pinned  # Toggle the pin status
+    db.session.commit()
+    flash('Message pin status updated.', 'success')
+    return redirect(url_for('main.index'))

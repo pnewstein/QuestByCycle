@@ -76,7 +76,6 @@ class User(UserMixin, db.Model):
         except:
             return None
         return User.query.get(id)
-    # ...
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -159,6 +158,7 @@ class ShoutBoardMessage(db.Model):
     message = db.Column(db.String(500), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.now())
+    is_pinned = db.Column(db.Boolean, default=False)  # Add this line
 
     user = db.relationship('User', backref='shoutboard_messages')
     likes = db.relationship('ShoutBoardLike', backref='message', lazy='dynamic')

@@ -1091,6 +1091,24 @@ footer {
     margin-right: 20px;
 }
 
+.pinned {
+    background-color: #ffeb3b;  /* A light yellow background */
+    border-left: 5px solid #ff9800;  /* A bright orange border */
+    padding: 4px;
+}
+
+.shout-messages-container {
+    height: 400px; /* Adjust the height as needed */
+    overflow-y: scroll;
+    border: 1px solid #ccc; /* Optional: Add a border for visual clarity */
+    padding: 10px; /* Optional: Add padding for better spacing */
+}
+
+.shout-messages {
+    display: flex;
+    flex-direction: column;
+}
+
 .user-interests {
     flex-grow: 1;
 }
