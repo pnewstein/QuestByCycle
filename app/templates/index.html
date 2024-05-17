@@ -12,6 +12,9 @@
     {% endif %}
     <div class="content-flex-container">
         <div class="game-item">
+            <div class="bottom-half" style="text-align: center">
+                <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Quest by Cycle">
+            </div>
             <div class="top-half">
                 <div id="taskImageCarousel" class="carousel slide" data-ride="carousel">
                     <div class="carousel-inner">
@@ -30,9 +33,6 @@
                         <span class="sr-only">Next</span>
                     </a>
                 </div>
-            </div>
-            <div class="bottom-half" style="text-align: center">
-                <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Quest by Cycle" style="max-width: 500px; height: auto;  margin-top: 100px">
             </div>
         </div>
 
