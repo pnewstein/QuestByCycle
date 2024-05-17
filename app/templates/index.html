@@ -41,6 +41,11 @@
                     </a>
                 </div>
             </div>
+            <div style="text-align: center">
+                <a href="{{ url_for('main.game_info') }}" class="button">Game Info</a>
+                <button id="editProfileBtn" onclick="toggleEditProfile()" class="button">Edit Profile</button>
+                <a href="{{ url_for('auth.logout') }}" class="button">Logout</a>
+            </div>
         </div>
 
         <div class="game-item">
@@ -77,11 +82,6 @@
                         </li>
                         {% endfor %}
                     </ul>
-                    <div style="text-align: center">
-                        <a href="{{ url_for('main.game_info') }}" class="button">Game Info</a>
-                        <button id="editProfileBtn" onclick="toggleEditProfile()" class="button">Edit Profile</button>
-                        <a href="{{ url_for('auth.logout') }}" class="button">Logout</a>
-                    </div>
                 </div>
             {% endif %}
             {% if not current_user.is_authenticated %}
@@ -160,11 +160,7 @@
         {% if has_joined %}
         <p>
             {% if current_user.is_admin %}
-            <a href="{{ url_for('tasks.manage_game_tasks', game_id=game.id) }}" class="button" style="margin-left: 10px;">Configure Tasks</a>
-            <a href="{{ url_for('badges.manage_badges', game_id=game.id) }}" class="button" style="margin-left: 10px;">Configure Badges</a>
             <a href="{{ url_for('admin.admin_dashboard') }}" class="button" style="margin-left: 10px;">Admin Dashboard</a>
-            <button id="allSubmissionsButton" class="button" style="margin-left: 10px;">All Submissions</button>
-
             {% endif %}
             <button id="leaderboardButton" data-game-id="{{ game.id }}" class="button">View Leaderboard</button>
             <button id="submissionsButton" data-game-id="{{ game.id }}" class="button">Your Submissions</button>
@@ -237,16 +233,6 @@
             });
         }
 
-        const allSubmissionsButton = document.getElementById('allSubmissionsButton'); // Correct the typo here
-        if (allSubmissionsButton) {
-            allSubmissionsButton.addEventListener('click', function() {
-                if (userId !== 'none') {
-                    showAllSubmissionsModal(userId);
-                } else {
-                    console.log('No user ID found or user not logged in');
-                }
-            });
-        }
     });
 
     document.getElementById('editProfileForm').addEventListener('submit', function(event) {
@@ -404,7 +390,6 @@
 {% include 'modals/user_profile_modal.html' %}
 {% include 'modals/leaderboard_modal.html' %}
 {% include 'modals/my_submissions_modal.html' %}
-{% include 'modals/all_submissions_modal.html' %}
 
 
 <script src="{{ url_for('static', filename='js/modal_handlers.js') }}"></script>
