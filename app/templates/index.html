@@ -227,7 +227,7 @@
             });
         }
 
-        const submissionsButton = document.getElementById('submissionsButton'); // Correct the typo here
+        const submissionsButton = document.getElementById('submissionsButton');
         if (submissionsButton) {
             submissionsButton.addEventListener('click', function() {
                 if (userId !== 'none') {
@@ -237,74 +237,79 @@
                 }
             });
         }
-        const contactForm = document.getElementById('contactForm');
 
-        contactForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const formData = new FormData(contactForm);
-            const request = new XMLHttpRequest();
-            
-            request.open('POST', contactForm.action, true);
-            request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-            
-            request.onload = function() {
-                if (request.status >= 200 && request.status < 400) {
-                    const response = JSON.parse(request.responseText);
-                    if (response.success) {
-                        alert('Your message has been sent successfully.');
-                        closeModal('contactModal');
+        const contactForm = document.getElementById('contactForm');
+        if (contactForm) {
+            contactForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                const formData = new FormData(contactForm);
+                const request = new XMLHttpRequest();
+                
+                request.open('POST', contactForm.action, true);
+                request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                
+                request.onload = function() {
+                    if (request.status >= 200 && request.status < 400) {
+                        const response = JSON.parse(request.responseText);
+                        if (response.success) {
+                            alert('Your message has been sent successfully.');
+                            closeModal('contactModal');
+                        } else {
+                            alert('Failed to send your message. Please try again.');
+                        }
                     } else {
                         alert('Failed to send your message. Please try again.');
                     }
-                } else {
+                };
+                
+                request.onerror = function() {
                     alert('Failed to send your message. Please try again.');
-                }
-            };
-            
-            request.onerror = function() {
-                alert('Failed to send your message. Please try again.');
-            };
-            
-            request.send(formData);
-        });
-    });
+                };
+                
+                request.send(formData);
+            });
+        }
 
-    document.getElementById('editProfileForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-        var formData = new FormData(this);
-        fetch('{{ url_for("main.update_profile") }}', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Profile updated successfully.');
-                location.reload();  // Reload the page to reflect changes
-            } else {
-                alert('Failed to update profile.');
-            }
-        })
-        .catch(error => alert('Error updating profile: ' + error));
+        const editProfileForm = document.getElementById('editProfileForm');
+        if (editProfileForm) {
+            editProfileForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                var formData = new FormData(this);
+                fetch('{{ url_for("main.update_profile") }}', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Profile updated successfully.');
+                        location.reload();  // Reload the page to reflect changes
+                    } else {
+                        alert('Failed to update profile.');
+                    }
+                })
+                .catch(error => alert('Error updating profile: ' + error));
+            });
+        }
     });
 
     function updateMeter() {
-    const game_Id = document.getElementById('game_IdHolder').getAttribute('data-game-id');
-    fetch(`games/get_game_points/${game_Id}`)
-        .then(response => response.json())
-        .then(data => {
-            const totalPoints = data.total_game_points;
-            const game_Goal = data.game_goal;
-            const remainingPoints = game_Goal - totalPoints;
-            const heightPercentage = Math.min((totalPoints / game_Goal) * 100, 100);
-            document.getElementById('meterBar').style.height = heightPercentage + '%';
-            document.documentElement.style.setProperty('--meter-fill-height', heightPercentage + '%');
+        const game_Id = document.getElementById('game_IdHolder').getAttribute('data-game-id');
+        fetch(`games/get_game_points/${game_Id}`)
+            .then(response => response.json())
+            .then(data => {
+                const totalPoints = data.total_game_points;
+                const game_Goal = data.game_goal;
+                const remainingPoints = game_Goal - totalPoints;
+                const heightPercentage = Math.min((totalPoints / game_Goal) * 100, 100);
+                document.getElementById('meterBar').style.height = heightPercentage + '%';
+                document.documentElement.style.setProperty('--meter-fill-height', heightPercentage + '%');
 
-            document.querySelector('.meter-label').innerText = `Remaining Reduction: ${remainingPoints} / ${game_Goal}`;
-        })
-        .catch(err => console.error('Failed to update meter:', err));
-}
+                document.querySelector('.meter-label').innerText = `Remaining Reduction: ${remainingPoints} / ${game_Goal}`;
+            })
+            .catch(err => console.error('Failed to update meter:', err));
+    }
 
     function toggleEditProfile() {
         var form = document.getElementById('editProfileForm');
@@ -420,13 +425,13 @@
     }
 
 </script>
+
 {% include 'modals/task_detail_modal.html' %}
 {% include 'modals/submission_detail_modal.html' %}
 {% include 'modals/user_profile_modal.html' %}
 {% include 'modals/leaderboard_modal.html' %}
 {% include 'modals/my_submissions_modal.html' %}
 {% include 'modals/contact_modal.html' %}
-
 
 <script src="{{ url_for('static', filename='js/modal_handlers.js') }}"></script>
 {% endblock %}
