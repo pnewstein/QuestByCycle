@@ -98,14 +98,14 @@
             <form action="{{ url_for('main.shout_board') }}" method="post">
                 {{ form.hidden_tag() }}
                 <div class="form-group">
-                    {{ form.message.label }} {{ form.message(rows=1) }}
+                    {{ form.message(rows=1, placeholder="Write a message...") }}
                 </div>
                 {{ form.submit() }}
             </form>
             {% endif %}
-            <div class="shout-messages">
+            <div class="shout-messages" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">
                 {% for activity in activities %}
-                <div class="activity" style="display: flex; align-items: center; margin-bottom: 10px;">
+                <div class="activity{% if activity.is_pinned %} pinned{% endif %}" style="display: flex; align-items: center; margin-bottom: 10px;">
                     {% if activity.__tablename__ == 'shout_board_message' %}
                     <strong style="margin-right: 10px;">
                         {{ activity.timestamp.strftime('%m-%d %H:%M') }} - 
@@ -113,7 +113,13 @@
                             {{ activity.user.display_name or activity.user.username }}
                         </a>
                     </strong>
-                    <span style="flex-grow: 1;">{{ activity.message | safe }}</span>  <!-- Here is where you apply the |safe filter -->
+                    <span style="flex-grow: 1;">{{ activity.message | safe }}</span>
+                    {% if current_user.is_admin %}
+                    <form action="{{ url_for('main.pin_message', message_id=activity.id) }}" method="post" style="margin-left: 10px;">
+                        {{ form.hidden_tag() }}
+                        <button type="submit" class="blue_button">{{ 'Unpin' if activity.is_pinned else 'Pin' }}</button>
+                    </form>
+                    {% endif %}
                     <button type="button" class="blue_button" id="like-button-{{ activity.id }}" onclick="likeMessage('{{ activity.id }}')">
                         {{ 'Liked' if activity.liked_by_user else 'Like' }}
                     </button>
@@ -124,9 +130,10 @@
                         <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
                             {{ activity.user.display_name or activity.user.username }}
                         </a>
-                    </strong> completed a task
+                    </strong>
                     <span style="flex-grow: 1;">
                         <strong style="margin-right: 10px;">
+                            completed a task
                             <a href="javascript:void(0);" onclick="openTaskDetailModal('{{ activity.task.id }}')">
                                  {{ activity.task.title }}
                             </a>
@@ -139,7 +146,7 @@
                     {% endif %}
                 </div>
                 {% endfor %}
-            </div>            
+            </div>
         </div>
     </div>    
     <div class="game-item">

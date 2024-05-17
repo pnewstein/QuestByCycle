@@ -17,6 +17,7 @@ def login():
     # Check if any admin exists
     admin_exists = User.query.filter_by(is_admin=True).first() is not None
 
+
     # If no admin exists, create an admin
     if not admin_exists:
         create_admin(current_app._get_current_object())
@@ -34,6 +35,11 @@ def login():
         if user is None:  # Check if user exists
             flash('Invalid email or password.')
             return redirect(url_for('auth.login'))
+        
+        # Temporary code to set email_verified to True for admin users
+        #if user.is_admin and not user.email_verified:
+        #    user.email_verified = True
+        #    db.session.commit()
 
         if not user.email_verified:  # Now it's safe to check email verification
             flash('Please verify your email before logging in.', 'warning')
