@@ -1,0 +1,13 @@
+<!-- Contact Modal Structure -->
+
+<div id="contactModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal('contactModal')">&times;</span>
+        <h2>Contact Us</h2>
+        <form id="contactForm" method="post" action="{{ url_for('main.contact') }}">
+            {{ form.hidden_tag() }}
+            <textarea name="message" placeholder="Your message..." required style="width: 100%; height: 100px;"></textarea>
+            <button type="submit" class="button">Send</button>
+        </form>
+    </div>
+</div>

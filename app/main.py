@@ -2,7 +2,8 @@ from flask import Blueprint, jsonify, render_template, request, redirect, url_fo
 from flask_login import current_user, login_required, logout_user
 from app.utils import save_profile_picture, award_badges
 from app.models import db, Game, User, Task, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike
-from app.forms import ProfileForm, ShoutBoardForm
+from app.forms import ProfileForm, ShoutBoardForm, ContactForm
+from app.utils import send_email
 from .config import load_config
 from werkzeug.utils import secure_filename
 from sqlalchemy import func
@@ -368,4 +369,46 @@ def pin_message(message_id):
     message.is_pinned = not message.is_pinned  # Toggle the pin status
     db.session.commit()
     flash('Message pin status updated.', 'success')
+    return redirect(url_for('main.index'))
+
+
+@main_bp.route('/contact', methods=['POST'])
+def contact():
+    form = ContactForm()
+    if form.validate_on_submit():
+        message = form.message.data
+        subject = "New Contact Form Submission"
+        recipient = current_app.config['MAIL_DEFAULT_SENDER']  # Replace with the desired recipient email
+
+        user_info = None
+        if current_user.is_authenticated:
+            user_info = {
+                "username": current_user.username,
+                "email": current_user.email,
+                "is_admin": current_user.is_admin,
+                "created_at": current_user.created_at,
+                "tos_agreed": current_user.tos_agreed,
+                "privacy_agreed": current_user.privacy_agreed,
+                "display_name": current_user.display_name,
+                "age_group": current_user.age_group,
+                "interests": current_user.interests,
+                "email_verified": current_user.email_verified,
+            }
+
+        html = render_template('contact_email.html', message=message, user_info=user_info)
+        try:
+            send_email(recipient, subject, html)
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify(success=True)
+            flash('Your message has been sent successfully.', 'success')
+        except Exception as e:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify(success=False, message="Failed to send your message"), 500
+            flash('Failed to send your message. Please try again later.', 'error')
+            current_app.logger.error(f'Failed to send contact form message: {e}')
+    else:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify(success=False, message="Validation failed"), 400
+        flash('Validation failed. Please ensure all fields are filled correctly.', 'warning')
+
     return redirect(url_for('main.index'))

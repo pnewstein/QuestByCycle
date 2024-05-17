@@ -168,3 +168,7 @@ class BadgeForm(FlaskForm):
 class TaskImportForm(FlaskForm):
     csv_file = FileField('CSV File', validators=[DataRequired(), FileAllowed(['csv'], 'CSV files only!')])
     submit = SubmitField('Import Tasks')
+
+class ContactForm(FlaskForm):
+    message = TextAreaField('Message', validators=[DataRequired()])
+    submit = SubmitField('Send')

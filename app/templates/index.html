@@ -43,8 +43,13 @@
             </div>
             <div style="text-align: center">
                 <a href="{{ url_for('main.game_info') }}" class="button">Game Info</a>
-                <button id="editProfileBtn" onclick="toggleEditProfile()" class="button">Edit Profile</button>
-                <a href="{{ url_for('auth.logout') }}" class="button">Logout</a>
+
+                {% if current_user.is_authenticated %}
+                    <button id="editProfileBtn" onclick="toggleEditProfile()" class="button">Edit Profile</button>
+                    <a href="{{ url_for('auth.logout') }}" class="button">Logout</a>
+                    <button class="button" onclick="openModal('contactModal')">Contact Us</button>
+                {% endif %}
+
             </div>
         </div>
 
@@ -232,7 +237,37 @@
                 }
             });
         }
+        const contactForm = document.getElementById('contactForm');
 
+        contactForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(contactForm);
+            const request = new XMLHttpRequest();
+            
+            request.open('POST', contactForm.action, true);
+            request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            
+            request.onload = function() {
+                if (request.status >= 200 && request.status < 400) {
+                    const response = JSON.parse(request.responseText);
+                    if (response.success) {
+                        alert('Your message has been sent successfully.');
+                        closeModal('contactModal');
+                    } else {
+                        alert('Failed to send your message. Please try again.');
+                    }
+                } else {
+                    alert('Failed to send your message. Please try again.');
+                }
+            };
+            
+            request.onerror = function() {
+                alert('Failed to send your message. Please try again.');
+            };
+            
+            request.send(formData);
+        });
     });
 
     document.getElementById('editProfileForm').addEventListener('submit', function(event) {
@@ -390,6 +425,7 @@
 {% include 'modals/user_profile_modal.html' %}
 {% include 'modals/leaderboard_modal.html' %}
 {% include 'modals/my_submissions_modal.html' %}
+{% include 'modals/contact_modal.html' %}
 
 
 <script src="{{ url_for('static', filename='js/modal_handlers.js') }}"></script>
