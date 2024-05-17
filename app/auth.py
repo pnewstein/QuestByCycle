@@ -37,7 +37,7 @@ def login():
 
         if not user.email_verified:  # Now it's safe to check email verification
             flash('Please verify your email before logging in.', 'warning')
-            return redirect(url_for('auth.login'))
+            return render_template('login.html', form=form, show_resend=True, email=email)
 
         if user and user.check_password(password):
             login_user(user, remember=form.remember_me.data)
@@ -52,6 +52,20 @@ def login():
             flash('Invalid email or password.')
     return render_template('login.html', form=form)
 
+@auth_bp.route('/resend_verification_email', methods=['POST'])
+def resend_verification_email():
+    email = request.form.get('email')
+    user = User.query.filter_by(email=email).first()
+    if user and not user.email_verified:
+        token = user.generate_verification_token()
+        verify_url = url_for('auth.verify_email', token=token, _external=True)
+        html = render_template('verify_email.html', verify_url=verify_url)
+        subject = "Please verify your email"
+        send_email(user.email, subject, html)
+        flash('A new verification email has been sent. Please check your inbox.', 'info')
+    else:
+        flash('Email not found or already verified.', 'warning')
+    return redirect(url_for('auth.login'))
 
 @auth_bp.route('/logout')
 @login_required
@@ -122,9 +136,6 @@ def register():
             flash('Registration failed due to an unexpected error. Please try again.', 'error')
             current_app.logger.error(f'Failed to register user or send verification email: {e}')
             return render_template('register.html', title='Register', form=form)  # Stay on registration page with error
-
-        
-
 
     return render_template('register.html', title='Register', form=form)
 
