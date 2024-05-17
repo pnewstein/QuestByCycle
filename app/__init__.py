@@ -12,6 +12,7 @@ from app.models import db
 from .config import load_config
 from flask_wtf.csrf import CSRFProtect
 from datetime import timedelta
+from flask_mail import Mail
 
 # Global variable to track the first request
 has_run = False
@@ -19,6 +20,7 @@ has_run = False
 # Initialize extensions
 login_manager = LoginManager()
 migrate = Migrate()
+mail = Mail()
 
 def create_app():
     app = Flask(__name__)
@@ -32,17 +34,16 @@ def create_app():
     csrf = CSRFProtect(app)
 
     # Apply configurations from the TOML file
+
+    # Apply configurations from the TOML file
     app.config['UPLOAD_FOLDER'] = app.config['main']['UPLOAD_FOLDER']
     app.config['VERIFICATIONS'] = app.config['main']['VERIFICATIONS']
     app.config['BADGE_IMAGE_DIR'] = app.config['main']['BADGE_IMAGE_DIR']
     app.config['CAROUSEL_IMAGES_DIR'] = app.config['main']['CAROUSEL_IMAGES_DIR']
-
     app.config['SQLALCHEMY_ECHO'] = app.config['main']['SQLALCHEMY_ECHO']
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config['flask']['SQLALCHEMY_DATABASE_URI']
     app.config['DEBUG'] = app.config['flask']['DEBUG']
-    
     app.config['TASKCSV'] = app.config['main']['TASKCSV']
-    # Apply encryption related settings
     app.config['SECRET_KEY'] = app.config['encryption']['SECRET_KEY']
     app.config['SESSION_COOKIE_SECURE'] = app.config['encryption']['SESSION_COOKIE_SECURE']
     app.config['SESSION_COOKIE_NAME'] = app.config['encryption']['SESSION_COOKIE_NAME']
@@ -50,13 +51,20 @@ def create_app():
     app.config['SESSION_COOKIE_DOMAIN'] = app.config['encryption']['SESSION_COOKIE_DOMAIN']
     app.config['SESSION_REFRESH_EACH_REQUEST'] = app.config['encryption']['SESSION_REFRESH_EACH_REQUEST']
     app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=app.config['encryption']['REMEMBER_COOKIE_DURATION_DAYS'])
-
-
+    app.config['MAIL_SERVER'] = app.config['mail']['MAIL_SERVER']
+    app.config['MAIL_PORT'] = app.config['mail']['MAIL_PORT']
+    app.config['MAIL_USE_TLS'] = app.config['mail']['MAIL_USE_TLS']
+    app.config['MAIL_USE_SSL'] = app.config['mail']['MAIL_USE_SSL']
+    app.config['MAIL_USERNAME'] = app.config['mail']['MAIL_USERNAME']
+    app.config['MAIL_PASSWORD'] = app.config['mail']['MAIL_PASSWORD']
+    app.config['MAIL_DEFAULT_SENDER'] = app.config['mail']['MAIL_DEFAULT_SENDER']
+    
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
     migrate.init_app(app, db)
+    mail.init_app(app)
 
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')

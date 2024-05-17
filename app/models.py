@@ -1,10 +1,11 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
+from flask import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timezone
-from enum import Enum
-from sqlalchemy.orm import relationship
-from sqlalchemy import Enum as SQLAlchemyEnum
+from datetime import datetime
+from time import time
+
+import jwt
 
 db = SQLAlchemy()
 
@@ -60,7 +61,22 @@ class User(UserMixin, db.Model):
     age_group = db.Column(db.String(50))
     interests = db.Column(db.String(500))  # This could be a comma-separated list or a many-to-many relationship with another table
     task_likes = db.relationship('TaskLike', backref='user', lazy='dynamic')
+    email_verified = db.Column(db.Boolean, default=False)
 
+    def generate_verification_token(self, expiration=600):
+        return jwt.encode(
+            {'verify_email': self.id, 'exp': time() + expiration},
+            current_app.config['SECRET_KEY'], algorithm='HS256'
+        )
+
+    @staticmethod
+    def verify_verification_token(token):
+        try:
+            id = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])['verify_email']
+        except:
+            return None
+        return User.query.get(id)
+    # ...
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
