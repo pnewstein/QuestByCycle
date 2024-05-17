@@ -2,6 +2,7 @@ from flask import flash, current_app, jsonify
 from .models import db, Task, Badge, UserTask, User, ShoutBoardMessage, TaskSubmission
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta, timezone
+from flask_mail import Message, Mail
 
 
 import uuid
@@ -9,7 +10,6 @@ import os
 
 MAX_POINTS_INT = 2**63 - 1
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -320,3 +320,14 @@ def check_and_revoke_badges(user_id):
 
     db.session.commit()
 
+
+def send_email(to, subject, template):
+    mail = Mail(current_app)
+    
+    msg = Message(
+        subject,
+        recipients=[to],
+        html=template,
+        sender=current_app.config['MAIL_DEFAULT_SENDER']
+    )
+    mail.send(msg)

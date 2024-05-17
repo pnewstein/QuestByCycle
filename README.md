@@ -18,6 +18,7 @@ QuestByCycle is a Flask-based web application designed to engage and motivate th
 
 - Python 3.11+
 - PostgreSQL
+- msmtp
 
 ### Installation
 
@@ -118,6 +119,46 @@ get code put here to get page access:
 https://graph.facebook.com/v12.0/oauth/access_token?grant_type=fb_exchange_token&client_id=CLIENTID&client_secret=CLIENTSECRET&fb_exchange_token=EXPLORERGENERATEDTOKEN
 
 Put page access token in edit game
+
+## msmtp
+```
+sudo apt-get update
+sudo apt-get install msmtp msmtp-mta
+nano ~/.msmtprc
+
+# Set default values for all accounts
+defaults
+auth           on
+tls            on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+logfile        ~/.msmtp.log
+
+# Set a default account
+account        default
+host           smtp.gmail.com
+port           587
+from           no-reply@questbycycle.org
+user           your-email@gmail.com
+password       your-gmail-password
+
+# Alternatively, if you are using another SMTP server
+# host           smtp.your-email-provider.com
+# port           587
+# from           no-reply@questbycycle.org
+# user           your-smtp-username
+# password       your-smtp-password
+
+# Map local user to this account
+account default : default
+
+chmod 600 ~/.msmtprc
+
+echo "Subject: Test Email" | msmtp -a default your-email@gmail.com
+
+pip install Flask-Mail
+
+
+```
 ## Contributing
 
 We welcome contributions from the community! Whether you're interested in adding new features, fixing bugs, or improving documentation, your help is appreciated. Please refer to CONTRIBUTING.md for guidelines on how to contribute to QuestByCycle.

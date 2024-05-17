@@ -4,9 +4,13 @@ from flask_login import login_user, logout_user, login_required
 from app.models import db, User
 from app.forms import LoginForm, RegistrationForm
 from app.admin import create_admin
+from app.utils import send_email
+from flask_mail import Message, Mail
+from sqlalchemy import or_
 
 auth_bp = Blueprint('auth', __name__)
 
+mail = Mail()
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -26,6 +30,14 @@ def login():
             return redirect(url_for('auth.login'))
 
         user = User.query.filter_by(email=email).first()
+
+        if user is None:  # Check if user exists
+            flash('Invalid email or password.')
+            return redirect(url_for('auth.login'))
+
+        if not user.email_verified:  # Now it's safe to check email verification
+            flash('Please verify your email before logging in.', 'warning')
+            return redirect(url_for('auth.login'))
 
         if user and user.check_password(password):
             login_user(user, remember=form.remember_me.data)
@@ -63,39 +75,69 @@ def decrypt_message(encrypted_message, key):
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    form = RegistrationForm(request.form)
+    form = RegistrationForm()
     if form.validate_on_submit():
         if not form.accept_tos.data or not form.accept_privacy.data:
             flash('You must agree to the terms of service and privacy policy.', 'warning')
             return render_template('register.html', form=form)
 
         email = form.email.data
-        username = email.split('@')[0]  # Derive username from email
+        base_username = email.split('@')[0]
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
             flash('Email already registered. Please use a different email.', 'warning')
             return redirect(url_for('auth.register'))
 
+        # Find similar usernames and generate a unique one
+        counter = 1
+        username = base_username
+        while User.query.filter(or_(User.username == username, User.email == email)).first():
+            username = f"{base_username}{counter}"
+            counter += 1
+
+
         user = User(
-            username=username, 
-            email=email, 
+            username=username,
+            email=email,
             tos_agreed=form.accept_tos.data,
-            privacy_agreed=form.accept_privacy.data
+            privacy_agreed=form.accept_privacy.data,
+            email_verified=False  # Default to not verified
         )
         user.set_password(form.password.data)
         db.session.add(user)
-
         try:
-            db.session.commit()
-            login_user(user)
-            flash('Congratulations, you are now a registered user and logged in!', 'success')
-            return redirect(url_for('main.index'))
-        except Exception as e:
+            db.session.commit()  # Commit the user creation first
+
+            token = user.generate_verification_token()
+            verify_url = url_for('auth.verify_email', token=token, _external=True)
+            html = render_template('verify_email.html', verify_url=verify_url)
+            subject = "QuestByCycle verify email"
+            send_email(user.email, subject, html)
+            
+            flash('A verification email has been sent to you. Please check your inbox.', 'info')
+            return redirect(url_for('auth.login'))
+        
+        except Exception as e:  # Now catch errors in both commit and email sending
             db.session.rollback()
             flash('Registration failed due to an unexpected error. Please try again.', 'error')
-            current_app.logger.error(f'Failed to register user: {e}')
-            
+            current_app.logger.error(f'Failed to register user or send verification email: {e}')
+            return render_template('register.html', title='Register', form=form)  # Stay on registration page with error
+
+        
+
+
     return render_template('register.html', title='Register', form=form)
+
+@auth_bp.route('/verify_email/<token>')
+def verify_email(token):
+    user = User.verify_verification_token(token)
+    if not user:
+        flash('The verification link is invalid or has expired.', 'danger')
+        return redirect(url_for('auth.login'))
+    user.email_verified = True
+    db.session.commit()
+    flash('Your email has been verified. You can now log in.', 'success')
+    return redirect(url_for('auth.login'))
 
 
 @auth_bp.route('/privacy_policy')
