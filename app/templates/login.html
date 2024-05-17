@@ -1,3 +1,4 @@
+<!-- templates/login.html -->
 {% extends "layout.html" %}
 {% block title %}Login{% endblock %}
 {% block content %}
@@ -26,5 +27,13 @@
             {{ form.submit() }}
         </div>
     </form>
+
+    {% if show_resend %}
+    <!-- Resend verification email form -->
+    <form id="resend-verification-form" method="post" action="{{ url_for('auth.resend_verification_email') }}">
+        <input type="hidden" name="email" value="{{ email }}">
+        <button type="submit" class="btn btn-secondary">Resend Verification Email</button>
+    </form>
+    {% endif %}
 </div>
 {% endblock %}
