@@ -91,16 +91,16 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
 
     switch (task.verification_type) {
         case 'photo_comment':
-            elements['modalTaskVerificationType'].innerText = "Photo and Comment are required.";
+            elements['modalTaskVerificationType'].innerText = "Must upload a photo and a comment to earn points!";
             break;
         case 'photo':
-            elements['modalTaskVerificationType'].innerText = "Photo is required.";
+            elements['modalTaskVerificationType'].innerText = "Must upload a photo to earn points!";
             break;
         case 'comment':
-            elements['modalTaskVerificationType'].innerText = "Comment is required.";
+            elements['modalTaskVerificationType'].innerText = "Must upload a comment to earn points!";
             break;
         case 'qr_code':
-            elements['modalTaskVerificationType'].innerText = "Find the QR code and post a photo!";
+            elements['modalTaskVerificationType'].innerText = "Find the QR code and post a photo to earn points!";
             break;
         default:
             elements['modalTaskVerificationType'].innerText = 'Not specified';
@@ -194,7 +194,7 @@ function getVerificationFormHTML(verificationType) {
             break;
         default:
             // Handle cases where no verification is needed or provide a default case
-            formHTML += '<p>Verification type not set correctly.</p>';
+            formHTML += '<p>Submission Requirements not set correctly.</p>';
             break;
     }
 

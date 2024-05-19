@@ -78,7 +78,7 @@ class TaskForm(FlaskForm):
         ('comment', 'Comment'),
         ('photo_comment', 'Photo Upload and Comment')
     ]
-    verification_type = SelectField('Verification Type', choices=verification_type_choices, coerce=str, validators=[DataRequired()])
+    verification_type = SelectField('Submission Requirements', choices=verification_type_choices, coerce=str, validators=[DataRequired()])
     title = StringField('Title', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
     tips = TextAreaField('Tips', validators=[Optional()])
@@ -114,7 +114,7 @@ class TaskImportForm(FlaskForm):
         ('comment', 'Comment'),
         ('photo_comment', 'Photo Upload and Comment')
     ]
-    verification_type = SelectField('Verification Type', choices=verification_type_choices, coerce=str, validators=[DataRequired()])
+    verification_type = SelectField('Submission Requirements', choices=verification_type_choices, coerce=str, validators=[DataRequired()])
     badge_id = SelectField('Select Existing Badge', coerce=int, choices=[], default=0)
     badge_name = StringField('Badge Name', validators=[DataRequired()])
     badge_description = TextAreaField('Badge Description', validators=[DataRequired()])    
