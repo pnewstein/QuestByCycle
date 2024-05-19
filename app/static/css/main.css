@@ -1333,7 +1333,13 @@ footer {
 .see-more {
     margin-left: 10px;
     text-decoration: none;
-    color: #007bff; /* Example color for the link */
+    color: #ffe07a; /* Example color for the link */
+}
+
+.see-more:hover {
+    margin-left: 10px;
+    text-decoration: none;
+    color: #bfc2b1; /* Example color for the link */
 }
 
 .footer-section.text {
@@ -1639,4 +1645,14 @@ footer {
     font-style: italic;
     font-size: 1.2em; /* Adjust font size as needed */
     color: #555; /* Adjust color as needed */
+}
+
+.social-link {
+    margin: 0 10px;
+    font-size: 24px;
+    color: #ffe07a; /* Adjust color as needed */
+}
+
+.social-link:hover {
+    color: #bfc2b1; /* Adjust hover color as needed */
 }
