@@ -4,7 +4,7 @@
 <div class="container">
     {% if not current_user.is_authenticated %}
     <div class="welcomeImage">
-        <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Bike Hunt" style="max-width: 600px; max-height: 300px;">
+        <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Quest by Cycle" style="max-width: 600px; max-height: 300px;" loading="lazy">
     </div>
     <div class="introduction">
         <strong><p>QuestByCycle is a community-wide motivational game designed to encourage cycling and outdoor activities. Participants can join the game, complete tasks, and earn points/”reduce carbon” in the atmosphere to climb up the leaderboard. It's a fun way to stay active, explore your surroundings, and connect with fellow cycling enthusiasts.</p></strong>
@@ -12,7 +12,6 @@
     {% endif %}
     <div class="content-flex-container">
         <div class="game-item">
-
             {% if not current_user.is_authenticated %}
                 <div class="welcomeMedia">
                     <video class="welcomeMedia" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}" autoplay loop controls></video>
@@ -27,7 +26,7 @@
                     <div class="carousel-inner">
                         {% for image in carousel_images %}
                         <div class="carousel-item{% if loop.first %} active{% endif %}" style="height: 300px;">
-                            <img src="{{ url_for('static', filename=image) }}" class="d-block w-100 h-100" alt="Carousel Image" style="height: 300px; width: 100%; object-fit: cover;">
+                            <img src="{{ url_for('static', filename=image) }}" class="d-block w-100 h-100" alt="Carousel Image" style="height: 300px; width: 100%; object-fit: cover;" loading="lazy">
                         </div>
                         {% endfor %}
                     </div>
@@ -49,7 +48,6 @@
                     <a href="{{ url_for('auth.logout') }}" class="button">Logout</a>
                     <button class="button" onclick="openModal('contactModal')">Contact Us</button>
                 {% endif %}
-
             </div>
         </div>
 
@@ -80,9 +78,9 @@
                         <li>
                             {{ badge.name }} -
                             {% if badge.image %}
-                            <img src="{{ url_for('static', filename='images/badge_images/' + badge.image) }}" alt="{{ badge.name }}" class="badge-image-pri-pro">
+                            <img src="{{ url_for('static', filename='images/badge_images/' + badge.image) }}" alt="{{ badge.name }}" class="badge-image-pri-pro" loading="lazy">
                             {% else %}
-                            <img src="{{ url_for('static', filename='images/badge_images/default_badge.png') }}" alt="Default Badge" class="badge-image-pri-pro">
+                            <img src="{{ url_for('static', filename='images/badge_images/default_badge.png') }}" alt="Default Badge" class="badge-image-pri-pro" loading="lazy">
                             {% endif %}
                         </li>
                         {% endfor %}
@@ -91,7 +89,7 @@
             {% endif %}
             {% if not current_user.is_authenticated %}
             <div id="profileView">
-                <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="profile-image">
+                <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="profile-image" loading="lazy">
                 <p><strong>Name:</strong></p>
                 <p id="total-points"><strong>Your Total Completed Points:</strong></p>
                 <p><strong>Email:</strong></p>
@@ -101,7 +99,6 @@
                 <a href="{{ url_for('auth.register') }}" class="button" style="margin-left: 10px;">Register</a>
             {% endif %}
         </div>
-
     </div>
     <div class="shout-board-column">
         <h2>Current Activities</h2>
@@ -169,9 +166,7 @@
             {% endif %}
             <button id="leaderboardButton" data-game-id="{{ game.id }}" class="button">View Leaderboard</button>
             <button id="submissionsButton" data-game-id="{{ game.id }}" class="button">Your Submissions</button>
-
         </p>
-
         <table class="table">
             <colgroup>
                 <col style="width: 5%;"> <!-- Checkbox column -->
@@ -197,7 +192,7 @@
                     <td>
                         {% if task.badge %}
                         {% if task.badge.image %}
-                        <img src="{{ url_for('static', filename='images/badge_images/' + task.badge.image) }}" alt="Badge" class="badge-image">
+                        <img src="{{ url_for('static', filename='images/badge_images/' + task.badge.image) }}" alt="Badge" class="badge-image" loading="lazy">
                         {% endif %}
                         {% else %}
                         None
@@ -423,7 +418,6 @@
             likeButton.disabled = false;  // Re-enable the button in case of error to allow retrying
         });
     }
-
 </script>
 
 {% include 'modals/task_detail_modal.html' %}
