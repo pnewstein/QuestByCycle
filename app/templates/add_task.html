@@ -2,6 +2,7 @@
 
 {% block content %}
 <div class="container">
+    <a href="{{ url_for('admin.admin_dashboard') }}" class="button">Back to Dashboard</a>
     <h2>Add New Task to Game</h2>
     <form action="" method="post" class="form" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
