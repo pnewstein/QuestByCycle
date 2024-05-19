@@ -16,6 +16,55 @@ main {
     flex: 1;
 }
 
+/* main.css */
+
+/* Other existing styles */
+
+/* Flash message styles */
+.flash-message {
+    width: 50%;
+    margin: 20px auto; /* Center horizontally and add some vertical spacing */
+    padding: 15px;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 1em; /* Adjust font size as needed */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    transition: opacity 0.3s ease-in-out; /* Smooth transition for appearance/disappearance */
+}
+
+/* Flash message categories */
+.flash-success {
+    background-color: #a8d5a3; /* Softer green */
+    color: #3c763d;
+    border: 1px solid #96c48b;
+}
+
+.flash-error, .flash-danger {
+    background-color: #f7c6c6; /* Softer red */
+    color: #a94442;
+    border: 1px solid #f0a7a7;
+}
+
+.flash-warning {
+    background-color: #fae1b5; /* Softer yellow */
+    color: #8a6d3b;
+    border: 1px solid #f7d09a;
+}
+
+.flash-info {
+    background-color: #b8dfe6; /* Softer blue */
+    color: #31708f;
+    border: 1px solid #a3cbd3;
+}
+
+/* Media query to adjust flash message width on smaller screens */
+@media (max-width: 768px) {
+    .flash-message {
+        width: 90%;
+    }
+}
+
+
 .content-wrap {
     flex: 1; /* This makes the content area flex and push the footer down */
 }

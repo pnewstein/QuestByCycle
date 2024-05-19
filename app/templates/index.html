@@ -2,6 +2,17 @@
 
 {% block content %}
 <div class="container">
+    {% if current_user.is_authenticated %}
+        <!-- Display Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    {% endif %}
+
     {% if not current_user.is_authenticated %}
     <div class="welcomeImage">
         <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Quest by Cycle" style="max-width: 600px; max-height: 300px;" loading="lazy">
