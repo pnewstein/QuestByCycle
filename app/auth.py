@@ -7,7 +7,7 @@ from app.admin import create_admin
 from app.utils import send_email
 from flask_mail import Message, Mail
 from sqlalchemy import or_
-
+from pytz import utc
 from datetime import datetime
 
 auth_bp = Blueprint('auth', __name__)
@@ -123,7 +123,8 @@ def register():
             license_agreed=form.accept_license.data,  # Ensure license_agreed is assigned
             email_verified=False,  # Default to not verified
             is_admin=False,  # Default to not admin
-            created_at=datetime.now(),
+            created_at=datetime.now(utc),  # Use timezone-aware datetime
+            #created_at=datetime.now(),
             score=0,  # Default score
             display_name=None,
             profile_picture=None,

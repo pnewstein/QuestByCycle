@@ -8,6 +8,7 @@ from .config import load_config
 from werkzeug.utils import secure_filename
 from sqlalchemy import func
 from datetime import datetime, timedelta, timezone
+from pytz import utc
 
 import os
 import logging
@@ -107,7 +108,7 @@ def index(game_id, task_id, user_id):
         task.next_eligible_time = None
         task.completion_timestamps = []
 
-        now = datetime.now()
+        now = datetime.now(utc)
         period_start_map = {
             'daily': timedelta(days=1),
             'weekly': timedelta(weeks=1),

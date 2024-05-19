@@ -4,6 +4,7 @@ from flask import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from time import time
+from pytz import utc
 
 import jwt
 
@@ -35,7 +36,7 @@ class UserTask(db.Model):
     task_id = db.Column(db.Integer, db.ForeignKey('task.id', ondelete='CASCADE'), primary_key=True, nullable=False)
     completions = db.Column(db.Integer, default=0)  # Track number of completions
     points_awarded = db.Column(db.Integer, default=0)  # Points awarded for the task
-    completed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
+    completed_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(utc))  # Use timezone-aware datetime
     task = db.relationship("Task", back_populates="user_tasks")
 
     def __init__(self, **kwargs):
@@ -157,13 +158,13 @@ class ShoutBoardMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(500), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.now())
+    timestamp = db.Column(db.DateTime, index=True, default=lambda: datetime.now(utc))  # Use timezone-aware datetime
     is_pinned = db.Column(db.Boolean, default=False)  # Add this line
 
     user = db.relationship('User', backref='shoutboard_messages')
     likes = db.relationship('ShoutBoardLike', backref='message', lazy='dynamic')
 
-
+    
 class ShoutBoardLike(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message_id = db.Column(db.Integer, db.ForeignKey('shout_board_message.id'), nullable=False)
@@ -178,13 +179,13 @@ class TaskSubmission(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     image_url = db.Column(db.String(500), nullable=True)
     comment = db.Column(db.String(1000), nullable=True)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.now())
+    timestamp = db.Column(db.DateTime, index=True, default=lambda: datetime.now(utc))  # Use timezone-aware datetime
     twitter_url = db.Column(db.String(1024), nullable=True)
     fb_url = db.Column(db.String(1024), nullable=True)
 
     task = db.relationship('Task', back_populates='submissions')
     user = db.relationship('User', backref='task_submissions')
-
+    
 
 class Sponsor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
