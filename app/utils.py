@@ -168,7 +168,7 @@ def can_complete_task(user_id, task_id):
     # Determine the start of the relevant period based on frequency
     period_start_map = {
         'daily': timedelta(days=1),
-        'weekly': timedelta(minutes=4),
+        'weekly': timedelta(weeks=1),
         'monthly': timedelta(days=30)  # Approximation for monthly
     }
     period_start = now - period_start_map.get(task.frequency, timedelta(days=1))
@@ -198,7 +198,7 @@ def can_complete_task(user_id, task_id):
             # Calculate when the user is eligible next, based on the first completion time
             increment_map = {
                 'daily': timedelta(days=1),
-                'weekly': timedelta(minutes=4),
+                'weekly': timedelta(weeks=1),
                 'monthly': timedelta(days=30)
             }
             next_eligible_time = first_completion_in_period.timestamp + increment_map.get(task.frequency, timedelta(days=1))
@@ -221,7 +221,7 @@ def getLastRelevantCompletionTime(user_id, task_id):
     # Start of the period calculation must reflect the frequency
     period_start_map = {
         'daily': now - timedelta(days=1),
-        'weekly': now - timedelta(minutes=4),
+        'weekly': now - timedelta(weeks=1),
         'monthly': now - timedelta(days=30)
     }
     
