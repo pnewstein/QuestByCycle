@@ -2,22 +2,73 @@
 {% block title %}Sponsors{% endblock %}
 {% block content %}
 <div class="container">
+    <a href="{{ url_for('main.index') }}" class="button">Back to Home</a> 
     <h2>Sponsors</h2>
     <div class="row">
         {% for sponsor in sponsors %}
-            <div class="col-md-4">
-                <div class="card mb-4 shadow-sm">
-                    <img class="card-img-top" src="{{ sponsor.logo }}" alt="{{ sponsor.name }} logo">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ sponsor.name }}</h5>
-                        <p class="card-text">{{ sponsor.description }}</p>
-                        <p class="card-text"><strong>Tier:</strong> {{ sponsor.tier }}</p>
-                        {% if sponsor.website %}
-                            <a href="{{ sponsor.website }}" class="btn btn-primary" target="_blank">Visit Website</a>
-                        {% endif %}
+            {% if sponsor.tier == 'Gold' %}
+                <div class="col-md-4">
+                    <div class="card mb-4 shadow-lg border-warning">
+                        <div class="card-header bg-warning text-dark text-center">
+                            <h3 class="card-title font-weight-bold">{{ sponsor.name }}</h3>
+                        </div>
+                        <img class="card-img-top" src="{{ sponsor.logo }}" alt="{{ sponsor.name }} logo">
+                        <div class="card-body bg-light">
+                            <p class="card-text">{{ sponsor.description }}</p>
+                            <p class="card-text"><strong>Tier:</strong> {{ sponsor.tier }}</p>
+                            {% if sponsor.website %}
+                                <a href="{{ sponsor.website }}" class="btn btn-warning" target="_blank">Visit Website</a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
-            </div>
+            {% elif sponsor.tier == 'Silver' %}
+                <div class="col-md-4">
+                    <div class="card mb-4 shadow border-secondary">
+                        <div class="card-header bg-secondary text-white text-center">
+                            <h3 class="card-title font-weight-bold">{{ sponsor.name }}</h3>
+                        </div>
+                        <img class="card-img-top" src="{{ sponsor.logo }}" alt="{{ sponsor.name }} logo">
+                        <div class="card-body">
+                            <p class="card-text">{{ sponsor.description }}</p>
+                            <p class="card-text"><strong>Tier:</strong> {{ sponsor.tier }}</p>
+                            {% if sponsor.website %}
+                                <a href="{{ sponsor.website }}" class="btn btn-secondary" target="_blank">Visit Website</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% elif sponsor.tier == 'Bronze' %}
+                <div class="col-md-4">
+                    <div class="card mb-4 shadow-sm border-danger">
+                        <div class="card-header bg-danger text-white text-center">
+                            <h3 class="card-title font-weight-bold">{{ sponsor.name }}</h3>
+                        </div>
+                        <img class="card-img-top" src="{{ sponsor.logo }}" alt="{{ sponsor.name }} logo">
+                        <div class="card-body">
+                            <p class="card-text">{{ sponsor.description }}</p>
+                            <p class="card-text"><strong>Tier:</strong> {{ sponsor.tier }}</p>
+                            {% if sponsor.website %}
+                                <a href="{{ sponsor.website }}" class="btn btn-danger" target="_blank">Visit Website</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-md-4">
+                    <div class="card mb-4 shadow-sm">
+                        <img class="card-img-top" src="{{ sponsor.logo }}" alt="{{ sponsor.name }} logo">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ sponsor.name }}</h5>
+                            <p class="card-text">{{ sponsor.description }}</p>
+                            <p class="card-text"><strong>Tier:</strong> {{ sponsor.tier }}</p>
+                            {% if sponsor.website %}
+                                <a href="{{ sponsor.website }}" class="btn btn-primary" target="_blank">Visit Website</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         {% endfor %}
     </div>
 </div>
