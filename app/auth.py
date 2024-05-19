@@ -153,7 +153,7 @@ def verify_email(token):
         return redirect(url_for('auth.login'))
     user.email_verified = True
     db.session.commit()
-    flash('Your email has been verified. You can now log in.', 'success')
+    flash('Your email has been verified. You can now sign in.', 'success')
     return redirect(url_for('auth.login'))
 
 
