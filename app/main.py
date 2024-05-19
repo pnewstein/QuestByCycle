@@ -35,7 +35,7 @@ def get_datetime(activity):
 @main_bp.route('/<int:game_id>/<int:task_id>', defaults={'user_id': None})
 @main_bp.route('/<int:game_id>/<int:task_id>/<int:user_id>')
 def index(game_id, task_id, user_id):
-    user_games = [] 
+    user_games = []
     profile = None
     user_tasks = []
     badges = []
@@ -58,7 +58,7 @@ def index(game_id, task_id, user_id):
     game = Game.query.get(game_id) if game_id else None
 
     carousel_images_dir = os.path.join(current_app.root_path, 'static', current_app.config['CAROUSEL_IMAGES_DIR'])
-    
+
     if current_user.is_authenticated:
         user_tasks = UserTask.query.filter_by(user_id=current_user.id).all()
         total_points = sum(ut.points_awarded for ut in user_tasks if ut.task.game_id == game_id)
@@ -93,6 +93,10 @@ def index(game_id, task_id, user_id):
         profile = User.query.get_or_404(user_id)
         user_tasks = UserTask.query.filter_by(user_id=profile.id).all()
         badges = profile.badges
+
+        # Update to use username if display_name is None
+        if not profile.display_name:
+            profile.display_name = profile.username
 
     for task in tasks:
         completions = sum(1 for ut in user_tasks if ut.task_id == task.id and ut.completions > 0)
@@ -139,7 +143,7 @@ def index(game_id, task_id, user_id):
                 task.next_eligible_time = last_completion.timestamp + increment_map.get(task.frequency, timedelta(days=1))
 
     tasks.sort(key=lambda x: (x.completions_within_period if hasattr(x, 'completions_within_period') else 0), reverse=True)
-   
+
     if current_user.is_authenticated:
         profform = ProfileForm()
 

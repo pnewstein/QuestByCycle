@@ -69,18 +69,21 @@
         {% if profile %}
             <div class="game-item">
                 <div id="profileDisplay">
+                    <p style="text-align: center;"><strong>Your Profile</strong></p>
+
                     <form id="editProfileForm" method="post" enctype="multipart/form-data" style="display: none;">
                         {{ form.hidden_tag() }}
                         <p><img id="profileImageDisplay" src="{{ url_for('static', filename=current_user.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="profile-image"></p>
+                        <p style="text-align: center;">Your Profile</p>
                         <p><strong>Profile Photo: </strong><input type="file" name="profile_picture" onchange="previewFile()"></p>
-                        <p><strong>Player/Team Name: </strong><input type="text" name="display_name" placeholder="Player/Team Name" value="{{ profile.display_name }}"></p>
+                        <p><strong>Player/Team Name: </strong><input type="text" name="display_name" placeholder="Player/Team Name" value="{{ profile.display_name or profile.username }}"></p>
                         <p><strong>Age Group: </strong><input type="text" name="age_group" placeholder="Age Group" value="{{ profile.age_group }}"></p>
                         <p><strong>Interests: </strong><input type="text" name="interests" placeholder="Interests" value="{{ profile.interests }}"></p>
                         <button type="submit" class="button">Save Profile</button>
                     </form>
                     <div id="profileView">
                         <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="profile-image">
-                        <p><strong>Name:</strong> {{ profile.display_name }}</p>
+                        <p><strong>Name:</strong> {{ profile.display_name or profile.username }}</p>
                         <p id="total-points"><strong>Your Total Completed Points:</strong> {{ total_points }}</p>
                         <p><strong>Interests:</strong> {{ profile.interests }}</p>
                     </div>
