@@ -48,13 +48,13 @@ def index(game_id, task_id, user_id):
     if game_id is None and current_user.is_authenticated:
         joined_games = current_user.participated_games
         if joined_games:
-            game_id = joined_games[-1].id
+            game_id = joined_games[0].id  # Keep the same game_id assignment if user already has games
         else:
-            latest_game = Game.query.order_by(Game.start_date.desc()).first()
-            if latest_game:
-                current_user.participated_games.append(latest_game)
+            earliest_game = Game.query.order_by(Game.start_date.asc()).first()  # Get the earliest game
+            if earliest_game:
+                current_user.participated_games.append(earliest_game)
                 db.session.commit()
-                game_id = latest_game.id
+                game_id = earliest_game.id
 
     game = Game.query.get(game_id) if game_id else None
 
@@ -184,6 +184,7 @@ def index(game_id, task_id, user_id):
                            badges=badges,
                            carousel_images=carousel_images,
                            total_points=total_points)
+
 
 @main_bp.route('/shout-board', methods=['POST'])
 @login_required
