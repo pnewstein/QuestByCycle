@@ -7,6 +7,7 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
 </head>
@@ -35,6 +36,17 @@
                 <a href="{{ url_for('auth.privacy_policy') }}">Privacy Policy</a>
                 <a href="{{ url_for('auth.terms_of_service') }}">Terms of Service</a>
                 <a href="{{ url_for('auth.license_agreement') }}">License Agreement</a>
+            </div>
+            <div class="footer-section social">
+                <a href="https://twitter.com/QuestByCycle" target="_blank" class="social-link">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="https://facebook.com/QuestByCycle" target="_blank" class="social-link">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="https://instagram.com/QuestByCycle" target="_blank" class="social-link">
+                    <i class="fab fa-instagram"></i>
+                </a>
             </div>
         </div>
         <div class="footer-section legal">
