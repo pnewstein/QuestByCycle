@@ -1,10 +1,10 @@
 from flask_wtf import FlaskForm
 from flask import current_app
 from wtforms import StringField, SelectField, SubmitField, IntegerField, PasswordField, TextAreaField, BooleanField
-from wtforms.validators import DataRequired, NumberRange, EqualTo, Optional, Email, Length, ValidationError
+from wtforms.validators import DataRequired, NumberRange, EqualTo, Optional, Email, Length, ValidationError, URL
 from wtforms.fields import DateField
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from app.models import Badge, Task
+from app.models import Badge, Task, Game
 
 import os
 
@@ -167,3 +167,16 @@ class TaskImportForm(FlaskForm):
 class ContactForm(FlaskForm):
     message = TextAreaField('Message', validators=[DataRequired()])
     submit = SubmitField('Send')
+
+class SponsorForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    website = StringField('Website', validators=[Optional(), URL()])
+    logo = StringField('Logo URL', validators=[Optional(), URL()])
+    description = TextAreaField('Description', validators=[Optional()])
+    tier = StringField('Tier', validators=[DataRequired()])
+    game_id = SelectField('Game', coerce=int, validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+    def __init__(self, *args, **kwargs):
+        super(SponsorForm, self).__init__(*args, **kwargs)
+        self.game_id.choices = [(game.id, game.title) for game in Game.query.order_by('title')]

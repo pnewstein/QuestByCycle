@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block title %}Edit Sponsor{% endblock %}
+{% block content %}
+<div class="container">
+    <a href="{{ url_for('admin.admin_dashboard') }}" class="button">Back to Dashboard</a> 
+    <h2>Edit Sponsor</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.name.label(class="form-control-label") }}
+            {{ form.name(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.website.label(class="form-control-label") }}
+            {{ form.website(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.logo.label(class="form-control-label") }}
+            {{ form.logo(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.description.label(class="form-control-label") }}
+            {{ form.description(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.tier.label(class="form-control-label") }}
+            {{ form.tier(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.game_id.label(class="form-control-label") }}
+            {{ form.game_id(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

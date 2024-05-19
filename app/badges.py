@@ -12,6 +12,11 @@ badges_bp = Blueprint('badges', __name__, template_folder='templates')
 @badges_bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def create_badge():
+
+    if not current_user.is_admin:
+        flash('Access denied: Only administrators can manage badges.', 'danger')
+        return redirect(url_for('main.index'))
+    
     form = BadgeForm()
     if form.validate_on_submit():
         filename = None

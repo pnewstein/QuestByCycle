@@ -26,7 +26,7 @@
                 <a href="https://www.350eugene.org/" target="_blank">
                     <img src="{{ url_for('static', filename='images/350EUG-logo.png') }}" alt="350Eugene Logo" class="footer-logo">
                 </a>
-                <a href="#" class="see-more">see more</a>
+                <a href="{{ url_for('auth.sponsors') }}" class="see-more">see more</a>
             </div>
             <div class="footer-section text">
                 <p>Supporting cycling initiatives for a greener planet.</p>
@@ -41,7 +41,6 @@
             &copy; {{ current_year }} QuestByCycle. All rights reserved.
         </div>
     </footer>
-      
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>

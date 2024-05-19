@@ -1,8 +1,8 @@
 from cryptography.fernet import Fernet
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
-from flask_login import login_user, logout_user, login_required
-from app.models import db, User
-from app.forms import LoginForm, RegistrationForm
+from flask_login import login_user, logout_user, login_required, current_user
+from app.models import db, User, Sponsor
+from app.forms import LoginForm, RegistrationForm, SponsorForm
 from app.admin import create_admin
 from app.utils import send_email
 from flask_mail import Message, Mail
@@ -181,3 +181,69 @@ def terms_of_service():
 @auth_bp.route('/license_agreement')
 def license_agreement():
     return render_template('license_agreement.html')
+
+
+@auth_bp.route('/sponsors', methods=['GET'])
+def sponsors():
+    sponsors = Sponsor.query.all()
+    return render_template('sponsors.html', sponsors=sponsors)
+
+@auth_bp.route('/admin/sponsors', methods=['GET', 'POST'])
+@login_required
+def manage_sponsors():
+    if not current_user.is_admin:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('auth.login'))
+    
+    form = SponsorForm()
+    if form.validate_on_submit():
+        sponsor = Sponsor(
+            name=form.name.data,
+            website=form.website.data,
+            logo=form.logo.data,
+            description=form.description.data,
+            tier=form.tier.data,
+            game_id=form.game_id.data
+        )
+        db.session.add(sponsor)
+        db.session.commit()
+        flash('Sponsor added successfully!', 'success')
+        return redirect(url_for('auth.manage_sponsors'))
+
+    sponsors = Sponsor.query.all()
+    return render_template('manage_sponsors.html', form=form, sponsors=sponsors)
+
+@auth_bp.route('/admin/sponsors/edit/<int:sponsor_id>', methods=['GET', 'POST'])
+@login_required
+def edit_sponsor(sponsor_id):
+    if not current_user.is_admin:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('auth.login'))
+    
+    sponsor = Sponsor.query.get_or_404(sponsor_id)
+    form = SponsorForm(obj=sponsor)
+    if form.validate_on_submit():
+        sponsor.name = form.name.data
+        sponsor.website = form.website.data
+        sponsor.logo = form.logo.data
+        sponsor.description = form.description.data
+        sponsor.tier = form.tier.data
+        sponsor.game_id = form.game_id.data
+        db.session.commit()
+        flash('Sponsor updated successfully!', 'success')
+        return redirect(url_for('auth.manage_sponsors'))
+
+    return render_template('edit_sponsor.html', form=form)
+
+@auth_bp.route('/admin/sponsors/delete/<int:sponsor_id>', methods=['POST'])
+@login_required
+def delete_sponsor(sponsor_id):
+    if not current_user.is_admin:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('auth.login'))
+    
+    sponsor = Sponsor.query.get_or_404(sponsor_id)
+    db.session.delete(sponsor)
+    db.session.commit()
+    flash('Sponsor deleted successfully!', 'success')
+    return redirect(url_for('auth.manage_sponsors'))
