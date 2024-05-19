@@ -4,7 +4,7 @@
 <div class="container text-center">
     <h1>Welcome to Quest by Cycle</h1>
     {% if not current_user.is_authenticated %}
-    <p>You may need to <a href="{{ url_for('auth.login') }}">log in</a> or <a href="{{ url_for('auth.register') }}">register</a> to access games.</p>
+    <p>You may need to <a href="{{ url_for('auth.login') }}">sign in</a> or <a href="{{ url_for('auth.register') }}">register</a> to access games.</p>
     {% endif %}
 </div>
 {% endblock %}
