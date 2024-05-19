@@ -46,9 +46,8 @@
                 </div>
             </div>
             <div style="text-align: center">
-                <a href="{{ url_for('main.game_info') }}" class="button">Game Info</a>
-
                 {% if current_user.is_authenticated %}
+                <a href="{{ url_for('main.game_info') }}" class="button">Let's Get Started!</a>
                     <button id="editProfileBtn" onclick="toggleEditProfile()" class="button">Edit Profile</button>
                     <a href="{{ url_for('auth.logout') }}" class="button">Logout</a>
                     <button class="button" onclick="openModal('contactModal')">Contact Us</button>
