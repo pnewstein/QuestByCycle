@@ -52,7 +52,7 @@ function openTaskDetailModal(taskId) {
         })
         .catch(error => {
             console.error('Error opening task detail modal:', error);
-            alert('Failed to load task details.');
+            alert('Sign in to view task details.');
         });
 }
 

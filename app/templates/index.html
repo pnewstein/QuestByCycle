@@ -7,7 +7,12 @@
         <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Quest by Cycle" style="max-width: 600px; max-height: 300px;" loading="lazy">
     </div>
     <div class="introduction">
-        <strong><p>QuestByCycle is a community-wide motivational game designed to encourage cycling and outdoor activities. Participants can join the game, complete tasks, and earn points/”reduce carbon” in the atmosphere to climb up the leaderboard. It's a fun way to stay active, explore your surroundings, and connect with fellow cycling enthusiasts.</p></strong>
+        <strong><p>Ready to transform your bike rides into a thrilling adventure that benefits the planet? Join the QuestByCycle community! Pedal your way to a greener world as you tackle exciting challenges, earn points that combat carbon emissions, and discover hidden gems in your city. Connect with fellow cycling enthusiasts, compete for top spots on the leaderboard, and make a real difference – all while having a blast on two wheels.</p></strong>
+        <div style="text-align: center; margin-top: 20px;">
+            <b><p>This is your Quest by Cycle journey!</p></b>
+            <a href="{{ url_for('auth.register') }}" class="button">Register Today!</a>
+            <a href="{{ url_for('auth.login') }}" class="button">Already a Member? Sign In</a>
+        </div>
     </div>
     {% endif %}
     <div class="content-flex-container">
@@ -50,9 +55,8 @@
                 {% endif %}
             </div>
         </div>
-
-        <div class="game-item">
-            {% if profile %}
+        {% if profile %}
+            <div class="game-item">
                 <div id="profileDisplay">
                     <form id="editProfileForm" method="post" enctype="multipart/form-data" style="display: none;">
                         {{ form.hidden_tag() }}
@@ -86,20 +90,9 @@
                         {% endfor %}
                     </ul>
                 </div>
-            {% endif %}
-            {% if not current_user.is_authenticated %}
-            <div id="profileView">
-                <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="profile-image" loading="lazy">
-                <p><strong>Name:</strong></p>
-                <p id="total-points"><strong>Your Total Completed Points:</strong></p>
-                <p><strong>Email:</strong></p>
-                <p><strong>Age Group:</strong></p>
-                <p><strong>Interests:</strong></p>
-                <a href="{{ url_for('auth.login') }}" class="button" style="margin-left: 10px;">Login</a>
-                <a href="{{ url_for('auth.register') }}" class="button" style="margin-left: 10px;">Register</a>
-            {% endif %}
+            </div>
+        {% endif %}
         </div>
-    </div>
     <div class="shout-board-column">
         <h2>Current Activities</h2>
         <div class="game-item">
@@ -157,9 +150,11 @@
                 {% endfor %}
             </div>            
         </div>
-    </div>      
+    </div>
+
+    {% if has_joined %}
+
     <div class="game-item">
-        {% if has_joined %}
         <p>
             {% if current_user.is_admin %}
             <a href="{{ url_for('admin.admin_dashboard') }}" class="button" style="margin-left: 10px;">Admin Dashboard</a>
@@ -206,8 +201,8 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% endif %}
     </div>
+    {% endif %}
 </div>
 <div id="game_IdHolder" data-game-id="{{ selected_game_id | safe }}" style="display:none;"></div>
 <script>
