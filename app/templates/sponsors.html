@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block title %}Sponsors{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Sponsors</h2>
+    <div class="row">
+        {% for sponsor in sponsors %}
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm">
+                    <img class="card-img-top" src="{{ sponsor.logo }}" alt="{{ sponsor.name }} logo">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ sponsor.name }}</h5>
+                        <p class="card-text">{{ sponsor.description }}</p>
+                        <p class="card-text"><strong>Tier:</strong> {{ sponsor.tier }}</p>
+                        {% if sponsor.website %}
+                            <a href="{{ sponsor.website }}" class="btn btn-primary" target="_blank">Visit Website</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

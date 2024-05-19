@@ -134,7 +134,8 @@ class Game(db.Model):
     details = db.Column(db.Text)  # New field for detailed game information
     awards = db.Column(db.Text)  # Information about awards
     beyond = db.Column(db.Text)  # Information on living a sustainable bicycle lifestyle
-    
+    sponsors = db.relationship('Sponsor', back_populates='game', cascade='all, delete-orphan')
+
     # Twitter credentials
     twitter_username = db.Column(db.String(500), nullable=True)
     twitter_api_key = db.Column(db.String(500), nullable=True)
@@ -183,3 +184,15 @@ class TaskSubmission(db.Model):
 
     task = db.relationship('Task', back_populates='submissions')
     user = db.relationship('User', backref='task_submissions')
+
+
+class Sponsor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    website = db.Column(db.String(255), nullable=True)
+    logo = db.Column(db.String(255), nullable=True)
+    description = db.Column(db.String(500), nullable=True)
+    tier = db.Column(db.String(255), nullable=False)
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
+
+    game = db.relationship('Game', back_populates='sponsors')
