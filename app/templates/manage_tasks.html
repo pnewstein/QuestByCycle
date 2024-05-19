@@ -3,7 +3,7 @@
 {% block content %}
     <div id="game_Data" data-game-id="{{ game.id }}"></div>
     <div class="container">
-        <a href="{{ url_for('main.index') }}" class="button">Back to Home</a> <!-- Back button to home -->
+        <a href="{{ url_for('admin.admin_dashboard') }}" class="button">Back to Dashboard</a> <!-- Back button to home -->
 
         <h2>Manage Tasks for "{{ game.title }}"</h2>
         

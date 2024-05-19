@@ -4,6 +4,7 @@
 
 {% block content %}
 <div class="container">
+    <a href="{{ url_for('admin.admin_dashboard') }}" class="button">Back to Dashboard</a>
     <h1>Create a New QuestByCycle Game</h1>
     <form method="POST" action="">
         {{ form.hidden_tag() }}
