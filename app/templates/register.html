@@ -3,6 +3,14 @@
 {% block title %}Register{% endblock %}
 {% block content %}
 <div class="container">
+        <!-- Display Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
     <h2>Register</h2>
     <form method="post">
         {{ form.hidden_tag() }}
@@ -16,16 +24,13 @@
             {{ form.confirm_password.label }} {{ form.confirm_password() }}
         </div>
         <div>
-            {{ form.accept_tos() }} {{ form.accept_tos.label }}
-            <a href="{{ url_for('auth.terms_of_service') }}">Terms of Service</a>
-        </div>
-        <div>
-            {{ form.accept_privacy() }} {{ form.accept_privacy.label }}
-            <a href="{{ url_for('auth.privacy_policy') }}">Privacy Policy</a><br>
+            {{ form.accept_license() }} {{ form.accept_license.label }}
+            <a href="{{ url_for('auth.terms_of_service') }}">Terms of Service</a> and <a href="{{ url_for('auth.privacy_policy') }}">Privacy Policy</a>
         </div>
         <div>
             {{ form.submit() }}
         </div>
+        <a href="{{ url_for('main.index') }}" class="button">Back to Home</a>
     </form>
 </div>
 {% endblock %}
