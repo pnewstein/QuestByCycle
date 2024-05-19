@@ -233,7 +233,7 @@ def edit_sponsor(sponsor_id):
         flash('Sponsor updated successfully!', 'success')
         return redirect(url_for('auth.manage_sponsors'))
 
-    return render_template('edit_sponsor.html', form=form)
+    return render_template('edit_sponsors.html', form=form)
 
 @auth_bp.route('/admin/sponsors/delete/<int:sponsor_id>', methods=['POST'])
 @login_required
