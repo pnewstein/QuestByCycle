@@ -8,6 +8,8 @@ from app.utils import send_email
 from flask_mail import Message, Mail
 from sqlalchemy import or_
 
+from datetime import datetime
+
 auth_bp = Blueprint('auth', __name__)
 
 mail = Mail()
@@ -97,8 +99,8 @@ def decrypt_message(encrypted_message, key):
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        if not form.accept_tos.data or not form.accept_privacy.data:
-            flash('You must agree to the terms of service and privacy policy.', 'warning')
+        if not form.accept_license.data:
+            flash('You must agree to the terms of service, license agreement, and privacy policy.', 'warning')
             return render_template('register.html', form=form)
 
         email = form.email.data
@@ -115,13 +117,18 @@ def register():
             username = f"{base_username}{counter}"
             counter += 1
 
-
         user = User(
             username=username,
             email=email,
-            tos_agreed=form.accept_tos.data,
-            privacy_agreed=form.accept_privacy.data,
-            email_verified=False  # Default to not verified
+            license_agreed=form.accept_license.data,  # Ensure license_agreed is assigned
+            email_verified=False,  # Default to not verified
+            is_admin=False,  # Default to not admin
+            created_at=datetime.now(),
+            score=0,  # Default score
+            display_name=None,
+            profile_picture=None,
+            age_group=None,
+            interests=None
         )
         user.set_password(form.password.data)
         db.session.add(user)
@@ -145,17 +152,23 @@ def register():
 
     return render_template('register.html', title='Register', form=form)
 
+
 @auth_bp.route('/verify_email/<token>')
 def verify_email(token):
     user = User.verify_verification_token(token)
     if not user:
         flash('The verification link is invalid or has expired.', 'danger')
         return redirect(url_for('auth.login'))
+    
+    if user.email_verified:
+        flash('Your email has already been verified. Please log in.', 'info')
+        return redirect(url_for('auth.login'))
+    
     user.email_verified = True
     db.session.commit()
-    flash('Your email has been verified. You can now sign in.', 'success')
-    return redirect(url_for('auth.login'))
-
+    login_user(user)  # Log in the user
+    flash('Your email has been verified and you have been logged in.', 'success')
+    return redirect(url_for('main.index'))
 
 @auth_bp.route('/privacy_policy')
 def privacy_policy():

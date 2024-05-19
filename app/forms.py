@@ -16,18 +16,13 @@ class RegistrationForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
-    accept_tos = BooleanField('I agree to the ', validators=[DataRequired()])
-    accept_privacy = BooleanField('I agree to the ', validators=[DataRequired()])
+    accept_license = BooleanField('I agree to the ', validators=[DataRequired()])
     submit = SubmitField('Register')
 
-    def validate_accept_tos(form, field):
+    def validate_accept_license(form, field):
         if not field.data:
-            raise ValidationError('You must agree to the terms of service to register.')
+            raise ValidationError('You must agree to the terms of service, license agreement, and privacy policy to register.')
 
-    def validate_accept_privacy(form, field):
-        if not field.data:
-            raise ValidationError('You must agree to the privacy policy to register.')
-        
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])

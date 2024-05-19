@@ -48,14 +48,12 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(512))
     is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.now())
-    tos_agreed = db.Column(db.Boolean, default=False, nullable=False)
-    privacy_agreed = db.Column(db.Boolean, default=False, nullable=False)
+    license_agreed = db.Column(db.Boolean, nullable=False)  # Ensure this field is not nullable
     user_tasks = db.relationship('UserTask', backref='user', lazy='dynamic')
     badges = db.relationship('Badge', secondary=user_badges, lazy='subquery',
         backref=db.backref('users', lazy=True))
     score = db.Column(db.Integer, default=0)
-    participated_games = db.relationship('Game', secondary='user_games', lazy='subquery',
-                                        backref=db.backref('game_participants', lazy=True))
+    participated_games = db.relationship('Game', secondary='user_games', lazy='subquery', backref=db.backref('game_participants', lazy=True))
     display_name = db.Column(db.String(100))
     profile_picture = db.Column(db.String(200))  # Could be a URL or a path
     age_group = db.Column(db.String(50))
@@ -63,14 +61,15 @@ class User(UserMixin, db.Model):
     task_likes = db.relationship('TaskLike', backref='user', lazy='dynamic')
     email_verified = db.Column(db.Boolean, default=False)
 
-    def generate_verification_token(self, expiration=600):
+
+    def generate_verification_token(self, expiration=320000):
         return jwt.encode(
             {'verify_email': self.id, 'exp': time() + expiration},
             current_app.config['SECRET_KEY'], algorithm='HS256'
         )
 
     @staticmethod
-    def verify_verification_token(token):
+    def verify_verification_token(token, expiration=320000):
         try:
             id = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])['verify_email']
         except:
