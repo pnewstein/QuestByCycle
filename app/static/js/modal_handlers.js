@@ -107,7 +107,7 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
             break;
     }
 
-    const badgeImagePath = task.badge && task.badge.image ? `/static/images/badge_images/${task.badge.image}` : '/static/images/badge_images/default_badge.png';
+    const badgeImagePath = task.badge && task.badge.image ? `/static/${task.badge.image}` : '/static/images/badge_images/default_badge.png';
     elements['modalTaskBadgeImage'].src = badgeImagePath;
     elements['modalTaskBadgeImage'].alt = task.badge && task.badge.name ? `Badge: ${task.badge.name}` : 'Default Badge';
 

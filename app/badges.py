@@ -39,7 +39,7 @@ def get_badges():
         'id': badge.id,
         'name': badge.name,
         'description': badge.description,
-        'image': url_for('static', filename='images/badge_images/' + badge.image) if badge.image else None,
+        'image': url_for('static', filename=badge.image) if badge.image else None,
         'category': badge.category
     } for badge in badges]
     return jsonify(badges=badges_data)
@@ -118,24 +118,6 @@ def delete_badge(badge_id):
         return jsonify({'success': False, 'message': f'Error deleting badge: {e}'}), 500
 
 
-
-@badges_bp.route('/game/<int:game_id>/upload_badge_images', methods=['GET', 'POST'])
-@login_required
-def upload_badge_images(game_id):
-    if request.method == 'POST':
-        badge_ids = request.form.getlist('badge_id')
-        for badge_id in badge_ids:
-            badge = Badge.query.get(badge_id)
-            if 'badge_image_' + badge_id in request.files:
-                image_file = request.files['badge_image_' + badge_id]
-                if image_file.filename != '':
-                    badge.image = save_badge_image(image_file)
-        db.session.commit()
-        flash('Badge images updated successfully', 'success')
-        return redirect(url_for('badges.manage_badges', game_id=game_id))
-    return render_template('upload_badge_images.html', game_id=game_id)
-
-
 @badges_bp.route('/categories', methods=['GET'])
 def get_categories():
     categories = [category[0] for category in Badge.query.with_entities(Badge.category).distinct()]
@@ -165,7 +147,9 @@ def upload_images():
             badge_name = ' '.join(word.capitalize() for word in filename.rsplit('.', 1)[0].replace('_', ' ').split())
             badge = Badge.query.filter_by(name=badge_name).first()
             if badge:
-                badge.image = filename
+                rel_path = os.path.join('images', 'badge_images', filename)
+                badge.image = rel_path 
+                
                 db.session.commit()
 
     return jsonify({'success': True, 'message': 'Images uploaded successfully'})

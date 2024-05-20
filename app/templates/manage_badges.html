@@ -49,7 +49,7 @@
                 <tr>
                     <td>
                         {% if badge.image %}
-                        <img src="{{ url_for('static', filename='images/badge_images/' + badge.image) }}" alt="Badge Image" height="50">
+                        <img src="{{ url_for('static', filename=badge.image) }}" alt="{{ badge.name }}" height="50" loading="lazy">
                         {% else %}
                         No Image
                         {% endif %}
