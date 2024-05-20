@@ -379,7 +379,8 @@ def pin_message(message_id):
 
 
 @main_bp.route('/contact', methods=['POST'])
-def contact():
+@login_required
+def contact():    
     form = ContactForm()
     if form.validate_on_submit():
         message = form.message.data
