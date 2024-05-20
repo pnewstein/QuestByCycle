@@ -27,7 +27,7 @@
     </div>
     {% endif %}
     <div class="content-flex-container">
-        <div class="game-item">
+        <div class="game-item-prof-menu">
             {% if not current_user.is_authenticated %}
                 <div class="welcomeMedia">
                     <video class="welcomeMedia" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}" autoplay loop controls></video>
@@ -63,11 +63,15 @@
                     <button id="editProfileBtn" onclick="toggleEditProfile()" class="button">Edit Profile</button>
                     <a href="{{ url_for('auth.logout') }}" class="button">Logout</a>
                     <button class="button" onclick="openModal('contactModal')">Contact Us</button>
+                    {% if current_user.is_admin %}
+                    <a href="{{ url_for('admin.admin_dashboard') }}" class="button">Admin Dashboard</a>
+                    <button class="button" onclick="openModal('editCarouselModal')">Edit Carousel</button>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>
         {% if profile %}
-            <div class="game-item">
+            <div class="game-item-prof-menu">
                 <div id="profileDisplay">
                     <p style="text-align: center;"><strong>Your Profile</strong></p>
 
@@ -435,6 +439,7 @@
 {% include 'modals/leaderboard_modal.html' %}
 {% include 'modals/my_submissions_modal.html' %}
 {% include 'modals/contact_modal.html' %}
+{% include 'modals/edit_carousel_modal.html' %}
 
 <script src="{{ url_for('static', filename='js/modal_handlers.js') }}"></script>
 {% endblock %}

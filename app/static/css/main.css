@@ -344,6 +344,17 @@ article h3 {
     margin-bottom: 20px;
 }
 
+.game-item-prof-menu {
+    width: 48%;
+    background-color: #f1ffee;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .game-item {
     background-color: #f1ffee;
     padding: 20px;
@@ -1551,7 +1562,7 @@ footer {
 }
 /* Default styles for larger screens */
 .bottom-half img {
-    max-width: 500px;
+    max-width: 100%;
     height: auto;
     display: block; /* Ensures the image is centered */
     margin-left: auto;
