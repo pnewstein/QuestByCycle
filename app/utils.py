@@ -140,7 +140,6 @@ def save_badge_image(image_file):
     return rel_path  # Correct relative path from 'static' directory
 
 
-
 def save_submission_image(submission_image_file):
     ext = submission_image_file.filename.rsplit('.', 1)[-1]
     filename = secure_filename(f"{uuid.uuid4()}.{ext}")
