@@ -1310,14 +1310,12 @@ footer {
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
 }
 
 .footer-section.logos {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 10px;
 }
 
 .footer-section.logos p {
@@ -1340,10 +1338,6 @@ footer {
     margin-left: 10px;
     text-decoration: none;
     color: #bfc2b1; /* Example color for the link */
-}
-
-.footer-section.text {
-    margin-bottom: 20px;
 }
 
 .footer-section.links {

@@ -7,6 +7,8 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
 </head>
@@ -17,6 +19,9 @@
         </main>
     </div>
     <footer class="footer">
+        <div class="footer-section text">
+            <strong>Supporting cycling initiatives for a greener planet.</strong>
+        </div>
         <div class="footer-content">
             <div class="footer-section logos">
                 <p>Sponsored by</p>
@@ -27,9 +32,6 @@
                     <img src="{{ url_for('static', filename='images/350EUG-logo.png') }}" alt="350Eugene Logo" class="footer-logo">
                 </a>
                 <a href="{{ url_for('auth.sponsors') }}" class="see-more">see more</a>
-            </div>
-            <div class="footer-section text">
-                <p>Supporting cycling initiatives for a greener planet.</p>
             </div>
             <div class="footer-section links">
                 <a href="{{ url_for('auth.privacy_policy') }}">Privacy Policy</a>
@@ -49,7 +51,7 @@
             </div>
         </div>
         <div class="footer-section legal">
-            &copy; {{ current_year }} QuestByCycle. All rights reserved.
+            &copy; {{ current_year }} QuestByCycle. All rights reserved. 
         </div>
     </footer>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
