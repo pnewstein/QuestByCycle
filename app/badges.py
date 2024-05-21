@@ -4,9 +4,16 @@ from .forms import BadgeForm
 from .utils import save_badge_image, allowed_file
 from .models import db, Task, Badge, UserTask, Game
 from werkzeug.utils import secure_filename
+
 import os
+import csv
 
 badges_bp = Blueprint('badges', __name__, template_folder='templates')
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @badges_bp.route('/create', methods=['GET', 'POST'])
@@ -153,3 +160,46 @@ def upload_images():
                 db.session.commit()
 
     return jsonify({'success': True, 'message': 'Images uploaded successfully'})
+
+
+@badges_bp.route('/bulk_upload', methods=['POST'])
+@login_required
+def bulk_upload():
+    if not current_user.is_admin:
+        flash('Access denied: Only administrators can manage badges.', 'danger')
+        return redirect(url_for('main.index'))
+
+    csv_file = request.files.get('csv_file')
+    image_files = request.files.getlist('image_files')
+
+    if not csv_file or not allowed_file(csv_file.filename):
+        flash('Invalid or missing CSV file.', 'danger')
+        return redirect(url_for('badges.manage_badges'))
+
+    # Save images to a dictionary
+    image_dict = {}
+    for image_file in image_files:
+        if allowed_file(image_file.filename):
+            filename = secure_filename(image_file.filename)
+            image_file.save(os.path.join(current_app.root_path, 'static', 'images', 'badge_images', filename))
+            image_dict[filename] = os.path.join('images', 'badge_images', filename)
+
+    # Process CSV
+    csv_data = csv_file.read().decode('utf-8').splitlines()
+    csv_reader = csv.DictReader(csv_data, delimiter='\t')
+
+    for row in csv_reader:
+        badge_name = row['badge_name']
+        badge_description = row['badge_description']
+        badge_filename = badge_name.lower().replace(' ', '_')
+        badge_image = image_dict.get(f"{badge_filename}.png")
+
+        if badge_image:
+            new_badge = Badge(name=badge_name, description=badge_description, image=badge_image)
+            db.session.add(new_badge)
+        else:
+            flash(f'Image for badge "{badge_name}" not found.', 'warning')
+
+    db.session.commit()
+    flash('Badges and images uploaded successfully.', 'success')
+    return redirect(url_for('badges.manage_badges'))
