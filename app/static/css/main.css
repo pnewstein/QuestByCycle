@@ -1126,8 +1126,9 @@ footer {
     padding: 10px; /* Space between the border and the content */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a 3D effect */
     background-color: #fff; /* Optional: white background for contrast */
+    display: block; /* Ensures the image is a block element */
+    margin: 0 auto; /* Centers the image horizontally */
 }
-
 
 .carousel-control-prev, .carousel-control-next {
     width: 5%;
