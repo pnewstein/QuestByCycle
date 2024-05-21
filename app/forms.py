@@ -65,6 +65,7 @@ class GameForm(FlaskForm):
 
 class TaskForm(FlaskForm):
     enabled = BooleanField('Enabled', default=True)
+    is_sponsored = BooleanField('Is Sponsored', default=False)
     category_choices = [('Environment', 'Environment'), ('Community', 'Community')]  # Example categories
     category = SelectField('Category', choices=category_choices, validators=[DataRequired()])
     verification_type_choices = [

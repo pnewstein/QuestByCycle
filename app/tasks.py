@@ -94,7 +94,8 @@ def add_task(game_id):
             enabled=form.enabled.data,
             category=form.category.data,
             verification_type=form.verification_type.data,
-            badge_id=badge_id
+            badge_id=badge_id,
+            is_sponsored=form.is_sponsored.data
         )
         db.session.add(new_task)
         try:
@@ -244,6 +245,7 @@ def update_task(task_id):
     task.category = data.get('category', task.category)
     task.verification_type = data.get('verification_type', task.verification_type)
     task.frequency = data.get('frequency', task.frequency)
+    task.is_sponsored = data.get('is_sponsored', task.is_sponsored)
     
     # Handle badge_id conversion and validation
     badge_id = data.get('badge_id')
@@ -387,7 +389,7 @@ def task_user_completion(task_id):
         'name': badge.name,
         'description': badge.description,
         'image': badge.image
-    } if badge else {'name': 'Default', 'image': 'default_badge.png'}
+    } if badge else {'name': 'Default', 'image': 'images/climate-revolutions-logo.png'}
 
     task_details = {
         'id': task.id,
@@ -555,14 +557,6 @@ def allowed_file(filename):
 @tasks_bp.errorhandler(RequestEntityTooLarge)
 def handle_large_file_error(e):
     return "File too large", 413
-
-
-@tasks_bp.route('/task/<int:task_id>/share')
-def task_share(task_id):
-    task = Task.query.get_or_404(task_id)
-    submission = TaskSubmission.query.filter_by(task_id=task_id).order_by(TaskSubmission.timestamp.desc()).first()
-    # Assuming `submission` has attributes like image_url and comment
-    return render_template('task_share.html', task=task, submission=submission)
 
 
 @tasks_bp.route('/get-image-url/<int:taskId>')

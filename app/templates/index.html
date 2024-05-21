@@ -186,18 +186,22 @@
                 <col style="width: 10%;"> <!-- Badge column -->
                 <col style="width: auto;"> <!-- Task title, takes remaining space -->
                 <col style="width: 10%;"> <!-- Points column -->
+                <col style="width: 10%;"> <!-- Points column -->
+                <col style="width: 10%;"> <!-- Points column -->
             </colgroup>
             <thead>
                 <tr>
                     <th></th>
-                    <th style="vertical-align: middle;  text-align: center;">Badge</th>
-                    <th style="vertical-align: middle;   text-align: left;">Task</th>
+                    <th style="vertical-align: middle; text-align: center;">Badge</th>
+                    <th style="vertical-align: middle; text-align: left;">Task</th>
+                    <th style="vertical-align: right; text-align: center;">Personal Posts</th>
+                    <th style="vertical-align: right; text-align: center;">Total Posts</th>
                     <th style="padding-top: 0px; padding-bottom: 0px; text-align: center;">Carbon Reduction Points</th>
                 </tr>
             </thead>
             <tbody>
                 {% for task in tasks %}
-                <tr>
+                <tr class="{{ 'pinned' if task.is_sponsored }}">
                     <td class="disabled-checkbox">
                         <input type="checkbox" disabled {{ 'checked' if task.total_completions > 0 else '' }}>
                         <span class="checkbox-custom"></span> <!-- This span acts as the visual element for the checkbox -->
@@ -214,6 +218,8 @@
                     <td>
                         <button class="button" onclick="openTaskDetailModal('{{ task.id }}')">{{ task.title }}</button>
                     </td>
+                    <td>{{ task.personal_completions }}</td>
+                    <td>{{ task.total_completions }}</td>
                     <td style="text-align: center;">{{ task.points }}</td>
                 </tr>
                 {% endfor %}
