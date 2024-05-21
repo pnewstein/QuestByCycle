@@ -105,6 +105,8 @@ def update_badge(badge_id):
         badge.name = form.name.data
         badge.description = form.description.data
         badge.category = form.category.data
+        if badge.category == 'none':
+            badge.category = None
         if 'image' in request.files:
             image_file = request.files['image']
             if image_file.filename != '':
@@ -112,7 +114,6 @@ def update_badge(badge_id):
         db.session.commit()
         return jsonify({'success': True, 'message': 'Badge updated successfully'})
     return jsonify({'success': False, 'message': 'Invalid form data'})
-
 
 
 @badges_bp.route('/delete/<int:badge_id>', methods=['DELETE'])
