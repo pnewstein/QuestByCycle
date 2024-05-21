@@ -11,7 +11,7 @@ import csv
 badges_bp = Blueprint('badges', __name__, template_folder='templates')
 
 def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'csv'}
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -169,11 +169,24 @@ def bulk_upload():
         flash('Access denied: Only administrators can manage badges.', 'danger')
         return redirect(url_for('main.index'))
 
+    print("bulk_upload function started")
+
     csv_file = request.files.get('csv_file')
     image_files = request.files.getlist('image_files')
 
+    if csv_file:
+        print(f"Received CSV file: {csv_file.filename}")
+    else:
+        print("No CSV file received")
+
+    if image_files:
+        print(f"Number of image files received: {len(image_files)}")
+    else:
+        print("No image files received")
+
     if not csv_file or not allowed_file(csv_file.filename):
         flash('Invalid or missing CSV file.', 'danger')
+        print("Invalid or missing CSV file")
         return redirect(url_for('badges.manage_badges'))
 
     # Save images to a dictionary
@@ -181,25 +194,50 @@ def bulk_upload():
     for image_file in image_files:
         if allowed_file(image_file.filename):
             filename = secure_filename(image_file.filename)
-            image_file.save(os.path.join(current_app.root_path, 'static', 'images', 'badge_images', filename))
+            image_path = os.path.join(current_app.root_path, 'static', 'images', 'badge_images', filename)
+            image_file.save(image_path)
             image_dict[filename] = os.path.join('images', 'badge_images', filename)
+            print(f"Saved image: {filename} to {image_path}")
 
     # Process CSV
-    csv_data = csv_file.read().decode('utf-8').splitlines()
-    csv_reader = csv.DictReader(csv_data, delimiter='\t')
+    try:
+        csv_data = csv_file.read().decode('utf-8').splitlines()
 
-    for row in csv_reader:
-        badge_name = row['badge_name']
-        badge_description = row['badge_description']
-        badge_filename = badge_name.lower().replace(' ', '_')
-        badge_image = image_dict.get(f"{badge_filename}.png")
+        # Try with tab delimiter
+        csv_reader = csv.DictReader(csv_data, delimiter='\t')
+        headers = csv_reader.fieldnames
+        print(f"CSV Headers with tab delimiter: {headers}")
 
-        if badge_image:
-            new_badge = Badge(name=badge_name, description=badge_description, image=badge_image)
-            db.session.add(new_badge)
-        else:
-            flash(f'Image for badge "{badge_name}" not found.', 'warning')
+        if headers is None or len(headers) == 1:
+            # Try with comma delimiter
+            csv_reader = csv.DictReader(csv_data, delimiter=',')
+            headers = csv_reader.fieldnames
+            print(f"CSV Headers with comma delimiter: {headers}")
+
+        if 'badge_name' not in headers or 'badge_description' not in headers:
+            raise ValueError("CSV file does not contain required headers: 'badge_name' and 'badge_description'")
+
+        for row in csv_reader:
+            print(f"Processing row: {row}")
+            badge_name = row['badge_name']
+            badge_description = row['badge_description']
+            badge_filename = badge_name.lower().replace(' ', '_')
+            badge_image = image_dict.get(f"{badge_filename}.png")
+
+            if badge_image:
+                new_badge = Badge(name=badge_name, description=badge_description, image=badge_image)
+                db.session.add(new_badge)
+                print(f"Added badge: {badge_name}")
+            else:
+                flash(f'Image for badge "{badge_name}" not found.', 'warning')
+                print(f'Image for badge "{badge_name}" not found.')
+
+    except Exception as e:
+        print(f"Error processing CSV file: {e}")
+        flash('Error processing CSV file.', 'danger')
+        return redirect(url_for('badges.manage_badges'))
 
     db.session.commit()
+    print("Database commit successful")
     flash('Badges and images uploaded successfully.', 'success')
     return redirect(url_for('badges.manage_badges'))
