@@ -56,6 +56,14 @@
             loadTasks(game_Id);
         });
 
+        document.querySelectorAll('input, select, textarea').forEach(input => {
+            let value = input.value;
+            if (input.type === 'checkbox' && input.name === 'is_sponsored') {
+                value = input.checked;
+            }
+            taskData[input.name] = value;
+        });
+
         async function loadBadges() {
             try {
                 const response = await fetch('/badges/badges');
@@ -181,46 +189,43 @@
                 { name: "completion_limit", type: "number" },
                 { name: "category", type: "text" },
                 { name: "enabled", type: "select", options: ["Yes", "No"] },
+                { name: "is_sponsored", type: "checkbox" }, // Added checkbox field for is_sponsored
             ];
 
             editableFields.forEach(field => {
                 const cell = row.querySelector(`.editable[data-name="${field.name}"]`);
                 if (!cell) return;
-                updateEditableField(cell, field);
+                updateEditableField(cell, field, originalData[field.name]); // Pass initial data for setup
             });
         }
 
-
-        function updateEditableField(cell, field) {
-            const currentValue = cell.innerText.trim();
+        function updateEditableField(cell, field, originalValue) {
             let inputElement;
 
             if (field.type === "select") {
                 inputElement = document.createElement("select");
-                inputElement.name = field.name;
                 field.options.forEach(option => {
                     const optionElement = document.createElement("option");
                     optionElement.value = option;
-                    optionElement.text = field.displayValues ? field.displayValues[field.options.indexOf(option)] : option;
-                    if (currentValue === optionElement.text) {
-                        optionElement.selected = true;
-                    }
+                    optionElement.text = option;
+                    optionElement.selected = originalValue === option;
                     inputElement.appendChild(optionElement);
                 });
             } else if (field.type === "textarea") {
                 inputElement = document.createElement("textarea");
-                inputElement.name = field.name;
-                inputElement.value = currentValue;
+                inputElement.value = originalValue;
+            } else if (field.type === "checkbox") {
+                inputElement = document.createElement("input");
+                inputElement.type = "checkbox";
+                inputElement.checked = originalValue === 'true'; // Adjust based on how data is stored and transmitted
             } else {
                 inputElement = document.createElement("input");
                 inputElement.type = field.type;
-                inputElement.name = field.name;
-                inputElement.value = currentValue;
+                inputElement.value = originalValue;
             }
             cell.innerHTML = '';
             cell.appendChild(inputElement);
         }
-
 
         function setupEditAndCancelButtons(row, taskId, originalData) {
             const editButton = row.querySelector(".edit-button");
@@ -259,12 +264,13 @@
             // Collect inputs, selects, and textarea values
             row.querySelectorAll('input, select, textarea').forEach(input => {  // Fixed line
                 let value = input.value;
-                if (input.name === 'enabled') {
+                if (input.type === 'checkbox') {
+                    value = input.checked;
+                } else if (input.name === 'enabled') {
                     value = input.value === 'Yes'; // This will be true for "Yes", false for anything else
                 } else if (input.name === 'badge_id' && value === '') {
                     value = null; // Convert empty string to null for badge_id
                 }
-
                 taskData[input.name] = value;
             });
 

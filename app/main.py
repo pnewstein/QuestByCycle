@@ -101,12 +101,19 @@ def index(game_id, task_id, user_id):
 
     for task in tasks:
         completions = sum(1 for ut in user_tasks if ut.task_id == task.id and ut.completions > 0)
+        task.total_completions = db.session.query(UserTask).filter(UserTask.task_id == task.id).count()
         task.completions_within_period = completions
         task.can_verify = False
         task.last_completion = None
         task.first_completion_in_period = None
         task.next_eligible_time = None
         task.completion_timestamps = []
+
+        # Calculate personal completions if user is logged in
+        if user_id:
+            task.personal_completions = db.session.query(UserTask).filter(UserTask.task_id == task.id, UserTask.user_id == user_id).count()
+        else:
+            task.personal_completions = 0
 
         now = datetime.now(utc)
         period_start_map = {
@@ -143,7 +150,8 @@ def index(game_id, task_id, user_id):
                 }
                 task.next_eligible_time = last_completion.timestamp + increment_map.get(task.frequency, timedelta(days=1))
 
-    tasks.sort(key=lambda x: (x.completions_within_period if hasattr(x, 'completions_within_period') else 0), reverse=True)
+    # Sort tasks: First by is_sponsored, then personal_completions and total_completions
+    tasks.sort(key=lambda x: (-x.is_sponsored, -x.personal_completions, -x.total_completions))
 
     if current_user.is_authenticated:
         profform = ProfileForm()

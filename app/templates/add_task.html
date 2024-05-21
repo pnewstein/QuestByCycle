@@ -40,6 +40,12 @@
             <label for="{{ form.enabled.id }}">{{ form.enabled.label }}</label>
             {{ form.enabled(class="form-control") }}
         </div>
+        <!-- Task Sponsored Checkbox -->
+        <div class="form-group">
+            <label for="{{ form.is_sponsored.id }}">{{ form.is_sponsored.label }}</label>
+            {{ form.is_sponsored(class="form-control") }}
+            <small>Check if the task is sponsored.</small>
+        </div>
         <div class="form-group">
             <label for="{{ form.category.id }}">{{ form.category.label }}</label>
             {{ form.category(class="form-control") }}
