@@ -24,7 +24,10 @@ def create_badge():
         flash('Access denied: Only administrators can manage badges.', 'danger')
         return redirect(url_for('main.index'))
     
-    form = BadgeForm()
+    categories = db.session.query(Task.category).filter(Task.category != None).distinct().all()
+    category_choices = [(category.category, category.category) for category in categories]
+    form = BadgeForm(category_choices=category_choices)  # Assuming form setup
+    
     if form.validate_on_submit():
         filename = None
         if 'image' in request.files:
@@ -58,9 +61,10 @@ def manage_badges():
     if not current_user.is_admin:
         flash('Access denied: Only administrators can manage badges.', 'danger')
         return redirect(url_for('main.index'))
-
-    form = BadgeForm()
-    form.category.choices = [category[0] for category in db.session.query(Task.category.distinct()).all() if category[0]]
+    
+    categories = db.session.query(Task.category).filter(Task.category != None).distinct().all()
+    category_choices = [(category.category, category.category) for category in categories]
+    form = BadgeForm(category_choices=category_choices)  # Assuming form setup
 
     if form.validate_on_submit():
         # Similar to how profile pictures are handled
@@ -93,7 +97,10 @@ def manage_badges():
 @login_required
 def update_badge(badge_id):
     badge = Badge.query.get_or_404(badge_id)
-    form = BadgeForm()  # Assuming form setup
+    categories = db.session.query(Task.category).filter(Task.category != None).distinct().all()
+    category_choices = [(category.category, category.category) for category in categories]
+    form = BadgeForm(category_choices=category_choices)  # Assuming form setup
+
     if form.validate_on_submit():
         badge.name = form.name.data
         badge.description = form.description.data

@@ -146,19 +146,16 @@ class ShoutBoardForm(FlaskForm):
     message = TextAreaField('Message', validators=[DataRequired(), Length(max=500)])
     submit = SubmitField('Post')
 
-
-
 class BadgeForm(FlaskForm):
-    name = StringField('Name', validators=[DataRequired(), Length(max=255)])
-    description = TextAreaField('Description', validators=[Length(max=500)])
-    image = FileField('Badge Image', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
-    category = SelectField('Category', choices=[], coerce=str, validators=[Optional()])
+    name = StringField('Name', validators=[DataRequired()])
+    description = StringField('Description', validators=[DataRequired()])
+    category = SelectField('Category', choices=[])
+    image = FileField('Badge Image')
     submit = SubmitField('Submit')
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, category_choices, *args, **kwargs):
         super(BadgeForm, self).__init__(*args, **kwargs)
-        self.category.choices = [('','Select a Category')] + list(set([(task.category, task.category) for task in Task.query.filter(Task.category != None)]))
-
+        self.category.choices = [('none', 'None')] + category_choices
 
 class TaskImportForm(FlaskForm):
     csv_file = FileField('CSV File', validators=[DataRequired(), FileAllowed(['csv'], 'CSV files only!')])
