@@ -1087,17 +1087,18 @@ footer {
 }
 
 .activity span {
-    overflow: hidden; /* Prevents content from overflowing its container */
-    text-overflow: ellipsis; /* Adds ellipsis if text is too long */
-    white-space: nowrap; /* Prevents text from wrapping */
+    overflow: auto; /* Prevents content from overflowing its container */
+    white-space: normal; /* Allows text to wrap */
+    word-wrap: break-word; /* Breaks long words to prevent overflow */
 }
 
 .activity button {
     margin-left: 10px; /* Space before the button */
+    margin-right: 10px; /* Space before the button */
+
 }
 
 .activity #like-count {
-    margin-left: 5px; /* Small space between button and count */
     display: inline-block; /* Ensures it's on the same line as the button */
 }
 
