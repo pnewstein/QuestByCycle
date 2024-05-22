@@ -48,9 +48,9 @@ def index(game_id, task_id, user_id):
     if game_id is None and current_user.is_authenticated:
         joined_games = current_user.participated_games
         if joined_games:
-            game_id = joined_games[0].id  # Keep the same game_id assignment if user already has games
+            game_id = joined_games[0].id
         else:
-            earliest_game = Game.query.order_by(Game.start_date.asc()).first()  # Get the earliest game
+            earliest_game = Game.query.order_by(Game.start_date.asc()).first()
             if earliest_game:
                 current_user.participated_games.append(earliest_game)
                 db.session.commit()
@@ -79,7 +79,6 @@ def index(game_id, task_id, user_id):
     unpinned_messages = ShoutBoardMessage.query.filter_by(is_pinned=False).order_by(ShoutBoardMessage.timestamp.desc()).all()
     completed_tasks = UserTask.query.filter(UserTask.completions > 0).order_by(UserTask.completed_at.desc()).all()
 
-    # Combine and sort activities
     pinned_activities = pinned_messages
     unpinned_activities = unpinned_messages + completed_tasks
     unpinned_activities.sort(key=lambda x: get_datetime(x), reverse=True)
@@ -95,62 +94,54 @@ def index(game_id, task_id, user_id):
         user_tasks = UserTask.query.filter_by(user_id=profile.id).all()
         badges = profile.badges
 
-        # Update to use username if display_name is None
         if not profile.display_name:
             profile.display_name = profile.username
 
+    now = datetime.now(utc)
+    period_start_map = {
+        'daily': timedelta(days=1),
+        'weekly': timedelta(weeks=1),
+        'monthly': timedelta(days=30)
+    }
+
     for task in tasks:
-        completions = sum(1 for ut in user_tasks if ut.task_id == task.id and ut.completions > 0)
-        task.total_completions = db.session.query(UserTask).filter(UserTask.task_id == task.id).count()
-        task.completions_within_period = completions
+        task.total_completions = db.session.query(TaskSubmission).filter(TaskSubmission.task_id == task.id).count()
+        task.personal_completions = db.session.query(TaskSubmission).filter(TaskSubmission.task_id == task.id, TaskSubmission.user_id == user_id).count() if user_id else 0
+        task.completions_within_period = 0
         task.can_verify = False
         task.last_completion = None
         task.first_completion_in_period = None
         task.next_eligible_time = None
         task.completion_timestamps = []
 
-        # Calculate personal completions if user is logged in
         if user_id:
-            task.personal_completions = db.session.query(UserTask).filter(UserTask.task_id == task.id, UserTask.user_id == user_id).count()
-        else:
-            task.personal_completions = 0
+            period_start = now - period_start_map.get(task.frequency, timedelta(days=1))
+            submissions = TaskSubmission.query.filter(
+                TaskSubmission.user_id == user_id,
+                TaskSubmission.task_id == task.id,
+                TaskSubmission.timestamp >= period_start
+            ).all()
 
-        now = datetime.now(utc)
-        period_start_map = {
-            'daily': timedelta(days=1),
-            'weekly': timedelta(weeks=1),
-            'monthly': timedelta(days=30)
-        }
-        period_start = now - period_start_map.get(task.frequency, timedelta(days=1))
+            if submissions:
+                task.completions_within_period = len(submissions)
+                task.first_completion_in_period = min(submissions, key=lambda x: x.timestamp).timestamp
+                task.completion_timestamps = [sub.timestamp for sub in submissions]
 
-        submissions = TaskSubmission.query.filter(
-            TaskSubmission.user_id == current_user.id,
-            TaskSubmission.task_id == task.id,
-            TaskSubmission.timestamp >= period_start
-        ).all()
+            relevant_user_tasks = [ut for ut in user_tasks if ut.task_id == task.id]
+            task.last_completion = max((ut.completed_at for ut in relevant_user_tasks), default=None)
 
-        if submissions:
-            task.completions_within_period = len(submissions)
-            task.first_completion_in_period = min(submissions, key=lambda x: x.timestamp).timestamp
-            task.completion_timestamps = [sub.timestamp for sub in submissions]
+            if task.personal_completions < task.completion_limit:
+                task.can_verify = True
+            else:
+                last_completion = max(submissions, key=lambda x: x.timestamp, default=None)
+                if last_completion:
+                    increment_map = {
+                        'daily': timedelta(days=1),
+                        'weekly': timedelta(weeks=1),
+                        'monthly': timedelta(days=30)
+                    }
+                    task.next_eligible_time = last_completion.timestamp + increment_map.get(task.frequency, timedelta(days=1))
 
-        relevant_user_tasks = [ut for ut in user_tasks if ut.task_id == task.id]
-        task.total_completions = len(relevant_user_tasks)
-        task.last_completion = max((ut.completed_at for ut in relevant_user_tasks), default=None)
-
-        if task.total_completions < task.completion_limit:
-            task.can_verify = True
-        else:
-            last_completion = max(submissions, key=lambda x: x.timestamp, default=None)
-            if last_completion:
-                increment_map = {
-                    'daily': timedelta(days=1),
-                    'weekly': timedelta(weeks=1),
-                    'monthly': timedelta(days=30)
-                }
-                task.next_eligible_time = last_completion.timestamp + increment_map.get(task.frequency, timedelta(days=1))
-
-    # Sort tasks: First by is_sponsored, then personal_completions and total_completions
     tasks.sort(key=lambda x: (-x.is_sponsored, -x.personal_completions, -x.total_completions))
 
     if current_user.is_authenticated:
@@ -191,8 +182,8 @@ def index(game_id, task_id, user_id):
                            user_tasks=user_tasks,
                            badges=badges,
                            carousel_images=carousel_images,
-                           total_points=total_points)
-
+                           total_points=total_points,
+                           completions=completed_tasks)
 
 @main_bp.route('/shout-board', methods=['POST'])
 @login_required
