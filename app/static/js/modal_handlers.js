@@ -192,6 +192,10 @@ function getVerificationFormHTML(verificationType) {
             formHTML += `<p>Find and scan the QR code. No submission required here.</p>`;
             // No button is added for QR code case
             break;
+        case 'pause':
+            formHTML += `<p>Task is currently paused.</p>`;
+            // No button is added for QR code case
+            break;
         default:
             // Handle cases where no verification is needed or provide a default case
             formHTML += '<p>Submission Requirements not set correctly.</p>';

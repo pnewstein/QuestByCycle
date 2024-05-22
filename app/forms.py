@@ -72,7 +72,8 @@ class TaskForm(FlaskForm):
         ('qr_code', 'QR Code'),
         ('photo', 'Photo Upload'),
         ('comment', 'Comment'),
-        ('photo_comment', 'Photo Upload and Comment')
+        ('photo_comment', 'Photo Upload and Comment'),
+        ('pause', 'Pause')
     ]
     verification_type = SelectField('Submission Requirements', choices=verification_type_choices, coerce=str, validators=[DataRequired()])
     title = StringField('Title', validators=[DataRequired()])
@@ -91,7 +92,7 @@ class TaskForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(TaskForm, self).__init__(*args, **kwargs)
         self.badge_id.choices = [(0, 'None')] + [(badge.id, badge.name) for badge in Badge.query.all()]
-        badge_image_directory = os.path.join(current_app.root_path, 'static/images/default_badges')
+        badge_image_directory = os.path.join(current_app.root_path, 'static/images/badge_images')
         if not os.path.exists(badge_image_directory):
             os.makedirs(badge_image_directory)  # Create the directory if it does not exist
         self.default_badge_image.choices = [('','None')] + [(filename, filename) for filename in os.listdir(badge_image_directory)]
@@ -108,7 +109,8 @@ class TaskImportForm(FlaskForm):
         ('qr_code', 'QR Code'),
         ('photo', 'Photo Upload'),
         ('comment', 'Comment'),
-        ('photo_comment', 'Photo Upload and Comment')
+        ('photo_comment', 'Photo Upload and Comment'),
+        ('pause', 'Pause')
     ]
     verification_type = SelectField('Submission Requirements', choices=verification_type_choices, coerce=str, validators=[DataRequired()])
     badge_id = SelectField('Select Existing Badge', coerce=int, choices=[], default=0)
@@ -121,7 +123,7 @@ class TaskImportForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(TaskForm, self).__init__(*args, **kwargs)
         self.badge_id.choices = [(0, 'None')] + [(b.id, b.name) for b in Badge.query.order_by('name')]
-        badge_image_directory = os.path.join(current_app.root_path, 'static/images/default_badges')
+        badge_image_directory = os.path.join(current_app.root_path, 'static/images/badge_images')
         self.default_badge_image.choices = [('','None')] + [(filename, filename) for filename in os.listdir(badge_image_directory)]
 
 
@@ -178,3 +180,6 @@ class SponsorForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(SponsorForm, self).__init__(*args, **kwargs)
         self.game_id.choices = [(game.id, game.title) for game in Game.query.order_by('title')]
+
+class CarouselImportForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
