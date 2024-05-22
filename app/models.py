@@ -94,6 +94,7 @@ class Task(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     evidence_url = db.Column(db.String(500))
     enabled = db.Column(db.Boolean, default=True)
+    is_sponsored = db.Column(db.Boolean, default=False, nullable=False)  # Indicates if the task is sponsored and should be pinned
     verification_type = db.Column(db.String(50))  # Changed from SQLAlchemyEnum to String
     verification_comment = db.Column(db.String(1000), default="")
     game_id = db.Column(db.Integer, db.ForeignKey('game.id', ondelete='CASCADE'))
@@ -108,7 +109,6 @@ class Task(db.Model):
     badge = db.relationship('Badge', back_populates='tasks')
     submissions = db.relationship('TaskSubmission', back_populates='task', cascade='all, delete-orphan')
     likes = db.relationship('TaskLike', backref='task', cascade="all, delete-orphan")
-    is_sponsored = db.Column(db.Boolean, default=False, nullable=False)  # Indicates if the task is sponsored and should be pinned
 
 Badge.tasks = db.relationship('Task', order_by=Task.id, back_populates='badge')
 

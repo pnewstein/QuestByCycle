@@ -92,10 +92,10 @@ def add_task(game_id):
             completion_limit=form.completion_limit.data,
             frequency=form.frequency.data,
             enabled=form.enabled.data,
+            is_sponsored=form.is_sponsored.data,
             category=form.category.data,
             verification_type=form.verification_type.data,
-            badge_id=badge_id,
-            is_sponsored=form.is_sponsored.data
+            badge_id=badge_id
         )
         db.session.add(new_task)
         try:
@@ -138,6 +138,8 @@ def submit_task(task_id):
         return jsonify({'success': False, 'message': 'Comment required for verification'}), 400
     if verification_type == 'photo_comment' and (not image_file or image_file.filename == ''):
         return jsonify({'success': False, 'message': 'Both photo and comment are required for verification'}), 400
+    if task.verification_type == 'Pause':
+        return jsonify({'success': False, 'message': 'This task is currently paused'}), 403
 
     try:
         image_url = None
@@ -242,11 +244,11 @@ def update_task(task_id):
     task.points = int(data.get('points', task.points))
     task.completion_limit = int(data.get('completion_limit', task.completion_limit))
     task.enabled = data.get('enabled', task.enabled)
+    task.is_sponsored = data.get('is_sponsored', task.is_sponsored)
     task.category = data.get('category', task.category)
     task.verification_type = data.get('verification_type', task.verification_type)
     task.frequency = data.get('frequency', task.frequency)
-    task.is_sponsored = data.get('is_sponsored', task.is_sponsored)
-    
+
     # Handle badge_id conversion and validation
     badge_id = data.get('badge_id')
     if badge_id is not None:
@@ -296,6 +298,7 @@ def get_tasks_for_game(game_id):
             'points': task.points,
             'completion_limit': task.completion_limit,
             'enabled': task.enabled,
+            'is_sponsored': task.is_sponsored,
             'verification_type': task.verification_type,
             'badge_name': task.badge.name if task.badge else 'None',
             'badge_description': task.badge.description if task.badge else '',
@@ -401,6 +404,7 @@ def task_user_completion(task_id):
         'category' : task.category,
         'frequency': task.frequency, 
         'enabled': task.enabled,
+        'is_sponsored': task.is_sponsored,
         'verification_type': task.verification_type,
         'badge': badge_info,
         'nextEligibleTime': next_eligible_time.isoformat() if next_eligible_time else None
