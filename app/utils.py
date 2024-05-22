@@ -311,10 +311,6 @@ def check_and_revoke_badges(user_id):
 
     for badge in badges_to_remove:
         user.badges.remove(badge)
-        db.session.add(ShoutBoardMessage(
-            message=f" has lost the badge '{badge.name}' due to updated task completions.",
-            user_id=user_id
-        ))
         print(f"Badge '{badge.name}' removed from user '{user.username}'")
 
     db.session.commit()

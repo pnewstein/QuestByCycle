@@ -111,7 +111,7 @@
         {% endif %}
         </div>
     <div class="shout-board-column">
-        <h2>Current Activities</h2>
+        <h2>Bulletin Board</h2>
         <div class="game-item">
             {% if current_user.is_admin %}
             <form action="{{ url_for('main.shout_board') }}" method="post">
