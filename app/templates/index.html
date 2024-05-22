@@ -106,6 +106,7 @@
                         {% endfor %}
                     </ul>
                 </div>
+                <a href="{{ url_for('auth.logout') }}" class="button">Logout</a>
             </div>
         {% endif %}
         </div>
@@ -167,9 +168,7 @@
             </div>            
         </div>
     </div>
-
     {% if has_joined %}
-
     <div class="game-item">
         <p>
             {% if current_user.is_admin %}
@@ -443,6 +442,6 @@
 {% include 'modals/leaderboard_modal.html' %}
 {% include 'modals/my_submissions_modal.html' %}
 {% include 'modals/contact_modal.html' %}
-
+<link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
 <script src="{{ url_for('static', filename='js/modal_handlers.js') }}"></script>
 {% endblock %}
