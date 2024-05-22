@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from app.models import db, User, Game
-from app.forms import AddUserForm
+from app.forms import AddUserForm, CarouselImportForm
 from functools import wraps
+from werkzeug.utils import secure_filename
 
 import traceback
-
+import os
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -65,7 +66,9 @@ def admin_dashboard():
         return redirect(url_for('main.index'))
 
     games = Game.query.all()  # Retrieve all games from the database
-    return render_template('admin_dashboard.html', games=games)
+    form = CarouselImportForm()  # Create an instance of the form
+
+    return render_template('admin_dashboard.html', games=games, form=form)
 
 
 # ADMIN USER MANAGEMENT #
@@ -119,4 +122,20 @@ def add_user():
 
     return redirect(url_for('admin.user_management'))
 
-
+@admin_bp.route('/update_carousel', methods=['POST'])
+@login_required
+@require_admin
+def update_carousel():
+    try:
+        for i in range(1, 4):
+            file = request.files.get(f'carouselImage{i}')
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+                # Update your database or config here with the new filename
+                # Example: CarouselImage.query.filter_by(position=i).update({'filename': filename})
+                # db.session.commit()
+        flash('Carousel updated successfully.', 'success')
+    except Exception as e:
+        flash(f'Error updating carousel: {e}', 'error')
+    return redirect(url_for('admin.admin_dashboard'))

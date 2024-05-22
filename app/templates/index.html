@@ -38,7 +38,7 @@
                 </div>
             {% endif %}
             <div class="top-half">
-                <div style="text-align: center">Share the Adventure! Post Your Cycling Pics & Stories</div>
+                <div style="text-align: center"><strong>Share the Adventure! Post Your Cycling Pics & Stories</strong></div>
                 <div id="taskImageCarousel" class="carousel slide" data-ride="carousel">
                     <div class="carousel-inner">
                         {% for image in carousel_images %}
@@ -61,11 +61,9 @@
                 {% if current_user.is_authenticated %}
                 <a href="{{ url_for('main.game_info') }}" class="button">Let's Get Started!</a>
                     <button id="editProfileBtn" onclick="toggleEditProfile()" class="button">Edit Profile</button>
-                    <a href="{{ url_for('auth.logout') }}" class="button">Logout</a>
                     <button class="button" onclick="openModal('contactModal')">Contact Us</button>
                     {% if current_user.is_admin %}
                     <a href="{{ url_for('admin.admin_dashboard') }}" class="button">Admin Dashboard</a>
-                    <button class="button" onclick="openModal('editCarouselModal')">Edit Carousel</button>
                     {% endif %}
                 {% endif %}
             </div>
@@ -445,7 +443,6 @@
 {% include 'modals/leaderboard_modal.html' %}
 {% include 'modals/my_submissions_modal.html' %}
 {% include 'modals/contact_modal.html' %}
-{% include 'modals/edit_carousel_modal.html' %}
 
 <script src="{{ url_for('static', filename='js/modal_handlers.js') }}"></script>
 {% endblock %}
