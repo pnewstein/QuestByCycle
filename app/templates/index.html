@@ -132,17 +132,17 @@
                             {{ activity.user.display_name or activity.user.username }}
                         </a>
                     </strong>
-                    <span style="flex-grow: 1;">{{ activity.message | safe }}</span>
+                    <span class="activity-message" style="flex-grow: 1;">{{ activity.message | safe }}</span>
                     {% if current_user.is_admin %}
                     <form action="{{ url_for('main.pin_message', message_id=activity.id) }}" method="post">
                         {{ form.hidden_tag() }}
                         <button type="submit" class="blue_button">{{ 'Unpin' if activity.is_pinned else 'Pin' }}</button>
                     </form>
                     {% endif %}
-                    <button type="button" class="blue_button" id="like-button-{{ activity.id }}" onclick="likeMessage('{{ activity.id }}')">
+                    <button type="button" class="blue_button like-button" id="like-button-{{ activity.id }}" onclick="likeMessage('{{ activity.id }}')">
                         {{ 'Liked' if activity.liked_by_user else 'Like' }}
                     </button>
-                    <span id="like-count-{{ activity.id }}">{{ activity.likes.count() }}</span>👍
+                    <span id="like-count-{{ activity.id }}" class="like-count">{{ activity.likes.count() }}</span>👍
                     {% elif activity.__tablename__ == 'user_tasks' %}
                     <strong>
                         {{ activity.completed_at.strftime('%m-%d %H:%M') }} -
@@ -150,7 +150,7 @@
                             {{ activity.user.display_name or activity.user.username }}
                         </a>
                     </strong>
-                    <span style="flex-grow: 1;">
+                    <span class="activity-message" style="flex-grow: 1;">
                         <strong>
                             completed a task
                             <a href="javascript:void(0);" onclick="openTaskDetailModal('{{ activity.task.id }}')">
@@ -158,10 +158,10 @@
                             </a>
                         </strong>
                     </span>
-                    <button class="blue_button" id="like-button-{{ activity.task.id }}" onclick="likeTask('{{ activity.task.id }}');" class="{{ 'liked-button-style' if activity.task.liked_by_user else '' }}" {{ 'disabled' if activity.task.liked_by_user }}>
+                    <button class="blue_button like-button" id="like-button-{{ activity.task.id }}" onclick="likeTask('{{ activity.task.id }}');" class="{{ 'liked-button-style' if activity.task.liked_by_user else '' }}" {{ 'disabled' if activity.task.liked_by_user }}>
                         {{ 'Liked' if activity.task.liked_by_user else 'Like' }}
                     </button>
-                    <span id="like-count-{{ activity.task.id }}">{{ activity.task.likes | length }}</span>👍
+                    <span id="like-count-{{ activity.task.id }}" class="like-count">{{ activity.task.likes | length }}</span>👍
                     {% endif %}
                 </div>
                 {% endfor %}
@@ -215,8 +215,8 @@
                     <td>
                         <button class="button" onclick="openTaskDetailModal('{{ task.id }}')">{{ task.title }}</button>
                     </td>
-                    <td>{{ task.personal_completions }}</td>
-                    <td>{{ task.total_completions }}</td>
+                    <td style="text-align: center;">{{ task.personal_completions }}</td>
+                    <td style="text-align: center;">{{ task.total_completions }}</td>
                     <td style="text-align: center;">{{ task.points }}</td>
                 </tr>
                 {% endfor %}
