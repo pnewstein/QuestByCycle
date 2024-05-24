@@ -221,9 +221,9 @@ def like_message(message_id):
     else:
         # User already liked the message. Optionally, handle "unliking" here
         success = False
-    
+
     # Fetch the new like count for the message
-    new_like_count = ShoutBoardMessage.query.get(message_id).likes.count()
+    new_like_count = db.session.query(ShoutBoardLike).filter_by(message_id=message_id).count()
     return jsonify(success=success, new_like_count=new_like_count, already_liked=already_liked)
 
 
