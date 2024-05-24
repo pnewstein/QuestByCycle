@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_required, current_user
 from app.models import db, User, Game
 from app.forms import AddUserForm, CarouselImportForm
@@ -88,55 +88,85 @@ def admin_dashboard():
     return render_template('admin_dashboard.html', games=games, form=form)
 
 
-# ADMIN USER MANAGEMENT #
-#########################
-@admin_bp.route('/user_management', methods=['GET', 'POST'])
+@admin_bp.route('/user_management', methods=['GET'])
 @login_required
 @require_super_admin
 def user_management():
     users = User.query.all()
-    form = AddUserForm()
-    if form.validate_on_submit():
-        # Add user logic goes here
-        pass
-    return render_template('user_management.html', users=users, form=form)
+    return render_template('user_management.html', users=users)
 
-# Function to add a admin to the database
-@admin_bp.route('/add_user', methods=['POST'])
+@admin_bp.route('/user_details/<int:user_id>', methods=['GET'])
 @login_required
 @require_super_admin
-def add_user():
-    username = request.form.get('username')
-    email = request.form.get('email')
-    password = request.form.get('password')
-    is_admin = 'is_admin' in request.form
+def user_details(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
 
-    if not (username and email and password):
-        flash('Please enter all the required fields.', 'error')
+    user_details = {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'is_admin': user.is_admin,
+        'is_super_admin': user.is_super_admin,
+        'created_at': user.created_at,
+        'license_agreed': user.license_agreed,
+        'score': user.score,
+        'display_name': user.display_name,
+        'profile_picture': user.profile_picture,
+        'age_group': user.age_group,
+        'interests': user.interests,
+        'email_verified': user.email_verified
+    }
+    return jsonify(user_details)
+
+@admin_bp.route('/update_user/<int:user_id>', methods=['POST'])
+@login_required
+@require_super_admin
+def update_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        flash('User not found.', 'error')
         return redirect(url_for('admin.user_management'))
 
-    existing_user = User.query.filter((User.email == email) | (User.username == username)).first()
-    if existing_user:
-        flash('A user with this email or username already exists.', 'error')
-    else:
-        # Creating a new user
-        new_user = User()
-        new_user.username = username
-        new_user.email = email
-        new_user.password = new_user.set_password(password)
-        new_user.is_admin = is_admin  # Set additional attributes
+    user.username = request.form.get('username')
+    user.email = request.form.get('email')
+    user.is_admin = 'is_admin' in request.form
+    user.is_super_admin = 'is_super_admin' in request.form
+    user.license_agreed = 'license_agreed' in request.form
+    user.score = request.form.get('score')
+    user.display_name = request.form.get('display_name')
+    user.profile_picture = request.form.get('profile_picture')
+    user.age_group = request.form.get('age_group')
+    user.interests = request.form.get('interests')
+    user.email_verified = 'email_verified' in request.form
 
-        try:
-            # Add the new user to the session and commit
-            db.session.add(new_user)
-            db.session.commit()
-            flash('New user added successfully.', 'success')
-        except Exception as e:
-            db.session.rollback()
-            traceback_str = traceback.format_exc()  # This will give you the full traceback as a string.
-            current_app.logger.error(traceback_str)  # This will log the full traceback.
-            flash(f'An error occurred while creating the user: {e}', 'error')
+    try:
+        db.session.commit()
+        flash('User updated successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error updating user: {e}")
+        flash('An error occurred while updating the user.', 'error')
+    return redirect(url_for('admin.user_management'))
 
+@admin_bp.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+@require_super_admin
+def delete_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        flash('User not found.', 'error')
+        return redirect(url_for('admin.user_management'))
+
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        flash('User deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error deleting user: {e}")
+        flash('An error occurred while deleting the user.', 'error')
     return redirect(url_for('admin.user_management'))
 
 @admin_bp.route('/update_carousel', methods=['POST'])

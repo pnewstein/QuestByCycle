@@ -1,28 +1,112 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1>User Management</h1>
+<div class="container">
+    <h1>User Management</h1>
 
-<form action="{{ url_for('admin.user_management') }}" method="post">
-    {{ form.csrf_token }}
-    <div>
-        {{ form.username.label }} {{ form.username() }}
+    <div class="user-select">
+        <label for="userDropdown">Select a user:</label>
+        <select id="userDropdown">
+            <option value="">Select a user</option>
+            {% for user in users %}
+            <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+        </select>
     </div>
-    <div>
-        {{ form.email.label }} {{ form.email() }}
-    </div>
-    <div>
-        {{ form.password.label }} {{ form.password() }}
-    </div>
-    <div>
-        {{ form.submit() }}
-    </div>
-</form>
 
-<h2>Existing Users</h2>
-<ul>
-    {% for user in users %}
-    <li>{{ user.username }} - {{ user.email }}</li>
-    {% endfor %}
-</ul>
+    <div id="userDetails" class="user-details" style="display:none;">
+        <form id="userForm" action="" method="post" onsubmit="return confirmUpdate()">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="is_admin">Is Admin:</label>
+                <input type="checkbox" id="is_admin" name="is_admin" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="is_super_admin">Is Super Admin:</label>
+                <input type="checkbox" id="is_super_admin" name="is_super_admin" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="license_agreed">License Agreed:</label>
+                <input type="checkbox" id="license_agreed" name="license_agreed" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="score">Score:</label>
+                <input type="number" id="score" name="score" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="display_name">Display Name:</label>
+                <input type="text" id="display_name" name="display_name" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="profile_picture">Profile Picture:</label>
+                <input type="text" id="profile_picture" name="profile_picture" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="age_group">Age Group:</label>
+                <input type="text" id="age_group" name="age_group" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="interests">Interests:</label>
+                <input type="text" id="interests" name="interests" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="email_verified">Email Verified:</label>
+                <input type="checkbox" id="email_verified" name="email_verified" class="form-control">
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Update User</button>
+            </div>
+        </form>
+
+        <form id="deleteUserForm" action="" method="post" onsubmit="return confirmDelete()">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger">Delete User</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('userDropdown').addEventListener('change', function() {
+        var userId = this.value;
+        if (userId) {
+            fetch('/admin/user_details/' + userId)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('userForm').action = '/admin/update_user/' + data.id;
+                    document.getElementById('deleteUserForm').action = '/admin/delete_user/' + data.id;
+                    document.getElementById('username').value = data.username;
+                    document.getElementById('email').value = data.email;
+                    document.getElementById('is_admin').checked = data.is_admin;
+                    document.getElementById('is_super_admin').checked = data.is_super_admin;
+                    document.getElementById('license_agreed').checked = data.license_agreed;
+                    document.getElementById('score').value = data.score;
+                    document.getElementById('display_name').value = data.display_name;
+                    document.getElementById('profile_picture').value = data.profile_picture;
+                    document.getElementById('age_group').value = data.age_group;
+                    document.getElementById('interests').value = data.interests;
+                    document.getElementById('email_verified').checked = data.email_verified;
+                    document.getElementById('userDetails').style.display = 'block';
+                })
+                .catch(error => console.error('Error:', error));
+        } else {
+            document.getElementById('userDetails').style.display = 'none';
+        }
+    });
+
+    function confirmUpdate() {
+        return confirm("Are you sure you want to update this user?");
+    }
+
+    function confirmDelete() {
+        return confirm("Are you sure you want to delete this user?");
+    }
+</script>
 {% endblock %}
