@@ -63,12 +63,12 @@ def add_task(game_id):
 
         if not badge_id and form.badge_name.data:
             # Initialize badge_image_path as None to handle cases where no image is uploaded
-            badge_image_path = None
+            badge_image_file = None
             if 'badge_image_filename' in request.files:
                 badge_image_file = request.files['badge_image_filename']
                 # Ensure the file exists and has a filename (indicating a file was selected for upload)
                 if badge_image_file and badge_image_file.filename != '':
-                    badge_image_path = save_badge_image(badge_image_file)
+                    badge_image_file = save_badge_image(badge_image_file)
                 else:
                     flash('No badge image selected for upload.', 'error')
             
@@ -76,7 +76,7 @@ def add_task(game_id):
             new_badge = Badge(
                 name=form.badge_name.data,
                 description=form.badge_description.data,
-                image=badge_image_path
+                image=badge_image_file
             )
             db.session.add(new_badge)
             db.session.flush()  # Ensures new_badge gets an ID
@@ -392,7 +392,7 @@ def task_user_completion(task_id):
         'name': badge.name,
         'description': badge.description,
         'image': badge.image
-    } if badge else {'name': 'Default', 'image': 'images/climate-revolutions-logo.png'}
+    } if badge else {'name': 'Default', 'image': 'default_badge.png'}
 
     task_details = {
         'id': task.id,
