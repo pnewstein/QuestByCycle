@@ -17,11 +17,9 @@ main_bp = Blueprint('main', __name__)
 
 config = load_config()
 
-
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
 
 def get_datetime(activity):
     if hasattr(activity, 'timestamp') and isinstance(activity.timestamp, datetime):
@@ -30,6 +28,7 @@ def get_datetime(activity):
         return activity.completed_at.replace(tzinfo=None)
     else:
         raise ValueError("Activity object does not contain valid timestamp information.")
+
 
 @main_bp.route('/', defaults={'game_id': None, 'task_id': None, 'user_id': None})
 @main_bp.route('/<int:game_id>', defaults={'task_id': None, 'user_id': None})
@@ -144,6 +143,8 @@ def index(game_id, task_id, user_id):
 
     tasks.sort(key=lambda x: (-x.is_sponsored, -x.personal_completions, -x.total_completions))
 
+    custom_games = Game.query.filter(Game.custom_game_code.isnot(None), Game.is_public.is_(True)).all()
+
     if current_user.is_authenticated:
         profform = ProfileForm()
 
@@ -183,7 +184,10 @@ def index(game_id, task_id, user_id):
                            badges=badges,
                            carousel_images=carousel_images,
                            total_points=total_points,
-                           completions=completed_tasks)
+                           completions=completed_tasks,
+                           custom_games=custom_games,
+                           selected_game_id=game_id)
+
 
 @main_bp.route('/shout-board', methods=['POST'])
 @login_required

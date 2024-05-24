@@ -7,7 +7,6 @@ from datetime import datetime, timedelta, timezone
 
 import os
 
-
 games_bp = Blueprint('games', __name__)
 
 @games_bp.route('/create_game', methods=['GET', 'POST'])
@@ -30,28 +29,23 @@ def create_game():
             twitter_api_secret=form.twitter_api_secret.data,
             twitter_access_token=form.twitter_access_token.data,
             twitter_access_token_secret=form.twitter_access_token_secret.data,
-            facebook_app_id = form.facebook_app_id.data,
-            facebook_app_secret = form.facebook_app_secret.data,
-            facebook_access_token = form.facebook_access_token.data,
-            facebook_page_id = form.facebook_page_id.data,
+            facebook_app_id=form.facebook_app_id.data,
+            facebook_app_secret=form.facebook_app_secret.data,
+            facebook_access_token=form.facebook_access_token.data,
+            facebook_page_id=form.facebook_page_id.data,
+            is_public=form.is_public.data,
+            allow_joins=form.allow_joins.data,
             admin_id=current_user.id
         )
         db.session.add(game)
         try:
             db.session.commit()
             flash('Game created successfully!', 'success')
-
-            # Attempt to extend and fetch new tokens after update
-            #if not get_facebook_page_access_token(game.id):
-            #   flash('Failed to fetch Facebook page access token.', 'error')
-
-
             return redirect(url_for('admin.admin_dashboard'))
         except Exception as e:
             db.session.rollback()
             flash(f'An error occurred while creating the game: {e}', 'error')
     return render_template('create_game.html', title='Create Game', form=form)
-
 
 @games_bp.route('/update_game/<int:game_id>', methods=['GET', 'POST'])
 @login_required
@@ -63,11 +57,6 @@ def update_game(game_id):
         try:
             db.session.commit()
             flash('Game updated successfully!', 'success')
-
-            # Attempt to extend and fetch new tokens after update
-            #if not get_facebook_page_access_token(game_id):
-            #    flash('Failed to fetch Facebook page access token.', 'error')
-
             return redirect(url_for('main.index', game_id=game_id))
         except Exception as e:
             db.session.rollback()
@@ -148,3 +137,30 @@ def game_awards(game_id):
 def game_beyond(game_id):
     game = Game.query.get_or_404(game_id)
     return render_template('beyond.html', game=game)
+
+
+@games_bp.route('/join_custom_game', methods=['POST'])
+@login_required
+def join_custom_game():
+    game_code = request.form.get('custom_game_code')
+    if not game_code:
+        flash('Game code is required to join a custom game.', 'error')
+        return redirect(url_for('main.index'))
+
+    game = Game.query.filter_by(custom_game_code=game_code).first()
+    if not game:
+        flash('Invalid game code. Please try again.', 'error')
+        return redirect(url_for('main.index'))
+
+    if not game.allow_joins:
+        flash('This game does not allow new participants.', 'error')
+        return redirect(url_for('main.index'))
+
+    if game in current_user.participated_games:
+        flash('You are already registered for this game.', 'info')
+    else:
+        current_user.participated_games.append(game)
+        db.session.commit()
+        flash('You have successfully joined the custom game.', 'success')
+
+    return redirect(url_for('main.index'))

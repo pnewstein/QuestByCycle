@@ -60,7 +60,11 @@ class GameForm(FlaskForm):
     facebook_app_secret = StringField('Facebook App Secret')
     facebook_access_token = StringField('Facebook Access Token')
     facebook_page_id = StringField('Facebook Page ID')
+    custom_game_code = StringField('Custom Game Code', validators=[Optional()])  # New field for custom game code
+    is_public = BooleanField('Public Game', default=True)  # New field for public game indicator
+    allow_joins = BooleanField('Allow Joining', default=True)  # New field for allowing new users to join
     submit = SubmitField('Create Game')
+
 
 
 class TaskForm(FlaskForm):
@@ -157,7 +161,7 @@ class BadgeForm(FlaskForm):
     submit = SubmitField('Submit')
 
     def __init__(self, category_choices, *args, **kwargs):
-        super(BadgeForm, self).__init__(*args, **kwargs)
+        super(BadgeForm, self).__init__(*args, kwargs)
         self.category.choices = [('none', 'None')] + category_choices
 
 class TaskImportForm(FlaskForm):
@@ -178,7 +182,7 @@ class SponsorForm(FlaskForm):
     submit = SubmitField('Submit')
 
     def __init__(self, *args, **kwargs):
-        super(SponsorForm, self).__init__(*args, **kwargs)
+        super(SponsorForm, self).__init__(*args, kwargs)
         self.game_id.choices = [(game.id, game.title) for game in Game.query.order_by('title')]
 
 class CarouselImportForm(FlaskForm):

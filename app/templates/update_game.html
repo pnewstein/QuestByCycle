@@ -16,7 +16,7 @@
             {{ form.description(class_="form-control", id="description") }}
         </div>
         <div class="form-group">
-            <label for="description">Task Instructions</label>
+            <label for="description2">Task Instructions</label>
             {{ form.description2(class_="form-control", id="description2") }}
         </div>
         <div class="form-group">
@@ -42,6 +42,18 @@
         <div class="form-group">
             <label for="beyond">Beyond the Game</label>
             {{ form.beyond(class_="form-control", id="beyond") }}
+        </div>
+        <div class="form-group">
+            <label for="is_public">Is Public</label>
+            {{ form.is_public(class_="form-control", id="is_public") }}
+        </div>
+        <div class="form-group">
+            <label for="allow_joins">Allow Joining</label>
+            {{ form.allow_joins(class_="form-control", id="allow_joins") }}
+        </div>
+        <div class="form-group">
+            <label for="custom_game_code">Custom Game Code</label>
+            <input type="text" class="form-control" id="custom_game_code" name="custom_game_code" value="{{ form.custom_game_code.data }}" readonly>
         </div>
         <div class="form-group">
             <label for="twitter_username">Twitter Username</label>
