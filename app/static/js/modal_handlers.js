@@ -717,6 +717,16 @@ function closeMySubmissionsModal() {
     document.body.classList.remove('body-no-scroll');
 }
 
+function closeJoinCustomGameModal(){
+    const joinCustomGameModal = document.getElementById('joinCustomGameModal');
+    if (!joinCustomGameModal) {
+        console.error('Join Custom Game modal container not found');
+        return;  // Exit if no container is found
+    }
+    joinCustomGameModal.style.display = 'none';
+    document.body.classList.remove('body-no-scroll');
+}
+
 function closeUserProfileModal() {
     const userProfileModal = document.getElementById('userProfileModal');
     if (!userProfileModal) {
@@ -766,6 +776,9 @@ window.onclick = function(event) {
                 break;
             case 'taskDetailModal':
                 closeTaskDetailModal();
+                break;
+            case 'joinCustomGameModal':
+                closeJoinCustomGameModal();
                 break;
             case 'userProfileModal':
                 closeUserProfileModal();

@@ -1,0 +1,22 @@
+<!-- Modal for Joining Custom Games -->
+<div id="joinCustomGameModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal('joinCustomGameModal')">&times;</span>
+        <form id="joinCustomGameForm" action="{{ url_for('games.join_custom_game') }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <label for="customGameCode">Enter Custom Game Code:</label>
+            <input type="text" id="customGameCode" name="custom_game_code" required>
+            <button type="submit" class="button">Join Custom Game</button>
+        </form>
+        <div>
+            <h3>Available Custom Games</h3>
+            <ul>
+                {% for game in custom_games %}
+                    {% if game.is_public %}
+                        <li>{{ game.title }} - Code: {{ game.custom_game_code }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>

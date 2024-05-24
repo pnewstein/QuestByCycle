@@ -5,8 +5,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from time import time
 from pytz import utc
+from sqlalchemy.exc import IntegrityError
 
 import jwt
+import random
+import string
 
 db = SQLAlchemy()
 
@@ -138,7 +141,7 @@ class Game(db.Model):
     beyond = db.Column(db.Text)  # Information on living a sustainable bicycle lifestyle
     sponsors = db.relationship('Sponsor', back_populates='game', cascade='all, delete-orphan')
 
-    # Twitter credentials
+    # Social media credentials
     twitter_username = db.Column(db.String(500), nullable=True)
     twitter_api_key = db.Column(db.String(500), nullable=True)
     twitter_api_secret = db.Column(db.String(500), nullable=True)
@@ -149,7 +152,33 @@ class Game(db.Model):
     facebook_app_secret = db.Column(db.String(500), nullable=True)
     facebook_access_token = db.Column(db.String(500), nullable=True)
     facebook_page_id = db.Column(db.String(500), nullable=True)
-    
+
+    custom_game_code = db.Column(db.String(20), unique=True, nullable=True)
+    is_public = db.Column(db.Boolean, default=True)
+    allow_joins = db.Column(db.Boolean, default=True)
+
+    @staticmethod
+    def generate_unique_code():
+        while True:
+            code = ''.join(random.choices(string.ascii_letters + string.digits, k=5))
+            if not Game.query.filter_by(custom_game_code=code).first():
+                return code
+
+    def __init__(self, **kwargs):
+        super(Game, self).__init__(**kwargs)
+        if not self.custom_game_code:
+            self.custom_game_code = self.generate_unique_code()
+        else:
+            while True:
+                try:
+                    self.custom_game_code = self.generate_unique_code()
+                    db.session.add(self)
+                    db.session.commit()
+                    break
+                except IntegrityError:
+                    db.session.rollback()
+                    
+
 game_participants = db.Table('game_participants',
     db.Column('game_id', db.Integer, db.ForeignKey('game.id'), primary_key=True),
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
@@ -198,3 +227,4 @@ class Sponsor(db.Model):
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
 
     game = db.relationship('Game', back_populates='sponsors')
+
