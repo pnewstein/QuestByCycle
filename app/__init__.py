@@ -1,9 +1,9 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, current_app
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from werkzeug.middleware.proxy_fix import ProxyFix
 from app.auth import auth_bp
-from app.admin import admin_bp
+from app.admin import admin_bp, create_super_admin
 from app.main import main_bp
 from app.games import games_bp
 from app.tasks import tasks_bp
@@ -24,18 +24,15 @@ mail = Mail()
 
 def create_app():
     app = Flask(__name__)
-    
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1, x_proto=1, x_port=1)
 
     # Load configuration
     inscopeconfig = load_config()
     app.config.update(inscopeconfig)
 
-    csrf = CSRFProtect(app)
-
     # Apply configurations from the TOML file
-
-    # Apply configurations from the TOML file
+    app.config['DEFAULT_SUPER_ADMIN_PASSWORD'] = app.config['encryption']['DEFAULT_SUPER_ADMIN_PASSWORD']
+    app.config['DEFAULT_SUPER_ADMIN_USERNAME'] = app.config['encryption']['DEFAULT_SUPER_ADMIN_USERNAME']
+    app.config['DEFAULT_SUPER_ADMIN_EMAIL'] = app.config['encryption']['DEFAULT_SUPER_ADMIN_EMAIL']
     app.config['UPLOAD_FOLDER'] = app.config['main']['UPLOAD_FOLDER']
     app.config['VERIFICATIONS'] = app.config['main']['VERIFICATIONS']
     app.config['BADGE_IMAGE_DIR'] = app.config['main']['BADGE_IMAGE_DIR']
@@ -58,13 +55,20 @@ def create_app():
     app.config['MAIL_USERNAME'] = app.config['mail']['MAIL_USERNAME']
     app.config['MAIL_PASSWORD'] = app.config['mail']['MAIL_PASSWORD']
     app.config['MAIL_DEFAULT_SENDER'] = app.config['mail']['MAIL_DEFAULT_SENDER']
-    
+
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1, x_proto=1, x_port=1)
+
     # Initialize extensions
+    csrf = CSRFProtect(app)
     db.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
+
+    # Create super admin
+    with app.app_context():
+        create_super_admin(app)
 
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -81,7 +85,7 @@ def create_app():
     def load_user(user_id):
         from app.models import User  # Local import to avoid circular dependency
         return User.query.get(int(user_id))
-
+        
     # Error handlers
     @app.errorhandler(404)
     def not_found_error(error):

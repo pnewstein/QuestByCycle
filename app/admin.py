@@ -20,49 +20,66 @@ def allowed_file(filename):
 def require_admin(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not current_user.is_admin:
+        if not current_user.is_super_admin and not current_user.is_admin:
             flash('Access denied: You do not have the necessary permissions.', 'error')
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('main.index'))
         return f(*args, **kwargs)
     return decorated_function
 
 
-# Function to create an admin to start off
-def create_admin(app):
+def require_super_admin(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_super_admin:
+            flash('Access denied: You do not have the necessary permissions.', 'error')
+            return redirect(url_for('main.index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def create_super_admin(app):
     with app.app_context():
-        # Load the configuration
-        config = current_app.config
 
-        default_admin_password = config['encryption']['DEFAULT_ADMIN_PASSWORD']
-        default_admin_username = config['encryption']['DEFAULT_ADMIN_USERNAME']
-        default_admin_email = config['encryption']['DEFAULT_ADMIN_EMAIL']
+        default_super_admin_password = current_app.config['DEFAULT_SUPER_ADMIN_PASSWORD']
+        default_super_admin_username = current_app.config['DEFAULT_SUPER_ADMIN_USERNAME']
+        default_super_admin_email = current_app.config['DEFAULT_SUPER_ADMIN_EMAIL']
 
-        # Check if admin user already exists
-        existing_admin = User.query.filter_by(username=default_admin_username).first()
-        if not existing_admin:
-            # Create an admin user with default credentials
-            admin_user = User(
-                username=default_admin_username, 
-                email=default_admin_email
+        # Check if a super admin user already exists
+        super_admin_user = User.query.filter_by(email=default_super_admin_email).first()
+        
+        if super_admin_user:
+            # Update existing super admin user
+            super_admin_user.email_verified = True
+            super_admin_user.is_admin = True
+            super_admin_user.is_super_admin = True
+            super_admin_user.license_agreed = True
+            super_admin_user.set_password(default_super_admin_password)
+        else:
+            # Create a new super admin user
+            super_admin_user = User(
+                username=default_super_admin_username, 
+                email=default_super_admin_email,
+                email_verified=True,
+                is_admin=True,
+                is_super_admin=True,
+                license_agreed=True
             )
-            admin_user.set_password(default_admin_password)
-            admin_user.is_admin = True  # Set as admin
-            admin_user.email_verified = True
-            # ... set other fields if necessary
+            super_admin_user.set_password(default_super_admin_password)
+            db.session.add(super_admin_user)
 
-            db.session.add(admin_user)
-            try:
-                db.session.commit()
-            except Exception as e:
-                db.session.rollback()
-                current_app.logger.error(f"Error creating admin user: {e}")
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error creating or updating super admin user: {e}")
 
 
 # Function to sign in to the admin dashboard
 @admin_bp.route('/admin_dashboard')
 @login_required
+@require_admin
 def admin_dashboard():
-    if not current_user.is_admin:
+    if not current_user.is_super_admin and not current_user.is_admin:
         return redirect(url_for('main.index'))
 
     games = Game.query.all()  # Retrieve all games from the database
@@ -75,7 +92,7 @@ def admin_dashboard():
 #########################
 @admin_bp.route('/user_management', methods=['GET', 'POST'])
 @login_required
-@require_admin
+@require_super_admin
 def user_management():
     users = User.query.all()
     form = AddUserForm()
@@ -87,7 +104,7 @@ def user_management():
 # Function to add a admin to the database
 @admin_bp.route('/add_user', methods=['POST'])
 @login_required
-@require_admin
+@require_super_admin
 def add_user():
     username = request.form.get('username')
     email = request.form.get('email')

@@ -7,9 +7,14 @@
     <a href="{{ url_for('main.index') }}" class="button">Back to Home</a> <!-- Back button to home -->
     <h1>Admin Dashboard</h1>
     <div>Welcome, {{ current_user.username }}! This is the admin dashboard.</div>
+
+    {% if current_user.is_super_admin %}
+        <div><a href="{{ url_for('admin.user_management') }}" class="btn btn-secondary">Manage Users</a></div>
+    {% endif %}
+
+
     {% if current_user.is_admin %}
         <div><a href="{{ url_for('games.create_game') }}" class="btn btn-primary">Create New Game</a></div>
-        <div><a href="{{ url_for('admin.user_management') }}" class="btn btn-secondary">Manage Users</a></div>
         <div class="game-list">
             {% for game in games %}
                 <div class="game-item">

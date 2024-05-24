@@ -3,9 +3,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import db, User, Sponsor
 from app.forms import LoginForm, RegistrationForm, SponsorForm
-from app.admin import create_admin
 from app.utils import send_email
-from flask_mail import Message, Mail
+from flask_mail import Mail
 from sqlalchemy import or_
 from pytz import utc
 from datetime import datetime
@@ -16,15 +15,8 @@ mail = Mail()
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    # Check if any admin exists
-    admin_exists = User.query.filter_by(is_admin=True).first() is not None
-
-
-    # If no admin exists, create an admin
-    if not admin_exists:
-        create_admin(current_app._get_current_object())
-
     form = LoginForm()
+
     if form.validate_on_submit():
         email = form.email.data  # Assuming that the LoginForm has an 'email' field
         password = form.password.data

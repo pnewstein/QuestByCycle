@@ -44,6 +44,7 @@ def index(game_id, task_id, user_id):
     if user_id is None and current_user.is_authenticated:
         user_id = current_user.id
 
+    # Auto join the first or earliest game 
     if game_id is None and current_user.is_authenticated:
         joined_games = current_user.participated_games
         if joined_games:
@@ -57,17 +58,17 @@ def index(game_id, task_id, user_id):
 
     game = Game.query.get(game_id) if game_id else None
 
-    carousel_images_dir = os.path.join(current_app.root_path, 'static', current_app.config['CAROUSEL_IMAGES_DIR'])
-
-    if current_user.is_authenticated:
-        user_tasks = UserTask.query.filter_by(user_id=current_user.id).all()
-        total_points = sum(ut.points_awarded for ut in user_tasks if ut.task.game_id == game_id)
+    carousel_images_dir = os.path.join(current_app.root_path, 'static', 'images', current_app.config['CAROUSEL_IMAGES_DIR'])
 
     if not os.path.exists(carousel_images_dir):
         os.makedirs(carousel_images_dir)
 
     carousel_images = os.listdir(carousel_images_dir)
-    carousel_images = [os.path.join(current_app.config['CAROUSEL_IMAGES_DIR'], filename) for filename in carousel_images]
+    carousel_images = [os.path.join('images', current_app.config['CAROUSEL_IMAGES_DIR'], filename) for filename in carousel_images]
+
+    if current_user.is_authenticated:
+        user_tasks = UserTask.query.filter_by(user_id=current_user.id).all()
+        total_points = sum(ut.points_awarded for ut in user_tasks if ut.task.game_id == game_id)
 
     tasks = Task.query.filter_by(game_id=game.id, enabled=True).all() if game else []
     has_joined = game in current_user.participated_games if game else False
