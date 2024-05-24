@@ -137,7 +137,7 @@ def save_badge_image(image_file):
     rel_path = os.path.join('images', 'badge_images', filename)  # No leading slashes
     abs_path = os.path.join(current_app.root_path, current_app.static_folder, rel_path)
     image_file.save(abs_path)
-    return rel_path  # Correct relative path from 'static' directory
+    return filename  # Correct relative path from 'static' directory
 
 
 def save_submission_image(submission_image_file):

@@ -49,7 +49,7 @@ def get_badges():
         'id': badge.id,
         'name': badge.name,
         'description': badge.description,
-        'image': url_for('static', filename=badge.image) if badge.image else None,
+        'image': url_for('static', filename='images/badge_images/' + badge.image) if badge.image else None,
         'category': badge.category
     } for badge in badges]
     return jsonify(badges=badges_data)
@@ -72,11 +72,10 @@ def manage_badges():
             image_file = request.files['image']
             if image_file and image_file.filename != '':
                 filename = save_badge_image(image_file)  # Your function to save the image and return the filename
-                # Assuming save_badge_image saves the file and returns a relative path to be stored in the database
                 new_badge = Badge(
                     name=form.name.data,
                     description=form.description.data,
-                    image=filename,  # Store the filename or relative path in the database
+                    image=filename,
                     category=request.form['category']
                 )
                 db.session.add(new_badge)
@@ -162,8 +161,7 @@ def upload_images():
             badge_name = ' '.join(word.capitalize() for word in filename.rsplit('.', 1)[0].replace('_', ' ').split())
             badge = Badge.query.filter_by(name=badge_name).first()
             if badge:
-                rel_path = os.path.join('images', 'badge_images', filename)
-                badge.image = rel_path 
+                badge.image = filename 
                 
                 db.session.commit()
 
@@ -204,7 +202,7 @@ def bulk_upload():
             filename = secure_filename(image_file.filename)
             image_path = os.path.join(current_app.root_path, 'static', 'images', 'badge_images', filename)
             image_file.save(image_path)
-            image_dict[filename] = os.path.join('images', 'badge_images', filename)
+            image_dict[filename] = filename
             print(f"Saved image: {filename} to {image_path}")
 
     # Process CSV
