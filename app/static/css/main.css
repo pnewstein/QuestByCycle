@@ -1,4 +1,3 @@
-/* main.css */
 body {
     display: flex;
     flex-direction: column;
@@ -16,57 +15,43 @@ main {
     flex: 1;
 }
 
-/* main.css */
-
-/* Other existing styles */
-
-/* Flash message styles */
 .flash-message {
     width: 50%;
-    margin: 20px auto; /* Center horizontally and add some vertical spacing */
+    margin: 20px auto; 
     padding: 15px;
     border-radius: 5px;
     text-align: center;
-    font-size: 1em; /* Adjust font size as needed */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-    transition: opacity 0.3s ease-in-out; /* Smooth transition for appearance/disappearance */
+    font-size: 1em; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+    transition: opacity 0.3s ease-in-out; 
 }
 
-/* Flash message categories */
 .flash-success {
-    background-color: #a8d5a3; /* Softer green */
+    background-color: #a8d5a3; 
     color: #3c763d;
     border: 1px solid #96c48b;
 }
 
 .flash-error, .flash-danger {
-    background-color: #f7c6c6; /* Softer red */
+    background-color: #f7c6c6; 
     color: #a94442;
     border: 1px solid #f0a7a7;
 }
 
 .flash-warning {
-    background-color: #fae1b5; /* Softer yellow */
+    background-color: #fae1b5; 
     color: #8a6d3b;
     border: 1px solid #f7d09a;
 }
 
 .flash-info {
-    background-color: #b8dfe6; /* Softer blue */
+    background-color: #b8dfe6; 
     color: #31708f;
     border: 1px solid #a3cbd3;
 }
 
-/* Media query to adjust flash message width on smaller screens */
-@media (max-width: 768px) {
-    .flash-message {
-        width: 90%;
-    }
-}
-
-
 .content-wrap {
-    flex: 1; /* This makes the content area flex and push the footer down */
+    flex: 1; 
 }
 
 a {
@@ -99,40 +84,39 @@ main {
 }
 
 .top-half {
-    border: 5px solid #ccc; /* Light grey border to act as a frame */
-    padding: 10px; /* Space between the border and the content */
-    border-radius: 8px; /* Rounded corners for a more polished look */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a 3D effect */
-    background-color: #fff; /* Optional: white background for contrast */
-    margin-bottom: 20px; /* Space below the framed section */
+    border: 5px solid #ccc; 
+    padding: 10px; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    background-color: #fff; 
+    margin-bottom: 20px; 
 }
 
-
 .container {
-    width: 100%; /* Makes sure the container fits within the viewport */
-    max-width: 95%; /* Limits maximum width while allowing some margin */
-    margin: auto; /* Centers the container */
+    width: 100%; 
+    max-width: 95%; 
+    margin: auto; 
     background-color: #D0E6B5;
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    overflow: hidden; /* Ensures no internal content spills over */
+    overflow: hidden; 
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease;
 }
 
 .table {
-    width: 100%; /* Full width of its container */
-    border-collapse: collapse; /* Ensures borders between cells are merged */
+    width: 100%; 
+    border-collapse: collapse; 
     background-color: #ffffff;
-    table-layout: fixed; /* Helps in maintaining a uniform column width */
-    overflow-x: auto; /* Allows horizontal scrolling if needed */
+    table-layout: fixed; 
+    overflow-x: auto; 
 }
 
 .table th, .table td {
     text-align: left;
     padding: 8px;
     border-bottom: 1px solid #ddd;
-    word-wrap: break-word; /* Ensures text goes to the next line if needed */
+    word-wrap: break-word; 
 }
 
 .table th {
@@ -208,50 +192,6 @@ main {
     border-color: #ebccd1;
 }
 
-/* Media Queries for Responsive Design */
-@media (max-width: 768px) {
-    header, header nav, .container, .table, .form-group, .button, .alert {
-        width: 100%; /* Full width */
-        margin: auto; /* Center align */
-        padding: 10px;
-    }
-
-    header nav a {
-        margin: 5px 0; /* More vertical space */
-        display: block; /* Stack nav items vertically */
-    }
-
-    .modal-content, .footer-container, .dropdown-content {
-        width: 90%; /* Adjust width for smaller screens */
-    }
-
-    .table, .container {
-        width: 100%;
-    }
-
-    .table th, .table td {
-        font-size: x-small;
-        word-wrap: normal; /* Ensures text goes to the next line if needed */
-
-    }
-}
-
-@media (max-width: 480px) {
-    .container, main {
-        padding: 10px;
-    }
-
-    header {
-        padding: 10px;
-    }
-    
-    .box, .info-box, .game-item, .message {
-        /* Increase font size for better readability on very small screens */
-        font-size: larger;
-    }
-}
-
-/* New styles for link boxes */
 .link-boxes {
     display: flex;
     justify-content: space-around;
@@ -266,12 +206,13 @@ main {
     text-align: center;
     text-decoration: none;
     font-weight: bold;
-    border-radius: 8px; /* Rounded corners for the boxes */
+    border-radius: 8px; 
 }
 
-/* Specific background colors for each box */
 .box-steps { background-color: #ff9090; }
+
 .box-missions { background-color: #82ff82; }
+
 .box-games { background-color: #7a7aff; }
 
 .introduction, .skill-building {
@@ -374,12 +315,12 @@ article h3 {
     display: inline-block;
     background-color: #007bff;
     color: white;
-    padding: 3px 5px; /* Reduced padding */
+    padding: 3px 5px; 
     border-radius: 1px;
     text-decoration: none;
-    margin-top: 3px; /* Reduced margin */
-    font-size: 11px; /* Adjust font size if necessary */
-    vertical-align: middle; /* Aligns button with the text vertically */
+    margin-top: 3px; 
+    font-size: 11px; 
+    vertical-align: middle; 
 }
 
 .blue_button:hover {
@@ -404,24 +345,23 @@ article h3 {
     font-weight: bold;
 }
 
-/* The Modal (background) */
 .modal {
     position: fixed;
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1000; /* Sit on top */
+    display: none; 
+    position: fixed; 
+    z-index: 1000; 
     left: 0;
     top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
     background-color: rgba(0,0,0,0.4);
     animation: fadeIn 0.3s;
 }
 
 .modal-dialog {
     width: 90%;
-    max-width: 800px; /* Wider modal for better data presentation */
+    max-width: 800px; 
     background: white;
     border-radius: 8px;
     overflow: hidden;
@@ -437,6 +377,10 @@ article h3 {
     padding: 20px;
     display: flex;
     flex-direction: column;
+}
+
+.modal-body p {
+    font-size: larger;
 }
 
 .modal-footer {
@@ -463,7 +407,7 @@ article h3 {
 
 .task-details-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Responsive grid layout */
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
     gap: 15px;
     margin-top: 10px;
     margin-bottom: 10px;
@@ -479,17 +423,16 @@ article h3 {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start; /* Align children to the top */
+    justify-content: flex-start; 
 }
 
 .task-detail-item h4 {
-    margin-bottom: 5px; /* Adjust spacing as needed */
+    margin-bottom: 5px; 
     font-size: 16px;
     color: #333;
     font-weight: 600;
     text-align: center;
 }
-
 
 .task-info {
     display: flex;
@@ -504,69 +447,53 @@ article h3 {
     to { opacity: 1; }
 }
 
-/* Modal Content */
 .modal-content {
-    max-height: 70vh; /* Adjust the height to your preference */
-    overflow-y: auto; /* Enable scrolling inside the modal */
+    max-height: calc(100vh - 30px); 
+    overflow-y: auto; 
     background-color: #fefefe;
-    margin: 15% auto; /* 15% from the top and centered */
+    margin: 15px auto; 
     padding: 20px;
     border: 1px solid #888;
-    max-width: 70%; /* Could be more or less, depending on screen size */
-    border-radius: 8px; /* Optional: Rounded corners */
+    max-width: 70%; 
+    border-radius: 8px; 
     position: relative;
     z-index: 1001;
 }
 
-/* Ensure the submission detail modal appears above the task detail modal */
+
 #submissionDetailModal {
     z-index: 3;
 }
 
-/* Ensure the submission detail modal appears above the task detail modal */
 #userProfileModal {
     z-index: 4;
 }
 
-/* Ensure the submission detail modal appears above the task detail modal */
 #leaderboardModal {
     z-index: 3;
 }
 
-/* Specific styles for the Submission Detail Modal */
 #submissionDetailModal .modal-content {
-    text-align: center; /* Center align the content inside the modal */
+    text-align: center; 
     padding: 20px;
 }
 
 #submissionDetailModal #submissionComment {
-    font-size: 18px; /* Increase the font size */
-    margin-top: 20px; /* Add some space above the comment */
-    color: #333; /* Dark grey color for better readability */
-    font-weight: bold; /* Make the text bold */
+    font-size: 18px; 
+    margin-top: 20px; 
+    color: #333; 
+    font-weight: bold; 
 }
 
 #submissionDetailModal .button {
-    margin: 10px 5px; /* Space around buttons */
-    display: inline-block; /* Ensure buttons are in a line */
-    width: auto; /* Allow the button to grow as per its content */
+    margin: 10px 5px; 
+    display: inline-block; 
+    width: auto; 
 }
 
-/* Container for buttons to manage alignment and distribution */
 #submissionDetailModal div {
-    text-align: center; /* Center-align the button container */
-    margin-top: 20px; /* Space above the button container */
-}
-
-/* Enhance mobile responsiveness */
-@media (max-width: 768px) {
-    #submissionDetailModal .modal-content {
-        padding: 10px; /* Reduce padding on smaller screens */
-    }
-
-    #submissionDetailModal #submissionComment {
-        font-size: 16px; /* Slightly smaller font size on mobile */
-    }
+    text-align: center; 
+    margin-top: 20px; 
 }
 
 #taskDetailModal {
@@ -575,20 +502,19 @@ article h3 {
 
 .modal-content img {
     display: block;
-    /*margin: 0 auto; /* Centers the image in the modal */
-    margin-bottom: 20px; /* Space between the image and the text/comment below it */
+    
+    margin-bottom: 20px; 
     size: 200px;
 }
 
 .body-no-scroll {
-    overflow: hidden; /* prevent scrolling on the body */
+    overflow: hidden; 
 }
 
-/* The Close Button */
 .close-button {
     position: absolute;
-    top: 10px;  /* Adjust as needed */
-    right: 10px; /* Adjust as needed */
+    top: 10px;  
+    right: 10px; 
     color: #aaa;
     font-size: 28px;
     font-weight: bold;
@@ -623,25 +549,26 @@ footer {
 
 .footer-container {
     display: flex;
-    align-items: center; /* Aligns items vertically in the center */
-    justify-content: center; /* Centers the content horizontally */
-    gap: 20px; /* Adjust the space between the logo and the text */
-    max-width: 1200px; /* Adjust based on your design preference */
-    margin: 0 auto; /* Center the container */
+    align-items: center; 
+    justify-content: center; 
+    gap: 20px; 
+    max-width: 1200px; 
+    margin: 0 auto; 
 }
 
 .footer-logo {
-    height: 100px; /* Adjust based on your logo's size */
+    height: 100px; 
 }
 
 .footer-text {
-    text-align: left; /* Aligns the text to the left within its container */
+    text-align: left; 
 }
 
 .dropdown {
     position: relative;
     display: inline-block;
 }
+
 .dropdown-content {
     display: block;
     position: absolute;
@@ -652,7 +579,6 @@ footer {
     z-index: 1;
 }
 
-/* Dropdown Button */
 .dropbtn {
     background-color: #007bff;
     color: white;
@@ -662,12 +588,10 @@ footer {
     cursor: pointer;
 }
 
-/* The container <div> - needed to position the dropdown content */
 .dropdown {
     display: inline-block;
 }
 
-/* Dropdown Content (Hidden by Default) */
 .dropdown-content {
     display: none;
     position: absolute;
@@ -677,7 +601,6 @@ footer {
     z-index: 1;
 }
 
-/* Links inside the dropdown */
 .dropdown-content a {
     color: black;
     padding: 12px 16px;
@@ -685,24 +608,21 @@ footer {
     display: block;
 }
 
-/* Change color of dropdown links on hover */
 .dropdown-content a:hover {background-color: #0056b3}
 
-/* Show the dropdown menu on hover */
 .dropdown:hover .dropdown-content {
     display: block;
 }
 
-/* Change the background color of the dropdown button when the dropdown content is shown */
 .dropdown:hover .dropbtn {
     background-color: #0056b3;
 }
 
 .content-flex-container {
     display: flex;
-    flex-wrap: wrap; /* Allows items to wrap on smaller screens */
-    align-items: stretch; /* Stretches items to fill the container height */
-    justify-content: space-between; /* Adds space between the flex items */
+    flex-wrap: wrap; 
+    align-items: stretch; 
+    justify-content: space-between; 
 }
 
 .message {
@@ -712,106 +632,6 @@ footer {
     border-radius: 5px;
 }
 
-/* Adjust link boxes for smaller screens */
-@media only screen and (max-width: 768px) {
-    .link-boxes {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .box {
-        width: 90%; /* Make boxes wider on smaller screens */
-        margin-bottom: 20px; /* Add some space between boxes */
-    }
-}
-
-/* Introduction, Skill-building, and Articles Responsiveness */
-@media only screen and (max-width: 768px) {
-    .introduction, .skill-building, article {
-        /* Reduce padding for a more compact look */
-        padding: 15px;
-    }
-
-    .introduction h2, .skill-building h2, article h3 {
-        /* Slightly reduce the font size for headings */
-        font-size: 1.2em;
-    }
-}
-
-/* Game Items and Tasks List Responsiveness */
-@media only screen and (max-width: 768px) {
-    .game-item, .tasks li {
-        /* Make these elements more compact on smaller screens */
-        padding: 10px;
-    }
-
-    .tasks ul {
-        /* Reduce padding to use more of the available space */
-        padding-left: 0;
-    }
-}
-
-/* Modal Responsiveness */
-@media only screen and (max-width: 768px) {
-    .modal-content {
-        /* Make modal content take more screen width on smaller devices */
-        width: 95%;
-        padding: 15px; /* Slightly reduce padding */
-    }
-
-    .close-button {
-        /* Adjust close button size to be more touch-friendly */
-        font-size: 32px;
-    }
-}
-
-/* Footer Adjustments for Smaller Screens */
-@media only screen and (max-width: 768px) {
-    .footer-container {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .footer-logo, .footer-text {
-        /* Adjustments to ensure the footer content is centered and not too large */
-        margin-bottom: 10px; /* Add some space between elements */
-    }
-}
-
-/* Dropdown and Messages Box for Better Mobile Interaction */
-@media only screen and (max-width: 768px) {
-    .dropdown-content, .message {
-        /* Ensure dropdowns and message boxes are not too wide */
-        width: auto; /* Allow the width to auto-adjust based on content */
-    }
-
-    .message {
-        /* Increase padding for easier reading and interaction */
-        padding: 10px;
-    }
-}
-
-/* Ensuring Text and Buttons are Easily Interactable */
-@media only screen and (max-width: 768px) {
-    body, button, a, input[type="submit"], .dropbtn {
-        /* Increase font size for better legibility on small screens */
-        font-size: 20px; /* Adjust size as needed for your design */
-    }
-}
-
-/* Responsive adjustments for smaller screens */
-@media (max-width: 768px) {
-    .task-modal-columns {
-        flex-direction: column;
-    }
-
-    .user-task-data {
-        border-left: none;
-        border-top: 2px solid #ccc; /* Adds a horizontal separation on smaller screens */
-    }
-}
-
-/* Style for the task detail modal's internal layout */
 .task-modal-columns {
     display: flex;
     justify-content: space-between;
@@ -822,16 +642,14 @@ footer {
     flex: 1;
     margin: 0 10px;
     padding: 10px;
-    min-width: 300px; /* Ensure each column has sufficient width */
 }
 
 .user-task-data {
-    border-left: 2px solid #ccc; /* Adds a visual separation between the sections */
+    border-left: 2px solid #ccc; 
 }
 
-/* Style for the photo board to ensure it is full width under the columns */
 #submissionBoard {
-    width: 100%; /* Full width */
+    width: 100%; 
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -840,11 +658,11 @@ footer {
 
 .photo-board {
     margin-top: 10px;
-    display: grid; /* Changed to flex to better manage horizontal centering */
+    display: grid; 
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    justify-content: center; /* Centers the columns horizontally */
-    flex-wrap: wrap; /* Allows columns to wrap as needed */
-    gap: 10px; /* Spacing between columns */
+    justify-content: center; 
+    flex-wrap: wrap; 
+    gap: 10px; 
     padding: 10px;
     transition: all 0.3s ease-in-out;
 }
@@ -856,16 +674,16 @@ footer {
 }
 
 .photo-column {
-    flex: 1 1 150px; /* Flexibility with a basis of 150px */
+    flex: 1 1 150px; 
     display: flex;
     flex-direction: column;
-    width: 150px; /* Set a fixed width for each column */
+    width: 150px; 
     gap: 10px;
 }
 
 .photo-column img {
-    width: 100%; /* Images expand to fill the column width */
-    height: auto; /* Maintain aspect ratio */
+    width: 100%; 
+    height: auto; 
     transition: transform 0.3s ease-in-out;
 }
 
@@ -882,20 +700,20 @@ footer {
 }
 
 .social-button svg {
-    fill: #fff; /* White color icon */
+    fill: #fff; 
     width: 24px;
     height: 24px;
 }
 
 .social-button:hover svg {
-    fill: #ccc; /* Light grey on hover */
+    fill: #ccc; 
 }
 
 .verification-image {
     max-width: 100%;
     height: auto;
     display: block;
-    margin: 0 auto; /* Centering the image horizontally */
+    margin: 0 auto; 
 }
 
 .leaderboard-container {
@@ -906,7 +724,7 @@ footer {
 
 .leaderboard-table {
     flex: 1;
-    margin-right: 20px; /* Space between table and meter */
+    margin-right: 20px; 
 }
 
 .leaderboard-container {
@@ -917,11 +735,11 @@ footer {
 
 .leaderboard-table {
     flex: 1;
-    margin-right: 20px; /* Space between table and meter */
+    margin-right: 20px; 
 }
 
 .completion-meter-container {
-    width: 100%; /* Flexible container width */
+    width: 100%; 
     padding: 10px;
     background: #f9f9f9;
     border: 1px solid #ccc;
@@ -931,13 +749,13 @@ footer {
 
 .completion-meter {
     width: 100%;
-    height: 300px; /* Adjust height as needed */
-    background: linear-gradient(to bottom, #ddd, #fff); /* Gradient effect */
+    height: 300px; 
+    background: linear-gradient(to bottom, #ddd, #fff); 
     border: 1px solid #ccc;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2); /* Adding shadow for depth */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
     position: relative;
-    border-radius: 8px; /* Rounded corners */
-    overflow: hidden; /* Ensures the bar does not exceed the border radius */
+    border-radius: 8px; 
+    overflow: hidden; 
 }
 
 .meter-bar {
@@ -953,15 +771,14 @@ footer {
 }
 
 .meter-label {
-    margin-bottom: 10px; /* Space between label and meter */
+    margin-bottom: 10px; 
     text-align: center;
-    font-weight: bold; /* Making the text bold */
-    color: #333; /* More readable text color */
+    font-weight: bold; 
+    color: #333; 
 }
 
-/* Optional: Animation to draw attention to the meter when page loads */
 :root {
-    --meter-fill-height: 0%;  /* Default height */
+    --meter-fill-height: 0%;  
 }
 
 @keyframes fillMeter {
@@ -969,92 +786,88 @@ footer {
         height: 0;
     }
     100% {
-        height: var(--meter-fill-height);  /* Using the variable */
+        height: var(--meter-fill-height);  
     }
 }
 
-/* Enhance appearance with transitions */
 .meter-bar::after {
     content: attr(data-label);
     color: white;
     text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
 }
-/* Base style for the checkbox container */
+
 .disabled-checkbox {
     position: relative;
     display: inline-block;
     width: 20px;
     height: 20px;
     margin: 5px;
-    left: 25%; /* Center horizontally */
-    background: #FFF; /* Default background to white */
-    border: 1px solid #707070; /* Grey border */
+    left: 25%; 
+    background: #FFF; 
+    border: 1px solid #707070; 
     box-sizing: border-box;
     cursor: not-allowed;
 }
 
-/* Custom checkbox appearance */
 .disabled-checkbox input[type="checkbox"] {
-    opacity: 0;  /* Hide the actual checkbox */
+    opacity: 0;  
     position: absolute;
     width: 100%;
     height: 100%;
     margin: 0;
     cursor: not-allowed;
-    z-index: 1; /* Ensure it covers the styled div to maintain functionality */
+    z-index: 1; 
 }
 
-/* Styling for when checkbox is checked */
 .disabled-checkbox input[type="checkbox"]:checked + .checkbox-custom::after {
-    content: '✔'; /* Unicode checkmark */
-    color: black; /* Checkmark color */
-    font-size: 16px; /* Larger checkmark for better visibility */
+    content: '✔'; 
+    color: black; 
+    font-size: 16px; 
     position: absolute;
-    left: 50%; /* Center horizontally */
-    top: 50%; /* Center vertically */
-    transform: translate(-50%, -50%); /* Perfect centering */
-    pointer-events: none; /* prevents interaction directly with the pseudo-element */
+    left: 50%; 
+    top: 50%; 
+    transform: translate(-50%, -50%); 
+    pointer-events: none; 
 }
 
-/* Span that will hold the checkmark for customization */
 .disabled-checkbox .checkbox-custom {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: transparent; /* Initially no background */
-    transition: background-color 0.3s; /* Smooth transition for background color */
+    background-color: transparent; 
+    transition: background-color 0.3s; 
 }
 
 .badge-image {
     width: 70px;
-    transition: transform 0.3s ease; /* Smooth transformation */
+    transition: transform 0.3s ease; 
     display: block;
-    max-width: 100px;  /* Set a suitable max-width for badge images */
-    height: auto;  /* Maintain aspect ratio */
-    margin: 10px auto;  /* Center the badge image */
-    border-radius: 5px;  /* Optional: rounded corners for aesthetic */
+    max-width: 100px;  
+    height: auto;  
+    margin: 10px auto;  
+    border-radius: 5px;  
 }
 
 .badge-image:hover {
-    transform: scale(3); /* Adjust scale as needed */
-    z-index: 10; /* Ensure the image is above other content */
+    transform: scale(3); 
+    z-index: 10; 
 }
 
 .badge-image-manage {
     width: 70px;
-    transition: transform 0.3s ease; /* Smooth transformation */
+    transition: transform 0.3s ease; 
 }
 
 .badge-image-pri-pro {
     width: 30px;
-    transition: transform 0.3s ease; /* Smooth transformation */
+    transition: transform 0.3s ease; 
 }
 
 .badge-image-pri-pro:hover {
-    transform: scale(14); /* Adjust scale as needed */
-    z-index: 1; /* Ensure the image is above other content */
+    transform: scale(14); 
+    z-index: 1; 
 }
 
 .welcomeMedia {
@@ -1063,9 +876,10 @@ footer {
     width: 100%;
 
 }
+
 .shout-messages {
-    max-height: 200px;  /* Adjust the height as needed */
-    overflow-y: scroll;  /* Enables vertical scrolling */
+    max-height: 200px;  
+    overflow-y: scroll;  
     overflow-x: hidden;
     margin-right: auto;
     margin-left: auto;
@@ -1075,60 +889,60 @@ footer {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
-    justify-content: space-between; /* Ensures spacing is maximized between elements */
+    justify-content: space-between; 
     margin-left: auto;
     margin-right: auto;
     width: 100%;
 }
 
 .activity strong {
-    margin-right: 10px; /* Ensures some spacing */
-    white-space: nowrap; /* Keeps the timestamp and username on the same line */
+    margin-right: 10px; 
+    white-space: nowrap; 
 }
 
 .activity span {
-    overflow: auto; /* Prevents content from overflowing its container */
-    white-space: normal; /* Allows text to wrap */
-    word-wrap: break-word; /* Breaks long words to prevent overflow */
+    overflow: auto; 
+    white-space: normal; 
+    word-wrap: break-word; 
 }
 
 .activity button {
-    margin-left: 10px; /* Space before the button */
-    margin-right: 10px; /* Space before the button */
+    margin-left: 10px; 
+    margin-right: 10px; 
 
 }
 
 .activity #like-count {
-    display: inline-block; /* Ensures it's on the same line as the button */
+    display: inline-block; 
 }
 
 .profile-container {
     display: flex;
     justify-content: space-between;
-    height: 200px;       /* Set the maximum height */
-    padding: 10px;       /* Optional: adds some space inside the box */
-    border: 1px solid #ccc; /* Optional: adds a border around the profile container */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Optional: adds subtle shadow for depth */
+    height: 200px;       
+    padding: 10px;       
+    border: 1px solid #ccc; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
     align-items: flex-start; 
 }
 
 .profile-details-column {
-    max-width: 50%; /* Limit the profile details column to half of the container width */
+    max-width: 50%; 
 }
 
 .profile-image {
-    max-width: 400px; /* Limits the width to the parent container size */
-    max-height: 300px; /* Adjust this value based on your design preference */
-    height: auto; /* Maintains the aspect ratio */
+    max-width: 400px; 
+    max-height: 300px; 
+    height: auto; 
     width: 100%;
-    border-radius: 50%; /* Keeps the circular shape */
-    object-fit: cover; /* Covers the frame without distorting the image */
-    border: 5px solid #ccc; /* Light grey border to act as a frame */
-    padding: 10px; /* Space between the border and the content */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a 3D effect */
-    background-color: #fff; /* Optional: white background for contrast */
-    display: block; /* Ensures the image is a block element */
-    margin: 0 auto; /* Centers the image horizontally */
+    border-radius: 50%; 
+    object-fit: cover; 
+    border: 5px solid #ccc; 
+    padding: 10px; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    background-color: #fff; 
+    display: block; 
+    margin: 0 auto; 
 }
 
 .carousel-control-prev, .carousel-control-next {
@@ -1136,15 +950,14 @@ footer {
 }
 
 .carousel-inner {
-    height: 300px;                  /* Fixed height */
-    max-width: 400px;               /* Maximum width */
-    width: 80%;                     /* Percentage width for responsiveness */
+    height: 300px;                  
+    max-width: 400px;               
+    width: 80%;                     
     overflow: hidden;   
-    position: relative;      /* For positioning inner elements absolutely */
-    margin: auto;                   /* Center the carousel horizontally */
-    display: block;                 /* Use block to apply auto margins */
+    position: relative;      
+    margin: auto;                   
+    display: block;                 
 }
-
 
 .user-profile {
     max-width: 800px;
@@ -1169,16 +982,16 @@ footer {
 }
 
 .pinned {
-    background-color: #ffeb3b;  /* A light yellow background */
-    border-left: 5px solid #ff9800;  /* A bright orange border */
+    background-color: #ffeb3b;  
+    border-left: 5px solid #ff9800;  
     padding: 4px;
 }
 
 .shout-messages-container {
-    height: 400px; /* Adjust the height as needed */
+    height: 400px; 
     overflow-y: scroll;
-    border: 1px solid #ccc; /* Optional: Add a border for visual clarity */
-    padding: 10px; /* Optional: Add padding for better spacing */
+    border: 1px solid #ccc; 
+    padding: 10px; 
 }
 
 .shout-messages {
@@ -1242,7 +1055,7 @@ footer {
 
 .submission-image {
     width: 100%;
-    max-width: 300px; /* Limit size to maintain aspect ratio */
+    max-width: 300px; 
     height: auto;
     border-radius: 8px;
 }
@@ -1338,19 +1151,19 @@ footer {
 .footer-section {
     flex: 1;
     padding: 10px;
-    min-width: 300px; /* ensures wrapping on smaller screens */
+    min-width: 300px; 
 }
 
 .see-more {
     margin-left: 10px;
     text-decoration: none;
-    color: #ffe07a; /* Example color for the link */
+    color: #ffe07a; 
 }
 
 .see-more:hover {
     margin-left: 10px;
     text-decoration: none;
-    color: #bfc2b1; /* Example color for the link */
+    color: #bfc2b1; 
 }
 
 .footer-section.links {
@@ -1373,7 +1186,7 @@ footer {
 
 .footer-logo {
     height: auto;
-    width: 100px; /* adjust logo size */
+    width: 100px; 
 }
 
 .text {
@@ -1403,10 +1216,148 @@ footer {
     text-align: center;
     font-size: 14px;
     padding-top: 10px;
-    border-top: 1px solid #34495E; /* subtle separation line */
+    border-top: 1px solid #34495E; 
+}
+
+.bottom-half img {
+    max-width: 100%;
+    height: auto;
+    display: block; 
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.inspirational-text {
+    text-align: center;
+    margin-bottom: 10px;
+    font-style: italic;
+    font-size: 1.2em; 
+    color: #555; 
+}
+
+.social-link {
+    margin: 0 10px;
+    font-size: 24px;
+    color: #ffe07a; 
+}
+
+.social-link:hover {
+    color: #bfc2b1; 
 }
 
 @media (max-width: 768px) {
+    .introduction, .skill-building, article {
+        
+        padding: 15px;
+    }
+
+    .introduction h2, .skill-building h2, article h3 {
+        
+        font-size: 1.2em;
+    }
+
+    .game-item, .tasks li {
+        
+        padding: 10px;
+    }
+
+    .tasks ul {
+        
+        padding-left: 0;
+    }
+
+    .modal-content {
+        
+        width: 95%;
+        padding: 15px; 
+    }
+
+    .close-button {
+        
+        font-size: 32px;
+    }
+
+    .footer-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .footer-logo, .footer-text {
+        
+        margin-bottom: 10px; 
+    }
+
+    .dropdown-content, .message {
+        
+        width: auto; 
+    }
+
+    .message {
+        
+        padding: 10px;
+    }
+
+    body, button, a, input[type="submit"], .dropbtn {
+        
+        font-size: 20px; 
+    }
+
+    .task-modal-columns {
+        flex-direction: column;
+    }
+
+    .user-task-data {
+        border-left: none;
+        border-top: 2px solid #ccc; 
+    }
+
+    .link-boxes {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .box {
+        width: 90%; 
+        margin-bottom: 20px; 
+    }
+
+    #submissionDetailModal .modal-content {
+        padding: 10px; 
+    }
+
+    #submissionDetailModal #submissionComment {
+        font-size: 16px; 
+    }
+
+    header, header nav, .container, .table, .form-group, .alert {
+        width: 100%; 
+        margin: auto; 
+        padding: 10px;
+    }
+
+    header nav a {
+        margin: 5px 0; 
+        display: block; 
+    }
+
+    .modal-content, .footer-container, .dropdown-content {
+        width: 90%; 
+    }
+
+    .table, .container {
+        width: 100%;
+    }
+
+    .table th, .table td {
+        font-size: x-small;
+        word-wrap: normal; 
+
+    }
+
+    .flash-message {
+        width: 90%;
+    }
+
     .footer-content {
         flex-direction: column;
         text-align: center;
@@ -1419,175 +1370,68 @@ footer {
     .links {
         flex-direction: column;
     }
-}
-/* Additional Media Queries for Mobile Optimization */
-@media (max-width: 768px) {
+
     header nav a {
-        padding: 8px 5px; /* Increase tap area */
-        font-size: 16px; /* Adjust font size for better legibility */
+        padding: 8px 5px; 
+        font-size: 16px; 
     }
 
     .table th, .table td {
-        padding: 6px; /* Reduce padding to save space */
-        font-size: 14px; /* Reduce font size to fit more content */
+        padding: 6px; 
+        font-size: 14px; 
     }
 
     .form-group input, .form-group textarea, .form-group select {
-        font-size: 16px; /* Increase font size for easier interaction */
+        font-size: 16px; 
     }
 
-    .button, input[type="submit"] {
-        font-size: 18px; /* Increase button font size for better readability */
-        padding: 12px 20px; /* Increase padding for a larger tap area */
-    }
-}
-
-@media (max-width: 480px) {
-    body {
-        font-size: 14px; /* Increase base font size for better readability */
-    }
-
-    header {
-        padding: 5px 10px; /* Reduce padding to save space */
-    }
-
-    main, .container {
-        padding: 5px; /* Reduce padding to utilize more screen space */
-    }
-
-    .footer-container {
-        padding: 15px 10px; /* Adjust footer padding */
-    }
-
-    .modal-content {
-        padding: 10px; /* Reduce modal padding for larger usable area */
-    }
-}
-
-@media (max-width: 480px) {
-    /* Enhance readability and interaction for smaller screens */
-    header, .modal-content, .footer-container, .dropdown-content {
-        font-size: 16px; /* Bigger font size for better readability on very small devices */
-    }
-
-    .footer-links a, .dropdown-content a {
-        padding: 10px 15px; /* Larger padding for easier tapping */
-    }
-
-    .footer-legal p {
-        font-size: 14px; /* Increase the font size for legal text for better readability */
-    }
-
-    .alert, .form-group label {
-        font-size: 16px; /* Larger font size for better visibility */
-    }
-}
-
-@media (max-width: 480px) {
-    .footer-logo, .profile-picture {
-        width: 80px; /* Reduce size to fit mobile screens */
-        height: auto; /* Maintain aspect ratio */
-    }
-
-    .badge-image, .badge-image-pri-pro {
-        width: 50px; /* Reduce badge image size on small devices */
-    }
-
-    .carousel-inner, .carousel-control-prev, .carousel-control-next {
-        max-height: 200px; /* Reduce carousel height on small devices */
-    }
-}
-
-@media (max-width: 480px) {
-    .task-details-grid, .badges-container, .tasks-container {
-        grid-template-columns: 1fr; /* Stack grid items into a single column */
-    }
-
-    .modal-body, .leaderboard-container {
-        flex-direction: column; /* Stack modal and leaderboard components vertically */
-    }
-
-    .task-modal-columns {
-        flex-direction: column; /* Ensure task modal columns stack vertically */
-    }
-}
-
-@media (max-width: 480px) {
-    .dropdown-content, .dropdown:hover .dropdown-content {
-        width: 100%; /* Full-width dropdowns for easier access */
-        box-shadow: none; /* Remove shadow for a cleaner look */
-    }
-
-    .dropdown, .dropbtn {
-        width: 100%; /* Full width for dropdown button for easier access */
-    }
-}
-
-@media (max-width: 768px) {
-    /* Adjustments for game-item class */
     .game-item {
         width: 100%;
-        padding: 15px; /* Provide more internal space */
-        margin-bottom: 20px; /* Increase space between game items */
-        border-radius: 8px; /* Soften the corners a bit more */
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Slightly lighter shadow for a cleaner look */
-        background-color: #f9f9f9; /* Lighter background for better readability */
+        padding: 15px; 
+        margin-bottom: 20px; 
+        border-radius: 8px; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        background-color: #f9f9f9; 
         margin-right: auto;
         margin-left: auto;
     }
 
-    /* Adjustments for button class */
-    .button, input[type="submit"] { /* Assumed input[type="submit"] also needs the same styling */
-        padding: 12px 20px; /* Larger padding for easier interaction */
-        font-size: 18px; /* Larger font size for readability and ease of touch */
-        border-radius: 8px; /* More rounded corners */
-        background-color: #f0f0f0; /* Lighter background color for visibility */
-        color: #333; /* Darker text for better contrast */
-        display: block; /* Block display to take full width */
-        width: 100%; /* Full width for easier touch */
-        text-align: center; /* Center text, commonly expected in mobile interfaces */
-        margin-bottom: 15px; /* Add space between buttons or below the button */
-        box-shadow: 0 4px 6px rgba(0,0,0,0.15); /* Slightly more prominent shadow for 3D effect */
+    .button, input[type="submit"] { 
+        padding: 12px 20px; 
+        font-size: 18px; 
+        border-radius: 8px; 
+        background-color: #edecb9; 
+        color: #333; 
+        display: block; 
+        width: 100%; 
+        text-align: center; 
+        margin-bottom: 15px; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.15); 
+        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.12); 
+        transition: background-color 0.3s, box-shadow 0.3s; 
     }
 
     .button:hover, input[type="submit"]:hover {
-        background-color: #e0e0e0; /* Slightly darker on hover for visual feedback */
-        box-shadow: 0 5px 8px rgba(0,0,0,0.2); /* Deeper shadow on hover for a popping effect */
+        background-color: #e0e0e0; 
+        box-shadow: 0 5px 8px rgba(0,0,0,0.2); 
     }
 
     .button:active, input[type="submit"]:active {
-        background-color: #d0d0d0; /* Even darker on active for a press-down effect */
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Flatter shadow to simulate being pressed */
+        background-color: #d0d0d0; 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
         position: relative;
-        top: 2px; /* Slightly move down to mimic pressing */
+        top: 2px; 
     }
-}
-/* Default styles for larger screens */
-.bottom-half img {
-    max-width: 100%;
-    height: auto;
-    display: block; /* Ensures the image is centered */
-    margin-left: auto;
-    margin-right: auto;
-}
 
-/* Styles for screens up to 768px wide */
-@media (max-width: 768px) {
+    .button, a {
+        transition: transform 0.3s ease-in-out; 
+    }
+
     .bottom-half img {
-        width: 100%; /* Slightly smaller than the default */
-        margin-top: 25px; /* Reduced top margin */
+        width: 100%; 
+        margin-top: 25px; 
     }
-}
 
-/* Styles for screens up to 480px wide */
-@media (max-width: 480px) {
-    .bottom-half img {
-        width: 100%; /* Further reduce the size for small screens */
-        margin-top: 10px; /* Minimal top margin */
-    }
-}
-
-@media (max-width: 768px) {
     .game-item {
         padding: 15px;
         margin-bottom: 15px;
@@ -1595,7 +1439,7 @@ footer {
 
     .blue_button, input[type="submit"] {
         padding: 10px 15px;
-        font-size: 16px; /* Increase for better legibility */
+        font-size: 16px; 
     }
 
     .activity {
@@ -1605,21 +1449,151 @@ footer {
 
     .activity strong, .activity span {
         margin-right: 0;
-        margin-bottom: 5px; /* Add space between elements when stacked */
+        margin-bottom: 5px; 
     }
 }
 
 @media (max-width: 480px) {
-    .game-item {
+    .container, main {
         padding: 10px;
     }
 
+    header {
+        padding: 10px;
+    }
+    
+    .box, .info-box, .game-item, .message {
+        
+        font-size: larger;
+    }
+
+    body {
+        font-size: 14px; 
+    }
+
+    header {
+        padding: 5px 10px; 
+    }
+
+    main, .container {
+        padding: 5px; 
+    }
+
+    .footer-container {
+        padding: 15px 10px; 
+    }
+
+    .modal-content {
+        padding: 10px; 
+    }
+
+    header, .modal-content, .footer-container, .dropdown-content {
+        font-size: 16px; 
+    }
+
+    .footer-links a, .dropdown-content a {
+        padding: 10px 15px; 
+    }
+
+    .footer-legal p {
+        font-size: 14px; 
+    }
+
+    .alert, .form-group label {
+        font-size: 16px; 
+    }
+
+    .footer-logo, .profile-picture {
+        width: 80px; 
+        height: auto; 
+    }
+
+    .badge-image, .badge-image-pri-pro {
+        width: 50px; 
+    }
+
+    .carousel-inner, .carousel-control-prev, .carousel-control-next {
+        max-height: 200px; 
+    }
+
+    .task-details-grid, .badges-container, .tasks-container {
+        grid-template-columns: 1fr; 
+    }
+
+    .modal-body, .leaderboard-container {
+        flex-direction: column; 
+    }
+
+    .task-modal-columns {
+        flex-direction: column; 
+    }
+
+    .dropdown-content, .dropdown:hover .dropdown-content {
+        width: 100%; 
+        box-shadow: none; 
+    }
+
+    .dropdown, .dropbtn {
+        width: 100%; 
+    }
+    
+    .bottom-half img {
+        width: 100%; 
+        margin-top: 10px; 
+    }
+
+    .game-item {
+        width: 100%;
+        padding: 15px; 
+        margin-bottom: 20px; 
+        border-radius: 8px; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        background-color: #f9f9f9; 
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    
+    .button, input[type="submit"] { 
+        padding: 10px 15px; 
+        background-color: #edecb9; 
+        border: 3px solid #ddd; 
+        border-radius: 10px; 
+        color: black; 
+        cursor: pointer; 
+        text-align: left; 
+        text-decoration: none; 
+        display: block; 
+        width: 100%; 
+        max-width: fit-content;
+        font-size: 16px; 
+        line-height: 20px; 
+        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.12); 
+        box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26); 
+        transition: background-color 0.3s, box-shadow 0.3s; 
+    }
+
+    .button:hover, input[type="submit"]:hover {
+        background-color: #dba364; 
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); 
+    }
+
+    .button:active, input[type="submit"]:active {
+        box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2); 
+        position: relative;
+        top: 1px; 
+    }
+
+    .button, a {
+        transition: transform 0.3s ease-in-out; 
+    }
+
     .form-group label, .form-group input, .form-group textarea {
-        font-size: 14px; /* Increase font size for better readability */
+        font-size: 14px; 
     }
 
     .blue_button, input[type="submit"] {
-        width: 50; /* Full width buttons for easier tapping */
+        width: 50; 
         margin-top: 10px;
         margin-left: auto;
         margin-right: auto;
@@ -1642,24 +1616,6 @@ footer {
 
     #like-count {
         margin-left: 0;
-        display: block; /* New line for like counts for clarity */
+        display: block; 
     }
-}
-
-.inspirational-text {
-    text-align: center;
-    margin-bottom: 10px;
-    font-style: italic;
-    font-size: 1.2em; /* Adjust font size as needed */
-    color: #555; /* Adjust color as needed */
-}
-
-.social-link {
-    margin: 0 10px;
-    font-size: 24px;
-    color: #ffe07a; /* Adjust color as needed */
-}
-
-.social-link:hover {
-    color: #bfc2b1; /* Adjust hover color as needed */
 }
