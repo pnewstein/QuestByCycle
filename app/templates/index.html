@@ -60,22 +60,24 @@
             <div style="text-align: center">
                 {% if current_user.is_authenticated %}
                 <a href="{{ url_for('main.game_info') }}" class="button">Let's Get Started!</a>
+                    <button id="leaderboardButton" data-game-id="{{ game.id }}" class="button">View Leaderboard</button>
+                    <button id="submissionsButton" data-game-id="{{ game.id }}" class="button">Your Submissions</button>
                     <button class="button" onclick="openModal('contactModal')">Contact Us</button>
-                    <button class="button" onclick="openModal('joinCustomGameModal')">Join Custom Game</button>
                     {% if current_user.is_admin %}
-                    <a href="{{ url_for('admin.admin_dashboard') }}" class="button">Admin Dashboard</a>
+                        <button class="button" onclick="openModal('joinCustomGameModal')">Join Custom Game</button>
+                        <a href="{{ url_for('admin.admin_dashboard') }}" class="button">Admin Dashboard</a>
+                        <!-- Dropdown for selecting joined games -->
+                        <div style="margin-top: 20px;">
+                            <label for="gameSelectDropdown">Select Your Game:</label>
+                            <select id="gameSelectDropdown" class="form-control" onchange="window.location.href = this.value;">
+                                {% for game in current_user.participated_games %}
+                                    <option value="{{ url_for('main.index', game_id=game.id) }}" {% if game.id == selected_game_id %}selected{% endif %}>
+                                        {{ game.title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     {% endif %}
-                    <!-- Dropdown for selecting joined games -->
-                    <div style="margin-top: 20px;">
-                        <label for="gameSelectDropdown">Select Your Game:</label>
-                        <select id="gameSelectDropdown" class="form-control" onchange="window.location.href = this.value;">
-                            {% for game in current_user.participated_games %}
-                                <option value="{{ url_for('main.index', game_id=game.id) }}" {% if game.id == selected_game_id %}selected{% endif %}>
-                                    {{ game.title }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
                 {% endif %}
             </div>
         </div>
@@ -154,7 +156,7 @@
                     <button type="button" class="blue_button like-button" id="like-button-{{ activity.id }}" onclick="likeMessage('{{ activity.id }}')">
                         {{ 'Liked' if activity.liked_by_user else 'Like' }}
                     </button>
-                    <span id="like-count-{{ activity.id }}" class="like-count">{{ activity.likes.count() }}</span>👍
+                    <span id="like-count-{{ activity.id }}" class="like-count">{{ activity.likes|length }}</span>👍
                     {% elif activity.__tablename__ == 'user_tasks' %}
                     <strong>
                         {{ activity.completed_at.strftime('%m-%d %H:%M') }} -
@@ -173,7 +175,7 @@
                     <button class="blue_button like-button" id="like-button-{{ activity.task.id }}" onclick="likeTask('{{ activity.task.id }}');" class="{{ 'liked-button-style' if activity.task.liked_by_user else '' }}" {{ 'disabled' if activity.task.liked_by_user }}>
                         {{ 'Liked' if activity.task.liked_by_user else 'Like' }}
                     </button>
-                    <span id="like-count-{{ activity.task.id }}" class="like-count">{{ activity.task.likes | length }}</span>👍
+                    <span id="like-count-{{ activity.task.id }}" class="like-count">{{ activity.task.likes|length }}</span>👍
                     {% endif %}
                 </div>
                 {% endfor %}
@@ -182,13 +184,6 @@
     </div>
     {% if has_joined %}
     <div class="game-item">
-        <p>
-            {% if current_user.is_admin %}
-            <a href="{{ url_for('admin.admin_dashboard') }}" class="button" style="margin-left: 10px;">Admin Dashboard</a>
-            {% endif %}
-            <button id="leaderboardButton" data-game-id="{{ game.id }}" class="button">View Leaderboard</button>
-            <button id="submissionsButton" data-game-id="{{ game.id }}" class="button">Your Submissions</button>
-        </p>
         <table class="table">
             <colgroup>
                 <col style="width: 5%;"> <!-- Checkbox column -->
