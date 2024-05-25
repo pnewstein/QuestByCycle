@@ -1,22 +1,60 @@
 <!-- Modal for Joining Custom Games -->
-<div id="joinCustomGameModal" class="modal">
-    <div class="modal-content">
-        <span class="close-button" onclick="closeModal('joinCustomGameModal')">&times;</span>
-        <form id="joinCustomGameForm" action="{{ url_for('games.join_custom_game') }}" method="post">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            <label for="customGameCode">Enter Custom Game Code:</label>
-            <input type="text" id="customGameCode" name="custom_game_code" required>
-            <button type="submit" class="button">Join Custom Game</button>
-        </form>
-        <div>
-            <h3>Available Custom Games</h3>
-            <ul>
-                {% for game in custom_games %}
-                    {% if game.is_public %}
-                        <li>{{ game.title }} - Code: {{ game.custom_game_code }}</li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
+<div id="joinCustomGameModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="joinCustomGameModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="joinCustomGameModalLabel">Join Custom Game</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="joinCustomGameForm" action="{{ url_for('games.join_custom_game') }}" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="form-group">
+                        <label for="customGameCode">Enter Custom Game Code:</label>
+                        <input type="text" id="customGameCode" name="custom_game_code" class="form-control" placeholder="Enter game code" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block mt-3">Join Custom Game</button>
+                </form>
+                <div class="mt-4">
+                    <h5>Available Custom Games</h5>
+                    <ul class="list-group">
+                        {% for game in custom_games %}
+                            {% if game.is_public %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ game.title }}
+                                    <span class="badge badge-primary badge-pill">{{ game.custom_game_code }}</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+<style>
+    .modal-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .modal-title {
+        font-weight: bold;
+    }
+    .modal-body {
+        padding: 2rem;
+    }
+    .form-group label {
+        font-weight: bold;
+    }
+    .list-group-item {
+        background-color: #f8f9fa;
+    }
+    .list-group-item:hover {
+        background-color: #e9ecef;
+    }
+    .badge-pill {
+        font-size: 1rem;
+    }
+</style>
