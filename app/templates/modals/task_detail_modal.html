@@ -3,48 +3,190 @@
     <div class="modal-content">
         <button class="close-button" onclick="closeTaskDetailModal()">&times;</button>
         <div class="modal-header">
-            <h2 id="modalTaskTitle">Task Title</h2>
+            <h2 id="modalTaskTitle" class="text-center">Task Title</h2>
         </div>
         <div class="modal-body">
-            <p id="modalTaskDescription">Description</p>
+            <p id="modalTaskDescription" class="text-muted text-center">Description</p>
             <div class="task-details-grid">
                 <div class="task-detail-item">
-                    <h4>Points per Completion</h4>
-                    <span id="modalTaskPoints"></span>
+                    <h4 class="text-primary">Points per Completion</h4>
+                    <span id="modalTaskPoints" class="text-info"></span>
                 </div>
                 <div class="task-detail-item">
-                    <h4>Badge</h4>
-                    <img id="modalTaskBadgeImage" src="" alt="Badge Image" class="badge-image" style="padding-top: 0%;padding-bottom: 0%;margin-bottom: 0px;margin-top: 0px;">
+                    <h4 class="text-primary">Badge</h4>
+                    <img id="modalTaskBadgeImage" src="" alt="Badge Image" class="badge-image">
                 </div>
                 <div class="task-detail-item">
-                    <h4>Category</h4>
-                    <span id="modalTaskCategory"></span>
+                    <h4 class="text-primary">Category</h4>
+                    <span id="modalTaskCategory" class="text-info"></span>
                 </div>
                 <div class="task-detail-item">
-                    <h4>Completion Limit</h4>
-                    <span id="modalTaskCompletionLimit"></span>
+                    <h4 class="text-primary">Completion Limit</h4>
+                    <span id="modalTaskCompletionLimit" class="text-info"></span>
                 </div>
                 <div class="task-detail-item">
-                    <h4>Submission Requirements</h4>
-                    <span id="modalTaskVerificationType"></span>
+                    <h4 class="text-primary">Submission Requirements</h4>
+                    <span id="modalTaskVerificationType" class="text-info"></span>
                 </div>
                 <div class="task-detail-item">
-                    <h4>Your Total Completions</h4>
-                    <span id="modalTaskCompletions"></span>
+                    <h4 class="text-primary">Your Total Completions</h4>
+                    <span id="modalTaskCompletions" class="text-info"></span>
                 </div>
                 <div class="task-detail-item">
-                    <h4>Eligibility</h4>
-                    <span id="modalCountdown"></span>
+                    <h4 class="text-primary">Eligibility</h4>
+                    <span id="modalCountdown" class="text-info"></span>
                 </div>
             </div>
-            <p id="modalTaskTips">Tips</p>
+            <p id="modalTaskTips" class="text-primary">Tips</p>
             <div class="user-task-data">
                 <!-- Elements like verification button and form will be dynamically appended here -->
             </div>
         </div>
-        <strong><h4>Hall of Fame</h4></strong>
-        <div id="submissionBoard" class="photo-board">
-            <!-- Submissions displayed here -->
+        <div class="modal-footer">
+            <strong><h4 class="text-center text-success">Hall of Fame</h4></strong>
+            <div id="submissionBoard" class="photo-board">
+                <!-- Submissions displayed here -->
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+    .modal {
+        position: fixed;
+        display: none;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('/static/images/header-bg.jpg') no-repeat center center/cover;
+        animation: fadeIn 0.3s;
+    }
+    .modal-content {
+        background: rgba(255, 255, 255, 0.9);
+        margin: 5% auto;
+        padding: 30px;
+        border: none;
+        width: 80%;
+        max-width: 800px;
+        border-radius: 15px;
+        position: relative;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+    }
+    .modal-content:hover {
+        box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+        transform: translateY(-5px);
+    }
+    .close-button {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        color: #525252;
+        font-size: 30px;
+        font-weight: bold;
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+    .close-button:hover,
+    .close-button:focus {
+        color: #ccc;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .modal-header {
+        border-bottom: 2px solid #eee;
+        padding-bottom: 15px;
+        text-align: center;
+    }
+    .modal-header h2 {
+        font-size: 2em;
+        font-weight: bold;
+        color: #333;
+    }
+    .modal-body {
+        padding: 30px;
+        overflow-y: auto;
+        max-height: 95%;
+    }
+    .modal-footer {
+        padding-top: 15px;
+        text-align: center;
+        border-top: 2px solid #eee;
+    }
+    .text-info {
+    color: #003942 !important;
+}
+    .task-details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 20px;
+    }
+    .task-detail-item {
+        background: rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .task-detail-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    .task-detail-item h4 {
+        margin-bottom: 10px;
+        font-size: 20px;
+        color: #fff;
+        font-weight: bold;
+    }
+    .task-detail-item span,
+    .task-detail-item img {
+        font-size: 18px;
+        color: #ddd;
+    }
+    .badge-image {
+        width: 70px;
+        height: 70px;
+        margin: 10px 0;
+        transition: transform 0.3s ease;
+    }
+    .badge-image:hover {
+        transform: scale(1.2);
+    }
+    .photo-board {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    .photo-board img {
+        width: 100px;
+        height: 100px;
+        border-radius: 10px;
+        transition: transform 0.3s ease;
+    }
+    .photo-board img:hover {
+        transform: scale(1.3);
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
