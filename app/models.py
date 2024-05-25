@@ -184,6 +184,17 @@ game_participants = db.Table('game_participants',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
 )
 
+
+class PlayerMessageBoardMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String(500), nullable=False)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(utc), index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    user = db.relationship('User', foreign_keys=[user_id], backref='messages_received')
+    author = db.relationship('User', foreign_keys=[author_id], backref='messages_sent')
+    
+
 class ShoutBoardMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(500), nullable=False)
