@@ -1,44 +1,48 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="container">
+<div class="container mt-5">
     {% if current_user.is_authenticated %}
         <!-- Display Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
     {% endif %}
 
     {% if not current_user.is_authenticated %}
-    <div class="welcomeImage">
-        <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Quest by Cycle" style="max-width: 600px; max-height: 300px;" loading="lazy">
-    </div>
-    <div class="introduction">
-        <strong><p>Ready to transform your bike rides into a thrilling adventure that benefits the planet? Join the QuestByCycle community! Pedal your way to a greener world as you tackle exciting challenges, earn points that combat carbon emissions, and discover hidden gems in your city. Connect with fellow cycling enthusiasts, compete for top spots on the leaderboard, and make a real difference – all while having a blast on two wheels.</p></strong>
-        <div style="text-align: center; margin-top: 20px;">
-            <b><p>This is your Quest by Cycle journey!</p></b>
-            <a href="{{ url_for('auth.register') }}" class="button">Register Today!</a>
-            <a href="{{ url_for('auth.login') }}" class="button">Already a Member? Sign In</a>
+        <div class="text-center mb-4">
+            <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Quest by Cycle" class="img-fluid" loading="lazy">
         </div>
-    </div>
+        <div class="introduction text-center mb-5">
+            <p class="font-weight-bold">Ready to transform your bike rides into a thrilling adventure that benefits the planet? Join the QuestByCycle community! Pedal your way to a greener world as you tackle exciting challenges, earn points that combat carbon emissions, and discover hidden gems in your city. Connect with fellow cycling enthusiasts, compete for top spots on the leaderboard, and make a real difference – all while having a blast on two wheels.</p>
+            <p class="h5 font-weight-bold">This is your Quest by Cycle journey!</p>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg mr-2">Register Today!</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-lg">Already a Member? Sign In</a>
+        </div>
     {% endif %}
-    <div class="content-flex-container">
-        <div class="game-item-prof-menu">
+    
+    <div class="row">
+        <div class="col-md-8">
             {% if not current_user.is_authenticated %}
-                <div class="welcomeMedia">
-                    <video class="welcomeMedia" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}" autoplay loop controls></video>
+                <div class="embed-responsive embed-responsive-16by9 mb-4">
+                    <video class="embed-responsive-item" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}" autoplay loop controls></video>
                 </div>
             {% else %}
-                <div class="bottom-half" style="text-align: center">
-                    <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Quest by Cycle">
+                <div class="text-center mb-4">
+                    <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Quest by Cycle" class="img-fluid">
                 </div>
             {% endif %}
-            <div class="top-half">
-                <div style="text-align: center"><strong>Share the Adventure! Post Your Cycling Pics & Stories</strong></div>
+            <div class="text-center mb-4">
+                <p class="font-weight-bold">Share the Adventure! Post Your Cycling Pics & Stories</p>
                 <div id="taskImageCarousel" class="carousel slide" data-ride="carousel">
                     <div class="carousel-inner">
                         {% for image in carousel_images %}
@@ -57,17 +61,17 @@
                     </a>
                 </div>
             </div>
-            <div style="text-align: center">
+            <div class="text-center mb-4">
                 {% if current_user.is_authenticated %}
-                <a href="{{ url_for('main.game_info') }}" class="button">Let's Get Started!</a>
-                    <button id="leaderboardButton" data-game-id="{{ game.id }}" class="button">View Leaderboard</button>
-                    <button id="submissionsButton" data-game-id="{{ game.id }}" class="button">Your Submissions</button>
-                    <button class="button" onclick="openModal('contactModal')">Contact Us</button>
+                    <a href="{{ url_for('main.game_info') }}" class="btn btn-primary btn-lg mb-2">Let's Get Started!</a>
+                    <button id="leaderboardButton" data-game-id="{{ game.id }}" class="btn btn-info btn-lg mb-2">View Leaderboard</button>
+                    <button id="submissionsButton" data-game-id="{{ game.id }}" class="btn btn-info btn-lg mb-2">Your Submissions</button>
+                    <button class="btn btn-secondary btn-lg mb-2" onclick="openModal('contactModal')">Contact Us</button>
                     {% if current_user.is_admin %}
-                        <button class="button" onclick="openModal('joinCustomGameModal')">Join Custom Game</button>
-                        <a href="{{ url_for('admin.admin_dashboard') }}" class="button">Admin Dashboard</a>
+                        <button class="btn btn-secondary btn-lg mb-2" onclick="openModal('joinCustomGameModal')">Join Custom Game</button>
+                        <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-danger btn-lg mb-2">Admin Dashboard</a>
                         <!-- Dropdown for selecting joined games -->
-                        <div style="margin-top: 20px;">
+                        <div class="form-group mt-3">
                             <label for="gameSelectDropdown">Select Your Game:</label>
                             <select id="gameSelectDropdown" class="form-control" onchange="window.location.href = this.value;">
                                 {% for game in current_user.participated_games %}
@@ -81,46 +85,60 @@
                 {% endif %}
             </div>
         </div>
+        
         {% if profile %}
-            <div class="game-item-prof-menu">
-                <div id="profileDisplay">
-                    <p style="text-align: center;"><strong>Your Profile</strong></p>
-
-                    <form id="editProfileForm" method="post" enctype="multipart/form-data" style="display: none;">
-                        {{ form.hidden_tag() }}
-                        <p><img id="profileImageDisplay" src="{{ url_for('static', filename=current_user.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="profile-image"></p>
-                        <p style="text-align: center;">Your Profile</p>
-                        <p><strong>Profile Photo: </strong><input type="file" name="profile_picture" onchange="previewFile()"></p>
-                        <p><strong>Player/Team Name: </strong><input type="text" name="display_name" placeholder="Player/Team Name" value="{{ profile.display_name or profile.username }}"></p>
-                        <p><strong>Age Group: </strong><input type="text" name="age_group" placeholder="Age Group" value="{{ profile.age_group }}"></p>
-                        <p><strong>Interests: </strong><input type="text" name="interests" placeholder="Interests" value="{{ profile.interests }}"></p>
-                        <button type="submit" class="button">Save Profile</button>
-                    </form>
-                    <div id="profileView">
-                        <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="profile-image">
-                        <p><strong>Name:</strong> {{ profile.display_name or profile.username }}</p>
-                        <p id="total-points"><strong>Your Total Completed Points:</strong> {{ total_points }}</p>
-                        <p><strong>Interests:</strong> {{ profile.interests }}</p>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Your Profile</h5>
+                        <form id="editProfileForm" method="post" enctype="multipart/form-data" style="display: none;">
+                            {{ form.hidden_tag() }}
+                            <img id="profileImageDisplay" src="{{ url_for('static', filename=current_user.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="img-fluid rounded-circle mb-3">
+                            <div class="form-group">
+                                <label for="profilePicture">Profile Photo</label>
+                                <input type="file" name="profile_picture" class="form-control-file" onchange="previewFile()">
+                            </div>
+                            <div class="form-group">
+                                <label for="displayName">Player/Team Name</label>
+                                <input type="text" name="display_name" class="form-control" placeholder="Player/Team Name" value="{{ profile.display_name or profile.username }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="ageGroup">Age Group</label>
+                                <input type="text" name="age_group" class="form-control" placeholder="Age Group" value="{{ profile.age_group }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="interests">Interests</label>
+                                <input type="text" name="interests" class="form-control" placeholder="Interests" value="{{ profile.interests }}">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Save Profile</button>
+                        </form>
+                        <div id="profileView">
+                            <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="img-fluid rounded-circle mb-3">
+                            <p class="font-weight-bold">Name: {{ profile.display_name or profile.username }}</p>
+                            <p id="total-points" class="font-weight-bold">Your Total Completed Points: {{ total_points }}</p>
+                            <p class="font-weight-bold">Interests: {{ profile.interests }}</p>
+                        </div>
+                        <button id="editProfileBtn" onclick="toggleEditProfile()" class="btn btn-info btn-block mt-3">Edit Profile</button>
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-block mt-3">Logout</a>
                     </div>
                 </div>
-
-                <div>
-                    <p><strong>Badges Earned:</strong></p>
-                    <ul>
-                        {% for badge in badges %}
-                        <li>
-                            {{ badge.name }} -
-                            {% if badge.image %}
-                            <img src="{{ url_for('static', filename='images/badge_images/' + badge.image) }}" alt="{{ badge.name }}" class="badge-image-pri-pro" loading="lazy">
-                            {% else %}
-                            <img src="{{ url_for('static', filename='images/badge_images/default_badge.png') }}" alt="Default Badge" class="badge-image-pri-pro" loading="lazy">
-                            {% endif %}
-                        </li>
-                        {% endfor %}
-                    </ul>
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Badges Earned</h5>
+                        <ul class="list-group list-group-flush">
+                            {% for badge in badges %}
+                                <li class="list-group-item">
+                                    {{ badge.name }} 
+                                    {% if badge.image %}
+                                        <img src="{{ url_for('static', filename='images/badge_images/' + badge.image) }}" alt="{{ badge.name }}" class="img-fluid" style="max-height: 30px; margin-left: 10px;" loading="lazy">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='images/badge_images/default_badge.png') }}" alt="Default Badge" class="img-fluid" style="max-height: 30px; margin-left: 10px;" loading="lazy">
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 </div>
-                <button id="editProfileBtn" onclick="toggleEditProfile()" class="button">Edit Profile</button>
-                <a href="{{ url_for('auth.logout') }}" class="button">Logout</a>
             </div>
         {% endif %}
     </div>
