@@ -66,6 +66,11 @@ def create_super_admin(app):
             )
             super_admin_user.set_password(default_super_admin_password)
             db.session.add(super_admin_user)
+            super_admin_user.set_password(default_admin_password)
+            super_admin_user.is_admin = True  # Set as admin
+            super_admin_user.email_verified = True
+            super_admin_user.license_agreed = True
+            # ... set other fields if necessary
 
         try:
             db.session.commit()
