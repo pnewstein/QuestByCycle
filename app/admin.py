@@ -48,6 +48,7 @@ def create_admin(app):
             admin_user.set_password(default_admin_password)
             admin_user.is_admin = True  # Set as admin
             admin_user.email_verified = True
+            admin_user.license_agreed = True
             # ... set other fields if necessary
 
             db.session.add(admin_user)
