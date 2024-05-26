@@ -50,6 +50,7 @@ main {
 
 .content-wrap {
     flex: 1; 
+    background: url('/static/images/header-bg.jpg') stretch;
 }
 
 a {
