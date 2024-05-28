@@ -68,6 +68,7 @@ def create_app():
 
     # Create super admin
     with app.app_context():
+        db.create_all()
         create_super_admin(app)
 
     # Register blueprints
