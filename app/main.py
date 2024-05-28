@@ -311,14 +311,35 @@ def user_profile(user_id):
     user = User.query.get_or_404(user_id)
     user_tasks = UserTask.query.filter(UserTask.user_id == user.id, UserTask.completions > 0).all()
     badges = user.badges
+    participated_games = user.participated_games
+    task_submissions = user.task_submissions
 
-    # Debug prints to verify the data being sent to the template
-    print(f"Loading profile for user: {user.username}, ID: {user_id}")
-    print(f"Tasks loaded: {len(user_tasks)}")
-    print(f"Badges loaded: {len(badges)}")
-    
-    return render_template('_user_profile.html', user=user, user_tasks=user_tasks, badges=badges)
-    
+    response_data = {
+        'user': {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'profile_picture': user.profile_picture,
+            'display_name': user.display_name,
+            'interests': user.interests,
+            'badges': [{'id': badge.id, 'name': badge.name, 'description': badge.description, 'category': badge.category, 'image': badge.image} for badge in badges]
+        },
+        'user_tasks': [
+            {'id': task.id, 'completions': task.completions}
+            for task in user_tasks
+        ],
+        'participated_games': [
+            {'id': game.id, 'title': game.title, 'description': game.description, 'start_date': game.start_date.strftime('%B %d, %Y'), 'end_date': game.end_date.strftime('%B %d, %Y')}
+            for game in participated_games
+        ],
+        'task_submissions': [
+            {'id': submission.id, 'task': {'title': submission.task.title}, 'comment': submission.comment, 'timestamp': submission.timestamp.strftime('%B %d, %Y %H:%M'), 'image_url': submission.image_url, 'twitter_url': submission.twitter_url, 'fb_url': submission.fb_url}
+            for submission in task_submissions
+        ]
+    }
+
+    return jsonify(response_data)
+
 
 @main_bp.route('/like_task/<int:task_id>', methods=['POST'])
 @login_required
