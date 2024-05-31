@@ -653,3 +653,20 @@ def all_submissions():
         'submissions': submissions_data,
         'is_admin': current_user.is_admin
     })
+
+
+@tasks_bp.route('/task/<int:task_id>')
+@login_required
+def task_details(task_id):
+    if not current_user.is_authenticated:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    task = Task.query.get_or_404(task_id)
+    task_data = {
+        'id': task.id,
+        'title': task.title,
+        'description': task.description,
+        'due_date': task.due_date.isoformat(),
+        'status': task.status
+    }
+    return jsonify({'task': task_data})

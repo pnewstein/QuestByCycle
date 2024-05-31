@@ -311,17 +311,19 @@ def edit_profile(user_id):
     if current_user.id != user_id:
         return jsonify({'error': 'Unauthorized access'}), 403
     
+    data = request.get_json()
     user = User.query.get_or_404(user_id)
-    data = request.json
-
-    # Update fields
+    
     user.display_name = data.get('display_name', user.display_name)
     user.interests = data.get('interests', user.interests)
     user.age_group = data.get('age_group', user.age_group)
-
-    db.session.commit()
-
-    return jsonify({'message': 'Profile updated successfully'})
+    
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Profile updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 
 @main_bp.route('/like_task/<int:task_id>', methods=['POST'])
