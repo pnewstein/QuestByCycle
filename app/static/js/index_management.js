@@ -1,4 +1,3 @@
-// Index page specific functions
 function updateMeter(gameId) {
     fetch(`games/get_game_points/${gameId}`)
         .then(response => response.json())
@@ -15,21 +14,6 @@ function updateMeter(gameId) {
         .catch(err => console.error('Failed to update meter:', err));
 }
 
-function toggleEditProfile() {
-    var form = document.getElementById('editProfileForm');
-    var view = document.getElementById('profileView');
-    var button = document.getElementById('editProfileBtn');
-
-    if (form.style.display === 'none' || form.style.display === '') {
-        form.style.display = 'block';
-        view.style.display = 'none';
-        button.textContent = 'Cancel Edit';
-    } else {
-        form.style.display = 'none';
-        view.style.display = 'block';
-        button.textContent = 'Edit Profile';
-    }
-}
 
 function previewFile() {
     var preview = document.getElementById('profileImageDisplay');
@@ -125,7 +109,6 @@ function likeTask(taskId) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    const userId = localStorage.getItem('current_user_id');
     const leaderboardButton = document.getElementById('leaderboardButton');
     if (leaderboardButton) {
         leaderboardButton.addEventListener('click', function() {
@@ -138,8 +121,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const submissionsButton = document.getElementById('submissionsButton');
     if (submissionsButton) {
         submissionsButton.addEventListener('click', function() {
-            if (userId !== 'none') {
-                showMySubmissionsModal(userId);
+            if (currentUserId !== 'none') {
+                showMySubmissionsModal(currentUserId);
             }
         });
     }
@@ -172,27 +155,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    const editProfileForm = document.getElementById('editProfileForm');
-    if (editProfileForm) {
-        editProfileForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            var formData = new FormData(this);
-            const currentUserId = localStorage.getItem('current_user_id');
 
-            fetch(`/profile/${currentUserId}/edit`, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Profile updated successfully.');
-                    location.reload();
-                } else {
-                    alert('Failed to update profile.');
-                }
-            })
-            .catch(error => alert('Error updating profile: ' + error));
-        });
-    }
 });
+

@@ -1,4 +1,3 @@
-// All submissions modal management functions
 function showAllSubmissionsModal() {
     fetch('/tasks/task/all_submissions')
         .then(response => response.json())
@@ -40,6 +39,10 @@ function displayAllSubmissions(submissions, isAdmin) {
     submissions.forEach(submission => {
         const card = document.createElement('div');
         card.className = 'submission-card';
+        card.setAttribute('data-task-id', submissions.task_id);
+        card.addEventListener('click', function() {
+            openTaskDetailModal(submissions.task_id);
+        });
 
         const img = document.createElement('img');
         img.src = submission.image_url || 'path/to/default/image.png';
@@ -79,7 +82,8 @@ function displayAllSubmissions(submissions, isAdmin) {
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'Delete';
             deleteButton.className = 'button delete-button';
-            deleteButton.addEventListener('click', function() {
+            deleteButton.addEventListener('click', function(event) {
+                event.stopPropagation();  // Prevent triggering card click event
                 deleteSubmission(submission.id, 'allSubmissions');
             });
             card.appendChild(deleteButton);

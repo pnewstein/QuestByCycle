@@ -89,7 +89,7 @@ function showUserProfileModal(userId) {
                             </div>
                             <div class="tab-pane fade" id="editProfileTab" role="tabpanel" aria-labelledby="edit-profile-tab">
                                 <form id="editProfileForm">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                     <div>
                                         <label for="username">Username:</label>
                                         <input type="text" id="username" name="username" value="${data.user.username}" readonly>
@@ -163,7 +163,7 @@ function showUserProfileModal(userId) {
                     toggleEditProfileForm(false);
                 });
             }
-
+            
             function toggleEditProfileForm(isEditable) {
                 formFields.forEach(field => {
                     if (field.name !== 'username' && field.name !== 'email') {
@@ -175,33 +175,23 @@ function showUserProfileModal(userId) {
                 cancelButton.style.display = isEditable ? 'block' : 'none';
             }
 
-            function saveProfile() {
-                const formData = new FormData(editProfileForm);
-                const data = Object.fromEntries(formData.entries());
-                const currentUserId = localStorage.getItem('current_user_id'); // Make sure to get the current user ID from localStorage
-
-                fetch(`/profile/${currentUserId}/edit`, {
+            function saveProfile(userId) {
+                const formData = new FormData(document.getElementById('editProfileForm'));
+            
+                fetch(`/profile/${userId}/edit`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify(data)
+                    body: formData
                 })
                 .then(response => response.json())
-                .then(result => {
-                    if (result.message) {
-                        alert(result.message);
-                        toggleEditProfileForm(false);
-                        loadUserProfile(currentUserId);  // Refresh profile data
+                .then(data => {
+                    if (data.success) {
+                        alert('Profile updated successfully.');
+                        location.reload();
                     } else {
-                        alert(result.error);
+                        alert('Failed to update profile.');
                     }
                 })
-                .catch(error => {
-                    console.error('Error updating profile:', error);
-                    alert('Error updating profile. Please try again.');
-                });
+                .catch(error => alert('Error updating profile: ' + error));
             }
 
             function loadUserProfile(userId) {
@@ -224,10 +214,10 @@ function showUserProfileModal(userId) {
             }
 
             // Load user profile data when the modal is opened
-            const editProfileTab = document.getElementById('edit-profile-tab');
-            if (editProfileTab) {
-                editProfileTab.addEventListener('shown.bs.tab', function() {
-                    loadUserProfile(currentUserId);
+            if (editProfileForm) {
+                editProfileForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    saveProfile(currentUserId);
                 });
             }
         })
@@ -235,6 +225,22 @@ function showUserProfileModal(userId) {
             console.error('Failed to load user profile:', error);
             alert('Could not load user profile. Please try again.');
         });
+}
+
+function toggleEditProfile() {
+    var form = document.getElementById('editProfileForm');
+    var view = document.getElementById('profileView');
+    var button = document.getElementById('editProfileBtn');
+
+    if (form.style.display === 'none' || form.style.display === '') {
+        form.style.display = 'block';
+        view.style.display = 'none';
+        button.textContent = 'Cancel Edit';
+    } else {
+        form.style.display = 'none';
+        view.style.display = 'block';
+        button.textContent = 'Edit Profile';
+    }
 }
 
 function closeUserProfileModal() {
@@ -245,5 +251,4 @@ function closeUserProfileModal() {
     }
     userProfileModal.style.display = 'none';
     document.body.classList.remove('body-no-scroll');
-
 }
