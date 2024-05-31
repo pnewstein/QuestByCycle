@@ -1076,9 +1076,9 @@ footer {
 }
 
 .epic-tagline {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 900;
-    color: #007bff;
+    color: #333;
     text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
     background: linear-gradient(135deg, #f3ec78, #af4261);
     padding: 15px 30px;
@@ -1135,8 +1135,23 @@ footer {
     }
 }
 
+#taskImageCarousel {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    overflow: hidden;
+}
+.carousel-caption {
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    padding: 15px;
+}
+
 .carousel-control-prev, .carousel-control-next {
     width: 5%;
+}
+
+.carousel-indicators li {
+    background-color: #000;
 }
 
 .carousel-inner {
