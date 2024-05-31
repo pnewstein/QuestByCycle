@@ -1033,6 +1033,7 @@ footer {
     overflow: auto; 
     white-space: normal; 
     word-wrap: break-word; 
+    text-align: left;
 }
 
 .activity button {
