@@ -1194,7 +1194,7 @@ footer {
 
 .shout-messages-container {
     height: 400px; 
-    overflow-y: scroll;
+    overflow-y: hidden;
     border: 1px solid #ccc; 
     padding: 10px; 
 }

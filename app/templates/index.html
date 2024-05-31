@@ -126,50 +126,56 @@
                     {{ form.submit() }}
                 </form>
                 {% endif %}
-                <div class="shout-messages">
-                    {% for activity in activities %}
-                    <div class="activity{% if activity.is_pinned %} pinned{% endif %}">
-                        {% if activity.__tablename__ == 'shout_board_message' %}
-                        <strong>
-                            {{ activity.timestamp.strftime('%m-%d %H:%M') }} - 
-                            <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
-                                {{ activity.user.display_name or activity.user.username }}
-                            </a>
-                        </strong>
-                        <span class="activity-message" style="flex-grow: 1;">{{ activity.message | safe }}</span>
-                        {% if current_user.is_admin %}
-                        <form action="{{ url_for('main.pin_message', message_id=activity.id) }}" method="post">
-                            {{ form.hidden_tag() }}
-                            <button type="submit" class="blue_button">{{ 'Unpin' if activity.is_pinned else 'Pin' }}</button>
-                        </form>
-                        {% endif %}
-                        <button type="button" class="blue_button like-button" id="like-button-{{ activity.id }}" onclick="likeMessage('{{ activity.id }}')">
-                            {{ 'Liked' if activity.liked_by_user else 'Like' }}
-                        </button>
-                        <span id="like-count-{{ activity.id }}" class="like-count">{{ activity.likes|length }}</span>👍
-                        {% elif activity.__tablename__ == 'user_tasks' %}
-                        <strong>
-                            {{ activity.completed_at.strftime('%m-%d %H:%M') }} -
-                            <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
-                                {{ activity.user.display_name or activity.user.username }}
-                            </a>
-                        </strong>
-                        <span class="activity-message" style="flex-grow: 1;">
+                <div class="shout-messages-container">
+                    <div class="shout-messages">
+                        {% for activity in activities %}
+                        <div class="activity{% if activity.is_pinned %} pinned{% endif %}">
+                            {% if activity.__tablename__ == 'shout_board_message' %}
                             <strong>
-                                completed a task
-                                <a href="javascript:void(0);" onclick="openTaskDetailModal('{{ activity.task.id }}')">
-                                     {{ activity.task.title }}
+                                {{ activity.timestamp.strftime('%m-%d %H:%M') }} - 
+                                <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
+                                    {{ activity.user.display_name or activity.user.username }}
                                 </a>
                             </strong>
-                        </span>
-                        <button class="blue_button like-button" id="like-button-{{ activity.task.id }}" onclick="likeTask('{{ activity.task.id }}');" class="{{ 'liked-button-style' if activity.task.liked_by_user else '' }}" {{ 'disabled' if activity.task.liked_by_user }}>
-                            {{ 'Liked' if activity.task.liked_by_user else 'Like' }}
-                        </button>
-                        <span id="like-count-{{ activity.task.id }}" class="like-count">{{ activity.task.likes|length }}</span>👍
-                        {% endif %}
+                            <span class="activity-message" style="flex-grow: 1;">{{ activity.message | safe }}</span>
+                            {% if current_user.is_admin %}
+                            <form action="{{ url_for('main.pin_message', message_id=activity.id) }}" method="post">
+                                {{ form.hidden_tag() }}
+                                <button type="submit" class="blue_button">{{ 'Unpin' if activity.is_pinned else 'Pin' }}</button>
+                            </form>
+                            {% endif %}
+                            <button type="button" class="blue_button like-button" id="like-button-{{ activity.id }}" onclick="likeMessage('{{ activity.id }}')">
+                                {{ 'Liked' if activity.liked_by_user else 'Like' }}
+                            </button>
+                            <span id="like-count-{{ activity.id }}" class="like-count">{{ activity.likes|length }}</span>👍
+                            {% elif activity.__tablename__ == 'user_tasks' %}
+                            <strong>
+                                {{ activity.completed_at.strftime('%m-%d %H:%M') }} -
+                                <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
+                                    {{ activity.user.display_name or activity.user.username }}
+                                </a>
+                            </strong>
+                            <span class="activity-message" style="flex-grow: 1;">
+                                <strong>
+                                    completed a task
+                                    <a href="javascript:void(0);" onclick="openTaskDetailModal('{{ activity.task.id }}')">
+                                        {{ activity.task.title }}
+                                    </a>
+                                </strong>
+                            </span>
+                            <button class="blue_button like-button" id="like-button-{{ activity.task.id }}" onclick="likeTask('{{ activity.task.id }}');" class="{{ 'liked-button-style' if activity.task.liked_by_user else '' }}" {{ 'disabled' if activity.task.liked_by_user }}>
+                                {{ 'Liked' if activity.task.liked_by_user else 'Like' }}
+                            </button>
+                            <span id="like-count-{{ activity.task.id }}" class="like-count">{{ activity.task.likes|length }}</span>👍
+                            {% endif %}
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
-                </div>            
+                    <div class="arrow-buttons">
+                        <button class="btn epic-button" id="scrollUpButton">⬆</button>
+                        <button class="btn epic-button" id="scrollDownButton">⬇</button>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="container mt-5">
@@ -253,4 +259,65 @@
     <script src="{{ url_for('static', filename='js/user_profile_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/index_management.js') }}"></script>
 
+    <script>
+        document.getElementById('scrollUpButton').addEventListener('click', function() {
+            document.querySelector('.shout-messages').scrollBy({
+                top: -100,
+                behavior: 'smooth'
+            });
+        });
+
+        document.getElementById('scrollDownButton').addEventListener('click', function() {
+            document.querySelector('.shout-messages').scrollBy({
+                top: 100,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+
+    <style>
+        .shout-messages-container {
+            position: relative;
+        }
+
+        .shout-messages {
+            max-height: 400px;
+            overflow-y: hidden;
+        }
+
+        .arrow-buttons {
+            position: absolute;
+            right: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .arrow-buttons .epic-button {
+            background-color: #007bff;
+            color: white;
+            font-size: 1.5rem;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .arrow-buttons .epic-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .arrow-buttons .epic-button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .arrow-buttons .epic-button:focus {
+            outline: none;
+        }
+    </style>
 {% endblock %}
