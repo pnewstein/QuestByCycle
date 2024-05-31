@@ -54,8 +54,7 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
     elements['modalTaskTips'].innerHTML = task.tips || 'No tips available';
     elements['modalTaskPoints'].innerText = `${task.points}`;
     const completionText = task.completion_limit > 1 ? `${task.completion_limit} times` : `${task.completion_limit} time`;
-    const completionText2 = task.completion_limit > 1 ? `${task.completion_limit} completions` : `${task.completion_limit} completion`;
-    elements['modalTaskCompletionLimit'].innerText = `Earn the badge after ${completionText2}. Can be completed ${completionText} ${task.frequency}.`;
+    elements['modalTaskCompletionLimit'].innerText = `${completionText} ${task.frequency}`;
     elements['modalTaskCategory'].innerText = task.category || 'No category set';
 
     switch (task.verification_type) {
