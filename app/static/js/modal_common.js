@@ -16,8 +16,10 @@ function closeModal(modalId) {
 // Reset all modal content and settings to initial state
 function resetModalContent() {
     const twitterLink = document.getElementById('twitterLink');
-    twitterLink.style.display = 'none';
-    twitterLink.href = '#'; // Reset to default or placeholder link
+    if (twitterLink) {
+        twitterLink.style.display = 'none';
+        twitterLink.href = '#'; // Reset to default or placeholder link
+    }
 
     const modalTaskActions = document.getElementById('modalTaskActions');
     if (modalTaskActions) {
