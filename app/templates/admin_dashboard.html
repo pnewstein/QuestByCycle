@@ -37,25 +37,10 @@
         </div>
     {% endif %}
 </div>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const userId = document.body.getAttribute('data-user-id'); // Get user ID from the body tag
-
-        const allSubmissionsButton = document.getElementById('allSubmissionsButton'); // Correct the typo here
-        if (allSubmissionsButton) {
-            allSubmissionsButton.addEventListener('click', function() {
-                if (userId !== 'none') {
-                    showAllSubmissionsModal(userId);
-                } else {
-                    console.log('No user ID found or user not logged in');
-                }
-            });
-        }
-    });
-</script>
 
 {% include 'modals/all_submissions_modal.html' %}
 {% include 'modals/edit_carousel_modal.html' %}
 
-<script src="{{ url_for('static', filename='js/modal_handlers.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard_management.js') }}"></script>
+
 {% endblock %}
