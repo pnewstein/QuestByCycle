@@ -11,6 +11,9 @@ body {
 
 main {
     flex: 1;
+    background: url('/static/images/background.png') no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
 }
 
 .user-profile {
