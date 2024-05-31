@@ -81,6 +81,20 @@ class User(UserMixin, db.Model):
         except:
             return None
         return User.query.get(id)
+
+    def generate_reset_token(self, expiration=320000):
+        return jwt.encode(
+            {'reset_password': self.id, 'exp': time() + expiration},
+            current_app.config['SECRET_KEY'], algorithm='HS256'
+        )
+
+    @staticmethod
+    def verify_reset_token(token):
+        try:
+            id = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])['reset_password']
+        except:
+            return None
+        return User.query.get(id)
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
