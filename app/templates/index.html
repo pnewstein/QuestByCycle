@@ -94,11 +94,14 @@
                             {% endif %}
                             {% if current_user %}
                                 <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-info btn-block mt-3">View Profile</a>
+                            {% endif %}
+                            {% if current_user.is_admin %}
                                 <button class="btn btn-secondary btn-block mt-3" onclick="openModal('joinCustomGameModal')">Join Custom Game</button>
                             {% endif %}
                             {% if current_user %}
                                 <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-block mt-3">Logout</a>
-
+                            {% endif %}
+                            {% if current_user.is_admin %}
                                 <!-- Dropdown for selecting joined games -->
                                 <div class="form-group mt-3">
                                     <label for="gameSelectDropdown">Select Active Game:</label>
