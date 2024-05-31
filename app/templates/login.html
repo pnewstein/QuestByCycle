@@ -4,13 +4,13 @@
 {% block content %}
 <div class="container">
     <!-- Display Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     <h2>Login</h2>
     <form action="" method="post">
         {{ form.hidden_tag() }}
@@ -35,7 +35,9 @@
             {{ form.submit() }}
         </div>
     </form>
-    <a href="{{ url_for('main.index') }}" class="button">Back to Home</a>
+    <a href="{{ url_for('main.index') }}" class="button">Back to Home</a><br>
+    <a href="{{ url_for('auth.forgot_password') }}">Forgot Password?</a>
+
     {% if show_resend %}
     <!-- Resend verification email form -->
     <form id="resend-verification-form" method="post" action="{{ url_for('auth.resend_verification_email') }}">

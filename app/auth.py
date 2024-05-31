@@ -2,7 +2,7 @@ from cryptography.fernet import Fernet
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import db, User, Sponsor
-from app.forms import LoginForm, RegistrationForm, SponsorForm
+from app.forms import LoginForm, RegistrationForm, SponsorForm, ForgotPasswordForm, ResetPasswordForm
 from app.utils import send_email
 from flask_mail import Mail
 from sqlalchemy import or_
@@ -240,3 +240,37 @@ def delete_sponsor(sponsor_id):
     db.session.commit()
     flash('Sponsor deleted successfully!', 'success')
     return redirect(url_for('auth.manage_sponsors'))
+
+@auth_bp.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    form = ForgotPasswordForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        user = User.query.filter_by(email=email).first()
+        if user:
+            token = user.generate_reset_token()
+            reset_url = url_for('auth.reset_password', token=token, _external=True)
+            html = render_template('reset_password_email.html', reset_url=reset_url)
+            subject = "Password Reset Requested"
+            send_email(user.email, subject, html)
+            flash('A password reset email has been sent. Please check your inbox.', 'info')
+        else:
+            flash('No account found with that email.', 'warning')
+        return redirect(url_for('auth.login'))
+    return render_template('forgot_password.html', form=form)
+
+@auth_bp.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    user = User.verify_reset_token(token)
+    if not user:
+        flash('The reset link is invalid or has expired.', 'danger')
+        return redirect(url_for('auth.forgot_password'))
+
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user.set_password(form.password.data)
+        db.session.commit()
+        flash('Your password has been reset. Please log in with your new password.', 'success')
+        return redirect(url_for('auth.login'))
+    
+    return render_template('reset_password.html', form=form)
