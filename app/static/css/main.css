@@ -1075,6 +1075,66 @@ footer {
     margin: 0 auto; 
 }
 
+.epic-tagline {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #007bff;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, #f3ec78, #af4261);
+    padding: 15px 30px;
+    border-radius: 15px;
+    display: inline-block;
+    animation: pulse 2s infinite;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+}
+
+.epic-tagline::before,
+.epic-tagline::after {
+    content: '';
+    position: absolute;
+    width: 150%;
+    height: 150%;
+    background: inherit;
+    z-index: -1;
+    animation: shine 2s infinite;
+}
+
+.epic-tagline::before {
+    top: -75%;
+    left: -75%;
+    transform: rotate(30deg);
+}
+
+.epic-tagline::after {
+    bottom: -75%;
+    right: -75%;
+    transform: rotate(-30deg);
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes shine {
+    0% {
+        opacity: 0.1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+    100% {
+        opacity: 0.1;
+    }
+}
+
 .carousel-control-prev, .carousel-control-next {
     width: 5%;
 }
