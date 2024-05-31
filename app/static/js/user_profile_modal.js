@@ -38,9 +38,6 @@ function showUserProfileModal(userId) {
                             <li class="nav-item" role="presentation">
                                 <a class="nav-link" id="task-submissions-tab" data-toggle="tab" href="#task-submissions" role="tab" aria-controls="task-submissions" aria-selected="false">Task Submissions</a>
                             </li>
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="edit-profile-tab" data-toggle="tab" href="#editProfileTab" role="tab" aria-controls="editProfileTab" aria-selected="false">Edit Profile</a>
-                            </li>
                         </ul>
                         <div class="tab-content" id="profileTabsContent">
                             <div class="tab-pane fade show active" id="badges-earned" role="tabpanel" aria-labelledby="badges-earned-tab">
@@ -87,34 +84,6 @@ function showUserProfileModal(userId) {
                                     </div>
                                 </section>
                             </div>
-                            <div class="tab-pane fade" id="editProfileTab" role="tabpanel" aria-labelledby="edit-profile-tab">
-                                <form id="editProfileForm">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                                    <div>
-                                        <label for="username">Username:</label>
-                                        <input type="text" id="username" name="username" value="${data.user.username}" readonly>
-                                    </div>
-                                    <div>
-                                        <label for="email">Email:</label>
-                                        <input type="email" id="email" name="email" value="${data.user.email}" readonly>
-                                    </div>
-                                    <div>
-                                        <label for="display_name">Display Name:</label>
-                                        <input type="text" id="display_name" name="display_name" value="${data.user.display_name}">
-                                    </div>
-                                    <div>
-                                        <label for="interests">Interests:</label>
-                                        <textarea id="interests" name="interests">${data.user.interests}</textarea>
-                                    </div>
-                                    <div>
-                                        <label for="age_group">Age Group:</label>
-                                        <input type="text" id="age_group" name="age_group" value="${data.user.age_group}">
-                                    </div>
-                                    <button type="button" id="editButton">Edit</button>
-                                    <button type="button" id="saveButton" style="display:none;">Save</button>
-                                    <button type="button" id="cancelButton" style="display:none;">Cancel</button>
-                                </form>
-                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -126,100 +95,6 @@ function showUserProfileModal(userId) {
                 </div>
             `;
             openModal('userProfileModal');
-            
-            // Initialize profile form state
-            const editProfileForm = document.getElementById('editProfileForm');
-            const editButton = document.getElementById('editButton');
-            const saveButton = document.getElementById('saveButton');
-            const cancelButton = document.getElementById('cancelButton');
-            const formFields = editProfileForm.querySelectorAll('input, textarea');
-
-            // Set initial state
-            function setInitialState() {
-                formFields.forEach(field => {
-                    field.disabled = true;
-                });
-                editButton.style.display = 'block';
-                saveButton.style.display = 'none';
-                cancelButton.style.display = 'none';
-            }
-
-            setInitialState();
-
-            if (editButton) {
-                editButton.addEventListener('click', function() {
-                    toggleEditProfileForm(true);
-                });
-            }
-
-            if (saveButton) {
-                saveButton.addEventListener('click', function() {
-                    saveProfile();
-                });
-            }
-
-            if (cancelButton) {
-                cancelButton.addEventListener('click', function() {
-                    toggleEditProfileForm(false);
-                });
-            }
-            
-            function toggleEditProfileForm(isEditable) {
-                formFields.forEach(field => {
-                    if (field.name !== 'username' && field.name !== 'email') {
-                        field.disabled = !isEditable;
-                    }
-                });
-                editButton.style.display = isEditable ? 'none' : 'block';
-                saveButton.style.display = isEditable ? 'block' : 'none';
-                cancelButton.style.display = isEditable ? 'block' : 'none';
-            }
-
-            function saveProfile(userId) {
-                const formData = new FormData(document.getElementById('editProfileForm'));
-            
-                fetch(`/profile/${userId}/edit`, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Profile updated successfully.');
-                        location.reload();
-                    } else {
-                        alert('Failed to update profile.');
-                    }
-                })
-                .catch(error => alert('Error updating profile: ' + error));
-            }
-
-            function loadUserProfile(userId) {
-                fetch(`/profile/${userId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Populate the form fields with user data
-                        document.getElementById('id').value = data.user.id;
-                        document.getElementById('username').value = data.user.username;
-                        document.getElementById('email').value = data.user.email;
-                        document.getElementById('display_name').value = data.user.display_name;
-                        document.getElementById('interests').value = data.user.interests;
-                        document.getElementById('age_group').value = data.user.age_group;
-                        setInitialState();  // Ensure initial state is set correctly after loading data
-                    })
-                    .catch(error => {
-                        console.error('Failed to load user profile:', error);
-                        alert('Could not load user profile. Please try again.');
-                    });
-            }
-
-            // Load user profile data when the modal is opened
-            if (editProfileForm) {
-                editProfileForm.addEventListener('submit', function(event) {
-                    event.preventDefault();
-                    saveProfile(currentUserId);
-                });
-            }
         })
         .catch(error => {
             console.error('Failed to load user profile:', error);
@@ -238,7 +113,7 @@ function toggleEditProfile() {
         button.textContent = 'Cancel Edit';
     } else {
         form.style.display = 'none';
-        view.style.display = 'block';
+        view.style.display = 'hidden';
         button.textContent = 'Edit Profile';
     }
 }
