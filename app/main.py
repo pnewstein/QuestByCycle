@@ -269,44 +269,8 @@ def leaderboard_partial():
         })
 
 
-@main_bp.route('/profile', methods=['GET', 'POST', 'DELETE'])
-@login_required
-def profile():
-    form = ProfileForm()
-
-    if request.method == 'POST':
-        if form.validate_on_submit():
-            current_user.display_name = form.display_name.data
-            current_user.age_group = form.age_group.data
-            current_user.interests = form.interests.data
-
-            # Handle profile picture
-            if 'profile_picture' in request.files:
-                profile_picture_file = request.files['profile_picture']
-                if profile_picture_file.filename != '':
-                    filename = save_profile_picture(profile_picture_file)
-                    current_user.profile_picture = filename
-
-            db.session.commit()
-            flash('Profile updated successfully.', 'success')
-            return redirect(url_for('main.profile'))
-
-    elif request.method == 'DELETE':
-        db.session.delete(current_user)
-        db.session.commit()
-        logout_user()
-        flash('Profile deleted successfully.', 'info')
-        return redirect(url_for('main.index'))
-
-    elif request.method == 'GET':
-        form.display_name.data = current_user.display_name
-        form.age_group.data = current_user.age_group
-        form.interests.data = current_user.interests
-
-    return render_template('profile.html', form=form)
-
-
 @main_bp.route('/profile/<int:user_id>')
+@login_required
 def user_profile(user_id):
     user = User.query.get_or_404(user_id)
     user_tasks = UserTask.query.filter(UserTask.user_id == user.id, UserTask.completions > 0).all()
@@ -322,6 +286,7 @@ def user_profile(user_id):
             'profile_picture': user.profile_picture,
             'display_name': user.display_name,
             'interests': user.interests,
+            'age_group': user.age_group,
             'badges': [{'id': badge.id, 'name': badge.name, 'description': badge.description, 'category': badge.category, 'image': badge.image} for badge in badges]
         },
         'user_tasks': [
@@ -339,6 +304,24 @@ def user_profile(user_id):
     }
 
     return jsonify(response_data)
+
+@main_bp.route('/profile/<int:user_id>/edit', methods=['POST'])
+@login_required
+def edit_profile(user_id):
+    if current_user.id != user_id:
+        return jsonify({'error': 'Unauthorized access'}), 403
+    
+    user = User.query.get_or_404(user_id)
+    data = request.json
+
+    # Update fields
+    user.display_name = data.get('display_name', user.display_name)
+    user.interests = data.get('interests', user.interests)
+    user.age_group = data.get('age_group', user.age_group)
+
+    db.session.commit()
+
+    return jsonify({'message': 'Profile updated successfully'})
 
 
 @main_bp.route('/like_task/<int:task_id>', methods=['POST'])
