@@ -114,8 +114,8 @@
         </div>
     </div>
     {% if current_user.is_authenticated %}
-        <div class="shout-board-column">
-            <h2>Bulletin Board</h2>
+        <div class="container mt-5">
+            <h2>What's Happening</h2>
             <div class="game-item">
                 {% if current_user.is_admin %}
                 <form action="{{ url_for('main.shout_board') }}" method="post">
@@ -172,57 +172,60 @@
                 </div>            
             </div>
         </div>
-        {% if has_joined %}
-        <div class="game-item">
-            <button id="leaderboardButton" data-game-id="{{ game.id }}" class="btn btn-info btn-lg mb-2">View Leaderboard</button>
-            <button id="submissionsButton" data-game-id="{{ game.id }}" class="btn btn-info btn-lg mb-2">Your Submissions</button>
-            <table class="table">
-                <colgroup>
-                    <col style="width: 5%;"> <!-- Checkbox column -->
-                    <col style="width: 10%;"> <!-- Badge column -->
-                    <col style="width: auto;"> <!-- Task title, takes remaining space -->
-                    <col style="width: 10%;"> <!-- Points column -->
-                    <col style="width: 10%;"> <!-- Points column -->
-                    <col style="width: 10%;"> <!-- Points column -->
-                </colgroup>
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th style="vertical-align: middle; text-align: center;">Badge</th>
-                        <th style="vertical-align: middle; text-align: left;">Task</th>
-                        <th style="vertical-align: right; text-align: center;">Your Posts</th>
-                        <th style="vertical-align: right; text-align: center;">All Posts</th>
-                        <th style="padding-top: 0px; padding-bottom: 0px; text-align: center;">Carbon Reduction Points</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for task in tasks %}
-                    <tr class="{{ 'pinned' if task.is_sponsored }}">
-                        <td class="disabled-checkbox">
-                            <input type="checkbox" disabled {{ 'checked' if task.total_completions > 0 else '' }}>
-                            <span class="checkbox-custom"></span> <!-- This span acts as the visual element for the checkbox -->
-                        </td>
-                        <td>
-                            {% if task.badge %}
-                            {% if task.badge.image %}
-                            <img src="{{ url_for('static', filename='images/badge_images/' + task.badge.image) }}" alt="Badge" class="badge-image" loading="lazy">
-                            {% endif %}
-                            {% else %}
-                            None
-                            {% endif %}
-                        </td>
-                        <td>
-                            <button class="button" onclick="openTaskDetailModal('{{ task.id }}')">{{ task.title }}</button>
-                        </td>
-                        <td style="text-align: center;">{{ task.personal_completions }}</td>
-                        <td style="text-align: center;">{{ task.total_completions }}</td>
-                        <td style="text-align: center;">{{ task.points }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="container mt-5">
+            {% if has_joined %}
+            <h2>Available Tasks</h2>
+                <div class="game-item">
+                    <button id="leaderboardButton" data-game-id="{{ game.id }}" class="btn btn-info btn-lg mb-2">View Leaderboard</button>
+                    <button id="submissionsButton" data-game-id="{{ game.id }}" class="btn btn-info btn-lg mb-2">Your Submissions</button>
+                    <table class="table">
+                        <colgroup>
+                            <col style="width: 5%;"> <!-- Checkbox column -->
+                            <col style="width: 10%;"> <!-- Badge column -->
+                            <col style="width: auto;"> <!-- Task title, takes remaining space -->
+                            <col style="width: 10%;"> <!-- Points column -->
+                            <col style="width: 10%;"> <!-- Points column -->
+                            <col style="width: 10%;"> <!-- Points column -->
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th style="vertical-align: middle; text-align: center;">Badge</th>
+                                <th style="vertical-align: middle; text-align: left;">Task</th>
+                                <th style="vertical-align: right; text-align: center;">Your Posts</th>
+                                <th style="vertical-align: right; text-align: center;">All Posts</th>
+                                <th style="padding-top: 0px; padding-bottom: 0px; text-align: center;">Carbon Reduction Points</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in tasks %}
+                            <tr class="{{ 'pinned' if task.is_sponsored }}">
+                                <td class="disabled-checkbox">
+                                    <input type="checkbox" disabled {{ 'checked' if task.total_completions > 0 else '' }}>
+                                    <span class="checkbox-custom"></span> <!-- This span acts as the visual element for the checkbox -->
+                                </td>
+                                <td>
+                                    {% if task.badge %}
+                                    {% if task.badge.image %}
+                                    <img src="{{ url_for('static', filename='images/badge_images/' + task.badge.image) }}" alt="Badge" class="badge-image" loading="lazy">
+                                    {% endif %}
+                                    {% else %}
+                                    None
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="button" onclick="openTaskDetailModal('{{ task.id }}')">{{ task.title }}</button>
+                                </td>
+                                <td style="text-align: center;">{{ task.personal_completions }}</td>
+                                <td style="text-align: center;">{{ task.total_completions }}</td>
+                                <td style="text-align: center;">{{ task.points }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
         </div>
-        {% endif %}
     {% endif %}
 
     <div id="game_IdHolder" data-game-id="{{ selected_game_id | safe }}" style="display:none;"></div>
