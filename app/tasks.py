@@ -634,8 +634,7 @@ def delete_submission(submission_id):
 @tasks_bp.route('/task/all_submissions')
 @login_required
 def all_submissions():
-    # Ensure only admins can access this route
-    if not current_user.is_admin:
+    if not current_user.is_authenticated:
         return jsonify({'error': 'Unauthorized'}), 403
 
     submissions = TaskSubmission.query.all()
@@ -650,4 +649,7 @@ def all_submissions():
             'timestamp': submission.timestamp.isoformat()  # Adjusted to string format for JSON serialization
         } for submission in submissions
     ]
-    return jsonify(submissions_data)
+    return jsonify({
+        'submissions': submissions_data,
+        'is_admin': current_user.is_admin
+    })

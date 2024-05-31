@@ -1,9 +1,12 @@
 // All submissions modal management functions
 function showAllSubmissionsModal() {
-    fetch('/tasks/task/all_submissions')  // Adjusted to the new endpoint for fetching all submissions
+    fetch('/tasks/task/all_submissions')
         .then(response => response.json())
         .then(data => {
-            displayAllSubmissions(data);
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            displayAllSubmissions(data.submissions, data.is_admin);
             openModal('allSubmissionsModal');
         })
         .catch(error => {
@@ -14,18 +17,25 @@ function showAllSubmissionsModal() {
 
 function fetchAllSubmissions() {
     fetch('/tasks/task/all_submissions')
-    .then(response => response.json())
-    .then(data => {
-        displayAllSubmissions(data);
-    })
-    .catch(error => {
-        console.error('Error fetching all submissions:', error);
-        alert('Failed to fetch all submissions: ' + error.message);
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            displayAllSubmissions(data.submissions, data.is_admin);
+        })
+        .catch(error => {
+            console.error('Error fetching all submissions:', error);
+            alert('Failed to fetch all submissions: ' + error.message);
+        });
 }
 
-function displayAllSubmissions(submissions) {
+function displayAllSubmissions(submissions, isAdmin) {
     const container = document.getElementById('allSubmissionsContainer');
+    if (!container) {
+        console.error('allSubmissionsContainer element not found.');
+        return;  // Exit if the container element is not found
+    }
     container.innerHTML = ''; // Clear previous submissions
     submissions.forEach(submission => {
         const card = document.createElement('div');
@@ -54,26 +64,29 @@ function displayAllSubmissions(submissions) {
         const comment = document.createElement('p');
         comment.textContent = `Comment: ${submission.comment}`;
         comment.className = 'submission-comment';
-    
-        const twitterLink = document.createElement('p');
-        twitterLink.textContent = `Twitter: ${submission.tweet_url}`;
-        twitterLink.className = 'submission-comment';
 
-        const deleteButton = document.createElement('button');
-        deleteButton.textContent = 'Delete';
-        deleteButton.className = 'button delete-button';
-        deleteButton.addEventListener('click', function() {
-            deleteSubmission(submission.id, 'allSubmissions');
-        });
+        const twitterLink = document.createElement('p');
+        twitterLink.textContent = `Twitter: ${submission.twitter_url}`;
+        twitterLink.className = 'submission-comment';
 
         info.appendChild(userDetails);
         info.appendChild(taskDetails);
         info.appendChild(timestamp);
-        info.appendChild(comment);    
+        info.appendChild(comment);
         info.appendChild(twitterLink);
+
+        if (isAdmin) {
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.className = 'button delete-button';
+            deleteButton.addEventListener('click', function() {
+                deleteSubmission(submission.id, 'allSubmissions');
+            });
+            card.appendChild(deleteButton);
+        }
+
         card.appendChild(img);
         card.appendChild(info);
-        card.appendChild(deleteButton);
 
         container.appendChild(card);
     });
@@ -86,24 +99,24 @@ function deleteSubmission(submissionId, modalType) {
             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Submission deleted successfully.');
-            // Refresh based on modal type
-            if (modalType === 'mySubmissions') {
-                fetchMySubmissions();  // Fetch and refresh my submissions
-            } else if (modalType === 'allSubmissions') {
-                fetchAllSubmissions();  // Fetch and refresh all submissions
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Submission deleted successfully.');
+                // Refresh based on modal type
+                if (modalType === 'mySubmissions') {
+                    fetchMySubmissions();  // Fetch and refresh my submissions
+                } else if (modalType === 'allSubmissions') {
+                    fetchAllSubmissions();  // Fetch and refresh all submissions
+                }
+            } else {
+                throw new Error(data.message);
             }
-        } else {
-            throw new Error(data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error deleting submission:', error);
-        alert('Error during deletion: ' + error.message);
-    });
+        })
+        .catch(error => {
+            console.error('Error deleting submission:', error);
+            alert('Error during deletion: ' + error.message);
+        });
 }
 
 function closeAllSubmissionsModal() {

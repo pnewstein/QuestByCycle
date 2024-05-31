@@ -868,43 +868,63 @@ footer {
     margin-right: 20px; 
 }
 
+/* Updated CSS for Uber Epic Completion Meter */
 .completion-meter-container {
     width: 100%; 
-    padding: 10px;
-    background: #f9f9f9;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    background: linear-gradient(145deg, #f0f0f0, #cacaca);
+    border: 2px solid #bbb;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    text-align: center;
 }
 
 .completion-meter {
     width: 100%;
-    height: 300px; 
-    background: linear-gradient(to bottom, #ddd, #fff); 
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
+    height: 400px; 
+    background: linear-gradient(to bottom, #ffffff, #e0e0e0); 
+    border: 2px solid #aaa;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3); 
     position: relative;
-    border-radius: 8px; 
+    border-radius: 15px; 
     overflow: hidden; 
+    cursor: pointer;
+    background: url('../images/meterBG.png') no-repeat center center;
+    background-size: cover;
 }
 
 .meter-bar {
-    background: linear-gradient(to top, #4caf50, #8bc34a);
-    box-shadow: inset 0 -1px 1px rgba(0,0,0,0.2);
+    background: linear-gradient(to top, #43a047, #66bb6a);
+    box-shadow: inset 0 -2px 5px rgba(0,0,0,0.4);
     width: 100%;
-    transition: height 2s ease-in-out, background-color 2s;
+    transition: height 1s ease-in-out, background-color 1s;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-weight: bold;
+    font-size: 1.5em;
+}
+
+.click-text {
+    position: absolute;
+    bottom: 10px; /* Adjust as needed */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    color: white; /* Adjust color as needed */
+    z-index: 10; /* Ensure it is above the meter bar */
+    pointer-events: none; /* Ensure clicks pass through to the meter */
 }
 
 .meter-label {
-    margin-bottom: 10px; 
+    margin-bottom: 15px; 
     text-align: center;
     font-weight: bold; 
-    color: #333; 
+    color: #444; 
+    font-size: 1.2em;
 }
 
 :root {
@@ -913,62 +933,20 @@ footer {
 
 @keyframes fillMeter {
     0% {
-        height: 0;
+        height: var(--meter-fill-height);
     }
     100% {
-        height: var(--meter-fill-height);  
+        height: 0;  
     }
 }
 
 .meter-bar::after {
     content: attr(data-label);
     color: white;
-    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+    text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.7);
+    font-size: 1.5em;
 }
 
-.disabled-checkbox {
-    position: relative;
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    margin: 5px;
-    left: 25%; 
-    background: #FFF; 
-    border: 1px solid #707070; 
-    box-sizing: border-box;
-    cursor: not-allowed;
-}
-
-.disabled-checkbox input[type="checkbox"] {
-    opacity: 0;  
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    cursor: not-allowed;
-    z-index: 1; 
-}
-
-.disabled-checkbox input[type="checkbox"]:checked + .checkbox-custom::after {
-    content: '✔'; 
-    color: black; 
-    font-size: 16px; 
-    position: absolute;
-    left: 50%; 
-    top: 50%; 
-    transform: translate(-50%, -50%); 
-    pointer-events: none; 
-}
-
-.disabled-checkbox .checkbox-custom {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: transparent; 
-    transition: background-color 0.3s; 
-}
 
 .badge-image {
     width: 70px;
