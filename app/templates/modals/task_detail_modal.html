@@ -189,4 +189,79 @@
         from { opacity: 0; }
         to { opacity: 1; }
     }
+    .epic-form {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(to right, #ff7e5f, #feb47b);
+        border-radius: 10px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 1s ease-in-out;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .epic-label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: bold;
+        color: #fff;
+        font-size: 1.2em;
+    }
+
+    .epic-input, .epic-textarea {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1em;
+        margin-bottom: 10px;
+    }
+
+    .epic-input {
+        background: rgba(255, 255, 255, 0.8);
+    }
+
+    .epic-textarea {
+        height: 100px;
+        background: rgba(255, 255, 255, 0.8);
+    }
+
+    .epic-button {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 1.2em;
+        color: #fff;
+        background: #ff7e5f;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .epic-button:hover {
+        background: #feb47b;
+        transform: translateY(-2px);
+    }
+
+    .epic-message {
+        font-size: 1.2em;
+        color: #fff;
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 </style>
