@@ -1,246 +1,252 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="container mt-5">
-    {% if current_user.is_authenticated %}
-        <!-- Display Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    {% endif %}
-
-    {% if not current_user.is_authenticated %}
-        <div class="text-center mb-4">
-            <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Quest by Cycle" class="img-fluid w-100" style="max-height: 500px; object-fit: cover;" loading="lazy">
-        </div>
-        <div class="introduction text-center mb-5">
-            <p class="font-weight-bold">Ready to transform your bike rides into a thrilling adventure that benefits the planet? Join the QuestByCycle community! Pedal your way to a greener world as you tackle exciting challenges, earn points that combat carbon emissions, and discover hidden gems in your city. Connect with fellow cycling enthusiasts, compete for top spots on the leaderboard, and make a real difference – all while having a blast on two wheels.</p>
-            <p class="h5 font-weight-bold">This is your Quest by Cycle journey!</p>
-            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg mr-2">Register Today!</a>
-            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-lg">Already a Member? Sign In</a>
-        </div>
-    {% endif %}
-
-    <div class="row">
-        <div class="col-md-6 offset-md-3 mb-4">
-            {% if not current_user.is_authenticated %}
-                <div class="embed-responsive embed-responsive-16by9">
-                    <video class="embed-responsive-item" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}" autoplay loop controls playsinline></video>
-                </div>
-                <br>
-                <div>
-                    <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories</small></p>
-                </div>
-            {% else %}
-                <div class="col-12 text-center mb-4">
-                    <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories</small></p>
-                    <div id="taskImageCarousel" class="carousel slide" data-ride="carousel">
-                        <div class="carousel-inner">
-                            {% for image in carousel_images %}
-                            <div class="carousel-item{% if loop.first %} active{% endif %}" style="height: 300px;">
-                                <img src="{{ url_for('static', filename=image) }}" class="d-block w-100 h-100" alt="Carousel Image" style="height: 300px; width: 100%; object-fit: cover;" loading="lazy">
-                            </div>
-                            {% endfor %}
+    <div class="container mt-5">
+        {% if current_user.is_authenticated %}
+            <!-- Display Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
                         </div>
-                        <a class="carousel-control-prev" href="#taskImageCarousel" role="button" data-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                            <span class="sr-only">Previous</span>
-                        </a>
-                        <a class="carousel-control-next" href="#taskImageCarousel" role="button" data-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                            <span class="sr-only">Next</span>
-                        </a>
-                    </div>
-                </div>
-            {% endif %}
-        </div>
-        
-        {% if profile %}
-        <div class="text-center mb-4">
-            <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Quest by Cycle" class="img-fluid w-100" style="max-height: 500px; object-fit: cover;">
-        </div>
-            <div class="col-md-6 mb-4">
-                <div class="card mb-4 w-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Your Profile</h5>
-                        <div id="profileView">
-                            <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
-                            <p class="font-weight-bold">Name: {{ profile.display_name or profile.username }}</p>
-                            <p id="total-points" class="font-weight-bold">Your Total Completed Points: {{ total_points }}</p>
-                        </div>
-                        <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-info btn-block mt-3">View Profile</a>
-                    </div>
-                </div>
-                <div class="text-center mb-4">
-                    {% if current_user.is_authenticated %}
-                        <a href="{{ url_for('main.game_info') }}" class="btn btn-primary btn-lg mb-2">Let's Get Started!</a>
-                        <a href="{{ url_for('auth.logout') }}" class="btn btn-primary btn-lg mb-2">Logout</a>
-                        <button class="btn btn-secondary btn-lg mb-2" onclick="openModal('contactModal')">Contact Us</button>
-                        {% if current_user.is_admin %}
-                            <button class="btn btn-secondary btn-lg mb-2" onclick="openModal('joinCustomGameModal')">Join Custom Game</button>
-                            <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-danger btn-lg mb-2">Admin Dashboard</a>
-                            <!-- Dropdown for selecting joined games -->
-                            <div class="form-group mt-3">
-                                <label for="gameSelectDropdown">Select Your Game:</label>
-                                <select id="gameSelectDropdown" class="form-control" onchange="window.location.href = this.value;">
-                                    {% for game in current_user.participated_games %}
-                                        <option value="{{ url_for('main.index', game_id=game.id) }}" {% if game.id == selected_game_id %}selected{% endif %}>
-                                            {{ game.title }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        {% endif %}
-                    {% endif %}
-                </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        {% endif %}
+
+        {% if not current_user.is_authenticated %}
+            <div class="text-center mb-4">
+                <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Quest by Cycle" class="img-fluid w-100" style="max-height: 500px; object-fit: cover;" loading="lazy">
+            </div>
+            <div class="text-center">
+                <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories</small></p>
+            </div>
+            <div class="introduction text-center mb-5">
+                <p class="font-weight-bold">Ready to transform your bike rides into a thrilling adventure that benefits the planet? Join the QuestByCycle community! Pedal your way to a greener world as you tackle exciting challenges, earn points that combat carbon emissions, and discover hidden gems in your city. Connect with fellow cycling enthusiasts, compete for top spots on the leaderboard, and make a real difference – all while having a blast on two wheels.</p>
+                <p class="h5 font-weight-bold">This is your Quest by Cycle journey!</p>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg mr-2">Register Today!</a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-lg">Already a Member? Sign In</a>
             </div>
         {% endif %}
-    </div>
-</div>
-{% if current_user.is_authenticated %}
-    <div class="shout-board-column">
-        <h2>Bulletin Board</h2>
-        <div class="game-item">
-            {% if current_user.is_admin %}
-            <form action="{{ url_for('main.shout_board') }}" method="post">
-                {{ form.hidden_tag() }}
-                <div class="form-group">
-                    {{ form.message(rows=1, placeholder="Write a message...") }}
+        
+        <div class="row">
+            {% if not current_user.is_authenticated %}
+                <div class="embed-responsive embed-responsive-16by9 mb-4">
+                    <video class="embed-responsive-item" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}" autoplay loop controls></video>
                 </div>
-                {{ form.submit() }}
-            </form>
             {% endif %}
-            <div class="shout-messages">
-                {% for activity in activities %}
-                <div class="activity{% if activity.is_pinned %} pinned{% endif %}">
-                    {% if activity.__tablename__ == 'shout_board_message' %}
-                    <strong>
-                        {{ activity.timestamp.strftime('%m-%d %H:%M') }} - 
-                        <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
-                            {{ activity.user.display_name or activity.user.username }}
-                        </a>
-                    </strong>
-                    <span class="activity-message" style="flex-grow: 1;">{{ activity.message | safe }}</span>
-                    {% if current_user.is_admin %}
-                    <form action="{{ url_for('main.pin_message', message_id=activity.id) }}" method="post">
-                        {{ form.hidden_tag() }}
-                        <button type="submit" class="blue_button">{{ 'Unpin' if activity.is_pinned else 'Pin' }}</button>
-                    </form>
-                    {% endif %}
-                    <button type="button" class="blue_button like-button" id="like-button-{{ activity.id }}" onclick="likeMessage('{{ activity.id }}')">
-                        {{ 'Liked' if activity.liked_by_user else 'Like' }}
-                    </button>
-                    <span id="like-count-{{ activity.id }}" class="like-count">{{ activity.likes|length }}</span>👍
-                    {% elif activity.__tablename__ == 'user_tasks' %}
-                    <strong>
-                        {{ activity.completed_at.strftime('%m-%d %H:%M') }} -
-                        <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
-                            {{ activity.user.display_name or activity.user.username }}
-                        </a>
-                    </strong>
-                    <span class="activity-message" style="flex-grow: 1;">
-                        <strong>
-                            completed a task
-                            <a href="javascript:void(0);" onclick="openTaskDetailModal('{{ activity.task.id }}')">
-                                 {{ activity.task.title }}
-                            </a>
-                        </strong>
-                    </span>
-                    <button class="blue_button like-button" id="like-button-{{ activity.task.id }}" onclick="likeTask('{{ activity.task.id }}');" class="{{ 'liked-button-style' if activity.task.liked_by_user else '' }}" {{ 'disabled' if activity.task.liked_by_user }}>
-                        {{ 'Liked' if activity.task.liked_by_user else 'Like' }}
-                    </button>
-                    <span id="like-count-{{ activity.task.id }}" class="like-count">{{ activity.task.likes|length }}</span>👍
-                    {% endif %}
+        
+            {% if current_user.is_authenticated %}
+                <div class="text-center mb-4">
+                    <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Quest by Cycle" class="img-fluid w-100" style="max-height: 500px; object-fit: cover;">
                 </div>
-                {% endfor %}
-            </div>            
+                <div class="col-md-6 mb-4">
+                    <div class="text-center mb-4">
+                        <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories</small></p>
+                        <div id="taskImageCarousel" class="carousel slide" data-ride="carousel">
+                            <ol class="carousel-indicators">
+                                {% for image in carousel_images %}
+                                <li data-target="#taskImageCarousel" data-slide-to="{{ loop.index0 }}" {% if loop.first %}class="active"{% endif %}></li>
+                                {% endfor %}
+                            </ol>
+                            <div class="carousel-inner">
+                                {% for image in carousel_images %}
+                                <div class="carousel-item{% if loop.first %} active{% endif %}" style="height: 300px;">
+                                    <img src="{{ url_for('static', filename=image) }}" class="d-block w-100 h-100" alt="Carousel Image" style="height: 300px; width: 100%; object-fit: cover;" loading="lazy">
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <a class="carousel-control-prev" href="#taskImageCarousel" role="button" data-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="sr-only">Previous</span>
+                            </a>
+                            <a class="carousel-control-next" href="#taskImageCarousel" role="button" data-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="sr-only">Next</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>                
+            {% endif %}
+            {% if profile %}
+                <div class="col-md-6 mb-4">
+                    <div class="card mb-4 w-100">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Your Profile</h5>
+                            <div id="profileView">
+                                <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
+                                <p class="font-weight-bold">Name: {{ profile.display_name or profile.username }}</p>
+                                <p id="total-points" class="font-weight-bold">Your Total Completed Points: {{ total_points }}</p>
+                            </div>
+                            <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-info btn-block mt-3">View Profile</a>
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-4">
+                        {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('main.game_info') }}" class="btn btn-primary btn-lg mb-2">Let's Get Started!</a>
+                            <a href="{{ url_for('auth.logout') }}" class="btn btn-primary btn-lg mb-2">Logout</a>
+                            <button class="btn btn-secondary btn-lg mb-2" onclick="openModal('contactModal')">Contact Us</button>
+                            {% if current_user.is_admin %}
+                                <button class="btn btn-secondary btn-lg mb-2" onclick="openModal('joinCustomGameModal')">Join Custom Game</button>
+                                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-danger btn-lg mb-2">Admin Dashboard</a>
+                                <!-- Dropdown for selecting joined games -->
+                                <div class="form-group mt-3">
+                                    <label for="gameSelectDropdown">Select Your Game:</label>
+                                    <select id="gameSelectDropdown" class="form-control" onchange="window.location.href = this.value;">
+                                        {% for game in current_user.participated_games %}
+                                            <option value="{{ url_for('main.index', game_id=game.id) }}" {% if game.id == selected_game_id %}selected{% endif %}>
+                                                {{ game.title }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
-    {% if has_joined %}
-    <div class="game-item">
-        <button id="leaderboardButton" data-game-id="{{ game.id }}" class="btn btn-info btn-lg mb-2">View Leaderboard</button>
-        <button id="submissionsButton" data-game-id="{{ game.id }}" class="btn btn-info btn-lg mb-2">Your Submissions</button>
-        <table class="table">
-            <colgroup>
-                <col style="width: 5%;"> <!-- Checkbox column -->
-                <col style="width: 10%;"> <!-- Badge column -->
-                <col style="width: auto;"> <!-- Task title, takes remaining space -->
-                <col style="width: 10%;"> <!-- Points column -->
-                <col style="width: 10%;"> <!-- Points column -->
-                <col style="width: 10%;"> <!-- Points column -->
-            </colgroup>
-            <thead>
-                <tr>
-                    <th></th>
-                    <th style="vertical-align: middle; text-align: center;">Badge</th>
-                    <th style="vertical-align: middle; text-align: left;">Task</th>
-                    <th style="vertical-align: right; text-align: center;">Your Posts</th>
-                    <th style="vertical-align: right; text-align: center;">All Posts</th>
-                    <th style="padding-top: 0px; padding-bottom: 0px; text-align: center;">Carbon Reduction Points</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for task in tasks %}
-                <tr class="{{ 'pinned' if task.is_sponsored }}">
-                    <td class="disabled-checkbox">
-                        <input type="checkbox" disabled {{ 'checked' if task.total_completions > 0 else '' }}>
-                        <span class="checkbox-custom"></span> <!-- This span acts as the visual element for the checkbox -->
-                    </td>
-                    <td>
-                        {% if task.badge %}
-                        {% if task.badge.image %}
-                        <img src="{{ url_for('static', filename='images/badge_images/' + task.badge.image) }}" alt="Badge" class="badge-image" loading="lazy">
+    {% if current_user.is_authenticated %}
+        <div class="shout-board-column">
+            <h2>Bulletin Board</h2>
+            <div class="game-item">
+                {% if current_user.is_admin %}
+                <form action="{{ url_for('main.shout_board') }}" method="post">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.message(rows=1, placeholder="Write a message...") }}
+                    </div>
+                    {{ form.submit() }}
+                </form>
+                {% endif %}
+                <div class="shout-messages">
+                    {% for activity in activities %}
+                    <div class="activity{% if activity.is_pinned %} pinned{% endif %}">
+                        {% if activity.__tablename__ == 'shout_board_message' %}
+                        <strong>
+                            {{ activity.timestamp.strftime('%m-%d %H:%M') }} - 
+                            <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
+                                {{ activity.user.display_name or activity.user.username }}
+                            </a>
+                        </strong>
+                        <span class="activity-message" style="flex-grow: 1;">{{ activity.message | safe }}</span>
+                        {% if current_user.is_admin %}
+                        <form action="{{ url_for('main.pin_message', message_id=activity.id) }}" method="post">
+                            {{ form.hidden_tag() }}
+                            <button type="submit" class="blue_button">{{ 'Unpin' if activity.is_pinned else 'Pin' }}</button>
+                        </form>
                         {% endif %}
-                        {% else %}
-                        None
+                        <button type="button" class="blue_button like-button" id="like-button-{{ activity.id }}" onclick="likeMessage('{{ activity.id }}')">
+                            {{ 'Liked' if activity.liked_by_user else 'Like' }}
+                        </button>
+                        <span id="like-count-{{ activity.id }}" class="like-count">{{ activity.likes|length }}</span>👍
+                        {% elif activity.__tablename__ == 'user_tasks' %}
+                        <strong>
+                            {{ activity.completed_at.strftime('%m-%d %H:%M') }} -
+                            <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
+                                {{ activity.user.display_name or activity.user.username }}
+                            </a>
+                        </strong>
+                        <span class="activity-message" style="flex-grow: 1;">
+                            <strong>
+                                completed a task
+                                <a href="javascript:void(0);" onclick="openTaskDetailModal('{{ activity.task.id }}')">
+                                     {{ activity.task.title }}
+                                </a>
+                            </strong>
+                        </span>
+                        <button class="blue_button like-button" id="like-button-{{ activity.task.id }}" onclick="likeTask('{{ activity.task.id }}');" class="{{ 'liked-button-style' if activity.task.liked_by_user else '' }}" {{ 'disabled' if activity.task.liked_by_user }}>
+                            {{ 'Liked' if activity.task.liked_by_user else 'Like' }}
+                        </button>
+                        <span id="like-count-{{ activity.task.id }}" class="like-count">{{ activity.task.likes|length }}</span>👍
                         {% endif %}
-                    </td>
-                    <td>
-                        <button class="button" onclick="openTaskDetailModal('{{ task.id }}')">{{ task.title }}</button>
-                    </td>
-                    <td style="text-align: center;">{{ task.personal_completions }}</td>
-                    <td style="text-align: center;">{{ task.total_completions }}</td>
-                    <td style="text-align: center;">{{ task.points }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                    </div>
+                    {% endfor %}
+                </div>            
+            </div>
+        </div>
+        {% if has_joined %}
+        <div class="game-item">
+            <button id="leaderboardButton" data-game-id="{{ game.id }}" class="btn btn-info btn-lg mb-2">View Leaderboard</button>
+            <button id="submissionsButton" data-game-id="{{ game.id }}" class="btn btn-info btn-lg mb-2">Your Submissions</button>
+            <table class="table">
+                <colgroup>
+                    <col style="width: 5%;"> <!-- Checkbox column -->
+                    <col style="width: 10%;"> <!-- Badge column -->
+                    <col style="width: auto;"> <!-- Task title, takes remaining space -->
+                    <col style="width: 10%;"> <!-- Points column -->
+                    <col style="width: 10%;"> <!-- Points column -->
+                    <col style="width: 10%;"> <!-- Points column -->
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th style="vertical-align: middle; text-align: center;">Badge</th>
+                        <th style="vertical-align: middle; text-align: left;">Task</th>
+                        <th style="vertical-align: right; text-align: center;">Your Posts</th>
+                        <th style="vertical-align: right; text-align: center;">All Posts</th>
+                        <th style="padding-top: 0px; padding-bottom: 0px; text-align: center;">Carbon Reduction Points</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                    <tr class="{{ 'pinned' if task.is_sponsored }}">
+                        <td class="disabled-checkbox">
+                            <input type="checkbox" disabled {{ 'checked' if task.total_completions > 0 else '' }}>
+                            <span class="checkbox-custom"></span> <!-- This span acts as the visual element for the checkbox -->
+                        </td>
+                        <td>
+                            {% if task.badge %}
+                            {% if task.badge.image %}
+                            <img src="{{ url_for('static', filename='images/badge_images/' + task.badge.image) }}" alt="Badge" class="badge-image" loading="lazy">
+                            {% endif %}
+                            {% else %}
+                            None
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="button" onclick="openTaskDetailModal('{{ task.id }}')">{{ task.title }}</button>
+                        </td>
+                        <td style="text-align: center;">{{ task.personal_completions }}</td>
+                        <td style="text-align: center;">{{ task.total_completions }}</td>
+                        <td style="text-align: center;">{{ task.points }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
     {% endif %}
-{% endif %}
-<div id="game_IdHolder" data-game-id="{{ selected_game_id | safe }}" style="display:none;"></div>
 
+    <div id="game_IdHolder" data-game-id="{{ selected_game_id | safe }}" style="display:none;"></div>
 
-{% include 'modals/task_detail_modal.html' %}
-{% include 'modals/submission_detail_modal.html' %}
-{% include 'modals/user_profile_modal.html' %}
-{% include 'modals/leaderboard_modal.html' %}
-{% include 'modals/my_submissions_modal.html' %}
-{% include 'modals/contact_modal.html' %}
-{% include 'modals/join_custom_game_modal.html' %}
+    {% include 'modals/task_detail_modal.html' %}
+    {% include 'modals/submission_detail_modal.html' %}
+    {% include 'modals/user_profile_modal.html' %}
+    {% include 'modals/leaderboard_modal.html' %}
+    {% include 'modals/my_submissions_modal.html' %}
+    {% include 'modals/contact_modal.html' %}
+    {% include 'modals/join_custom_game_modal.html' %}
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
 
-<script src="{{ url_for('static', filename='js/modal_common.js') }}"></script>
-<script src="{{ url_for('static', filename='js/all_submissions_modal.js') }}"></script>
-<script src="{{ url_for('static', filename='js/contact_modal.js') }}"></script>
-<script src="{{ url_for('static', filename='js/edit_carousel_modal.js') }}"></script>
-<script src="{{ url_for('static', filename='js/join_custom_game_modal.js') }}"></script>
-<script src="{{ url_for('static', filename='js/leaderboard_modal.js') }}"></script>
-<script src="{{ url_for('static', filename='js/my_submissions_modal.js') }}"></script>
-<script src="{{ url_for('static', filename='js/submission_detail_modal.js') }}"></script>
-<script src="{{ url_for('static', filename='js/task_detail_modal.js') }}"></script>
-<script src="{{ url_for('static', filename='js/tips_modal.js') }}"></script>
-<script src="{{ url_for('static', filename='js/user_profile_modal.js') }}"></script>
-<script src="{{ url_for('static', filename='js/index_management.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modal_common.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/all_submissions_modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/contact_modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/edit_carousel_modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/join_custom_game_modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/leaderboard_modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/my_submissions_modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/submission_detail_modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/task_detail_modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tips_modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/user_profile_modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/index_management.js') }}"></script>
 
 {% endblock %}
