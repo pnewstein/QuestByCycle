@@ -493,8 +493,8 @@ article h3 {
 }
 
 .modal-dialog {
-    width: 90%;
-    max-width: 800px; 
+    width: 100%;
+    max-width: 1000px;
     background: white;
     border-radius: 8px;
     overflow: hidden;
@@ -549,7 +549,6 @@ article h3 {
 
 .task-detail-item {
     background: #f7f7f7;
-    padding: 10px;
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     display: flex;
@@ -586,7 +585,6 @@ article h3 {
     margin: 15px auto; 
     padding: 20px;
     border: 1px solid #888;
-    max-width: 70%; 
     border-radius: 8px; 
     position: relative;
     z-index: 1001;
@@ -1168,7 +1166,7 @@ footer {
 }
 
 .user-profile {
-    max-width: 800px;
+    max-width: 1000px;
     margin: auto;
     background: #fff;
     padding: 20px;
@@ -1454,7 +1452,7 @@ footer {
 }
 
 .user-management-container {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: 20px;
 }
