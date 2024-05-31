@@ -1,7 +1,5 @@
 // Leaderboard modal management functions
 function showLeaderboardModal(selectedGameId) {
-    console.log("Attempting to show leaderboard modal for game ID:", selectedGameId);
-
     const leaderboardContent = document.getElementById('leaderboardModalContent');
     if (!leaderboardContent) {
         console.error('Leaderboard modal content element not found. Cannot proceed with displaying leaderboard.');

@@ -6,8 +6,6 @@ document.addEventListener("DOMContentLoaded", function() {
         allSubmissionsButton.addEventListener('click', function() {
             if (userId !== 'none') {
                 showAllSubmissionsModal(userId);
-            } else {
-                console.log('No user ID found or user not logged in');
             }
         });
     }

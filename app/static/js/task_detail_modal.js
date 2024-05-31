@@ -150,12 +150,10 @@ function manageVerificationSection(taskId, canVerify, verificationType, nextElig
     userTaskData.innerHTML = '';
 
     if (canVerify) {
-        createVerificationButton(taskId);
-
         const verifyForm = document.createElement('div');
         verifyForm.id = `verifyTaskForm-${taskId}`;
         verifyForm.className = 'verify-task-form';
-        verifyForm.style.display = 'none'; // Hide by default
+        verifyForm.style.display = 'show'; // Hide by default
 
         // Ensure verificationType is correctly passed and utilized
         const formHTML = getVerificationFormHTML(verificationType.trim().toLowerCase());
@@ -171,51 +169,59 @@ function manageVerificationSection(taskId, canVerify, verificationType, nextElig
     console.log("Current Time:", new Date());
     console.log("Condition Result:", !canVerify && nextAvailableTime && nextAvailableTime > new Date());
     console.log("Countdown Element:", document.getElementById('modalCountdown'));
-
 }
 
-// Function to create and append the Verify Task button to the modal
-function createVerificationButton(taskId) {
-    const verifyButton = document.createElement('button');
-    verifyButton.id = `verifyButton-${taskId}`;
-    verifyButton.textContent = 'Verify Task';
-    verifyButton.className = 'button';
-    verifyButton.onclick = () => toggleVerificationForm(taskId);
-    document.querySelector('.user-task-data').appendChild(verifyButton);
-}
 
-// Function to return the appropriate form HTML based on the verification type
 function getVerificationFormHTML(verificationType) {
-    let formHTML = '<form enctype="multipart/form-data">';
+    let formHTML = '<form enctype="multipart/form-data" class="epic-form">';
 
     // Explicitly handle each case
     switch (verificationType) {
         case 'photo':
-            formHTML += `<input type="file" name="image" class="button" accept="image/*" required>`;
-            formHTML += '<button type="submit" class="button">Submit Verification</button>';
+            formHTML += `
+                <div class="form-group">
+                    <label for="image" class="epic-label">Upload a Photo</label>
+                    <input type="file" id="image" name="image" class="epic-input" accept="image/*" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="epic-button">Submit Verification</button>
+                </div>`;
             break;
         case 'comment':
-            formHTML += `<textarea name="verificationComment" placeholder="Enter a comment..." required></textarea>`;
-            formHTML += '<button type="submit" class="button">Submit Verification</button>';
+            formHTML += `
+                <div class="form-group">
+                    <label for="verificationComment" class="epic-label">Enter a Comment</label>
+                    <textarea id="verificationComment" name="verificationComment" class="epic-textarea" placeholder="Enter a comment..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="epic-button">Submit Verification</button>
+                </div>`;
             break;
         case 'photo_comment':
             formHTML += `
-                <input type="file" name="image" class="button" accept="image/*" required>
-                <textarea name="verificationComment" placeholder="Enter a comment..." required></textarea>
-            `;
-            formHTML += '<button type="submit" class="button">Submit Verification</button>';
+                <div class="form-group">
+                    <label for="image" class="epic-label">Upload a Photo</label>
+                    <input type="file" id="image" name="image" class="epic-input" accept="image/*" required>
+                </div>
+                <div class="form-group">
+                    <label for="verificationComment" class="epic-label">Enter a Comment</label>
+                    <textarea id="verificationComment" name="verificationComment" class="epic-textarea" placeholder="Enter a comment..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="epic-button">Submit Verification</button>
+                </div>`;
             break;
         case 'qr_code':
-            formHTML += `<p>Find and scan the QR code. No submission required here.</p>`;
+            formHTML += `<p class="epic-message">Find and scan the QR code. No submission required here.</p>`;
             // No button is added for QR code case
             break;
         case 'pause':
-            formHTML += `<p>Task is currently paused.</p>`;
-            // No button is added for QR code case
+            formHTML += `<p class="epic-message">Task is currently paused.</p>`;
+            // No button is added for pause case
             break;
         default:
             // Handle cases where no verification is needed or provide a default case
-            formHTML += '<p>Submission Requirements not set correctly.</p>';
+            formHTML += '<p class="epic-message">Submission Requirements not set correctly.</p>';
             break;
     }
 
@@ -379,19 +385,14 @@ function fetchSubmissions(taskId) {
                 downloadLink.href = submission.image_url || '#';
                 downloadLink.download = `SubmissionImage-${submission.user_id}`;
 
-                console.log("Twitter URL: ", submission.twitter_url); // Debugging
-
                 if (submission.twitter_url && submission.twitter_url.trim() !== '') {
                     twitterLink.href = submission.twitter_url;
                     twitterLink.style.display = 'inline';
-                    console.log("Displaying Twitter link."); // Debugging
                 } else {
                     twitterLink.style.display = 'none';
-                    console.log("Hiding Twitter link."); // Debugging
                 }
             } else {
                 twitterLink.style.display = 'none';
-                console.log("No submissions found, hiding Twitter link."); // Debugging
             }
 
             const images = submissions.reverse().map(submission => ({
