@@ -1,4 +1,4 @@
-// Leaderboard modal management functions
+// Updated JavaScript for Uber Epic Completion Meter and Clickable Graph
 function showLeaderboardModal(selectedGameId) {
     const leaderboardContent = document.getElementById('leaderboardModalContent');
     if (!leaderboardContent) {
@@ -62,7 +62,7 @@ function appendLeaderboardTable(parentElement, data) {
 
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
-        ['Rank', 'Player', 'Carbon “Reduction” Points'].forEach(text => {
+        ['Rank', 'Player', 'Points'].forEach(text => {
             const th = document.createElement('th');
             th.textContent = text;
             headerRow.appendChild(th);
@@ -124,25 +124,30 @@ function appendCompletionMeter(parentElement, data) {
 
         const completionMeter = document.createElement('div');
         completionMeter.className = 'completion-meter';
+        completionMeter.id = 'completionMeter'; // Added ID for targeting
+        completionMeter.addEventListener('click', showAllSubmissionsModal);
+
+        const clickText = document.createElement('div');
+        clickText.className = 'click-text';
+        clickText.textContent = 'Click to view all game submissions!';
+        completionMeter.appendChild(clickText);
 
         const meterBar = document.createElement('div');
         meterBar.className = 'meter-bar';
         meterBar.id = 'meterBar';
-        meterBar.style.width = '100%';
-        meterBar.style.height = `${percentReduction}%`;
+        meterBar.style.height = '0%';
         meterBar.dataset.label = `${percentReduction.toFixed(1)}% Reduced`;
         completionMeter.appendChild(meterBar);
-
 
         meterContainer.appendChild(completionMeter);
         parentElement.appendChild(meterContainer);
 
         setTimeout(() => {
-            meterBar.style.transition = 'height 2s ease-in-out, background-color 2s';
             meterBar.style.height = `${percentReduction}%`;
         }, 100);
     }
 }
+
 
 function closeLeaderboardModal() {
     const leaderboardModal = document.getElementById('leaderboardModal');
@@ -152,6 +157,4 @@ function closeLeaderboardModal() {
     }
     leaderboardModal.style.display = 'none';
     document.body.classList.remove('body-no-scroll');
-
 }
-
