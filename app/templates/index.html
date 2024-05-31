@@ -190,7 +190,6 @@
                     <button id="submissionsButton" data-game-id="{{ game.id }}" class="btn btn-info btn-lg mb-2">Your Submissions</button>
                     <table class="table">
                         <colgroup>
-                            <col style="width: 5%;"> <!-- Checkbox column -->
                             <col style="width: 10%;"> <!-- Badge column -->
                             <col style="width: auto;"> <!-- Task title, takes remaining space -->
                             <col style="width: 10%;"> <!-- Points column -->
@@ -199,7 +198,6 @@
                         </colgroup>
                         <thead>
                             <tr>
-                                <th></th>
                                 <th style="vertical-align: middle; text-align: center;">Badge</th>
                                 <th style="vertical-align: middle; text-align: left;">Task</th>
                                 <th style="vertical-align: right; text-align: center;">Your Posts</th>
@@ -210,10 +208,6 @@
                         <tbody>
                             {% for task in tasks %}
                             <tr class="{{ 'pinned' if task.is_sponsored }}">
-                                <td class="disabled-checkbox">
-                                    <input type="checkbox" disabled {{ 'checked' if task.total_completions > 0 else '' }}>
-                                    <span class="checkbox-custom"></span> <!-- This span acts as the visual element for the checkbox -->
-                                </td>
                                 <td>
                                     {% if task.badge %}
                                     {% if task.badge.image %}
@@ -247,6 +241,7 @@
     {% include 'modals/my_submissions_modal.html' %}
     {% include 'modals/contact_modal.html' %}
     {% include 'modals/join_custom_game_modal.html' %}
+    {% include 'modals/all_submissions_modal.html' %}
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
 
