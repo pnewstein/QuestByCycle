@@ -55,11 +55,11 @@
                     <div class="text-center mb-4">
                         <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories</small></p>
                         <div id="taskImageCarousel" class="carousel slide" data-ride="carousel">
-                            <ol class="carousel-indicators">
-                                {% for image in carousel_images %}
-                                <li data-target="#taskImageCarousel" data-slide-to="{{ loop.index0 }}"
-                                    {% if loop.first %}class="active"{% endif %}></li>
-                                {% endfor %}
+                            <ol class="carousel-indicators" style="visibility: hidden;">
+                            {% for image in carousel_images %}
+                            <li data-target="#taskImageCarousel" data-slide-to="{{ loop.index0 }}"
+                                {% if loop.first %}class="active"{% endif %}></li>
+                            {% endfor %}
                             </ol>
                             <div class="carousel-inner">
                                 {% for image in carousel_images %}
