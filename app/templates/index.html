@@ -20,29 +20,36 @@
 
         {% if not current_user.is_authenticated %}
             <div class="text-center mb-4">
-                <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Quest by Cycle" class="img-fluid w-100" style="max-height: 500px; object-fit: cover;" loading="lazy">
+                <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Quest by Cycle"
+                    class="img-fluid w-100" style="max-height: 500px; object-fit: cover;" loading="lazy">
             </div>
             <div class="text-center">
                 <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories</small></p>
             </div>
             <div class="introduction text-center mb-5">
-                <p class="font-weight-bold">Ready to transform your bike rides into a thrilling adventure that benefits the planet? Join the QuestByCycle community! Pedal your way to a greener world as you tackle exciting challenges, earn points that combat carbon emissions, and discover hidden gems in your city. Connect with fellow cycling enthusiasts, compete for top spots on the leaderboard, and make a real difference – all while having a blast on two wheels.</p>
+                <p class="font-weight-bold">Ready to transform your bike rides into a thrilling adventure that benefits the
+                    planet? Join the QuestByCycle community! Pedal your way to a greener world as you tackle exciting challenges,
+                    earn points that combat carbon emissions, and discover hidden gems in your city. Connect with fellow cycling
+                    enthusiasts, compete for top spots on the leaderboard, and make a real difference – all while having a blast
+                    on two wheels.</p>
                 <p class="h5 font-weight-bold">This is your Quest by Cycle journey!</p>
                 <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg mr-2">Register Today!</a>
                 <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-lg">Already a Member? Sign In</a>
             </div>
         {% endif %}
-        
+
         <div class="row">
             {% if not current_user.is_authenticated %}
-                <div class="embed-responsive embed-responsive-16by9 mb-4">
-                    <video class="embed-responsive-item" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}" autoplay loop controls></video>
-                </div>
+            <div class="embed-responsive embed-responsive-16by9 mb-4">
+                <video class="embed-responsive-item" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}"
+                    autoplay loop controls></video>
+            </div>
             {% endif %}
-        
+
             {% if current_user.is_authenticated %}
                 <div class="text-center mb-4">
-                    <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Quest by Cycle" class="img-fluid w-100" style="max-height: 500px; object-fit: cover;">
+                    <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Quest by Cycle"
+                        class="img-fluid w-100" style="max-height: 500px; object-fit: cover;">
                 </div>
                 <div class="col-md-6 mb-4">
                     <div class="text-center mb-4">
@@ -50,13 +57,16 @@
                         <div id="taskImageCarousel" class="carousel slide" data-ride="carousel">
                             <ol class="carousel-indicators">
                                 {% for image in carousel_images %}
-                                <li data-target="#taskImageCarousel" data-slide-to="{{ loop.index0 }}" {% if loop.first %}class="active"{% endif %}></li>
+                                <li data-target="#taskImageCarousel" data-slide-to="{{ loop.index0 }}"
+                                    {% if loop.first %}class="active"{% endif %}></li>
                                 {% endfor %}
                             </ol>
                             <div class="carousel-inner">
                                 {% for image in carousel_images %}
                                 <div class="carousel-item{% if loop.first %} active{% endif %}" style="height: 300px;">
-                                    <img src="{{ url_for('static', filename=image) }}" class="d-block w-100 h-100" alt="Carousel Image" style="height: 300px; width: 100%; object-fit: cover;" loading="lazy">
+                                    <img src="{{ url_for('static', filename=image) }}"
+                                        class="d-block w-100 h-100" alt="Carousel Image"
+                                        style="height: 300px; width: 100%; object-fit: cover;" loading="lazy">
                                 </div>
                                 {% endfor %}
                             </div>
@@ -72,12 +82,12 @@
                         <br>
                         <div class="text-center mb-4">
                             {% if current_user.is_authenticated %}
-                                <a href="{{ url_for('main.game_info') }}" class="btn btn-primary btn-lg mb-2">Let's Get Started!</a>
-                                <button class="btn btn-secondary btn-lg mb-2" onclick="openModal('contactModal')">Contact Us</button>
+                            <a href="{{ url_for('main.game_info') }}" class="btn btn-primary btn-lg mb-2">Let's Get Started!</a>
+                            <button class="btn btn-secondary btn-lg mb-2" onclick="openModal('contactModal')">Contact Us</button>
                             {% endif %}
                         </div>
                     </div>
-                </div>                
+                </div>
             {% endif %}
             {% if profile %}
                 <div class="col-md-6 mb-4">
@@ -85,31 +95,38 @@
                         <div class="card-body text-center">
                             <h5 class="card-title">Your Profile</h5>
                             <div id="profileView">
-                                <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
+                                <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}"
+                                    alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
                                 <p class="font-weight-bold">Name: {{ profile.display_name or profile.username }}</p>
-                                <p id="total-points" class="font-weight-bold">Your Total Completed Points: {{ total_points }}</p>
+                                <p id="total-points" class="font-weight-bold">Your Total Completed Points: {{ total_points }}
+                                </p>
                             </div>
                             {% if current_user.is_admin %}
-                                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-danger btn-block mt-2">Admin Dashboard</a>
+                            <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-danger btn-block mt-2">Admin
+                                Dashboard</a>
                             {% endif %}
                             {% if current_user %}
-                                <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-info btn-block mt-3">View Profile</a>
+                            <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')"
+                                class="btn btn-info btn-block mt-3">View Profile</a>
                             {% endif %}
                             {% if current_user.is_admin %}
-                                <button class="btn btn-secondary btn-block mt-3" onclick="openModal('joinCustomGameModal')">Join Custom Game</button>
+                            <button class="btn btn-secondary btn-block mt-3" onclick="openModal('joinCustomGameModal')">Join
+                                Custom Game</button>
                             {% endif %}
                             {% if current_user %}
-                                <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-block mt-3">Logout</a>
+                            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-block mt-3">Logout</a>
                             {% endif %}
                             {% if current_user.is_admin %}
                                 <!-- Dropdown for selecting joined games -->
                                 <div class="form-group mt-3">
                                     <label for="gameSelectDropdown">Select Active Game:</label>
-                                    <select id="gameSelectDropdown" class="form-control" onchange="window.location.href = this.value;">
+                                    <select id="gameSelectDropdown" class="form-control"
+                                        onchange="window.location.href = this.value;">
                                         {% for game in current_user.participated_games %}
-                                            <option value="{{ url_for('main.index', game_id=game.id) }}" {% if game.id == selected_game_id %}selected{% endif %}>
-                                                {{ game.title }}
-                                            </option>
+                                        <option value="{{ url_for('main.index', game_id=game.id) }}"
+                                            {% if game.id == selected_game_id %}selected{% endif %}>
+                                            {{ game.title }}
+                                        </option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -117,10 +134,10 @@
                         </div>
                     </div>
                 </div>
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
-    </div>
-    {% if current_user.is_authenticated %}
+        {% if current_user.is_authenticated %}
         <div class="container mt-5">
             <h2>What's Happening</h2>
             <div class="game-item">
@@ -139,7 +156,7 @@
                         <div class="activity{% if activity.is_pinned %} pinned{% endif %}">
                             {% if activity.__tablename__ == 'shout_board_message' %}
                             <strong>
-                                {{ activity.timestamp.strftime('%m-%d %H:%M') }} - 
+                                {{ activity.timestamp.strftime('%m-%d %H:%M') }} -
                                 <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
                                     {{ activity.user.display_name or activity.user.username }}
                                 </a>
@@ -151,7 +168,8 @@
                                 <button type="submit" class="blue_button">{{ 'Unpin' if activity.is_pinned else 'Pin' }}</button>
                             </form>
                             {% endif %}
-                            <button type="button" class="blue_button like-button" id="like-button-{{ activity.id }}" onclick="likeMessage('{{ activity.id }}')">
+                            <button type="button" class="blue_button like-button" id="like-button-{{ activity.id }}"
+                                onclick="likeMessage('{{ activity.id }}')">
                                 {{ 'Liked' if activity.liked_by_user else 'Like' }}
                             </button>
                             <span id="like-count-{{ activity.id }}" class="like-count">{{ activity.likes|length }}</span>👍
@@ -170,10 +188,14 @@
                                     </a>
                                 </strong>
                             </span>
-                            <button class="blue_button like-button" id="like-button-{{ activity.task.id }}" onclick="likeTask('{{ activity.task.id }}');" class="{{ 'liked-button-style' if activity.task.liked_by_user else '' }}" {{ 'disabled' if activity.task.liked_by_user }}>
+                            <button class="blue_button like-button" id="like-button-{{ activity.task.id }}"
+                                onclick="likeTask('{{ activity.task.id }}');"
+                                class="{{ 'liked-button-style' if activity.task.liked_by_user else '' }}"
+                                {{ 'disabled' if activity.task.liked_by_user }}>
                                 {{ 'Liked' if activity.task.liked_by_user else 'Like' }}
                             </button>
-                            <span id="like-count-{{ activity.task.id }}" class="like-count">{{ activity.task.likes|length }}</span>👍
+                            <span id="like-count-{{ activity.task.id }}" class="like-count">{{ activity.task.likes|length
+                                }}</span>👍
                             {% endif %}
                         </div>
                         {% endfor %}
@@ -187,8 +209,9 @@
         </div>
         <div class="container mt-5">
             {% if has_joined %}
-            <h2>Available Tasks</h2>
+                <h2>Available Tasks</h2>
                 <div class="game-item">
+                    <input type="text" id="taskSearchInput" class="form-control mb-3" placeholder="Search for tasks...">
                     <button id="leaderboardButton" data-game-id="{{ game.id }}" class="btn btn-info btn-lg mb-2">View Leaderboard</button>
                     <button id="submissionsButton" data-game-id="{{ game.id }}" class="btn btn-info btn-lg mb-2">Your Submissions</button>
                     <table class="table">
@@ -208,7 +231,7 @@
                                 <th style="padding-top: 0px; padding-bottom: 0px; text-align: center;">Carbon Reduction Points</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="taskTableBody">
                             {% for task in tasks %}
                             <tr class="{{ 'pinned' if task.is_sponsored }}">
                                 <td>
@@ -262,17 +285,30 @@
     <script src="{{ url_for('static', filename='js/index_management.js') }}"></script>
 
     <script>
-        document.getElementById('scrollUpButton').addEventListener('click', function() {
+        document.getElementById('scrollUpButton').addEventListener('click', function () {
             document.querySelector('.shout-messages').scrollBy({
                 top: -100,
                 behavior: 'smooth'
             });
         });
 
-        document.getElementById('scrollDownButton').addEventListener('click', function() {
+        document.getElementById('scrollDownButton').addEventListener('click', function () {
             document.querySelector('.shout-messages').scrollBy({
                 top: 100,
                 behavior: 'smooth'
+            });
+        });
+
+        document.getElementById('taskSearchInput').addEventListener('input', function () {
+            const searchValue = this.value.toLowerCase();
+            const tasks = document.querySelectorAll('#taskTableBody tr');
+            tasks.forEach(task => {
+                const taskTitle = task.querySelector('td:nth-child(2) button').textContent.toLowerCase();
+                if (taskTitle.includes(searchValue)) {
+                    task.style.display = '';
+                } else {
+                    task.style.display = 'none';
+                }
             });
         });
     </script>
