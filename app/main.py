@@ -3,7 +3,7 @@ from flask_login import current_user, login_required, logout_user
 from app.utils import save_profile_picture, award_badges
 from app.models import db, Game, User, Task, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike
 from app.forms import ProfileForm, ShoutBoardForm, ContactForm
-from app.utils import send_email
+from app.utils import send_email, allowed_file
 from .config import load_config
 from werkzeug.utils import secure_filename
 from sqlalchemy import func
@@ -279,6 +279,7 @@ def user_profile(user_id):
     task_submissions = user.task_submissions
 
     response_data = {
+        'current_user_id': current_user.id,
         'user': {
             'id': user.id,
             'username': user.username,
@@ -305,18 +306,24 @@ def user_profile(user_id):
 
     return jsonify(response_data)
 
+
 @main_bp.route('/profile/<int:user_id>/edit', methods=['POST'])
 @login_required
 def edit_profile(user_id):
     if current_user.id != user_id:
         return jsonify({'error': 'Unauthorized access'}), 403
     
-    data = request.get_json()
     user = User.query.get_or_404(user_id)
     
-    user.display_name = data.get('display_name', user.display_name)
-    user.interests = data.get('interests', user.interests)
-    user.age_group = data.get('age_group', user.age_group)
+    user.display_name = request.form.get('display_name', user.display_name)
+    user.interests = request.form.get('interests', user.interests)
+    user.age_group = request.form.get('age_group', user.age_group)
+
+    if 'profile_picture' in request.files:
+        profile_picture_file = request.files['profile_picture']
+        if profile_picture_file and allowed_file(profile_picture_file.filename):
+            filename = save_profile_picture(profile_picture_file, user.profile_picture)
+            user.profile_picture = filename
     
     try:
         db.session.commit()

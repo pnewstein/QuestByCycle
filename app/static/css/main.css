@@ -1131,6 +1131,7 @@ footer {
 
 .carousel-indicators li {
     background-color: #000;
+    z-index: -1;
 }
 
 .carousel-inner {
@@ -1522,6 +1523,7 @@ footer {
         
         width: 95%;
         padding: 15px; 
+        z-index: 2;
     }
 
     .close-button {
