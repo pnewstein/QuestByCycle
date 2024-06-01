@@ -154,7 +154,4 @@ document.addEventListener("DOMContentLoaded", function() {
             request.send(formData);
         });
     }
-
-
 });
-
