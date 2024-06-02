@@ -35,8 +35,10 @@
             {{ form.submit() }}
         </div>
     </form>
-    <a href="{{ url_for('main.index') }}" class="button">Back to Home</a><br>
+    <br>
+    <a href="{{ url_for('main.index') }}" class="button">Back to Home</a>
     <a href="{{ url_for('auth.forgot_password') }}" class="button">Forgot Password?</a>
+    <a href="{{ url_for('auth.register') }}" class="button">Register Today!</a>
 
     {% if show_resend %}
     <!-- Resend verification email form -->
