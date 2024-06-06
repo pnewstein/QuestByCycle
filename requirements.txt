@@ -17,3 +17,4 @@ tweepy==4.14.0
 flask-mail==0.9.1
 PyJWT==2.8.0
 pyzt
+openai==1.30.5

@@ -1,0 +1,17 @@
+<!-- app/templates/modals/task_creation_modal.html -->
+<div id="taskCreationModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal('taskCreationModal')">&times;</span>
+        <h5 class="modal-title">Create Task</h5>
+        <div class="modal-body">
+            <form id="taskCreationForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label for="taskDescription">Task Description</label>
+                    <input type="text" class="form-control" id="taskDescription" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Generate Task</button>
+            </form>
+        </div>
+    </div>
+</div>

@@ -16,6 +16,14 @@ main {
     background-attachment: fixed;
 }
 
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+#generateAITaskModal {
+    z-index: 1050 !important;
+}
+
 .user-profile {
     background: #fff;
     padding: 30px;
