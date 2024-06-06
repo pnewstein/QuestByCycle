@@ -255,6 +255,12 @@
                     </table>
                 </div>
             {% endif %}
+            {% if current_user.is_authenticated %}
+                <!-- Task Creation Button -->
+                <div class="text-center mb-4">
+                    <button data-game-id="{{ game.id }}" class="btn btn-primary btn-lg mb-2" onclick="openTaskCreationModal(this)">Create New Task</button>
+                </div>
+            {% endif %}
         </div>
     {% endif %}
 
@@ -268,6 +274,8 @@
     {% include 'modals/contact_modal.html' %}
     {% include 'modals/join_custom_game_modal.html' %}
     {% include 'modals/all_submissions_modal.html' %}
+    {% include 'modals/task_creation_modal.html' %}
+    {% include 'modals/generate_AI_task_modal.html' %}
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
 
@@ -280,9 +288,9 @@
     <script src="{{ url_for('static', filename='js/my_submissions_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/submission_detail_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/task_detail_modal.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/tips_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/user_profile_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/index_management.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/generated_task.js') }}"></script>
 
     <script>
         document.getElementById('scrollUpButton').addEventListener('click', function () {

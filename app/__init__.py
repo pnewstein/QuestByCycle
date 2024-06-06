@@ -8,6 +8,7 @@ from app.main import main_bp
 from app.games import games_bp
 from app.tasks import tasks_bp
 from app.badges import badges_bp
+from app.ai import ai_bp
 from app.models import db
 from .config import load_config
 from flask_wtf.csrf import CSRFProtect
@@ -41,6 +42,7 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config['flask']['SQLALCHEMY_DATABASE_URI']
     app.config['DEBUG'] = app.config['flask']['DEBUG']
     app.config['TASKCSV'] = app.config['main']['TASKCSV']
+    app.config['OPENAI_API_KEY'] = app.config['openai']['OPENAI_API_KEY']
     app.config['SECRET_KEY'] = app.config['encryption']['SECRET_KEY']
     app.config['SESSION_COOKIE_SECURE'] = app.config['encryption']['SESSION_COOKIE_SECURE']
     app.config['SESSION_COOKIE_NAME'] = app.config['encryption']['SESSION_COOKIE_NAME']
@@ -74,6 +76,7 @@ def create_app():
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(admin_bp, url_prefix='/admin')
+    app.register_blueprint(ai_bp, url_prefix='/ai')
     app.register_blueprint(games_bp, url_prefix='/games')
     app.register_blueprint(tasks_bp, url_prefix='/tasks')
     app.register_blueprint(badges_bp, url_prefix='/badges')
