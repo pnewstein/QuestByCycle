@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask import current_app
-from wtforms import StringField, SelectField, SubmitField, IntegerField, PasswordField, TextAreaField, BooleanField
+from wtforms import StringField, SelectField, SubmitField, IntegerField, HiddenField, PasswordField, TextAreaField, BooleanField
 from wtforms.validators import DataRequired, NumberRange, EqualTo, Optional, Email, Length, ValidationError, URL
 from wtforms.fields import DateField
 from flask_wtf.file import FileField, FileAllowed, FileRequired
@@ -78,12 +78,10 @@ class GameForm(FlaskForm):
     submit = SubmitField('Create Game')
 
 
-
 class TaskForm(FlaskForm):
     enabled = BooleanField('Enabled', default=True)
     is_sponsored = BooleanField('Is Sponsored', default=False)
-    category_choices = [('Environment', 'Environment'), ('Community', 'Community')]  # Example categories
-    category = SelectField('Category', choices=category_choices, validators=[DataRequired()])
+    category = StringField('Category', validators=[DataRequired()])
     verification_type_choices = [
         ('qr_code', 'QR Code'),
         ('photo', 'Photo Upload'),
@@ -95,23 +93,26 @@ class TaskForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
     tips = TextAreaField('Tips', validators=[Optional()])
-    points = IntegerField('Points', validators=[DataRequired(), NumberRange(min=1)], default=1)  # Assuming tasks have at least 1 point
+    points = IntegerField('Points', validators=[DataRequired(), NumberRange(min=1)], default=1)
     completion_limit = IntegerField('Completion Limit', validators=[DataRequired(), NumberRange(min=1)], default=1)
     frequency = SelectField('Frequency', choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly')], validators=[DataRequired()])
-    badge_id = SelectField('Badge', coerce=int, choices=[])
-    badge_name = StringField('Badge Name', validators=[])
-    badge_description = TextAreaField('Badge Description', validators=[])    
-    default_badge_image = SelectField('Select Default Badge Image', coerce=str, choices=[], default='')
+    badge_id = SelectField('Badge', coerce=int, choices=[], validators=[Optional()])
+    badge_name = StringField('Badge Name', validators=[Optional()])
+    badge_description = TextAreaField('Badge Description', validators=[Optional()])
     badge_image_filename = FileField('Badge Image', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
+    game_id = HiddenField('Game ID', validators=[DataRequired()])
     submit = SubmitField('Create Task')
 
     def __init__(self, *args, **kwargs):
         super(TaskForm, self).__init__(*args, **kwargs)
         self.badge_id.choices = [(0, 'None')] + [(badge.id, badge.name) for badge in Badge.query.all()]
-        badge_image_directory = os.path.join(current_app.root_path, 'static/images/badge_images')
-        if not os.path.exists(badge_image_directory):
-            os.makedirs(badge_image_directory)  # Create the directory if it does not exist
-        self.default_badge_image.choices = [('','None')] + [(filename, filename) for filename in os.listdir(badge_image_directory)]
+
+
+    def validate_completion_limit(form, field):
+        valid_completion_limits = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+        if field.data not in valid_completion_limits:
+            field.data = 1
+
 
 
 class TaskImportForm(FlaskForm):
@@ -174,7 +175,10 @@ class BadgeForm(FlaskForm):
 
     def __init__(self, category_choices, *args, **kwargs):
         super(BadgeForm, self).__init__(*args, kwargs)
+        if category_choices is None:
+            category_choices = []
         self.category.choices = [('none', 'None')] + category_choices
+
 
 class TaskImportForm(FlaskForm):
     csv_file = FileField('CSV File', validators=[DataRequired(), FileAllowed(['csv'], 'CSV files only!')])

@@ -1,7 +1,7 @@
 from flask import flash, current_app, jsonify
 from .models import db, Task, Badge, UserTask, User, ShoutBoardMessage, TaskSubmission
 from werkzeug.utils import secure_filename
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from flask_mail import Message, Mail
 
 
@@ -9,7 +9,7 @@ import uuid
 import os
 
 MAX_POINTS_INT = 2**63 - 1
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -133,11 +133,19 @@ def save_profile_picture(profile_picture_file, old_filename=None):
 
 
 def save_badge_image(image_file):
-    filename = secure_filename(image_file.filename)
-    rel_path = os.path.join('images', 'badge_images', filename)  # No leading slashes
-    abs_path = os.path.join(current_app.root_path, current_app.static_folder, rel_path)
-    image_file.save(abs_path)
-    return filename  # Correct relative path from 'static' directory
+    try:
+        # Generate a secure filename
+        filename = secure_filename(f"{uuid.uuid4()}.png")
+        rel_path = os.path.join('images', 'badge_images', filename)  # No leading slashes
+        abs_path = os.path.join(current_app.root_path, current_app.static_folder, rel_path)
+
+        # Save the file
+        image_file.save(abs_path)
+        return filename  # Return the correct relative path from 'static' directory
+
+    except Exception as e:
+        print(f"Error saving badge image: {e}")
+        raise ValueError(f"Failed to save image: {str(e)}")
 
 
 def save_submission_image(submission_image_file):

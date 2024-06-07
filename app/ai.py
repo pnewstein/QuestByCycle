@@ -1,14 +1,20 @@
-from flask import Blueprint, jsonify, render_template, request, current_app
+from flask import Blueprint, jsonify, render_template, request, current_app, url_for
 from flask_login import login_required
 from app.forms import TaskForm
 from app.utils import save_badge_image
 from .models import db, Task, Badge
 from werkzeug.datastructures import MultiDict
 from openai import OpenAI
+from io import BytesIO
+from PIL import Image
+from werkzeug.utils import secure_filename
 
+import uuid
 import requests
 import string
 import re
+import os
+import base64
 
 ai_bp = Blueprint('ai', __name__, template_folder='templates')
 
@@ -29,7 +35,6 @@ def generate_task():
         if task_details:
             generated_task_html = render_template('generated_task.html', task=task_details, game_id=game_id)
             return jsonify({"generated_task_html": generated_task_html})
-        
         else:
             return jsonify({"error": error_message or "Failed to generate valid task details"}), 500
 
@@ -40,8 +45,6 @@ def generate_task():
         print(f"Error processing request: {e}")
         return jsonify({'error': str(e)}), 400
 
-    
-
 @ai_bp.route('/create_task', methods=['POST'])
 @login_required
 def create_task():
@@ -49,20 +52,23 @@ def create_task():
     form_data = MultiDict(request.form)
     form.process(form_data)
 
-    # Print form data for debugging
-    print("Received form data:", form_data)
-
     if form.validate():
         badge_id = form.badge_id.data if form.badge_id.data and form.badge_id.data != '0' else None
+        ai_badge_filename = form_data.get('ai_badge_filename', None)
 
         if not badge_id and form.badge_name.data:
-            badge_image_file = None
-            if 'badge_image_filename' in request.files:
+            badge_image_file = ai_badge_filename
+            if 'badge_image_filename' in request.files and not ai_badge_filename:
                 badge_image_file = request.files['badge_image_filename']
                 if badge_image_file and badge_image_file.filename != '':
                     badge_image_file = save_badge_image(badge_image_file)
                 else:
                     return jsonify({"success": False, "message": "No badge image selected for upload."}), 400
+            elif ai_badge_filename:
+                # If AI badge URL is provided, use it directly
+                badge_image_file = ai_badge_filename
+            else:
+                return jsonify({"success": False, "message": "No badge image selected for upload."}), 400
 
             new_badge = Badge(
                 name=form.badge_name.data,
@@ -100,6 +106,53 @@ def create_task():
     else:
         return jsonify({"success": False, "message": "Validation failed", "errors": form.errors}), 400
 
+@ai_bp.route('/generate_badge_image', methods=['POST'])
+@login_required
+def generate_badge_image():
+    client = OpenAI(api_key=current_app.config['OPENAI_API_KEY'])
+
+    try:
+        data = request.get_json()
+        badge_description = data.get('badge_description', '')
+        if not badge_description:
+            return jsonify({"error": "Badge description is required"}), 400
+
+        badge_prompt = (
+            "Remove any textual inscription in the framing or otherwise and create one uber epic, symbolic, and timeless badge for a Bicycle Task Quest web app that fits this description while keeping the background invisible (transparent): " + badge_description
+        )
+        response = client.images.generate(
+            model="dall-e-3",
+            prompt=badge_prompt,
+            size="1024x1024",
+            quality="standard",
+            n=1
+        )
+
+        # Fetch the generated image URL from the response
+        generated_image_url = response.data[0].url
+
+        # Fetch the image from the generated URL
+        image_response = requests.get(generated_image_url)
+        if image_response.status_code != 200:
+            return jsonify({'error': 'Failed to fetch generated image'}), 500
+
+        # Convert the image to a format that can be saved
+        image = Image.open(BytesIO(image_response.content))
+        #filename = f"{secure_filename(str(uuid.uuid4()))}.png"
+        filename = save_badge_image(image)
+
+        return jsonify({'filename': filename})
+
+    except requests.exceptions.RequestException as e:
+        if e.response.status_code == 429:
+            return too_many_requests()
+        return jsonify({'error': str(e)}), 500
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+def too_many_requests(e=None):
+    return render_template('429.html'), 429
 
 def generate_task_details(description):
     client = OpenAI(api_key=current_app.config['OPENAI_API_KEY'])
@@ -119,7 +172,7 @@ def generate_task_details(description):
         relevance_prompt = f"""
         Based on the task description:
         {task_text}
-        Is this Task in any way possibly bicycle, bike, or cycle-related? Meaning the Task is done by Bike? (Answer with True or False)
+        Is this Task in any small possible way bicycle, bike, cycle, or cycle-related? Meaning the Task has been accomplished by bicycle? (Answer with True or False)
         """
         relevance_response = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -146,12 +199,11 @@ def generate_task_details(description):
     except Exception as e:
         return None, f"Failed to generate task due to an error: {str(e)}"
 
-
 def generate_task_prompt(description):
     prompt = f"""
     Here are examples of tasks and their respective badges, the format needs to remain:
 
-    Task:
+    Complete Task:
 
     Category: Student
     Title: Ride your bike to an after school activity
@@ -164,7 +216,7 @@ def generate_task_prompt(description):
     Badge Name: Activity Accessor
     Badge Description: Earned by those who extend their cycling beyond the classroom to after school activities. This badge applauds your dedication to staying active and environmentally conscious, highlighting the bike's role in supporting a balanced and engaged lifestyle.
 
-    Task:
+    Complete Task:
 
     Category: Errands
     Title: Clean clothes using clean energy.
@@ -177,7 +229,7 @@ def generate_task_prompt(description):
     Badge Name: Clean Cycle Laundromat
     Badge Description: For incorporating your bicycle into the routine task of laundry, this badge applauds your innovative use of clean energy for everyday chores. Your commitment to cycling extends into all aspects of life, promoting a holistic approach to eco-friendly living.
 
-    Task:
+    Complete Task:
 
     Category: Work
     Title: Ride your bike to work for a week.
@@ -190,7 +242,7 @@ def generate_task_prompt(description):
     Badge Name: Commuter Champion
     Badge Description: Earned by choosing the bike as your daily commute to work, this badge honors your contribution to reducing traffic congestion and pollution. Your commitment showcases a model for integrating fitness and environmental stewardship into daily life.
 
-    Task:
+    Complete Task:
 
     Category: Food
     Title: Need to get something delivered? Use a pedal-powered delivery service.
@@ -203,7 +255,7 @@ def generate_task_prompt(description):
     Badge Name: Eco Courier Champion
     Badge Description: For choosing pedal-powered delivery services for your delivery needs, this badge honors your commitment to minimizing environmental impact. Your decision supports sustainable logistics and contributes to a greener, more livable urban space.
 
-    Task:
+    Complete Task:
 
     Category: Around Town
     Title: Take a pedicab ride
@@ -216,16 +268,15 @@ def generate_task_prompt(description):
     Badge Name: Eco Joy Rider
     Badge Description: Earned the 'Eco Joy Rider' badge by taking a pedicab ride, making a sustainable choice for your journey. Keep cruising carbon-free and leading the way toward a greener future.
 
-    Frequency field is required to be one of the following: Daily, Weekly, or Monthly.
+    Frequency field is required to only be one of the following: Daily, Weekly, or Monthly.
 
-    Please generate a task based on the description below making the points be reflective of the difficulty of the task not to exceed 500 or be below 100, the completion limit and frequency reflective of the repeatability, and verification type to be reflective of if a photo or comment is needed or both.'.
+    Generate a complete new task based on the description below making the points be reflective of the difficulty of the task not to exceed 500 or be below 100, the completion limit and frequency reflective of the repeatability, and verification type to be reflective of if a photo or comment is needed or both.'.
 
     Description: {description}
 
     Task:
     """
     return prompt
-
 
 def parse_generated_text(response_text):
     try:
@@ -262,21 +313,3 @@ def parse_generated_text(response_text):
         return task_details
     except (IndexError, ValueError) as e:
         raise ValueError(f"Error parsing response: {str(e)}")
-
-
-
-def create_badge_image(badge_description):
-    url = "https://api.dalle.com/v1/images/generations"
-    headers = {
-        "Authorization": f"Bearer {current_app.config['DALLE_API_KEY']}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "prompt": badge_description + ", no words in the image",
-        "size": "1024x1024",
-        "n": 1
-    }
-    response = requests.post(url, headers=headers, json=data)
-    response_data = response.json()
-    image_url = response_data['data'][0]['url']
-    return image_url
