@@ -256,10 +256,12 @@
                 </div>
             {% endif %}
             {% if current_user.is_authenticated %}
-                <!-- Task Creation Button -->
-                <div class="text-center mb-4">
-                    <button data-game-id="{{ game.id }}" class="btn btn-primary btn-lg mb-2" onclick="openTaskCreationModal(this)">Create New Task</button>
-                </div>
+                {% if current_user.is_admin %}
+                    <!-- Task Creation Button -->
+                    <div class="text-center mb-4">
+                        <button data-game-id="{{ game.id }}" class="btn btn-primary btn-lg mb-2" onclick="openTaskCreationModal(this)">Create New Task</button>
+                    </div>
+                {% endif %}
             {% endif %}
         </div>
     {% endif %}

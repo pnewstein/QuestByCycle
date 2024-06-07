@@ -367,8 +367,8 @@
             return response.blob();
         })
         .then(blob => {
-            const imageUrl = URL.createObjectURL(blob);
-            win.document.write('<img src="' + imageUrl + '" style="width: auto; height: auto;"/>');
+            const imageFilename = URL.createObjectURL(blob);
+            win.document.write('<img src="' + imageFilename + '" style="width: auto; height: auto;"/>');
             window.open(url, '_blank');
         })
         .catch(error => {

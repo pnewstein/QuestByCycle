@@ -568,8 +568,8 @@ def handle_large_file_error(e):
 def get_image_url(taskId):
     task = Task.query.get_or_404(taskId)
     # Assume the image URL is stored in a Task model attribute
-    imageUrl = task.image_url if task.image_url else url_for('static', filename='default.jpg')
-    return jsonify(success=True, imageUrl=imageUrl)
+    imageFilename = task.image_url if task.image_url else url_for('static', filename='default.jpg')
+    return jsonify(success=True, imageFilename=imageFilename)
 
 
 @tasks_bp.route('/task/my_submissions', methods=['GET'])

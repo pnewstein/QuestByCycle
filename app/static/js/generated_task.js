@@ -1,3 +1,4 @@
+// Function to open the task creation modal
 function openTaskCreationModal() {
     openModal('taskCreationModal');
 }
@@ -57,6 +58,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             modalForm.setAttribute('data-game-id', gameId);
                         }
                         if (modalForm) {
+                            // Add event listener for the form submission
                             modalForm.addEventListener('submit', function(e) {
                                 e.preventDefault();
                                 const formData = new FormData(modalForm);
@@ -71,12 +73,63 @@ document.addEventListener("DOMContentLoaded", function() {
                                 }).then(response => response.json())
                                 .then(result => {
                                     // Handle the response here
+                                    window.location.href = '/';
+
                                     console.log(result);
                                 }).catch(error => {
                                     console.error('Error:', error);
                                 });
                             });
                         }
+
+                        // Add the generate AI badge functionality
+                        const generateAIImageBtn = document.getElementById('generateAIImage');
+                        const badgeDescriptionInput = document.getElementById('badge_description');
+                        const aiBadgeImage = document.getElementById('aiBadgeImage');
+                        const aiBadgeFilenameInput = document.getElementById('aiBadgeFilename');
+                    
+                        if (!generateAIImageBtn || !badgeDescriptionInput || !aiBadgeImage || !aiBadgeFilenameInput) {
+                            console.error("One or more elements not found in the DOM");
+                            return;
+                        }
+                    
+                        generateAIImageBtn.addEventListener('click', function() {
+                            console.log("Generate AI Image button clicked");
+                    
+                            const badgeDescription = badgeDescriptionInput.value;
+                            console.log("Badge Description:", badgeDescription);
+                    
+                            if (!badgeDescription) {
+                                alert('Please enter a badge description first.');
+                                return;
+                            }
+                    
+                            fetch('/ai/generate_badge_image', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': document.querySelector('[name=csrf_token]').value
+                                },
+                                body: JSON.stringify({ badge_description: badgeDescription })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log("Response data:", data);
+                                if (data.error) {
+                                    alert('Error generating badge image: ' + data.error);
+                                } else {
+                                    const imageFilename = `${data.filename}`;
+                                    const imageURL = `static/images/badge_images/${data.filename}`;
+                                    aiBadgeImage.src = imageURL;
+                                    aiBadgeImage.style.display = 'block';
+                                    aiBadgeFilenameInput.value = imageFilename;
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Fetch error:', error);
+                                alert('Error: ' + error);
+                            });
+                        });
                     }
                 })
                 .catch(error => {
