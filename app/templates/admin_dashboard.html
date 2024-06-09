@@ -4,6 +4,22 @@
 
 {% block content %}
 <div class="container">
+    {% if current_user.is_authenticated %}
+        <!-- Display Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    {% endif %}
+
     <a href="{{ url_for('main.index') }}" class="button">Back to Home</a> <!-- Back button to home -->
     <h1>Admin Dashboard</h1>
     <div>Welcome, {{ current_user.username }}! This is the admin dashboard.</div>
