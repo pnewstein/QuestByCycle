@@ -58,31 +58,29 @@ def manage_game_tasks(game_id):
 @login_required
 def add_task(game_id):
     form = TaskForm()
+    form.game_id.data = game_id  # Set the game_id field in the form
+
     if form.validate_on_submit():
         badge_id = form.badge_id.data if form.badge_id.data and form.badge_id.data != '0' else None
 
         if not badge_id and form.badge_name.data:
-            # Initialize badge_image_path as None to handle cases where no image is uploaded
             badge_image_file = None
             if 'badge_image_filename' in request.files:
                 badge_image_file = request.files['badge_image_filename']
-                # Ensure the file exists and has a filename (indicating a file was selected for upload)
                 if badge_image_file and badge_image_file.filename != '':
                     badge_image_file = save_badge_image(badge_image_file)
                 else:
                     flash('No badge image selected for upload.', 'error')
-            
-            # Create a new badge with or without an image based on the file upload
+
             new_badge = Badge(
                 name=form.badge_name.data,
                 description=form.badge_description.data,
                 image=badge_image_file
             )
             db.session.add(new_badge)
-            db.session.flush()  # Ensures new_badge gets an ID
+            db.session.flush()
             badge_id = new_badge.id
 
-        # Proceed to create the task with or without a new badge
         new_task = Task(
             title=form.title.data,
             description=form.description.data,
@@ -108,6 +106,7 @@ def add_task(game_id):
         return redirect(url_for('tasks.manage_game_tasks', game_id=game_id))
 
     return render_template('add_task.html', form=form, game_id=game_id)
+
 
 
 @tasks_bp.route('/task/<int:task_id>/submit', methods=['POST'])
@@ -561,15 +560,6 @@ def allowed_file(filename):
 @tasks_bp.errorhandler(RequestEntityTooLarge)
 def handle_large_file_error(e):
     return "File too large", 413
-
-
-@tasks_bp.route('/get-image-url/<int:taskId>')
-@login_required
-def get_image_url(taskId):
-    task = Task.query.get_or_404(taskId)
-    # Assume the image URL is stored in a Task model attribute
-    imageFilename = task.image_url if task.image_url else url_for('static', filename='default.jpg')
-    return jsonify(success=True, imageFilename=imageFilename)
 
 
 @tasks_bp.route('/task/my_submissions', methods=['GET'])

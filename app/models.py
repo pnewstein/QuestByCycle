@@ -118,18 +118,15 @@ class Task(db.Model):
     verification_comment = db.Column(db.String(1000), default="")
     game_id = db.Column(db.Integer, db.ForeignKey('game.id', ondelete='CASCADE'))
     game = db.relationship('Game', back_populates='tasks')
-    points = db.Column(db.Integer, default='')
+    points = db.Column(db.Integer, default=0)
     tips = db.Column(db.String(2000), default='', nullable=True)
     completion_limit = db.Column(db.Integer, default=1)
     frequency = db.Column(db.String(50), nullable=True)
     user_tasks = db.relationship('UserTask', back_populates='task', cascade="all, delete", passive_deletes=True)
     category = db.Column(db.String(50), nullable=True)
     badge_id = db.Column(db.Integer, db.ForeignKey('badge.id'), nullable=True)
-    badge = db.relationship('Badge', back_populates='tasks')
     submissions = db.relationship('TaskSubmission', back_populates='task', cascade='all, delete-orphan')
     likes = db.relationship('TaskLike', backref='task', cascade="all, delete-orphan")
-
-Badge.tasks = db.relationship('Task', order_by=Task.id, back_populates='badge')
 
 class TaskLike(db.Model):
     __tablename__ = 'task_likes'
@@ -150,12 +147,11 @@ class Game(db.Model):
     tasks = db.relationship('Task', back_populates='game', cascade="all, delete-orphan", lazy='dynamic')
     participants = db.relationship('User', secondary='game_participants', lazy='subquery', backref=db.backref('games', lazy=True))
     game_goal = db.Column(db.Integer)
-    details = db.Column(db.Text)  # New field for detailed game information
-    awards = db.Column(db.Text)  # Information about awards
-    beyond = db.Column(db.Text)  # Information on living a sustainable bicycle lifestyle
+    details = db.Column(db.Text)
+    awards = db.Column(db.Text)
+    beyond = db.Column(db.Text)
     sponsors = db.relationship('Sponsor', back_populates='game', cascade='all, delete-orphan')
 
-    # Social media credentials
     twitter_username = db.Column(db.String(500), nullable=True)
     twitter_api_key = db.Column(db.String(500), nullable=True)
     twitter_api_secret = db.Column(db.String(500), nullable=True)
@@ -192,12 +188,10 @@ class Game(db.Model):
                 except IntegrityError:
                     db.session.rollback()
                     
-
 game_participants = db.Table('game_participants',
     db.Column('game_id', db.Integer, db.ForeignKey('game.id'), primary_key=True),
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
 )
-
 
 class PlayerMessageBoardMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)

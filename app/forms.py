@@ -78,6 +78,7 @@ class GameForm(FlaskForm):
     submit = SubmitField('Create Game')
 
 
+
 class TaskForm(FlaskForm):
     enabled = BooleanField('Enabled', default=True)
     is_sponsored = BooleanField('Is Sponsored', default=False)
@@ -93,27 +94,28 @@ class TaskForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
     tips = TextAreaField('Tips', validators=[Optional()])
-    points = IntegerField('Points', validators=[DataRequired(), NumberRange(min=1)], default=1)
+    points = IntegerField('Points', validators=[DataRequired(), NumberRange(min=1)], default=1)  # Assuming tasks have at least 1 point
     completion_limit = IntegerField('Completion Limit', validators=[DataRequired(), NumberRange(min=1)], default=1)
     frequency = SelectField('Frequency', choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly')], validators=[DataRequired()])
     badge_id = SelectField('Badge', coerce=int, choices=[], validators=[Optional()])
     badge_name = StringField('Badge Name', validators=[Optional()])
     badge_description = TextAreaField('Badge Description', validators=[Optional()])
     badge_image_filename = FileField('Badge Image', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
+    default_badge_image = SelectField('Select Default Badge Image', coerce=str, choices=[], default='')
     game_id = HiddenField('Game ID', validators=[DataRequired()])
     submit = SubmitField('Create Task')
 
     def __init__(self, *args, **kwargs):
         super(TaskForm, self).__init__(*args, **kwargs)
         self.badge_id.choices = [(0, 'None')] + [(badge.id, badge.name) for badge in Badge.query.all()]
-
-
+        badge_image_directory = os.path.join(current_app.root_path, 'static/images/badge_images')
+        if not os.path.exists(badge_image_directory):
+            os.makedirs(badge_image_directory)  # Create the directory if it does not exist
+        self.default_badge_image.choices = [('','None')] + [(filename, filename) for filename in os.listdir(badge_image_directory)]
     def validate_completion_limit(form, field):
         valid_completion_limits = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
         if field.data not in valid_completion_limits:
             field.data = 1
-
-
 
 class TaskImportForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
@@ -178,7 +180,6 @@ class BadgeForm(FlaskForm):
         if category_choices is None:
             category_choices = []
         self.category.choices = [('none', 'None')] + category_choices
-
 
 class TaskImportForm(FlaskForm):
     csv_file = FileField('CSV File', validators=[DataRequired(), FileAllowed(['csv'], 'CSV files only!')])
