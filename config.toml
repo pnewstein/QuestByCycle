@@ -7,9 +7,9 @@ CAROUSEL_IMAGES_DIR = "carousel_images"
 TASKCSV = "csv"
 
 [encryption]
-DEFAULT_ADMIN_PASSWORD = "password"
-DEFAULT_ADMIN_USERNAME = "admin"
-DEFAULT_ADMIN_EMAIL = "user@example.com"
+DEFAULT_SUPER_ADMIN_PASSWORD = "password"
+DEFAULT_SUPER_ADMIN_USERNAME = "admin"
+DEFAULT_SUPER_ADMIN_EMAIL = "user@example.com"
 SECRET_KEY = "changethiskey"
 SESSION_COOKIE_SECURE = true
 SESSION_COOKIE_NAME = "QuestsByCycles_Session"
@@ -17,6 +17,9 @@ SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_DOMAIN = false
 SESSION_REFRESH_EACH_REQUEST = true
 REMEMBER_COOKIE_DURATION_DAYS = 180
+
+[openai]
+OPENAI_API_KEY = ""
 
 [flask]
 SQLALCHEMY_DATABASE_URI = "postgresql://username:password@localhost/databasename"
@@ -27,6 +30,6 @@ MAIL_SERVER = "smtp.gmail.com"
 MAIL_PORT = 587
 MAIL_USE_TLS = true
 MAIL_USE_SSL = false
-MAIL_USERNAME = "x@gmail.com"
-MAIL_PASSWORD = "hghqs"
-MAIL_DEFAULT_SENDER = "x@example.com"
+MAIL_USERNAME = ""
+MAIL_PASSWORD = ""
+MAIL_DEFAULT_SENDER = ""
