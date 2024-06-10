@@ -4,6 +4,7 @@ from .forms import BadgeForm
 from .utils import save_badge_image, allowed_file
 from .models import db, Task, Badge, UserTask, Game
 from werkzeug.utils import secure_filename
+from bleach import clean as sanitize_html
 
 import os
 import csv
@@ -19,22 +20,26 @@ def allowed_file(filename):
 @badges_bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def create_badge():
-
     if not current_user.is_admin:
         flash('Access denied: Only administrators can manage badges.', 'danger')
         return redirect(url_for('main.index'))
-    
+
     categories = db.session.query(Task.category).filter(Task.category != None).distinct().all()
     category_choices = [(category.category, category.category) for category in categories]
-    form = BadgeForm(category_choices=category_choices)  # Assuming form setup
-    
+    form = BadgeForm(category_choices=category_choices)
+
     if form.validate_on_submit():
         filename = None
         if 'image' in request.files:
             image_file = request.files['image']
             if image_file and image_file.filename != '':
                 filename = save_badge_image(image_file)
-        new_badge = Badge(name=form.name.data, description=form.description.data, image=filename, category=form.category.data)
+        new_badge = Badge(
+            name=sanitize_html(form.name.data),
+            description=sanitize_html(form.description.data),
+            image=filename,
+            category=sanitize_html(form.category.data)
+        )
         db.session.add(new_badge)
         db.session.commit()
         flash('Badge created successfully!', 'success')
@@ -61,22 +66,21 @@ def manage_badges():
     if not current_user.is_admin:
         flash('Access denied: Only administrators can manage badges.', 'danger')
         return redirect(url_for('main.index'))
-    
+
     categories = db.session.query(Task.category).filter(Task.category != None).distinct().all()
     category_choices = [(category.category, category.category) for category in categories]
-    form = BadgeForm(category_choices=category_choices)  # Assuming form setup
+    form = BadgeForm(category_choices=category_choices)
 
     if form.validate_on_submit():
-        # Similar to how profile pictures are handled
         if 'image' in request.files:
             image_file = request.files['image']
             if image_file and image_file.filename != '':
-                filename = save_badge_image(image_file)  # Your function to save the image and return the filename
+                filename = save_badge_image(image_file)
                 new_badge = Badge(
-                    name=form.name.data,
-                    description=form.description.data,
+                    name=sanitize_html(form.name.data),
+                    description=sanitize_html(form.description.data),
                     image=filename,
-                    category=request.form['category']
+                    category=sanitize_html(request.form['category'])
                 )
                 db.session.add(new_badge)
                 db.session.commit()
@@ -98,12 +102,12 @@ def update_badge(badge_id):
     badge = Badge.query.get_or_404(badge_id)
     categories = db.session.query(Task.category).filter(Task.category != None).distinct().all()
     category_choices = [(category.category, category.category) for category in categories]
-    form = BadgeForm(category_choices=category_choices)  # Assuming form setup
+    form = BadgeForm(category_choices=category_choices)
 
     if form.validate_on_submit():
-        badge.name = form.name.data
-        badge.description = form.description.data
-        badge.category = form.category.data
+        badge.name = sanitize_html(form.name.data)
+        badge.description = sanitize_html(form.description.data)
+        badge.category = sanitize_html(form.category.data)
         if badge.category == 'none':
             badge.category = None
         if 'image' in request.files:

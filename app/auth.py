@@ -8,6 +8,7 @@ from flask_mail import Mail
 from sqlalchemy import or_
 from pytz import utc
 from datetime import datetime
+from bleach import clean as sanitize_html
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -18,7 +19,7 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        email = form.email.data  # Assuming that the LoginForm has an 'email' field
+        email = sanitize_html(form.email.data)
         password = form.password.data
         if not email or not password:
             flash('Please enter both email and password.')
@@ -26,16 +27,11 @@ def login():
 
         user = User.query.filter_by(email=email).first()
 
-        if user is None:  # Check if user exists
+        if user is None:
             flash('Invalid email or password.')
             return redirect(url_for('auth.login'))
-        
-        # Temporary code to set email_verified to True for admin users
-        #if user.is_admin and not user.email_verified:
-        #    user.email_verified = True
-        #    db.session.commit()
 
-        if not user.email_verified:  # Now it's safe to check email verification
+        if not user.email_verified:
             flash('Please verify your email before logging in.', 'warning')
             return render_template('login.html', form=form, show_resend=True, email=email)
 
@@ -43,7 +39,6 @@ def login():
             login_user(user, remember=form.remember_me.data)
             flash('Logged in successfully.')
             next_page = request.args.get('next')
-            # Redirect to the admin dashboard if the user is an admin
             if user.is_admin:
                 return redirect(next_page or url_for('admin.admin_dashboard'))
             else:
@@ -95,14 +90,13 @@ def register():
             flash('You must agree to the terms of service, license agreement, and privacy policy.', 'warning')
             return render_template('register.html', form=form)
 
-        email = form.email.data
+        email = sanitize_html(form.email.data)
         base_username = email.split('@')[0]
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
             flash('Email already registered. Please use a different email.', 'warning')
             return redirect(url_for('auth.register'))
 
-        # Find similar usernames and generate a unique one
         counter = 1
         username = base_username
         while User.query.filter(or_(User.username == username, User.email == email)).first():
@@ -110,14 +104,13 @@ def register():
             counter += 1
 
         user = User(
-            username=username,
+            username=sanitize_html(username),
             email=email,
-            license_agreed=form.accept_license.data,  # Ensure license_agreed is assigned
-            email_verified=False,  # Default to not verified
-            is_admin=False,  # Default to not admin
-            created_at=datetime.now(utc),  # Use timezone-aware datetime
-            #created_at=datetime.now(),
-            score=0,  # Default score
+            license_agreed=form.accept_license.data,
+            email_verified=False,
+            is_admin=False,
+            created_at=datetime.now(utc),
+            score=0,
             display_name=None,
             profile_picture=None,
             age_group=None,
@@ -126,22 +119,22 @@ def register():
         user.set_password(form.password.data)
         db.session.add(user)
         try:
-            db.session.commit()  # Commit the user creation first
+            db.session.commit()
 
             token = user.generate_verification_token()
             verify_url = url_for('auth.verify_email', token=token, _external=True)
             html = render_template('verify_email.html', verify_url=verify_url)
             subject = "QuestByCycle verify email"
             send_email(user.email, subject, html)
-            
+
             flash('A verification email has been sent to you. Please check your inbox.', 'info')
             return redirect(url_for('auth.login'))
-        
-        except Exception as e:  # Now catch errors in both commit and email sending
+
+        except Exception as e:
             db.session.rollback()
             flash('Registration failed due to an unexpected error. Please try again.', 'error')
             current_app.logger.error(f'Failed to register user or send verification email: {e}')
-            return render_template('register.html', title='Register', form=form)  # Stay on registration page with error
+            return render_template('register.html', title='Register', form=form)
 
     return render_template('register.html', title='Register', form=form)
 
@@ -187,16 +180,16 @@ def manage_sponsors():
     if not current_user.is_admin:
         flash('Access denied.', 'danger')
         return redirect(url_for('auth.login'))
-    
+
     form = SponsorForm()
     if form.validate_on_submit():
         sponsor = Sponsor(
-            name=form.name.data,
-            website=form.website.data,
-            logo=form.logo.data,
-            description=form.description.data,
-            tier=form.tier.data,
-            game_id=form.game_id.data
+            name=sanitize_html(form.name.data),
+            website=sanitize_html(form.website.data),
+            logo=sanitize_html(form.logo.data),
+            description=sanitize_html(form.description.data),
+            tier=sanitize_html(form.tier.data),
+            game_id=sanitize_html(form.game_id.data)
         )
         db.session.add(sponsor)
         db.session.commit()
@@ -206,27 +199,29 @@ def manage_sponsors():
     sponsors = Sponsor.query.all()
     return render_template('manage_sponsors.html', form=form, sponsors=sponsors)
 
+
 @auth_bp.route('/admin/sponsors/edit/<int:sponsor_id>', methods=['GET', 'POST'])
 @login_required
 def edit_sponsor(sponsor_id):
     if not current_user.is_admin:
         flash('Access denied.', 'danger')
         return redirect(url_for('auth.login'))
-    
+
     sponsor = Sponsor.query.get_or_404(sponsor_id)
     form = SponsorForm(obj=sponsor)
     if form.validate_on_submit():
-        sponsor.name = form.name.data
-        sponsor.website = form.website.data
-        sponsor.logo = form.logo.data
-        sponsor.description = form.description.data
-        sponsor.tier = form.tier.data
-        sponsor.game_id = form.game_id.data
+        sponsor.name = sanitize_html(form.name.data)
+        sponsor.website = sanitize_html(form.website.data)
+        sponsor.logo = sanitize_html(form.logo.data)
+        sponsor.description = sanitize_html(form.description.data)
+        sponsor.tier = sanitize_html(form.tier.data)
+        sponsor.game_id = sanitize_html(form.game_id.data)
         db.session.commit()
         flash('Sponsor updated successfully!', 'success')
         return redirect(url_for('auth.manage_sponsors'))
 
     return render_template('edit_sponsors.html', form=form)
+
 
 @auth_bp.route('/admin/sponsors/delete/<int:sponsor_id>', methods=['POST'])
 @login_required

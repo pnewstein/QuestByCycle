@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import func
 from datetime import datetime, timedelta, timezone
 from pytz import utc
+from bleach import clean as sanitize_html
 
 import os
 import logging
@@ -146,30 +147,6 @@ def index(game_id, task_id, user_id):
 
     custom_games = Game.query.filter(Game.custom_game_code.isnot(None), Game.is_public.is_(True)).all()
 
-    if current_user.is_authenticated:
-        profform = ProfileForm()
-
-        if request.method == 'POST':
-            if profform.validate_on_submit():
-                current_user.display_name = profform.display_name.data
-                current_user.age_group = profform.age_group.data
-                current_user.interests = profform.interests.data
-
-                if 'profile_picture' in request.files:
-                    profile_picture_file = request.files['profile_picture']
-                    if profile_picture_file.filename != '':
-                        filename = save_profile_picture(profile_picture_file)
-                        current_user.profile_picture = filename
-
-                db.session.commit()
-                flash('Profile updated successfully.', 'success')
-                return redirect(url_for('main.profile'))
-
-        elif request.method == 'GET':
-            profform.display_name.data = current_user.display_name
-            profform.age_group.data = current_user.age_group
-            profform.interests.data = current_user.interests
-
     return render_template('index.html',
                            form=form,
                            games=user_games,
@@ -196,7 +173,7 @@ def shout_board():
     form = ShoutBoardForm()
     if form.validate_on_submit():
         is_pinned = 'is_pinned' in request.form  # Check if the pin checkbox was checked
-        shout_message = ShoutBoardMessage(message=form.message.data, user_id=current_user.id, is_pinned=is_pinned)
+        shout_message = ShoutBoardMessage(message=sanitize_html(form.message.data), user_id=current_user.id, is_pinned=is_pinned)
         db.session.add(shout_message)
         db.session.commit()
         flash('Your message has been posted!', 'success')
@@ -315,9 +292,9 @@ def edit_profile(user_id):
     
     user = User.query.get_or_404(user_id)
     
-    user.display_name = request.form.get('display_name', user.display_name)
-    user.interests = request.form.get('interests', user.interests)
-    user.age_group = request.form.get('age_group', user.age_group)
+    user.display_name = sanitize_html(request.form.get('display_name', user.display_name))
+    user.interests = sanitize_html(request.form.get('interests', user.interests))
+    user.age_group = sanitize_html(request.form.get('age_group', user.age_group))
 
     if 'profile_picture' in request.files:
         profile_picture_file = request.files['profile_picture']
@@ -364,13 +341,13 @@ def update_profile():
             old_filename = current_user.profile_picture
             current_user.profile_picture = save_profile_picture(file, old_filename)
     
-    # Assuming you have a form or JSON data to update other user attributes
-    current_user.display_name = request.form.get('display_name', current_user.display_name)
-    current_user.age_group = request.form.get('age_group', current_user.age_group)
-    current_user.interests = request.form.get('interests', current_user.interests)
+    current_user.display_name = sanitize_html(request.form.get('display_name', current_user.display_name))
+    current_user.age_group = sanitize_html(request.form.get('age_group', current_user.age_group))
+    current_user.interests = sanitize_html(request.form.get('interests', current_user.interests))
 
     db.session.commit()
     return jsonify(success=True)
+
 
 @main_bp.route('/game-info')
 def game_info():
@@ -400,9 +377,9 @@ def pin_message(message_id):
 def contact():    
     form = ContactForm()
     if form.validate_on_submit():
-        message = form.message.data
+        message = sanitize_html(form.message.data)
         subject = "New Contact Form Submission"
-        recipient = current_app.config['MAIL_DEFAULT_SENDER']  # Replace with the desired recipient email
+        recipient = current_app.config['MAIL_DEFAULT_SENDER']
 
         user_info = None
         if current_user.is_authenticated:

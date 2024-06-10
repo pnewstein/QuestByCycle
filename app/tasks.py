@@ -8,16 +8,17 @@ from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 from datetime import datetime, timezone, timedelta
 from io import BytesIO
+from bleach import clean as sanitize_html
 
 import base64
 import csv
 import os
 import qrcode
 
+
 tasks_bp = Blueprint('tasks', __name__, template_folder='templates')
 
-
-@tasks_bp.route('/<int:game_id>/manage_tasks', methods=['GET', 'POST'])
+@tasks_bp.route('/<int:game_id>/manage_tasks', methods=['GET'])
 @login_required
 def manage_game_tasks(game_id):
     game = Game.query.get_or_404(game_id)
@@ -27,30 +28,7 @@ def manage_game_tasks(game_id):
         return redirect(url_for('main.index', game_id=game_id))
     
     form = TaskForm()
-
-    if request.method == 'POST':
-
-        if form.validate_on_submit():
-            task = Task(
-                title=form.title.data,
-                description=form.description.data,
-                game_id=game_id
-            )
-
-            db.session.add(task)
-            try:
-                db.session.commit()
-                flash('Task added successfully', 'success')
-            except Exception as e:
-                db.session.rollback()
-                flash(f'Error adding task: {str(e)}', 'error')
-
-            return redirect(url_for('tasks.manage_game_tasks', game_id=game_id))
-
-    # Retrieve tasks each time the page is loaded or reloaded
     tasks = Task.query.filter_by(game_id=game_id).all()
-    
-    # Pass game_id to the template, alongside the game object, tasks, and form
     return render_template('manage_tasks.html', game=game, tasks=tasks, form=form, game_id=game_id)
 
 
@@ -73,8 +51,8 @@ def add_task(game_id):
                     flash('No badge image selected for upload.', 'error')
 
             new_badge = Badge(
-                name=form.badge_name.data,
-                description=form.badge_description.data,
+                name=sanitize_html(form.badge_name.data),
+                description=sanitize_html(form.badge_description.data),
                 image=badge_image_file
             )
             db.session.add(new_badge)
@@ -82,17 +60,17 @@ def add_task(game_id):
             badge_id = new_badge.id
 
         new_task = Task(
-            title=form.title.data,
-            description=form.description.data,
-            tips=form.tips.data,
-            points=form.points.data,
+            title=sanitize_html(form.title.data),
+            description=sanitize_html(form.description.data),
+            tips=sanitize_html(form.tips.data),
+            points=sanitize_html(form.points.data),
             game_id=game_id,
-            completion_limit=form.completion_limit.data,
-            frequency=form.frequency.data,
+            completion_limit=sanitize_html(form.completion_limit.data),
+            frequency=sanitize_html(form.frequency.data),
             enabled=form.enabled.data,
             is_sponsored=form.is_sponsored.data,
-            category=form.category.data,
-            verification_type=form.verification_type.data,
+            category=sanitize_html(form.category.data),
+            verification_type=sanitize_html(form.verification_type.data),
             badge_id=badge_id
         )
         db.session.add(new_task)
@@ -108,7 +86,6 @@ def add_task(game_id):
     return render_template('add_task.html', form=form, game_id=game_id)
 
 
-
 @tasks_bp.route('/task/<int:task_id>/submit', methods=['POST'])
 @login_required
 def submit_task(task_id):
@@ -122,12 +99,11 @@ def submit_task(task_id):
     fb_url = None
 
     if not (game_start <= now <= game_end):
-        # Directly return the message in the JSON response
         return jsonify({'success': False, 'message': 'This task cannot be completed outside of the game dates'}), 403
 
     verification_type = task.verification_type
     image_file = request.files.get('image')
-    comment = request.form.get('verificationComment', '')
+    comment = sanitize_html(request.form.get('verificationComment', ''))
 
     if verification_type == 'qr_code':
         return jsonify({'success': True, 'message': 'QR Code verification does not require any submission'}), 200
@@ -172,7 +148,7 @@ def submit_task(task_id):
 
             # Post to Instagram
             #insta_post_response = post_photo_to_instagram(game.instagram_page_id, image_url, status, game.facebook_access_token)
-
+            
         new_submission = TaskSubmission(
             task_id=task_id,
             user_id=current_user.id,
@@ -201,14 +177,13 @@ def submit_task(task_id):
         if user_task.points_awarded is None:
             user_task.points_awarded = 0
 
-        # Check against the task's completion limit before incrementing
         user_task.completions += 1
         user_task.points_awarded += task.points
         user_task.completed = True
 
         db.session.commit()
 
-        update_user_score(current_user.id)  # This function should recalculate and update the user's score
+        update_user_score(current_user.id)
         check_and_award_badges(user_id=current_user.id, task_id=task_id)
 
         total_points = sum(ut.points_awarded for ut in UserTask.query.filter_by(user_id=current_user.id))
@@ -236,19 +211,17 @@ def update_task(task_id):
     task = Task.query.get_or_404(task_id)
     data = request.get_json()
 
-    # Update task with new data
-    task.title = data.get('title', task.title)
-    task.description = data.get('description', task.description)
-    task.tips = data.get('tips', task.tips)
-    task.points = int(data.get('points', task.points))
-    task.completion_limit = int(data.get('completion_limit', task.completion_limit))
+    task.title = sanitize_html(data.get('title', task.title))
+    task.description = sanitize_html(data.get('description', task.description))
+    task.tips = sanitize_html(data.get('tips', task.tips))
+    task.points = int(sanitize_html(data.get('points', task.points)))
+    task.completion_limit = int(sanitize_html(data.get('completion_limit', task.completion_limit)))
     task.enabled = data.get('enabled', task.enabled)
     task.is_sponsored = data.get('is_sponsored', task.is_sponsored)
-    task.category = data.get('category', task.category)
-    task.verification_type = data.get('verification_type', task.verification_type)
-    task.frequency = data.get('frequency', task.frequency)
+    task.category = sanitize_html(data.get('category', task.category))
+    task.verification_type = sanitize_html(data.get('verification_type', task.verification_type))
+    task.frequency = sanitize_html(data.get('frequency', task.frequency))
 
-    # Handle badge_id conversion and validation
     badge_id = data.get('badge_id')
     if badge_id is not None:
         try:
@@ -319,9 +292,8 @@ def import_tasks(game_id):
         return jsonify(success=False, message="No selected file"), 400
     
     if file:
-        # Ensure the target directory exists
         upload_dir = current_app.config['TASKCSV']
-        os.makedirs(upload_dir, exist_ok=True)  # This will create the directory if it doesn't exist
+        os.makedirs(upload_dir, exist_ok=True)
         
         filepath = os.path.join(upload_dir, secure_filename(file.filename))
         file.save(filepath)
@@ -330,34 +302,33 @@ def import_tasks(game_id):
         with open(filepath, mode='r', encoding='utf-8') as csv_file:
             tasks_data = csv.DictReader(csv_file)
             for task_info in tasks_data:
-                badge = Badge.query.filter_by(name=task_info['badge_name']).first()
+                badge = Badge.query.filter_by(name=sanitize_html(task_info['badge_name'])).first()
                 if not badge:
                     badge = Badge(
-                        name=task_info['badge_name'],
-                        description=task_info['badge_description'],
+                        name=sanitize_html(task_info['badge_name']),
+                        description=sanitize_html(task_info['badge_description']),
                     )
                     db.session.add(badge)
-                    db.session.flush()  # to get badge.id for new badges
+                    db.session.flush()
                     imported_badges.append(badge.id)
 
                 new_task = Task(
-                    category=task_info['category'],
-                    title=task_info['title'],
-                    description=task_info['description'],
-                    tips=task_info['tips'],
-                    points=int(task_info['points'].replace(',', '')),  # Removing commas in numbers
-                    completion_limit=int(task_info['completion_limit']),
-                    frequency=task_info['frequency'],
-                    verification_type=task_info['verification_type'],
+                    category=sanitize_html(task_info['category']),
+                    title=sanitize_html(task_info['title']),
+                    description=sanitize_html(task_info['description']),
+                    tips=sanitize_html(task_info['tips']),
+                    points=int(sanitize_html(task_info['points'].replace(',', ''))),
+                    completion_limit=int(sanitize_html(task_info['completion_limit'])),
+                    frequency=sanitize_html(task_info['frequency']),
+                    verification_type=sanitize_html(task_info['verification_type']),
                     badge_id=badge.id,
                     game_id=game_id
                 )
                 db.session.add(new_task)
             
             db.session.commit()
-            os.remove(filepath)  # Clean up the uploaded file
+            os.remove(filepath)
         
-        # Skip adding badge images for now.
         return jsonify(success=True, redirectUrl=url_for('tasks.manage_game_tasks', game_id=game_id))
 
     return jsonify(success=False, message="Invalid file"), 400
