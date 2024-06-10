@@ -8,15 +8,14 @@ from openai import OpenAI
 from io import BytesIO
 from PIL import Image
 from werkzeug.utils import secure_filename
+from bleach import clean as sanitize_html
 
-import uuid
 import requests
 import string
 import re
-import os
-import base64
 
 ai_bp = Blueprint('ai', __name__, template_folder='templates')
+
 
 @ai_bp.route('/generate_task', methods=['POST'])
 @login_required
@@ -45,6 +44,7 @@ def generate_task():
         print(f"Error processing request: {e}")
         return jsonify({'error': str(e)}), 400
 
+
 @ai_bp.route('/create_task', methods=['POST'])
 @login_required
 def create_task():
@@ -54,7 +54,7 @@ def create_task():
 
     if form.validate():
         badge_id = form.badge_id.data if form.badge_id.data and form.badge_id.data != '0' else None
-        ai_badge_filename = form_data.get('ai_badge_filename', None)
+        ai_badge_filename = sanitize_html(form_data.get('ai_badge_filename', None))
 
         if not badge_id and form.badge_name.data:
             badge_image_file = ai_badge_filename
@@ -65,34 +65,33 @@ def create_task():
                 else:
                     return jsonify({"success": False, "message": "No badge image selected for upload."}), 400
             elif ai_badge_filename:
-                # If AI badge URL is provided, use it directly
                 badge_image_file = ai_badge_filename
             else:
                 return jsonify({"success": False, "message": "No badge image selected for upload."}), 400
 
             new_badge = Badge(
-                name=form.badge_name.data,
-                description=form.badge_description.data,
+                name=sanitize_html(form.badge_name.data),
+                description=sanitize_html(form.badge_description.data),
                 image=badge_image_file
             )
             db.session.add(new_badge)
             db.session.flush()
             badge_id = new_badge.id
 
-        game_id = form_data.get('game_id')
+        game_id = sanitize_html(form_data.get('game_id'))
         if not game_id:
             return jsonify({"success": False, "message": "Game ID is required."}), 400
 
         new_task = Task(
-            title=form.title.data,
-            description=form.description.data,
-            tips=form.tips.data,
-            points=form.points.data,
+            title=sanitize_html(form.title.data),
+            description=sanitize_html(form.description.data),
+            tips=sanitize_html(form.tips.data),
+            points=sanitize_html(form.points.data),
             game_id=game_id,
-            completion_limit=form.completion_limit.data,
-            frequency=form.frequency.data,
-            category=form.category.data,
-            verification_type=form.verification_type.data,
+            completion_limit=sanitize_html(form.completion_limit.data),
+            frequency=sanitize_html(form.frequency.data),
+            category=sanitize_html(form.category.data),
+            verification_type=sanitize_html(form.verification_type.data),
             badge_id=badge_id,
         )
         db.session.add(new_task)
@@ -117,8 +116,9 @@ def generate_badge_image():
         if not badge_description:
             return jsonify({"error": "Badge description is required"}), 400
 
+        sanitized_badge_description = sanitize_html(badge_description)
         badge_prompt = (
-            "Remove any textual inscription in the framing or otherwise and create one uber epic, symbolic, and timeless badge for a Bicycle Task Quest web app that fits this description while keeping the background invisible (transparent): " + badge_description
+            "Remove any textual inscription in the framing or otherwise and create one uber epic, symbolic, and timeless badge for a Bicycle Task Quest web app that fits this description while keeping the background invisible (transparent): " + sanitized_badge_description
         )
         response = client.images.generate(
             model="dall-e-3",
@@ -138,7 +138,6 @@ def generate_badge_image():
 
         # Convert the image to a format that can be saved
         image = Image.open(BytesIO(image_response.content))
-        #filename = f"{secure_filename(str(uuid.uuid4()))}.png"
         filename = save_badge_image(image)
 
         return jsonify({'filename': filename})

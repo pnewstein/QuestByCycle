@@ -18,3 +18,4 @@ flask-mail==0.9.1
 PyJWT==2.8.0
 pyzt
 openai==1.30.5
+bleach==6.1.0

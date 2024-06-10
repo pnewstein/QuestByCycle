@@ -161,7 +161,7 @@
                                     {{ activity.user.display_name or activity.user.username }}
                                 </a>
                             </strong>
-                            <span class="activity-message" style="flex-grow: 1;">{{ activity.message | safe }}</span>
+                            <span class="activity-message" style="flex-grow: 1;">{{ activity.message }}</span>
                             {% if current_user.is_admin %}
                             <form action="{{ url_for('main.pin_message', message_id=activity.id) }}" method="post">
                                 {{ form.hidden_tag() }}
@@ -266,7 +266,7 @@
         </div>
     {% endif %}
 
-    <div id="game_IdHolder" data-game-id="{{ selected_game_id | safe }}" style="display:none;"></div>
+    <div id="game_IdHolder" data-game-id="{{ selected_game_id }}" style="display:none;"></div>
 
     {% include 'modals/task_detail_modal.html' %}
     {% include 'modals/submission_detail_modal.html' %}

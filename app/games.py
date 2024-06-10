@@ -4,6 +4,7 @@ from app.models import db, Game, Task, UserTask, TaskSubmission
 from app.forms import GameForm
 from app.social import get_facebook_page_access_token
 from datetime import datetime, timedelta, timezone
+from bleach import clean as sanitize_html
 
 import os
 
@@ -15,24 +16,24 @@ def create_game():
     form = GameForm()
     if form.validate_on_submit():
         game = Game(
-            title=form.title.data,
-            description=form.description.data,
-            description2=form.description2.data,
+            title=sanitize_html(form.title.data),
+            description=sanitize_html(form.description.data),
+            description2=sanitize_html(form.description2.data),
             start_date=form.start_date.data,
             end_date=form.end_date.data,
-            game_goal=form.game_goal.data,
-            details=form.details.data,
-            awards=form.awards.data,
-            beyond=form.beyond.data,
-            twitter_username=form.twitter_username.data,
-            twitter_api_key=form.twitter_api_key.data,
-            twitter_api_secret=form.twitter_api_secret.data,
-            twitter_access_token=form.twitter_access_token.data,
-            twitter_access_token_secret=form.twitter_access_token_secret.data,
-            facebook_app_id=form.facebook_app_id.data,
-            facebook_app_secret=form.facebook_app_secret.data,
-            facebook_access_token=form.facebook_access_token.data,
-            facebook_page_id=form.facebook_page_id.data,
+            game_goal=sanitize_html(form.game_goal.data),
+            details=sanitize_html(form.details.data),
+            awards=sanitize_html(form.awards.data),
+            beyond=sanitize_html(form.beyond.data),
+            twitter_username=sanitize_html(form.twitter_username.data),
+            twitter_api_key=sanitize_html(form.twitter_api_key.data),
+            twitter_api_secret=sanitize_html(form.twitter_api_secret.data),
+            twitter_access_token=sanitize_html(form.twitter_access_token.data),
+            twitter_access_token_secret=sanitize_html(form.twitter_access_token_secret.data),
+            facebook_app_id=sanitize_html(form.facebook_app_id.data),
+            facebook_app_secret=sanitize_html(form.facebook_app_secret.data),
+            facebook_access_token=sanitize_html(form.facebook_access_token.data),
+            facebook_page_id=sanitize_html(form.facebook_page_id.data),
             is_public=form.is_public.data,
             allow_joins=form.allow_joins.data,
             admin_id=current_user.id
@@ -54,6 +55,23 @@ def update_game(game_id):
     form = GameForm(obj=game)
     if form.validate_on_submit():
         form.populate_obj(game)  # This will automatically update all fields including new ones
+        game.title = sanitize_html(game.title)
+        game.description = sanitize_html(game.description)
+        game.description2 = sanitize_html(game.description2)
+        game.game_goal = game.game_goal
+        game.details = sanitize_html(game.details)
+        game.awards = sanitize_html(game.awards)
+        game.beyond = sanitize_html(game.beyond)
+        game.twitter_username = sanitize_html(game.twitter_username)
+        game.twitter_api_key = sanitize_html(game.twitter_api_key)
+        game.twitter_api_secret = sanitize_html(game.twitter_api_secret)
+        game.twitter_access_token = sanitize_html(game.twitter_access_token)
+        game.twitter_access_token_secret = sanitize_html(game.twitter_access_token_secret)
+        game.facebook_app_id = sanitize_html(game.facebook_app_id)
+        game.facebook_app_secret = sanitize_html(game.facebook_app_secret)
+        game.facebook_access_token = sanitize_html(game.facebook_access_token)
+        game.facebook_page_id = sanitize_html(game.facebook_page_id)
+
         try:
             db.session.commit()
             flash('Game updated successfully!', 'success')
@@ -142,7 +160,7 @@ def game_beyond(game_id):
 @games_bp.route('/join_custom_game', methods=['POST'])
 @login_required
 def join_custom_game():
-    game_code = request.form.get('custom_game_code')
+    game_code = sanitize_html(request.form.get('custom_game_code'))
     if not game_code:
         flash('Game code is required to join a custom game.', 'error')
         return redirect(url_for('main.index'))

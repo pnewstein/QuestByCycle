@@ -4,12 +4,12 @@ from app.models import db, User, Game
 from app.forms import AddUserForm, CarouselImportForm
 from functools import wraps
 from werkzeug.utils import secure_filename
+from bleach import clean as sanitize_html
 
-import traceback
 import os
 
-admin_bp = Blueprint('admin', __name__)
 
+admin_bp = Blueprint('admin', __name__)
 
 ALLOWED_EXTENSIONS = {'csv'}
 
@@ -133,16 +133,16 @@ def update_user(user_id):
         flash('User not found.', 'error')
         return redirect(url_for('admin.user_management'))
 
-    user.username = request.form.get('username')
-    user.email = request.form.get('email')
+    user.username = sanitize_html(request.form.get('username'))
+    user.email = sanitize_html(request.form.get('email'))
     user.is_admin = 'is_admin' in request.form
     user.is_super_admin = 'is_super_admin' in request.form
     user.license_agreed = 'license_agreed' in request.form
-    user.score = request.form.get('score')
-    user.display_name = request.form.get('display_name')
-    user.profile_picture = request.form.get('profile_picture')
-    user.age_group = request.form.get('age_group')
-    user.interests = request.form.get('interests')
+    user.score = sanitize_html(request.form.get('score'))
+    user.display_name = sanitize_html(request.form.get('display_name'))
+    user.profile_picture = sanitize_html(request.form.get('profile_picture'))
+    user.age_group = sanitize_html(request.form.get('age_group'))
+    user.interests = sanitize_html(request.form.get('interests'))
     user.email_verified = 'email_verified' in request.form
 
     try:
