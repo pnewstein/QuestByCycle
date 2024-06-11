@@ -813,8 +813,9 @@ footer {
 
 .photo-column {
     flex: 1 1 150px; 
+    overflow: auto;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     width: 150px; 
     gap: 10px;
 }
@@ -1718,15 +1719,7 @@ footer {
     }
 }
 
-@media (max-width: 480px) {
-    .container, main {
-        padding: 10px;
-    }
-
-    header {
-        padding: 10px;
-    }
-    
+@media (max-width: 480px) {  
     .box, .info-box, .game-item, .message {
         
         font-size: larger;
@@ -1755,6 +1748,33 @@ footer {
     header, .modal-content, .footer-container, .dropdown-content {
         font-size: 16px; 
     }
+
+    .modal-footer {
+        padding-top: 10px;
+        text-align: right;
+        border-top: 1px solid #eee;
+        max-height: 200px;
+    }
+
+    .photo-column {
+        flex: 1 1 150px; 
+        display: flex;
+        flex-direction: row;
+        width: fit-content; 
+        gap: 10px;
+    }
+    
+    .photo-column img {
+        width: 100%; 
+        height: auto; 
+        transition: transform 0.3s ease-in-out;
+    }
+    
+    .photo-column img:hover {
+        transform: scale(1.1);
+        z-index: 1;
+    }
+    
 
     .footer-links a, .dropdown-content a {
         padding: 10px 15px; 
