@@ -8,8 +8,8 @@
         <div class="game-info-card">
             <div class="game-title-section">
                 <h1>{{ game.title }}</h1>
-                <p>{{ game.description }}</p>
-                <p>{{ game.description2 }}</p>
+                <p>{{ game.description|safe }}</p>
+                <p>{{ game.description2|safe }}</p>
             </div>
         </div>
     </div>
@@ -18,7 +18,7 @@
             <strong>Start Date:</strong>
             <span>{{ game.start_date.strftime('%Y-%m-%d') }}</span>
         </div>
-        <div class="game-info-card">
+        <div class="-card">
             <strong>End Date:</strong>
             <span>{{ game.end_date.strftime('%Y-%m-%d') }}</span>
         </div>
@@ -28,15 +28,15 @@
         </div>
         <div class="game-info-card">
             <strong>Details:</strong>
-            <span>{{ game.details }}</span>
+            <span>{{ game.details|safe }}</span>
         </div>
         <div class="game-info-card">
             <strong>Awards:</strong>
-            <span>{{ game.awards }}</span>
+            <span>{{ game.awards|safe }}</span>
         </div>
         <div class="game-info-card">
             <strong>Beyond:</strong>
-            <span>{{ game.beyond }}</span>
+            <span>{{ game.beyond|safe }}</span>
         </div>
     </div>
 </div>

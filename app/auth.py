@@ -16,35 +16,34 @@ auth_bp = Blueprint('auth', __name__)
 ALLOWED_TAGS = [
     'a', 'b', 'i', 'u', 'em', 'strong', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
     'blockquote', 'code', 'pre', 'br', 'div', 'span', 'ul', 'ol', 'li', 'hr',
-    'sub', 'sup', 's', 'strike', 'font', 'img', 'iframe', 'video', 'figure'
+    'sub', 'sup', 's', 'strike', 'font', 'img', 'video', 'figure'
 ]
 
 ALLOWED_ATTRIBUTES = {
-    '*': ['class', 'style', 'id'],
+    '*': ['class', 'id'],
     'a': ['href', 'title', 'target'],
     'img': ['src', 'alt', 'width', 'height'],
-    'iframe': ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen'],
     'video': ['src', 'width', 'height', 'controls'],
-    'p': ['class', 'style'],
-    'span': ['class', 'style'],
-    'div': ['class', 'style'],
-    'h1': ['class', 'style'],
-    'h2': ['class', 'style'],
-    'h3': ['class', 'style'],
-    'h4': ['class', 'style'],
-    'h5': ['class', 'style'],
-    'h6': ['class', 'style'],
-    'blockquote': ['class', 'style'],
-    'code': ['class', 'style'],
-    'pre': ['class', 'style'],
-    'ul': ['class', 'style'],
-    'ol': ['class', 'style'],
-    'li': ['class', 'style'],
-    'hr': ['class', 'style'],
-    'sub': ['class', 'style'],
-    'sup': ['class', 'style'],
-    's': ['class', 'style'],
-    'strike': ['class', 'style'],
+    'p': ['class'],
+    'span': ['class'],
+    'div': ['class'],
+    'h1': ['class'],
+    'h2': ['class'],
+    'h3': ['class'],
+    'h4': ['class'],
+    'h5': ['class'],
+    'h6': ['class'],
+    'blockquote': ['class'],
+    'code': ['class'],
+    'pre': ['class'],
+    'ul': ['class'],
+    'ol': ['class'],
+    'li': ['class'],
+    'hr': ['class'],
+    'sub': ['class'],
+    'sup': ['class'],
+    's': ['class'],
+    'strike': ['class'],
     'font': ['color', 'face', 'size']
 }
 
@@ -178,103 +177,6 @@ def register():
     return render_template('register.html', title='Register', form=form)
 
 
-@auth_bp.route('/verify_email/<token>')
-def verify_email(token):
-    user = User.verify_verification_token(token)
-    if not user:
-        flash('The verification link is invalid or has expired.', 'danger')
-        return redirect(url_for('auth.login'))
-    
-    if user.email_verified:
-        flash('Your email has already been verified. Please log in.', 'info')
-        return redirect(url_for('auth.login'))
-    
-    user.email_verified = True
-    db.session.commit()
-    login_user(user)  # Log in the user
-    flash('Your email has been verified and you have been logged in.', 'success')
-    return redirect(url_for('main.index'))
-
-@auth_bp.route('/privacy_policy')
-def privacy_policy():
-    return render_template('privacy_policy.html')
-
-@auth_bp.route('/terms_of_service')
-def terms_of_service():
-    return render_template('terms_of_service.html')
-
-@auth_bp.route('/license_agreement')
-def license_agreement():
-    return render_template('license_agreement.html')
-
-
-@auth_bp.route('/sponsors', methods=['GET'])
-def sponsors():
-    sponsors = Sponsor.query.all()
-    return render_template('sponsors.html', sponsors=sponsors)
-
-@auth_bp.route('/admin/sponsors', methods=['GET', 'POST'])
-@login_required
-def manage_sponsors():
-    if not current_user.is_admin:
-        flash('Access denied.', 'danger')
-        return redirect(url_for('auth.login'))
-
-    form = SponsorForm()
-    if form.validate_on_submit():
-        sponsor = Sponsor(
-            name=sanitize_html(form.name.data),
-            website=sanitize_html(form.website.data),
-            logo=sanitize_html(form.logo.data),
-            description=sanitize_html(form.description.data),
-            tier=sanitize_html(form.tier.data),
-            game_id=sanitize_html(form.game_id.data)
-        )
-        db.session.add(sponsor)
-        db.session.commit()
-        flash('Sponsor added successfully!', 'success')
-        return redirect(url_for('auth.manage_sponsors'))
-
-    sponsors = Sponsor.query.all()
-    return render_template('manage_sponsors.html', form=form, sponsors=sponsors)
-
-
-@auth_bp.route('/admin/sponsors/edit/<int:sponsor_id>', methods=['GET', 'POST'])
-@login_required
-def edit_sponsor(sponsor_id):
-    if not current_user.is_admin:
-        flash('Access denied.', 'danger')
-        return redirect(url_for('auth.login'))
-
-    sponsor = Sponsor.query.get_or_404(sponsor_id)
-    form = SponsorForm(obj=sponsor)
-    if form.validate_on_submit():
-        sponsor.name = sanitize_html(form.name.data)
-        sponsor.website = sanitize_html(form.website.data)
-        sponsor.logo = sanitize_html(form.logo.data)
-        sponsor.description = sanitize_html(form.description.data)
-        sponsor.tier = sanitize_html(form.tier.data)
-        sponsor.game_id = sanitize_html(form.game_id.data)
-        db.session.commit()
-        flash('Sponsor updated successfully!', 'success')
-        return redirect(url_for('auth.manage_sponsors'))
-
-    return render_template('edit_sponsors.html', form=form)
-
-
-@auth_bp.route('/admin/sponsors/delete/<int:sponsor_id>', methods=['POST'])
-@login_required
-def delete_sponsor(sponsor_id):
-    if not current_user.is_admin:
-        flash('Access denied.', 'danger')
-        return redirect(url_for('auth.login'))
-    
-    sponsor = Sponsor.query.get_or_404(sponsor_id)
-    db.session.delete(sponsor)
-    db.session.commit()
-    flash('Sponsor deleted successfully!', 'success')
-    return redirect(url_for('auth.manage_sponsors'))
-
 @auth_bp.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     form = ForgotPasswordForm()
@@ -292,6 +194,40 @@ def forgot_password():
             flash('No account found with that email.', 'warning')
         return redirect(url_for('auth.login'))
     return render_template('forgot_password.html', form=form)
+
+
+@auth_bp.route('/verify_email/<token>')
+def verify_email(token):
+    user = User.verify_verification_token(token)
+    if not user:
+        flash('The verification link is invalid or has expired.', 'danger')
+        return redirect(url_for('auth.login'))
+    
+    if user.email_verified:
+        flash('Your email has already been verified. Please log in.', 'info')
+        return redirect(url_for('auth.login'))
+    
+    user.email_verified = True
+    db.session.commit()
+    login_user(user)  # Log in the user
+    flash('Your email has been verified and you have been logged in.', 'success')
+    return redirect(url_for('main.index'))
+
+
+@auth_bp.route('/privacy_policy')
+def privacy_policy():
+    return render_template('privacy_policy.html')
+
+
+@auth_bp.route('/terms_of_service')
+def terms_of_service():
+    return render_template('terms_of_service.html')
+
+
+@auth_bp.route('/license_agreement')
+def license_agreement():
+    return render_template('license_agreement.html')
+
 
 @auth_bp.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):

@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_required, current_user
-from app.models import db, User, Game
-from app.forms import AddUserForm, CarouselImportForm
+from app.models import db, User, Game, Sponsor
+from app.forms import AddUserForm, CarouselImportForm, ForgotPasswordForm, SponsorForm
+from app.utils import send_email
 from functools import wraps
 from werkzeug.utils import secure_filename
 
@@ -14,35 +15,34 @@ admin_bp = Blueprint('admin', __name__)
 ALLOWED_TAGS = [
     'a', 'b', 'i', 'u', 'em', 'strong', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
     'blockquote', 'code', 'pre', 'br', 'div', 'span', 'ul', 'ol', 'li', 'hr',
-    'sub', 'sup', 's', 'strike', 'font', 'img', 'iframe', 'video', 'figure'
+    'sub', 'sup', 's', 'strike', 'font', 'img', 'video', 'figure'
 ]
 
 ALLOWED_ATTRIBUTES = {
-    '*': ['class', 'style', 'id'],
+    '*': ['class', 'id'],
     'a': ['href', 'title', 'target'],
     'img': ['src', 'alt', 'width', 'height'],
-    'iframe': ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen'],
     'video': ['src', 'width', 'height', 'controls'],
-    'p': ['class', 'style'],
-    'span': ['class', 'style'],
-    'div': ['class', 'style'],
-    'h1': ['class', 'style'],
-    'h2': ['class', 'style'],
-    'h3': ['class', 'style'],
-    'h4': ['class', 'style'],
-    'h5': ['class', 'style'],
-    'h6': ['class', 'style'],
-    'blockquote': ['class', 'style'],
-    'code': ['class', 'style'],
-    'pre': ['class', 'style'],
-    'ul': ['class', 'style'],
-    'ol': ['class', 'style'],
-    'li': ['class', 'style'],
-    'hr': ['class', 'style'],
-    'sub': ['class', 'style'],
-    'sup': ['class', 'style'],
-    's': ['class', 'style'],
-    'strike': ['class', 'style'],
+    'p': ['class'],
+    'span': ['class'],
+    'div': ['class'],
+    'h1': ['class'],
+    'h2': ['class'],
+    'h3': ['class'],
+    'h4': ['class'],
+    'h5': ['class'],
+    'h6': ['class'],
+    'blockquote': ['class'],
+    'code': ['class'],
+    'pre': ['class'],
+    'ul': ['class'],
+    'ol': ['class'],
+    'li': ['class'],
+    'hr': ['class'],
+    'sub': ['class'],
+    'sup': ['class'],
+    's': ['class'],
+    'strike': ['class'],
     'font': ['color', 'face', 'size']
 }
 
@@ -228,3 +228,71 @@ def update_carousel():
     except Exception as e:
         flash(f'Error updating carousel: {e}', 'error')
     return redirect(url_for('admin.admin_dashboard'))
+
+@admin_bp.route('/sponsors/edit/<int:sponsor_id>', methods=['GET', 'POST'])
+@login_required
+def edit_sponsor(sponsor_id):
+    if not current_user.is_admin:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('auth.login'))
+
+    sponsor = Sponsor.query.get_or_404(sponsor_id)
+    form = SponsorForm(obj=sponsor)
+    if form.validate_on_submit():
+        sponsor.name = sanitize_html(form.name.data)
+        sponsor.website = sanitize_html(form.website.data)
+        sponsor.logo = sanitize_html(form.logo.data)
+        sponsor.description = sanitize_html(form.description.data)
+        sponsor.tier = sanitize_html(form.tier.data)
+        sponsor.game_id = sanitize_html(form.game_id.data)
+        db.session.commit()
+        flash('Sponsor updated successfully!', 'success')
+        return redirect(url_for('admin.manage_sponsors'))
+
+    return render_template('edit_sponsors.html', form=form)
+
+
+@admin_bp.route('/sponsors/delete/<int:sponsor_id>', methods=['POST'])
+@login_required
+def delete_sponsor(sponsor_id):
+    if not current_user.is_admin:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('auth.login'))
+    
+    sponsor = Sponsor.query.get_or_404(sponsor_id)
+    db.session.delete(sponsor)
+    db.session.commit()
+    flash('Sponsor deleted successfully!', 'success')
+    return redirect(url_for('admin.manage_sponsors'))
+
+
+@admin_bp.route('/sponsors', methods=['GET'])
+def sponsors():
+    sponsors = Sponsor.query.all()
+    return render_template('sponsors.html', sponsors=sponsors)
+
+
+@admin_bp.route('/admin/sponsors', methods=['GET', 'POST'])
+@login_required
+def manage_sponsors():
+    if not current_user.is_admin:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('auth.login'))
+
+    form = SponsorForm()
+    if form.validate_on_submit():
+        sponsor = Sponsor(
+            name=sanitize_html(form.name.data),
+            website=sanitize_html(form.website.data),
+            logo=sanitize_html(form.logo.data),
+            description=sanitize_html(form.description.data),
+            tier=sanitize_html(form.tier.data),
+            game_id=form.game_id.data  # No need to sanitize as it's an integer
+        )
+        db.session.add(sponsor)
+        db.session.commit()
+        flash('Sponsor added successfully!', 'success')
+        return redirect(url_for('admin.manage_sponsors'))
+
+    sponsors = Sponsor.query.all()
+    return render_template('manage_sponsors.html', form=form, sponsors=sponsors)
