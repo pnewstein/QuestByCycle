@@ -1,4 +1,3 @@
-// Updated JavaScript for Uber Epic Completion Meter and Clickable Graph
 function showLeaderboardModal(selectedGameId) {
     const leaderboardContent = document.getElementById('leaderboardModalContent');
     if (!leaderboardContent) {
@@ -144,10 +143,16 @@ function appendCompletionMeter(parentElement, data) {
 
         setTimeout(() => {
             meterBar.style.height = `${percentReduction}%`;
+            updateMeterBackground(percentReduction);
         }, 100);
     }
 }
 
+function updateMeterBackground(percent) {
+    const completionMeter = document.getElementById('completionMeter');
+    const imageIndex = Math.floor(percent / 20); // Change the background every 20%
+    completionMeter.style.backgroundImage = `url('static/images/clearMeterBG_${imageIndex}.png')`;
+}
 
 function closeLeaderboardModal() {
     const leaderboardModal = document.getElementById('leaderboardModal');
