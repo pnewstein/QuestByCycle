@@ -64,7 +64,7 @@ function closeAllModals(id) {
 
 // Enhanced window click handling for modal closure
 window.onclick = function(event) {
-    if (event.target.className.includes('modal')) {
+    if (event.target.classList.contains('modal')) {
         closeAllModals(event.target.id);
     }
-}
+};

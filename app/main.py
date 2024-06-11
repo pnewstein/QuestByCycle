@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app
 from flask_login import current_user, login_required, logout_user
 from app.utils import save_profile_picture, award_badges
-from app.models import db, Game, User, Task, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike
+from app.models import db, Game, User, Task, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage
 from app.forms import ProfileForm, ShoutBoardForm, ContactForm
 from app.utils import send_email, allowed_file
 from .config import load_config
@@ -292,6 +292,7 @@ def user_profile(user_id):
     badges = user.badges
     participated_games = user.participated_games
     task_submissions = user.task_submissions
+    profile_messages = ProfileWallMessage.query.filter_by(user_id=user_id).order_by(ProfileWallMessage.timestamp.desc()).all()
 
     response_data = {
         'current_user_id': current_user.id,
@@ -308,6 +309,17 @@ def user_profile(user_id):
         'user_tasks': [
             {'id': task.id, 'completions': task.completions}
             for task in user_tasks
+        ],
+        'profile_messages': [
+            {
+                'id': message.id,
+                'content': message.content,
+                'timestamp': message.timestamp,
+                'author_id': message.author_id,
+                'author': {'username': message.author.username},
+                'parent_id': message.parent_id
+            }
+            for message in profile_messages
         ],
         'participated_games': [
             {'id': game.id, 'title': game.title, 'description': game.description, 'start_date': game.start_date.strftime('%B %d, %Y'), 'end_date': game.end_date.strftime('%B %d, %Y')}
