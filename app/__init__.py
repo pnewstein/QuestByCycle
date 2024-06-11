@@ -8,6 +8,7 @@ from app.main import main_bp
 from app.games import games_bp
 from app.tasks import tasks_bp
 from app.badges import badges_bp
+from app.profile import profile_bp
 from app.ai import ai_bp
 from app.models import db
 from .config import load_config
@@ -80,6 +81,7 @@ def create_app():
     app.register_blueprint(games_bp, url_prefix='/games')
     app.register_blueprint(tasks_bp, url_prefix='/tasks')
     app.register_blueprint(badges_bp, url_prefix='/badges')
+    app.register_blueprint(profile_bp, url_prefix='/profile')
     app.register_blueprint(main_bp)
 
     # Setup login manager

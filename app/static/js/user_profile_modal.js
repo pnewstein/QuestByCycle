@@ -1,3 +1,60 @@
+function initializeQuill() {
+    const editorElement = document.getElementById('editor');
+    if (!editorElement) {
+        console.error('Quill editor container not found');
+        return;
+    }
+
+    const quill = new Quill('#editor', {
+        theme: 'snow',
+        placeholder: 'Write your message here...',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, false] }],
+                ['bold', 'italic', 'underline'],
+                ['link', 'blockquote', 'code-block'],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }]
+            ]
+        }
+    });
+
+    const form = document.getElementById('messageForm');
+    form.onsubmit = function(event) {
+        event.preventDefault();  // Prevent the default form submission
+        const messageContent = document.querySelector('input[name=content]');
+        messageContent.value = quill.root.innerHTML;
+        postMessage(form);
+    };
+}
+
+function postMessage(form) {
+    const formData = new FormData(form);
+    const messageContent = formData.get('content');
+
+    fetch(`/profile/${form.dataset.userid}/messages`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ content: messageContent })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(`Error: ${data.error}`);
+        } else {
+            alert('Message posted successfully.');
+            showUserProfileModal(form.dataset.userid);  // Reload profile details to reflect changes
+        }
+    })
+    .catch(error => {
+        console.error('Error posting message:', error);
+        alert('Failed to post message. Please try again.');
+    });
+}
+
+
 function showUserProfileModal(userId) {
     fetch(`/profile/${userId}`)
         .then(response => response.json())
@@ -8,9 +65,9 @@ function showUserProfileModal(userId) {
                 return;
             }
 
-            document.getElementById('userProfileModal').setAttribute('data-user-id', userId);
+            const isCurrentUser = data.current_user_id === data.user_id;
 
-            const isCurrentUser = data.current_user_id === data.user.id;
+            const messagesHtml = buildMessageTree(data.profile_messages, null, isCurrentUser, data.current_user_id, userId);
 
             userProfileDetails.innerHTML = `
                 <header class="profile-header text-center py-5 mb-4 position-relative">
@@ -18,7 +75,9 @@ function showUserProfileModal(userId) {
                         <div class="profile-picture-container position-relative mx-auto mb-3">
                             <img src="/static/${data.user.profile_picture}" alt="Profile Picture" class="profile-picture rounded-circle shadow-lg border border-white border-4">
                             ${isCurrentUser ? `<input type="file" id="profilePictureInput" name="profile_picture" accept="image/*">` : ''}
-                            <div class="profile-picture-overlay"></div>
+                            <div class="profile-picture-overlay">
+                                <span class="text-white">Change Picture</span>
+                            </div>
                         </div>` : ''}
                     <div class="header-bg position-absolute w-100 h-100 top-0 start-0"></div>
                     <div class="header-content position-relative z-index-1">
@@ -78,13 +137,13 @@ function showUserProfileModal(userId) {
                                 <section class="badges-earned mb-4">
                                     <h2 class="h2">Badges Earned</h2>
                                     <div class="badges-container row">
-                                        ${data.user.badges.map(badge => `
+                                        ${data.user.badges && data.user.badges.length > 0 ? data.user.badges.map(badge => `
                                             <div class="badge-item col-md-4 d-flex flex-column align-items-center text-center p-3">
                                                 <img src="/static/images/badge_images/${badge.image}" alt="${badge.name}" class="badge-icon mb-2">
                                                 <h3 class="h5">${badge.name}</h3>
                                                 <p>${badge.description}</p>
                                                 <p><strong>Category:</strong> ${badge.category}</p>
-                                            </div>`).join('') || '<p>No badges earned yet.</p>'}
+                                            </div>`).join('') : '<p>No badges earned yet.</p>'}
                                     </div>
                                 </section>
                             </div>
@@ -92,13 +151,13 @@ function showUserProfileModal(userId) {
                                 <section class="games-participated mb-4">
                                     <h2 class="h2">Games Participated</h2>
                                     <div class="games-container row">
-                                        ${data.participated_games.map(game => `
+                                        ${data.participated_games && data.participated_games.length > 0 ? data.participated_games.map(game => `
                                             <div class="game-item col-md-6 p-3">
                                                 <h3 class="h5">${game.title}</h3>
                                                 <p>${game.description}</p>
                                                 <p><strong>Start Date:</strong> ${game.start_date}</p>
                                                 <p><strong>End Date:</strong> ${game.end_date}</p>
-                                            </div>`).join('') || '<p>No games participated in yet.</p>'}
+                                            </div>`).join('') : '<p>No games participated in yet.</p>'}
                                     </div>
                                 </section>
                             </div>
@@ -106,7 +165,7 @@ function showUserProfileModal(userId) {
                                 <section class="task-submissions mb-4">
                                     <h2 class="h2">Task Submissions</h2>
                                     <div class="submissions-container row">
-                                        ${data.task_submissions.map(submission => `
+                                        ${data.task_submissions && data.task_submissions.length > 0 ? data.task_submissions.map(submission => `
                                             <div class="submission-item col-md-6 p-3">
                                                 ${submission.image_url ? `<img src="${submission.image_url}" alt="Submission Image" class="img-fluid mb-2">` : ''}
                                                 <p><strong>Task:</strong> ${submission.task.title}</p>
@@ -115,7 +174,7 @@ function showUserProfileModal(userId) {
                                                 ${submission.twitter_url ? `<p><a href="${submission.twitter_url}" target="_blank" class="blue_button">View on Twitter</a></p>` : ''}
                                                 ${submission.fb_url ? `<p><a href="${submission.fb_url}" target="_blank" class="blue_button">View on Facebook</a></p>` : ''}
                                                 ${isCurrentUser ? `<button class="btn btn-danger" onclick="deleteSubmission(${submission.id}, 'profileSubmissions', ${data.user.id})">Delete</button>` : ''}
-                                            </div>`).join('') || '<p>No task submissions yet.</p>'}
+                                            </div>`).join('') : '<p>No task submissions yet.</p>'}
                                     </div>
                                 </section>
                             </div>
@@ -124,17 +183,100 @@ function showUserProfileModal(userId) {
                     <div class="col-md-4">
                         <section class="message-board mb-4">
                             <h2 class="h2">Message Board</h2>
-                            <p>Coming soon...</p>
+                            <form id="messageForm" data-userid="${userId}">
+                                <div class="form-group">
+                                    <div id="editor" class="form-control" style="min-height: 150px;"></div>
+                                    <input type="hidden" id="messageContent" name="content">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Post</button>
+                            </form>
+                            <ul class="list-group" id="messageBoard">
+                                ${messagesHtml}
+                            </ul>
                         </section>
                     </div>
                 </div>
             `;
+            initializeQuill();  // Initialize Quill for all profiles
             openModal('userProfileModal');
         })
         .catch(error => {
             console.error('Failed to load user profile:', error);
             alert('Could not load user profile. Please try again.');
         });
+}
+
+function buildMessageTree(messages, parentId, isCurrentUser, currentUserId, profileUserId) {
+    const nestedMessages = messages.filter(message => message.parent_id === parentId)
+                                   .map(message => {
+        const replies = buildMessageTree(messages, message.id, isCurrentUser, currentUserId, profileUserId);
+        const canReply = currentUserId === profileUserId ||
+                         currentUserId === message.author_id ||
+                         currentUserId === message.user_id ||
+                         (message.parent_id && currentUserId === messages.find(m => m.id === message.parent_id).author_id);
+        const canDelete = currentUserId === message.author_id || currentUserId === profileUserId;
+
+        return `
+            <li class="list-group-item ${message.parent_id ? 'reply-message' : ''}">
+                <div class="message-content">
+                    ${message.content}
+                </div>
+                <small>Posted by ${message.author.username} on ${message.timestamp}</small>
+                ${message.author_id === currentUserId || isCurrentUser ? `
+                    <div class="mt-2">
+                        <button class="btn btn-secondary btn-sm" onclick="editMessage(${message.id}, ${currentUserId})">Edit</button>
+                    </div>` : ''}
+                ${canDelete ? `
+                    <button class="btn btn-danger btn-sm mt-2" onclick="deleteMessage(${message.id}, ${profileUserId})">Delete</button>` : ''}
+                ${canReply ? `
+                    <button class="btn btn-sm btn-primary mt-2" onclick="showReplyForm(${message.id}, ${profileUserId})">Reply</button>
+                    <form id="replyForm-${message.id}" class="reply-form mt-2 d-none" data-messageid="${message.id}">
+                        <div class="form-group">
+                            <textarea class="form-control" name="replyContent" rows="3"></textarea>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="postReply(${profileUserId}, ${message.id})">Submit Reply</button>
+                    </form>` : ''}
+                <ul class="list-group mt-2">
+                    ${replies}
+                </ul>
+            </li>
+        `;
+    }).join('');
+
+    return nestedMessages;
+}
+
+
+function showReplyForm(messageId, profileUserId) {
+    document.getElementById(`replyForm-${messageId}`).classList.toggle('d-none');
+    document.getElementById(`replyForm-${messageId}`).dataset.profileUserId = profileUserId;
+}
+
+function postReply(profileUserId, messageId) {
+    const replyForm = document.querySelector(`#replyForm-${messageId}`);
+    const replyContent = replyForm.querySelector('textarea[name=replyContent]').value;
+
+    fetch(`/profile/${profileUserId}/messages/${messageId}/reply`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ content: replyContent })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(`Error: ${data.error}`);
+        } else {
+            alert('Reply posted successfully.');
+            showUserProfileModal(profileUserId);  // Reload profile details to reflect changes
+        }
+    })
+    .catch(error => {
+        console.error('Error posting reply:', error);
+        alert('Failed to post reply. Please try again.');
+    });
 }
 
 function saveProfile(userId) {
@@ -182,6 +324,33 @@ function deleteSubmission(submissionId, context, userId) {
     })
     .catch(error => {
         console.error('Error deleting submission:', error);
+        alert('Error during deletion: ' + error.message);
+    });
+}
+
+function editMessage(messageId, userId) {
+    // Implement the edit message functionality
+    // Show a modal or inline edit form
+}
+
+function deleteMessage(messageId, userId) {
+    fetch(`/profile/${userId}/messages/${messageId}/delete`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Message deleted successfully.');
+            showUserProfileModal(userId);  // Reload profile messages to reflect changes
+        } else {
+            throw new Error(data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting message:', error);
         alert('Error during deletion: ' + error.message);
     });
 }

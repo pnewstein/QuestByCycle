@@ -241,3 +241,15 @@ class Sponsor(db.Model):
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
 
     game = db.relationship('Game', back_populates='sponsors')
+
+class ProfileWallMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(utc), index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    parent_id = db.Column(db.Integer, db.ForeignKey('profile_wall_message.id', ondelete='CASCADE'), nullable=True)
+
+    user = db.relationship('User', foreign_keys=[user_id], backref='profile_messages_received')
+    author = db.relationship('User', foreign_keys=[author_id], backref='profile_messages_sent')
+    replies = db.relationship('ProfileWallMessage', backref=db.backref('parent', remote_side=[id]), cascade="all, delete-orphan")

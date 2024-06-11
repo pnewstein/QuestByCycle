@@ -208,3 +208,7 @@ class CarouselImportForm(FlaskForm):
 class PlayerMessageBoardForm(FlaskForm):
     content = TextAreaField('Message', validators=[DataRequired(), Length(max=500)])
     submit = SubmitField('Post')
+
+class ProfileWallMessageForm(FlaskForm):
+    content = TextAreaField('Message', validators=[DataRequired()])
+    submit = SubmitField('Post')

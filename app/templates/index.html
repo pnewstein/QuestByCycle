@@ -298,36 +298,36 @@
         });
     </script>
     <script>
-        // Initialize Quill editor
-        var quill = new Quill('#quill-editor', {
-            theme: 'snow',
-            placeholder: 'Write a message...',
-            modules: {
-                toolbar: [
-                    [{ 'header': [1, 2, false] }],
-                    ['bold', 'italic', 'underline'],
-                    ['link'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    ['clean']                                         // remove formatting button
-                ]
-            }
-        });
-
-        // On form submit, copy the content from Quill to the hidden input
-        document.querySelector('form').onsubmit = function() {
-            var messageInput = document.querySelector('#message-input');
-            messageInput.value = quill.root.innerHTML;
-            return true;
-        };
-
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Quill editor if the container exists (i.e., user is admin)
+            const quillEditorContainer = document.getElementById('quill-editor');
+            if (quillEditorContainer) {
+                var quill = new Quill('#quill-editor', {
+                    theme: 'snow',
+                    placeholder: 'Write a message...',
+                    modules: {
+                        toolbar: [
+                            [{ 'header': [1, 2, false] }],
+                            ['bold', 'italic', 'underline'],
+                            ['link'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['clean']  // remove formatting button
+                        ]
+                    }
+                });
+
+                // On form submit, copy the content from Quill to the hidden input
+                document.querySelector('form').onsubmit = function() {
+                    var messageInput = document.querySelector('#message-input');
+                    messageInput.value = quill.root.innerHTML;
+                    return true;
+                };
+            }
+
             document.querySelectorAll('.activity-message').forEach(function(element) {
                 element.innerHTML = element.innerHTML.replace(/<\/?p[^>]*>/g, '');
             });
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
+
             // Function to scroll messages container
             function scrollMessagesContainer(direction) {
                 const scrollAmount = direction === 'up' ? -100 : 100;
@@ -358,6 +358,7 @@
                 scrollMessagesContainer('down');
             });
         });
+
     </script>
     <style>
         .shout-messages-container {
