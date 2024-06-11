@@ -164,7 +164,7 @@
                                     {{ activity.user.display_name or activity.user.username }}
                                 </a>
                             </strong>
-                            <span class="activity-message" style="flex-grow: 1;">{{ activity.message|safe }}</span>
+                            <span class="activity-message" style="flex-grow: 1; height: 24px">{{ activity.message|safe }}</span>
                             {% if current_user.is_admin %}
                             <form action="{{ url_for('main.pin_message', message_id=activity.id) }}" method="post">
                                 {{ form.hidden_tag() }}
@@ -334,7 +334,7 @@
                 toolbar: [
                     [{ 'header': [1, 2, false] }],
                     ['bold', 'italic', 'underline'],
-                    ['link', 'image'],
+                    ['link'],
                     [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                     ['clean']                                         // remove formatting button
                 ]
@@ -347,6 +347,12 @@
             messageInput.value = quill.root.innerHTML;
             return true;
         };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.activity-message').forEach(function(element) {
+                element.innerHTML = element.innerHTML.replace(/<\/?p[^>]*>/g, '');
+            });
+        });
     </script>
 
     <style>
