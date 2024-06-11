@@ -13,35 +13,34 @@ games_bp = Blueprint('games', __name__)
 ALLOWED_TAGS = [
     'a', 'b', 'i', 'u', 'em', 'strong', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
     'blockquote', 'code', 'pre', 'br', 'div', 'span', 'ul', 'ol', 'li', 'hr',
-    'sub', 'sup', 's', 'strike', 'font', 'img', 'iframe', 'video', 'figure'
+    'sub', 'sup', 's', 'strike', 'font', 'img', 'video', 'figure'
 ]
 
 ALLOWED_ATTRIBUTES = {
-    '*': ['class', 'style', 'id'],
+    '*': ['class', 'id'],
     'a': ['href', 'title', 'target'],
     'img': ['src', 'alt', 'width', 'height'],
-    'iframe': ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen'],
     'video': ['src', 'width', 'height', 'controls'],
-    'p': ['class', 'style'],
-    'span': ['class', 'style'],
-    'div': ['class', 'style'],
-    'h1': ['class', 'style'],
-    'h2': ['class', 'style'],
-    'h3': ['class', 'style'],
-    'h4': ['class', 'style'],
-    'h5': ['class', 'style'],
-    'h6': ['class', 'style'],
-    'blockquote': ['class', 'style'],
-    'code': ['class', 'style'],
-    'pre': ['class', 'style'],
-    'ul': ['class', 'style'],
-    'ol': ['class', 'style'],
-    'li': ['class', 'style'],
-    'hr': ['class', 'style'],
-    'sub': ['class', 'style'],
-    'sup': ['class', 'style'],
-    's': ['class', 'style'],
-    'strike': ['class', 'style'],
+    'p': ['class'],
+    'span': ['class'],
+    'div': ['class'],
+    'h1': ['class'],
+    'h2': ['class'],
+    'h3': ['class'],
+    'h4': ['class'],
+    'h5': ['class'],
+    'h6': ['class'],
+    'blockquote': ['class'],
+    'code': ['class'],
+    'pre': ['class'],
+    'ul': ['class'],
+    'ol': ['class'],
+    'li': ['class'],
+    'hr': ['class'],
+    'sub': ['class'],
+    'sup': ['class'],
+    's': ['class'],
+    'strike': ['class'],
     'font': ['color', 'face', 'size']
 }
 
@@ -59,7 +58,7 @@ def create_game():
             description2=sanitize_html(form.description2.data),
             start_date=form.start_date.data,
             end_date=form.end_date.data,
-            game_goal=sanitize_html(form.game_goal.data),
+            game_goal=form.game_goal.data,
             details=sanitize_html(form.details.data),
             awards=sanitize_html(form.awards.data),
             beyond=sanitize_html(form.beyond.data),
@@ -156,6 +155,21 @@ def delete_game(game_id):
         flash(f'An error occurred while deleting the game: {e}', 'error')
 
     return redirect(url_for('admin.admin_dashboard'))
+
+
+@games_bp.route('/game-info/<int:game_id>')
+def game_info(game_id):
+    # Fetch game details using the provided game_id
+    game_details = Game.query.get(game_id)
+    
+    # Check if game details are available, otherwise flash an error and redirect
+    if not game_details:
+        flash("Game details are not available.", "error")
+        return redirect(url_for('main.index'))
+
+    # Render the game_info.html template with the fetched game details
+    return render_template('game_info.html', game=game_details)
+
 
 @games_bp.route('/get_game_points/<int:game_id>', methods=['GET'])
 @login_required

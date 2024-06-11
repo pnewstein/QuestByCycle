@@ -1465,6 +1465,9 @@ footer {
     font-weight: bold;
 }
 
+.ql-editor {
+    background-color: white;
+}
 .form-group input[type="text"],
 .form-group input[type="email"],
 .form-group input[type="number"],
