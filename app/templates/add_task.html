@@ -4,7 +4,7 @@
 <div class="container">
     <a href="{{ url_for('admin.admin_dashboard') }}" class="button">Back to Dashboard</a>
     <h2>Add New Task to Game</h2>
-    <form action="" method="post" class="form" enctype="multipart/form-data">
+    <form action="" method="post" class="form" enctype="multipart/form-data" id="task-form">
         {{ form.hidden_tag() }}
         <!-- Task Details -->
         <div class="form-group">
@@ -13,11 +13,13 @@
         </div>
         <div class="form-group">
             <label for="{{ form.description.id }}">{{ form.description.label }}</label>
-            {{ form.description(class="form-control") }}
+            <div id="description-editor" class="quill-editor"></div>
+            {{ form.description(class="form-control", id="description", style="display: none;", required=False) }}
         </div>
         <div class="form-group">
             <label for="{{ form.tips.id }}">{{ form.tips.label }}</label>
-            {{ form.tips(class="form-control") }}
+            <div id="tips-editor" class="quill-editor"></div>
+            {{ form.tips(class="form-control", id="tips", style="display: none;", required=False) }}
         </div>
         <div class="form-group">
             <label for="{{ form.points.id }}">{{ form.points.label }}</label>
@@ -84,4 +86,56 @@
         </div>
     </form>
 </div>
+<script>
+    var quillDescription = new Quill('#description-editor', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'font': [] }, { 'size': [] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                [{ 'header': 1 }, { 'header': 2 }, { 'header': 3 }, { 'header': 4 }, { 'header': 5 }, { 'header': 6 }, 'blockquote', 'code-block'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'direction': 'rtl' }, { 'align': [] }],
+                ['link', 'image', 'video', 'formula'],
+                ['clean']
+            ]
+        }
+    });
+
+    var quillTips = new Quill('#tips-editor', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'font': [] }, { 'size': [] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                [{ 'header': 1 }, { 'header': 2 }, { 'header': 3 }, { 'header': 4 }, { 'header': 5 }, { 'header': 6 }, 'blockquote', 'code-block'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'direction': 'rtl' }, { 'align': [] }],
+                ['link', 'image', 'video', 'formula'],
+                ['clean']
+            ]
+        }
+    });
+
+    document.getElementById('task-form').onsubmit = function(e) {
+        // Get the Quill editor contents
+        var descriptionContent = quillDescription.root.innerHTML.trim();
+        var tipsContent = quillTips.root.innerHTML.trim();
+
+        // Check if the Quill editor content is empty
+        if (!descriptionContent || descriptionContent === '<p><br></p>') {
+            alert('Description is required.');
+            e.preventDefault();  // Prevent the form from submitting
+            return false;
+        }
+
+        // Set the hidden textarea value
+        document.getElementById('description').value = descriptionContent;
+        document.getElementById('tips').value = tipsContent;
+    };
+</script>
 {% endblock %}

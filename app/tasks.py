@@ -8,15 +8,53 @@ from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 from datetime import datetime, timezone, timedelta
 from io import BytesIO
-from bleach import clean as sanitize_html
 
 import base64
 import csv
 import os
 import qrcode
-
+import bleach
 
 tasks_bp = Blueprint('tasks', __name__, template_folder='templates')
+
+ALLOWED_TAGS = [
+    'a', 'b', 'i', 'u', 'em', 'strong', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'blockquote', 'code', 'pre', 'br', 'div', 'span', 'ul', 'ol', 'li', 'hr',
+    'sub', 'sup', 's', 'strike', 'font', 'img', 'iframe', 'video', 'figure'
+]
+
+ALLOWED_ATTRIBUTES = {
+    '*': ['class', 'style', 'id'],
+    'a': ['href', 'title', 'target'],
+    'img': ['src', 'alt', 'width', 'height'],
+    'iframe': ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen'],
+    'video': ['src', 'width', 'height', 'controls'],
+    'p': ['class', 'style'],
+    'span': ['class', 'style'],
+    'div': ['class', 'style'],
+    'h1': ['class', 'style'],
+    'h2': ['class', 'style'],
+    'h3': ['class', 'style'],
+    'h4': ['class', 'style'],
+    'h5': ['class', 'style'],
+    'h6': ['class', 'style'],
+    'blockquote': ['class', 'style'],
+    'code': ['class', 'style'],
+    'pre': ['class', 'style'],
+    'ul': ['class', 'style'],
+    'ol': ['class', 'style'],
+    'li': ['class', 'style'],
+    'hr': ['class', 'style'],
+    'sub': ['class', 'style'],
+    'sup': ['class', 'style'],
+    's': ['class', 'style'],
+    'strike': ['class', 'style'],
+    'font': ['color', 'face', 'size']
+}
+
+def sanitize_html(html_content):
+    return bleach.clean(html_content, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
+
 
 @tasks_bp.route('/<int:game_id>/manage_tasks', methods=['GET'])
 @login_required
@@ -63,9 +101,9 @@ def add_task(game_id):
             title=sanitize_html(form.title.data),
             description=sanitize_html(form.description.data),
             tips=sanitize_html(form.tips.data),
-            points=sanitize_html(form.points.data),
+            points=form.points.data,
             game_id=game_id,
-            completion_limit=sanitize_html(form.completion_limit.data),
+            completion_limit=form.completion_limit.data,
             frequency=sanitize_html(form.frequency.data),
             enabled=form.enabled.data,
             is_sponsored=form.is_sponsored.data,
@@ -214,8 +252,8 @@ def update_task(task_id):
     task.title = sanitize_html(data.get('title', task.title))
     task.description = sanitize_html(data.get('description', task.description))
     task.tips = sanitize_html(data.get('tips', task.tips))
-    task.points = int(sanitize_html(data.get('points', task.points)))
-    task.completion_limit = int(sanitize_html(data.get('completion_limit', task.completion_limit)))
+    task.points = data.get('points', task.points)
+    task.completion_limit = data.get('completion_limit', task.completion_limit)
     task.enabled = data.get('enabled', task.enabled)
     task.is_sponsored = data.get('is_sponsored', task.is_sponsored)
     task.category = sanitize_html(data.get('category', task.category))
@@ -317,8 +355,8 @@ def import_tasks(game_id):
                     title=sanitize_html(task_info['title']),
                     description=sanitize_html(task_info['description']),
                     tips=sanitize_html(task_info['tips']),
-                    points=int(sanitize_html(task_info['points'].replace(',', ''))),
-                    completion_limit=int(sanitize_html(task_info['completion_limit'])),
+                    points=task_info['points'].replace(',', ''),
+                    completion_limit=task_info['completion_limit'],
                     frequency=sanitize_html(task_info['frequency']),
                     verification_type=sanitize_html(task_info['verification_type']),
                     badge_id=badge.id,
@@ -371,14 +409,13 @@ def task_user_completion(task_id):
         'tips': task.tips,
         'points': task.points,
         'completion_limit': task.completion_limit,
-        'category' : task.category,
+        'category': task.category,
         'frequency': task.frequency, 
         'enabled': task.enabled,
         'is_sponsored': task.is_sponsored,
         'verification_type': task.verification_type,
         'badge': badge_info,
         'nextEligibleTime': next_eligible_time.isoformat() if next_eligible_time else None
-
     }
 
     user_completion_data = {
