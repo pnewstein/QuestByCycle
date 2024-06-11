@@ -13,11 +13,13 @@
         </div>
         <div class="form-group">
             <label for="description">Game Description</label>
-            {{ form.description(class_="form-control", id="description") }}
+            <div id="description" class="quill-editor"></div>
+            <textarea name="description" id="description-textarea" hidden>{{ form.description.data }}</textarea>
         </div>
         <div class="form-group">
             <label for="description2">Task Instructions</label>
-            {{ form.description2(class_="form-control", id="description2") }}
+            <div id="description2" class="quill-editor"></div>
+            <textarea name="description2" id="description2-textarea" hidden>{{ form.description2.data }}</textarea>
         </div>
         <div class="form-group">
             <label for="start_date">Start Date</label>
@@ -33,15 +35,18 @@
         </div>
         <div class="form-group">
             <label for="details">Game Details</label>
-            {{ form.details(class_="form-control", id="details") }}
+            <div id="details" class="quill-editor"></div>
+            <textarea name="details" id="details-textarea" hidden>{{ form.details.data }}</textarea>
         </div>
         <div class="form-group">
             <label for="awards">Awards Information</label>
-            {{ form.awards(class_="form-control", id="awards") }}
+            <div id="awards" class="quill-editor"></div>
+            <textarea name="awards" id="awards-textarea" hidden>{{ form.awards.data }}</textarea>
         </div>
         <div class="form-group">
             <label for="beyond">Beyond the Game</label>
-            {{ form.beyond(class_="form-control", id="beyond") }}
+            <div id="beyond" class="quill-editor"></div>
+            <textarea name="beyond" id="beyond-textarea" hidden>{{ form.beyond.data }}</textarea>
         </div>
         <div class="form-group">
             <label for="is_public">Is Public</label>
@@ -94,4 +99,42 @@
         <button type="submit" class="btn btn-primary">Update Game</button>
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const quillOptions = {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'font': [] }, { 'size': [] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'script': 'sub'}, { 'script': 'super' }],
+                    [{ 'header': 1 }, { 'header': 2 }, { 'header': 3 }, { 'header': 4 }, { 'header': 5 }, { 'header': 6 }, 'blockquote', 'code-block'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
+                    [{ 'direction': 'rtl' }, { 'align': [] }],
+                    ['link', 'image', 'video', 'formula'],
+                    ['clean']
+                ]
+            }
+        };
+
+        const editors = ['description', 'description2', 'details', 'awards', 'beyond'];
+        
+        editors.forEach(editorId => {
+            const quillEditor = new Quill(`#${editorId}`, quillOptions);
+            const hiddenInput = document.getElementById(`${editorId}-textarea`);
+            
+            // Set the Quill editor's content to the value of the corresponding textarea
+            if (hiddenInput.value) {
+                quillEditor.root.innerHTML = hiddenInput.value;
+            }
+
+            quillEditor.on('text-change', function() {
+                hiddenInput.value = quillEditor.root.innerHTML;
+            });
+        });
+    });
+</script>
+
 {% endblock %}
