@@ -20,7 +20,8 @@
         </div>
         <div class="form-group">
             {{ form.description.label(class="form-control-label") }}
-            {{ form.description(class="form-control") }}
+            <div id="description" class="quill-editor"></div>
+            <textarea name="description" id="description-textarea" hidden>{{ form.description.data }}</textarea>
         </div>
         <div class="form-group">
             {{ form.tier.label(class="form-control-label") }}
@@ -48,8 +49,8 @@
                         {% if sponsor.website %}
                             <a href="{{ sponsor.website }}" class="btn btn-primary" target="_blank">Visit Website</a>
                         {% endif %}
-                        <a href="{{ url_for('auth.edit_sponsor', sponsor_id=sponsor.id) }}" class="btn btn-warning">Edit</a>
-                        <form action="{{ url_for('auth.delete_sponsor', sponsor_id=sponsor.id) }}" method="POST" style="display:inline;">
+                        <a href="{{ url_for('admin.edit_sponsor', sponsor_id=sponsor.id) }}" class="btn btn-warning">Edit</a>
+                        <form action="{{ url_for('admin.delete_sponsor', sponsor_id=sponsor.id) }}" method="POST" style="display:inline;">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-danger">Delete</button>
                         </form>
@@ -59,4 +60,36 @@
         {% endfor %}
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const quillOptions = {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'font': [] }, { 'size': [] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'script': 'sub'}, { 'script': 'super' }],
+                    [{ 'header': 1 }, { 'header': 2 }, { 'header': 3 }, { 'header': 4 }, { 'header': 5 }, { 'header': 6 }, 'blockquote', 'code-block'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
+                    [{ 'direction': 'rtl' }, { 'align': [] }],
+                    ['link', 'image', 'video', 'formula'],
+                    ['clean']
+                ]
+            }
+        };
+
+        const descriptionEditor = new Quill('#description', quillOptions);
+        const descriptionTextarea = document.getElementById('description-textarea');
+
+        descriptionEditor.on('text-change', function() {
+            descriptionTextarea.value = descriptionEditor.root.innerHTML;
+        });
+
+        // Set initial value if there's any data
+        descriptionEditor.root.innerHTML = descriptionTextarea.value;
+    });
+</script>
+
 {% endblock %}
