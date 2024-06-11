@@ -4,11 +4,49 @@ from app.models import db, Game, Task, UserTask, TaskSubmission
 from app.forms import GameForm
 from app.social import get_facebook_page_access_token
 from datetime import datetime, timedelta, timezone
-from bleach import clean as sanitize_html
 
+import bleach
 import os
 
 games_bp = Blueprint('games', __name__)
+
+ALLOWED_TAGS = [
+    'a', 'b', 'i', 'u', 'em', 'strong', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'blockquote', 'code', 'pre', 'br', 'div', 'span', 'ul', 'ol', 'li', 'hr',
+    'sub', 'sup', 's', 'strike', 'font', 'img', 'iframe', 'video', 'figure'
+]
+
+ALLOWED_ATTRIBUTES = {
+    '*': ['class', 'style', 'id'],
+    'a': ['href', 'title', 'target'],
+    'img': ['src', 'alt', 'width', 'height'],
+    'iframe': ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen'],
+    'video': ['src', 'width', 'height', 'controls'],
+    'p': ['class', 'style'],
+    'span': ['class', 'style'],
+    'div': ['class', 'style'],
+    'h1': ['class', 'style'],
+    'h2': ['class', 'style'],
+    'h3': ['class', 'style'],
+    'h4': ['class', 'style'],
+    'h5': ['class', 'style'],
+    'h6': ['class', 'style'],
+    'blockquote': ['class', 'style'],
+    'code': ['class', 'style'],
+    'pre': ['class', 'style'],
+    'ul': ['class', 'style'],
+    'ol': ['class', 'style'],
+    'li': ['class', 'style'],
+    'hr': ['class', 'style'],
+    'sub': ['class', 'style'],
+    'sup': ['class', 'style'],
+    's': ['class', 'style'],
+    'strike': ['class', 'style'],
+    'font': ['color', 'face', 'size']
+}
+
+def sanitize_html(html_content):
+    return bleach.clean(html_content, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
 
 @games_bp.route('/create_game', methods=['GET', 'POST'])
 @login_required
