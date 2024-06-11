@@ -210,7 +210,8 @@ def shout_board():
     form = ShoutBoardForm()
     if form.validate_on_submit():
         is_pinned = 'is_pinned' in request.form  # Check if the pin checkbox was checked
-        shout_message = ShoutBoardMessage(message=sanitize_html(form.message.data), user_id=current_user.id, is_pinned=is_pinned)
+        message_content = sanitize_html(request.form['message'])  # Sanitize the HTML content
+        shout_message = ShoutBoardMessage(message=message_content, user_id=current_user.id, is_pinned=is_pinned)
         db.session.add(shout_message)
         db.session.commit()
         flash('Your message has been posted!', 'success')

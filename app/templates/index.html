@@ -145,7 +145,10 @@
                 <form action="{{ url_for('main.shout_board') }}" method="post">
                     {{ form.hidden_tag() }}
                     <div class="form-group">
-                        {{ form.message(rows=1, placeholder="Write a message...") }}
+                        <!-- Hidden input to store the message content -->
+                        <input type="hidden" name="message" id="message-input">
+                        <!-- Quill editor container -->
+                        <div id="quill-editor"></div>
                     </div>
                     {{ form.submit() }}
                 </form>
@@ -161,7 +164,7 @@
                                     {{ activity.user.display_name or activity.user.username }}
                                 </a>
                             </strong>
-                            <span class="activity-message" style="flex-grow: 1;">{{ activity.message }}</span>
+                            <span class="activity-message" style="flex-grow: 1;">{{ activity.message|safe }}</span>
                             {% if current_user.is_admin %}
                             <form action="{{ url_for('main.pin_message', message_id=activity.id) }}" method="post">
                                 {{ form.hidden_tag() }}
@@ -321,6 +324,29 @@
                 }
             });
         });
+    </script>
+    <script>
+        // Initialize Quill editor
+        var quill = new Quill('#quill-editor', {
+            theme: 'snow',
+            placeholder: 'Write a message...',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, false] }],
+                    ['bold', 'italic', 'underline'],
+                    ['link', 'image'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['clean']                                         // remove formatting button
+                ]
+            }
+        });
+
+        // On form submit, copy the content from Quill to the hidden input
+        document.querySelector('form').onsubmit = function() {
+            var messageInput = document.querySelector('#message-input');
+            messageInput.value = quill.root.innerHTML;
+            return true;
+        };
     </script>
 
     <style>
