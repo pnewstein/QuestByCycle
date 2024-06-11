@@ -1,4 +1,3 @@
-// User profile modal management functions
 function showUserProfileModal(userId) {
     fetch(`/profile/${userId}`)
         .then(response => response.json())
@@ -8,6 +7,8 @@ function showUserProfileModal(userId) {
                 console.error('User profile details container not found');
                 return;
             }
+
+            document.getElementById('userProfileModal').setAttribute('data-user-id', userId);
 
             const isCurrentUser = data.current_user_id === data.user.id;
 
@@ -113,6 +114,7 @@ function showUserProfileModal(userId) {
                                                 <p><strong>Submitted At:</strong> ${submission.timestamp}</p>
                                                 ${submission.twitter_url ? `<p><a href="${submission.twitter_url}" target="_blank" class="blue_button">View on Twitter</a></p>` : ''}
                                                 ${submission.fb_url ? `<p><a href="${submission.fb_url}" target="_blank" class="blue_button">View on Facebook</a></p>` : ''}
+                                                ${isCurrentUser ? `<button class="btn btn-danger" onclick="deleteSubmission(${submission.id}, 'profileSubmissions', ${data.user.id})">Delete</button>` : ''}
                                             </div>`).join('') || '<p>No task submissions yet.</p>'}
                                     </div>
                                 </section>
@@ -160,6 +162,29 @@ function saveProfile(userId) {
     });
 }
 
+function deleteSubmission(submissionId, context, userId) {
+    fetch(`/tasks/task/delete_submission/${submissionId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Submission deleted successfully.');
+            if (context === 'profileSubmissions') {
+                showUserProfileModal(userId);  // Reload profile submissions
+            }
+        } else {
+            throw new Error(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting submission:', error);
+        alert('Error during deletion: ' + error.message);
+    });
+}
 
 function closeUserProfileModal() {
     const userProfileModal = document.getElementById('userProfileModal');
