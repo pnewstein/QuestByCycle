@@ -185,7 +185,7 @@ function showUserProfileModal(userId) {
                             <h2 class="h2">Message Board</h2>
                             <form id="messageForm" data-userid="${userId}">
                                 <div class="form-group">
-                                    <div id="editor" class="form-control" style="min-height: 150px;"></div>
+                                    <div id="editor" class="form-control" style="min-height: 70px;"></div>
                                     <input type="hidden" id="messageContent" name="content">
                                 </div>
                                 <button type="submit" class="btn btn-primary">Post</button>
