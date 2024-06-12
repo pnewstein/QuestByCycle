@@ -8,10 +8,39 @@ import bleach
 
 profile_bp = Blueprint('profile', __name__)
 
-# Allow only certain tags and attributes in sanitized HTML
-ALLOWED_TAGS = frozenset(bleach.sanitizer.ALLOWED_TAGS | {'p', 'br', 'blockquote'})
-ALLOWED_ATTRIBUTES = {}
+ALLOWED_TAGS = [
+    'a', 'b', 'i', 'u', 'em', 'strong', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'blockquote', 'code', 'pre', 'br', 'div', 'span', 'ul', 'ol', 'li', 'hr',
+    'sub', 'sup', 's', 'strike', 'font', 'img', 'video', 'figure'
+]
 
+ALLOWED_ATTRIBUTES = {
+    '*': ['class', 'id'],
+    'a': ['href', 'title', 'target'],
+    'img': ['src', 'alt', 'width', 'height'],
+    'video': ['src', 'width', 'height', 'controls'],
+    'p': ['class'],
+    'span': ['class'],
+    'div': ['class'],
+    'h1': ['class'],
+    'h2': ['class'],
+    'h3': ['class'],
+    'h4': ['class'],
+    'h5': ['class'],
+    'h6': ['class'],
+    'blockquote': ['class'],
+    'code': ['class'],
+    'pre': ['class'],
+    'ul': ['class'],
+    'ol': ['class'],
+    'li': ['class'],
+    'hr': ['class'],
+    'sub': ['class'],
+    'sup': ['class'],
+    's': ['class'],
+    'strike': ['class'],
+    'font': ['color', 'face', 'size']
+}
 
 @profile_bp.route('/<int:user_id>/messages', methods=['POST'])
 @login_required
