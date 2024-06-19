@@ -54,7 +54,6 @@ function postMessage(form) {
     });
 }
 
-
 function showUserProfileModal(userId) {
     fetch(`/profile/${userId}`)
         .then(response => response.json())
@@ -65,7 +64,7 @@ function showUserProfileModal(userId) {
                 return;
             }
 
-            const isCurrentUser = data.current_user_id === data.user_id;
+            const isCurrentUser = data.current_user_id === data.user.id; // Fixed this line to compare with data.user.id
 
             const messagesHtml = buildMessageTree(data.profile_messages, null, isCurrentUser, data.current_user_id, userId);
 
@@ -76,7 +75,6 @@ function showUserProfileModal(userId) {
                             <img src="/static/${data.user.profile_picture}" alt="Profile Picture" class="profile-picture rounded-circle shadow-lg border border-white border-4">
                             ${isCurrentUser ? `<input type="file" id="profilePictureInput" name="profile_picture" accept="image/*">` : ''}
                             <div class="profile-picture-overlay">
-                                <span class="text-white">Change Picture</span>
                             </div>
                         </div>` : ''}
                     <div class="header-bg position-absolute w-100 h-100 top-0 start-0"></div>
@@ -245,7 +243,6 @@ function buildMessageTree(messages, parentId, isCurrentUser, currentUserId, prof
 
     return nestedMessages;
 }
-
 
 function showReplyForm(messageId, profileUserId) {
     document.getElementById(`replyForm-${messageId}`).classList.toggle('d-none');
