@@ -171,7 +171,6 @@ function manageVerificationSection(taskId, canVerify, verificationType, nextElig
     console.log("Countdown Element:", document.getElementById('modalCountdown'));
 }
 
-
 function getVerificationFormHTML(verificationType) {
     let formHTML = '<form enctype="multipart/form-data" class="epic-form">';
 
@@ -229,7 +228,6 @@ function getVerificationFormHTML(verificationType) {
     return formHTML;
 }
 
-
 // Toggle the display of the verification form
 function toggleVerificationForm(taskId) {
     const verifyForm = document.getElementById(`verifyTaskForm-${taskId}`);
@@ -260,46 +258,53 @@ function verifyTask(taskId) {
 
 function updateTwitterLink(tweetUrl) {
     const twitterLink = document.getElementById('twitterLink');
-    if (tweetUrl) {
-        twitterLink.href = tweetUrl;
-        twitterLink.style.display = 'inline';  // Show the button if the URL is available
-    } else {
-        twitterLink.style.display = 'none';  // Hide the button if there is no URL
+    if (twitterLink) {
+        if (tweetUrl) {
+            twitterLink.href = tweetUrl;
+            twitterLink.style.display = 'inline';  // Show the button if the URL is available
+        } else {
+            twitterLink.style.display = 'none';  // Hide the button if there is no URL
+        }
     }
 }
 
 function setTwitterLink(url) {
     const twitterLink = document.getElementById('twitterLink');
-    if (url) {
-        twitterLink.href = url;  // Set the href attribute with the received Twitter URL
-        twitterLink.textContent = 'Link to Twitter';  // Optional: Update button text if necessary
-    } else {
-        twitterLink.href = '#';  // Reset or provide a fallback URL
-        twitterLink.textContent = 'Link Unavailable';  // Handle cases where the URL isn't available
+    if (twitterLink) {
+        if (url) {
+            twitterLink.href = url;  // Set the href attribute with the received Twitter URL
+            twitterLink.textContent = 'Link to Twitter';  // Optional: Update button text if necessary
+        } else {
+            twitterLink.href = '#';  // Reset or provide a fallback URL
+            twitterLink.textContent = 'Link Unavailable';  // Handle cases where the URL isn't available
+        }
     }
 }
 
 function updateFacebookLink(fbUrl) {
     const facebookLink = document.getElementById('facebookLink');
-    if (fbUrl) {
-        facebookLink.href = fbUrl;
-        facebookLink.style.display = 'inline';  // Show the button if the URL is available
-    } else {
-        facebookLink.style.display = 'none';  // Hide the button if there is no URL
+    if (facebookLink) {
+        if (fbUrl) {
+            facebookLink.href = fbUrl;
+            facebookLink.style.display = 'inline';  // Show the button if the URL is available
+        } else {
+            facebookLink.style.display = 'none';  // Hide the button if there is no URL
+        }
     }
 }
 
 function setFacebookLink(url) {
     const facebookLink = document.getElementById('facebookLink');
-    if (url) {
-        facebookLink.href = url;  // Set the href attribute with the received FB URL
-        facebookLink.textContent = 'Link to Facebook';  // Optional: Update button text if necessary
-    } else {
-        facebookLink.href = '#';  // Reset or provide a fallback URL
-        facebookLink.textContent = 'Link Unavailable';  // Handle cases where the URL isn't available
+    if (facebookLink) {
+        if (url) {
+            facebookLink.href = url;  // Set the href attribute with the received FB URL
+            facebookLink.textContent = 'Link to Facebook';  // Optional: Update button text if necessary
+        } else {
+            facebookLink.href = '#';  // Reset or provide a fallback URL
+            facebookLink.textContent = 'Link Unavailable';  // Handle cases where the URL isn't available
+        }
     }
 }
-
 
 // Handle Task Submissions with streamlined logic
 let isSubmitting = false;
@@ -409,7 +414,6 @@ function fetchSubmissions(taskId) {
             alert('Could not load submissions. Please try again.');
         });
 }
-
 
 // Distribute images across columns in the modal
 function distributeImages(images) {
