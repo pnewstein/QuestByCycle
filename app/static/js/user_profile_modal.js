@@ -64,9 +64,9 @@ function showUserProfileModal(userId) {
                 return;
             }
 
-            const isCurrentUser = data.current_user_id === data.user.id; // Fixed this line to compare with data.user.id
+            const isCurrentUser = data.current_user_id === data.user.id;
 
-            const messagesHtml = buildMessageTree(data.profile_messages, null, isCurrentUser, data.current_user_id, userId);
+            const messagesHtml = buildMessageTree(data.profile_messages, null, isCurrentUser, data.current_user_id, userId, 0);
 
             userProfileDetails.innerHTML = `
                 <header class="profile-header text-center py-5 mb-4 position-relative">
@@ -75,6 +75,7 @@ function showUserProfileModal(userId) {
                             <img src="/static/${data.user.profile_picture}" alt="Profile Picture" class="profile-picture rounded-circle shadow-lg border border-white border-4">
                             ${isCurrentUser ? `<input type="file" id="profilePictureInput" name="profile_picture" accept="image/*">` : ''}
                             <div class="profile-picture-overlay">
+                                <span class="text-white">Change Picture</span>
                             </div>
                         </div>` : ''}
                     <div class="header-bg position-absolute w-100 h-100 top-0 start-0"></div>
@@ -204,23 +205,27 @@ function showUserProfileModal(userId) {
         });
 }
 
-function buildMessageTree(messages, parentId, isCurrentUser, currentUserId, profileUserId) {
+function buildMessageTree(messages, parentId, isCurrentUser, currentUserId, profileUserId, depth) {
+    if (depth > 3) return '';  // Limit replies to a depth of 3
+
     const nestedMessages = messages.filter(message => message.parent_id === parentId)
                                    .map(message => {
-        const replies = buildMessageTree(messages, message.id, isCurrentUser, currentUserId, profileUserId);
-        const canReply = currentUserId === profileUserId ||
+        const replies = buildMessageTree(messages, message.id, isCurrentUser, currentUserId, profileUserId, depth + 1);
+        const canReply = (depth < 2) && (currentUserId === profileUserId ||
                          currentUserId === message.author_id ||
                          currentUserId === message.user_id ||
-                         (message.parent_id && currentUserId === messages.find(m => m.id === message.parent_id).author_id);
+                         (message.parent_id && currentUserId === messages.find(m => m.id === message.parent_id).author_id));
         const canDelete = currentUserId === message.author_id || currentUserId === profileUserId;
 
+        const displayName = message.author.display_name || message.author.username;
+
         return `
-            <li class="list-group-item ${message.parent_id ? 'reply-message' : ''}">
+            <li class="list-group-item ${message.parent_id ? 'reply-message' : ''}" data-messageid="${message.id}">
                 <div class="message-content">
                     ${message.content}
                 </div>
-                <small>Posted by ${message.author.username} on ${message.timestamp}</small>
-                ${message.author_id === currentUserId || isCurrentUser ? `
+                <small>Posted by ${displayName} on ${message.timestamp}</small>
+                ${message.author_id === currentUserId ? `
                     <div class="mt-2">
                         <button class="btn btn-secondary btn-sm" onclick="editMessage(${message.id}, ${currentUserId})">Edit</button>
                     </div>` : ''}
@@ -326,8 +331,49 @@ function deleteSubmission(submissionId, context, userId) {
 }
 
 function editMessage(messageId, userId) {
-    // Implement the edit message functionality
-    // Show a modal or inline edit form
+    const messageElement = document.querySelector(`li[data-messageid="${messageId}"]`);
+    const messageContentElement = messageElement.querySelector('.message-content');
+    const currentContent = messageContentElement.innerHTML;
+
+    messageContentElement.innerHTML = `
+        <textarea class="form-control">${currentContent}</textarea>
+        <button class="btn btn-primary mt-2" onclick="saveMessage(${messageId}, ${userId})">Save</button>
+        <button class="btn btn-secondary mt-2" onclick="cancelEditMessage(${messageId}, '${currentContent}')">Cancel</button>
+    `;
+}
+
+function saveMessage(messageId, userId) {
+    const messageElement = document.querySelector(`li[data-messageid="${messageId}"]`);
+    const messageContentElement = messageElement.querySelector('.message-content textarea');
+    const newContent = messageContentElement.value;
+
+    fetch(`/profile/${userId}/messages/${messageId}/edit`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ content: newContent })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(`Error: ${data.error}`);
+        } else {
+            alert('Message updated successfully.');
+            showUserProfileModal(userId);  // Reload profile details to reflect changes
+        }
+    })
+    .catch(error => {
+        console.error('Error updating message:', error);
+        alert('Failed to update message. Please try again.');
+    });
+}
+
+function cancelEditMessage(messageId, originalContent) {
+    const messageElement = document.querySelector(`li[data-messageid="${messageId}"]`);
+    const messageContentElement = messageElement.querySelector('.message-content');
+    messageContentElement.innerHTML = originalContent;
 }
 
 function deleteMessage(messageId, userId) {

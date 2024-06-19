@@ -316,7 +316,10 @@ def user_profile(user_id):
                 'content': message.content,
                 'timestamp': message.timestamp,
                 'author_id': message.author_id,
-                'author': {'username': message.author.username},
+                'author': {
+                    'username': message.author.username,
+                    'display_name': message.author.display_name
+                },
                 'parent_id': message.parent_id
             }
             for message in profile_messages
@@ -332,6 +335,7 @@ def user_profile(user_id):
     }
 
     return jsonify(response_data)
+
 
 
 @main_bp.route('/profile/<int:user_id>/edit', methods=['POST'])
