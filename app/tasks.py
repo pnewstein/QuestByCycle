@@ -2,7 +2,7 @@ from flask import Blueprint, make_response, jsonify, render_template, request, f
 from flask_login import login_required, current_user
 from app.utils import update_user_score, getLastRelevantCompletionTime, check_and_award_badges, check_and_revoke_badges, save_badge_image, save_submission_image, can_complete_task
 from app.forms import TaskForm, PhotoForm
-from app.social import post_to_twitter, upload_media_to_twitter, post_to_facebook_with_image, upload_image_to_facebook, post_photo_to_instagram
+from app.social import post_to_twitter, upload_media_to_twitter, post_to_facebook_with_image, get_long_lived_user_access_token, upload_image_to_facebook, get_facebook_page_access_token, get_facebook_user_access_token, post_photo_to_instagram
 from .models import db, Game, Task, Badge, UserTask, TaskSubmission
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
@@ -136,21 +136,31 @@ def submit_task(task_id):
     fb_url = None
 
     if not (game_start <= now <= game_end):
+        print(f"Task submission failed: Current date {now} is outside game dates {game_start} to {game_end}")
         return jsonify({'success': False, 'message': 'This task cannot be completed outside of the game dates'}), 403
 
     verification_type = task.verification_type
     image_file = request.files.get('image')
     comment = sanitize_html(request.form.get('verificationComment', ''))
 
+    print(f"Task verification type: {verification_type}")
+    print(f"Image file: {image_file}")
+    print(f"Verification comment: {comment}")
+
     if verification_type == 'qr_code':
+        print("QR Code verification does not require any submission")
         return jsonify({'success': True, 'message': 'QR Code verification does not require any submission'}), 200
     if verification_type == 'photo' and (not image_file or image_file.filename == ''):
+        print("No file selected for photo verification")
         return jsonify({'success': False, 'message': 'No file selected for photo verification'}), 400
     if verification_type == 'comment' and not comment:
+        print("Comment required for verification")
         return jsonify({'success': False, 'message': 'Comment required for verification'}), 400
     if verification_type == 'photo_comment' and (not image_file or image_file.filename == ''):
+        print("Both photo and comment are required for verification")
         return jsonify({'success': False, 'message': 'Both photo and comment are required for verification'}), 400
     if task.verification_type == 'Pause':
+        print("This task is currently paused")
         return jsonify({'success': False, 'message': 'This task is currently paused'}), 403
 
     try:
@@ -159,33 +169,44 @@ def submit_task(task_id):
         fb_url = None
 
         if image_file and image_file.filename:
+            print("Saving submission image")
             image_url = save_submission_image(image_file)
             image_path = os.path.join(current_app.static_folder, image_url)
+            print(f"Image URL: {image_url}")
+            print(f"Image Path: {image_path}")
         
         display_name = current_user.display_name or current_user.username
         status = f"{display_name} completed '{task.title}'! #QuestByCycle"
+        print(f"Status: {status}")
         
         if image_url is not None:
+            print("Uploading media to Twitter")
             media_id, error = upload_media_to_twitter(image_path, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
             if not error:
+                print("Posting tweet")
                 tweet_url, error = post_to_twitter(status, media_id, game.twitter_username, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
                 if error:
-                    print(f"Failed to post tweet: {error}")  # Log the error but do not return
+                    print(f"Failed to post tweet: {error}")
                 else:
-                    print(f"Tweet URL: {tweet_url}")  # Log the tweet URL for verification
+                    print(f"Tweet URL: {tweet_url}")
+            else:
+                print(f"Failed to upload media to Twitter: {error}")
 
-            #media_response = upload_image_to_facebook(game.facebook_page_id, image_path, game.facebook_access_token)
-            #if 'id' in media_response:
-                #image_id = media_response['id']
-                #fb_url, error = post_to_facebook_with_image(game.facebook_page_id, status, image_id, game.facebook_access_token)
-                #if error:
-                    #print(f"Failed to post image to Facebook: {error}")  # Log the error but do not return
-            #else:
-                #print('Failed to upload image to Facebook')
+            print(f"Using Facebook Access Token: {game.facebook_access_token}")
+            page_access_token = get_facebook_page_access_token(game.facebook_access_token, game.facebook_page_id)
+            print(f"Using Facebook Page Access Token: {page_access_token}")
+            media_response = upload_image_to_facebook(game.facebook_page_id, image_path, page_access_token)
+            if media_response and 'id' in media_response:
+                image_id = media_response['id']
+                print(f"Image ID from Facebook: {image_id}")
+                fb_url, error = post_to_facebook_with_image(game.facebook_page_id, status, image_id, page_access_token)
+                if error:
+                    print(f"Failed to post image to Facebook: {error}")
+                else:
+                    print(f"Facebook URL: {fb_url}")
+            else:
+                print(f"Failed to upload image to Facebook: {media_response}")
 
-            # Post to Instagram
-            #insta_post_response = post_photo_to_instagram(game.instagram_page_id, image_url, status, game.facebook_access_token)
-            
         new_submission = TaskSubmission(
             task_id=task_id,
             user_id=current_user.id,
@@ -195,6 +216,7 @@ def submit_task(task_id):
             fb_url=fb_url,
             timestamp=datetime.now(),
         )
+        print(f"Creating new task submission: {new_submission}")
         db.session.add(new_submission)
 
         if not user_task:
@@ -218,12 +240,15 @@ def submit_task(task_id):
         user_task.points_awarded += task.points
         user_task.completed = True
 
+        print(f"UserTask after update: {user_task}")
+
         db.session.commit()
 
         update_user_score(current_user.id)
         check_and_award_badges(user_id=current_user.id, task_id=task_id)
 
         total_points = sum(ut.points_awarded for ut in UserTask.query.filter_by(user_id=current_user.id))
+        print(f"Total points for user {current_user.id}: {total_points}")
 
         return jsonify({
             'success': True,
@@ -236,8 +261,9 @@ def submit_task(task_id):
         })
     except Exception as e:
         db.session.rollback()
+        print(f"Error during task submission: {e}")
         return jsonify({'success': False, 'message': str(e)})
-
+    
 
 @tasks_bp.route('/task/<int:task_id>/update', methods=['POST'])
 @login_required
