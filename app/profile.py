@@ -112,3 +112,27 @@ def post_reply(user_id, message_id):
         'author': {'username': reply.author.username},
         'parent_id': reply.parent_id
     }}), 201
+
+
+@profile_bp.route('/<int:user_id>/messages/<int:message_id>/edit', methods=['POST'])
+@login_required
+def edit_message(user_id, message_id):
+    message = ProfileWallMessage.query.get_or_404(message_id)
+    
+    if message.author_id != current_user.id:
+        return jsonify({'error': 'Unauthorized access'}), 403
+
+    data = request.get_json()
+    new_content = bleach.clean(data.get('content'), tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
+
+    if not new_content:
+        return jsonify({'error': 'Content is required.'}), 400
+
+    message.content = new_content
+
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Message updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
