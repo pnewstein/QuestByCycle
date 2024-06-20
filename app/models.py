@@ -163,6 +163,9 @@ class Game(db.Model):
     facebook_access_token = db.Column(db.String(500), nullable=True)
     facebook_page_id = db.Column(db.String(500), nullable=True)
 
+    instagram_user_id = db.Column(db.String(500), nullable=True)
+    instagram_access_token = db.Column(db.String(500), nullable=True)
+
     custom_game_code = db.Column(db.String(20), unique=True, nullable=True)
     is_public = db.Column(db.Boolean, default=True)
     allow_joins = db.Column(db.Boolean, default=True)
@@ -187,6 +190,7 @@ class Game(db.Model):
                     break
                 except IntegrityError:
                     db.session.rollback()
+
                     
 game_participants = db.Table('game_participants',
     db.Column('game_id', db.Integer, db.ForeignKey('game.id'), primary_key=True),
@@ -227,6 +231,7 @@ class TaskSubmission(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=lambda: datetime.now(utc))
     twitter_url = db.Column(db.String(1024), nullable=True)
     fb_url = db.Column(db.String(1024), nullable=True)
+    instagram_url = db.Column(db.String(1024), nullable=True)
 
     task = db.relationship('Task', back_populates='submissions')
     user = db.relationship('User', back_populates='task_submissions', overlaps="submitter")

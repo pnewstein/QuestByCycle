@@ -72,6 +72,14 @@ function displayAllSubmissions(submissions, isAdmin) {
         twitterLink.textContent = `Twitter: ${submission.twitter_url}`;
         twitterLink.className = 'submission-comment';
 
+        const facebookLink = document.createElement('p');
+        facebookLink.textContent = `Facebook: ${submission.facebook_url}`;
+        facebookLink.className = 'submission-comment';
+
+        const instagramLink = document.createElement('p');
+        instagramLink.textContent = `Instagram: ${submission.twitter_url}`;
+        instagramLink.className = 'submission-comment';
+
         info.appendChild(userDetails);
         info.appendChild(taskDetails);
         info.appendChild(timestamp);

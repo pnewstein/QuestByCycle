@@ -72,6 +72,8 @@ class GameForm(FlaskForm):
     facebook_app_secret = StringField('Facebook App Secret')
     facebook_access_token = StringField('Facebook Access Token')
     facebook_page_id = StringField('Facebook Page ID')
+    instagram_user_id = StringField('Instagram User ID', validators=[Optional()])
+    instagram_access_token = StringField('Instagram Access Token', validators=[Optional()])
     custom_game_code = StringField('Custom Game Code', validators=[Optional()])  # New field for custom game code
     is_public = BooleanField('Public Game', default=True)  # New field for public game indicator
     allow_joins = BooleanField('Allow Joining', default=True)  # New field for allowing new users to join

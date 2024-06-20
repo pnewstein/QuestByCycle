@@ -329,7 +329,7 @@ def user_profile(user_id):
             for game in participated_games
         ],
         'task_submissions': [
-            {'id': submission.id, 'task': {'title': submission.task.title}, 'comment': submission.comment, 'timestamp': submission.timestamp.strftime('%B %d, %Y %H:%M'), 'image_url': submission.image_url, 'twitter_url': submission.twitter_url, 'fb_url': submission.fb_url}
+            {'id': submission.id, 'task': {'title': submission.task.title}, 'comment': submission.comment, 'timestamp': submission.timestamp.strftime('%B %d, %Y %H:%M'), 'image_url': submission.image_url, 'twitter_url': submission.twitter_url, 'fb_url': submission.fb_url, 'instagram_url': submission.instagram_url}
             for submission in task_submissions
         ]
     }

@@ -305,6 +305,29 @@ function setFacebookLink(url) {
     }
 }
 
+function updateInstagramLink(url) {
+    const instagramLink = document.getElementById('instagram-link');
+    if (instagramLink) {
+        console.debug('Instagram link element found, setting href:', url);
+        instagramLink.href = url;
+        instagramLink.style.display = 'block';
+    } else {
+        console.debug('Instagram link element not found');
+    }
+}
+
+function setInstagramLink(url) {
+    const instagramLink = document.getElementById('instagramLink');
+    if (instagramLink) {
+        if (url) {
+            instagramLink.href = url;  // Set the href attribute with the received Instagram URL
+            instagramLink.textContent = 'Link to Instagram';  // Optional: Update button text if necessary
+        } else {
+            instagramLink.href = '#';  // Reset or provide a fallback URL
+            instagramLink.textContent = 'Link Unavailable';  // Handle cases where the URL isn't available
+        }
+    }
+}
 
 // Handle Task Submissions with streamlined logic
 let isSubmitting = false;
@@ -342,13 +365,17 @@ function submitTaskDetails(event, taskId) {
                 totalPointsElement.innerText = `Total Completed Points: ${data.total_points}`;
             }
         }
-        if (data.tweet_url) {
-            console.debug('Updating Twitter link:', data.tweet_url);
-            updateTwitterLink(data.tweet_url);
+        if (data.twitter_url) {
+            console.debug('Updating Twitter link:', data.twitter_url);
+            updateTwitterLink(data.twitter_url);
         }
         if (data.fb_url) {
             console.debug('Updating Facebook link:', data.fb_url);
             updateFacebookLink(data.fb_url);
+        }
+        if (data.instagram_url) {
+            console.debug('Updating Instagram link:', data.fb_url);
+            updateInstagramLink(data.instagram_url);
         }
         openTaskDetailModal(taskId);
         form.reset();
@@ -385,6 +412,7 @@ function fetchSubmissions(taskId) {
 
             const twitterLink = document.getElementById('twitterLink');
             const facebookLink = document.getElementById('facebookLink');
+            const instagramLink = document.getElementById('instagramLink');
 
             if (submissions && submissions.length > 0) {
                 const submission = submissions[0];
@@ -412,9 +440,19 @@ function fetchSubmissions(taskId) {
                 } else {
                     facebookLink.style.display = 'none';
                 }
+
+                if (submission.instagram_url && submission.instagram_url.trim() !== '') {
+                    instagramLink.href = submission.instagram_url;
+                    instagramLink.style.display = 'inline';
+                } else {
+                    instagramLink.style.display = 'none';
+                }
+
             } else {
                 twitterLink.style.display = 'none';
                 facebookLink.style.display = 'none';
+                instagramLink.style.display = 'none';
+
             }
 
             const images = submissions.reverse().map(submission => ({
@@ -422,8 +460,10 @@ function fetchSubmissions(taskId) {
                 alt: "Submission Image",
                 comment: submission.comment,
                 user_id: submission.user_id,
-                twitter_url: submission.twitter_url, // Ensure twitter_url is included in the object
-                fb_url: submission.fb_url // Ensure fb_url is included in the object
+                twitter_url: submission.twitter_url,
+                fb_url: submission.fb_url,
+                instagram_url: submission.instagram_url,
+
             }));
             distributeImages(images);
         })
