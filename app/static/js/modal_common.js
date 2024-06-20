@@ -21,6 +21,12 @@ function resetModalContent() {
         twitterLink.href = '#'; // Reset to default or placeholder link
     }
 
+    const facebookLink = document.getElementById('facebookLink');
+    if (facebookLink) {
+        facebookLink.style.display = 'none';
+        facebookLink.href = '#'; // Reset to default or placeholder link
+    }
+
     const modalTaskActions = document.getElementById('modalTaskActions');
     if (modalTaskActions) {
         modalTaskActions.innerHTML = '';

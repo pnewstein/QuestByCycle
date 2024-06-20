@@ -19,6 +19,15 @@ function showSubmissionDetail(image) {
         twitterLink.style.display = 'none';  // Hide the Twitter link if using the placeholder image or no URL is available
     }
 
+    // Update the Facebook link if available
+    const facebookLink = document.getElementById('facebookLink');
+    if (image.fb_url && isValidUrl(image.fb_url)) {
+        facebookLink.href = image.fb_url;
+        facebookLink.style.display = 'inline';  // Show the Facebook link if a URL is available
+    } else {
+        facebookLink.style.display = 'none';  // Hide the Facebook link if no URL is available
+    }
+
     submissionModal.style.display = 'block';
     submissionModal.style.backgroundColor = 'rgba(0,0,0,0.7)';
 }

@@ -256,17 +256,17 @@ function verifyTask(taskId) {
     }
 }
 
-function updateTwitterLink(tweetUrl) {
-    const twitterLink = document.getElementById('twitterLink');
+function updateTwitterLink(url) {
+    const twitterLink = document.getElementById('twitter-link');
     if (twitterLink) {
-        if (tweetUrl) {
-            twitterLink.href = tweetUrl;
-            twitterLink.style.display = 'inline';  // Show the button if the URL is available
-        } else {
-            twitterLink.style.display = 'none';  // Hide the button if there is no URL
-        }
+        console.debug('Twitter link element found, setting href:', url);
+        twitterLink.href = url;
+        twitterLink.style.display = 'block';
+    } else {
+        console.debug('Twitter link element not found');
     }
 }
+
 
 function setTwitterLink(url) {
     const twitterLink = document.getElementById('twitterLink');
@@ -281,15 +281,14 @@ function setTwitterLink(url) {
     }
 }
 
-function updateFacebookLink(fbUrl) {
-    const facebookLink = document.getElementById('facebookLink');
+function updateFacebookLink(url) {
+    const facebookLink = document.getElementById('facebook-link');
     if (facebookLink) {
-        if (fbUrl) {
-            facebookLink.href = fbUrl;
-            facebookLink.style.display = 'inline';  // Show the button if the URL is available
-        } else {
-            facebookLink.style.display = 'none';  // Hide the button if there is no URL
-        }
+        console.debug('Facebook link element found, setting href:', url);
+        facebookLink.href = url;
+        facebookLink.style.display = 'block';
+    } else {
+        console.debug('Facebook link element not found');
     }
 }
 
@@ -306,8 +305,10 @@ function setFacebookLink(url) {
     }
 }
 
+
 // Handle Task Submissions with streamlined logic
 let isSubmitting = false;
+
 function submitTaskDetails(event, taskId) {
     event.preventDefault();
     if (isSubmitting) return;
@@ -317,6 +318,8 @@ function submitTaskDetails(event, taskId) {
     const formData = new FormData(form);
     formData.append('user_id', currentUserId); // Add user_id to form data
 
+    console.debug('Submitting form with data:', formData);
+
     fetch(`/tasks/task/${taskId}/submit`, {
         method: 'POST',
         body: formData,
@@ -325,24 +328,26 @@ function submitTaskDetails(event, taskId) {
             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
-    .then(response => response.json().then(data => {
-        if (!response.ok) {
-            throw new Error(data.message);
-        }
-        return data;
-    }))
+    .then(response => response.json())
     .then(data => {
+        console.debug('Response data:', data);
+
         if (!data.success) {
-            alert(`Submission failed: ${data.message}`);
+            throw new Error(data.message);
         }
         if (data.total_points) {
             const totalPointsElement = document.getElementById('total-points');
-            if (totalPointsElement) totalPointsElement.innerText = `Total Completed Points: ${data.total_points}`;
+            if (totalPointsElement) {
+                console.debug('Updating total points:', data.total_points);
+                totalPointsElement.innerText = `Total Completed Points: ${data.total_points}`;
+            }
         }
         if (data.tweet_url) {
+            console.debug('Updating Twitter link:', data.tweet_url);
             updateTwitterLink(data.tweet_url);
         }
         if (data.fb_url) {
+            console.debug('Updating Facebook link:', data.fb_url);
             updateFacebookLink(data.fb_url);
         }
         openTaskDetailModal(taskId);
@@ -357,6 +362,7 @@ function submitTaskDetails(event, taskId) {
         resetModalContent();
     });
 }
+
 
 // Fetch and Display Submissions
 function fetchSubmissions(taskId) {
@@ -375,7 +381,10 @@ function fetchSubmissions(taskId) {
             return response.json();
         })
         .then(submissions => {
+            console.debug('Fetched submissions:', submissions);
+
             const twitterLink = document.getElementById('twitterLink');
+            const facebookLink = document.getElementById('facebookLink');
 
             if (submissions && submissions.length > 0) {
                 const submission = submissions[0];
@@ -396,16 +405,25 @@ function fetchSubmissions(taskId) {
                 } else {
                     twitterLink.style.display = 'none';
                 }
+
+                if (submission.fb_url && submission.fb_url.trim() !== '') {
+                    facebookLink.href = submission.fb_url;
+                    facebookLink.style.display = 'inline';
+                } else {
+                    facebookLink.style.display = 'none';
+                }
             } else {
                 twitterLink.style.display = 'none';
+                facebookLink.style.display = 'none';
             }
 
             const images = submissions.reverse().map(submission => ({
                 url: submission.image_url,
                 alt: "Submission Image",
-                comment: submission.comment, 
+                comment: submission.comment,
                 user_id: submission.user_id,
-                twitter_url: submission.twitter_url // Ensure twitter_url is included in the object
+                twitter_url: submission.twitter_url, // Ensure twitter_url is included in the object
+                fb_url: submission.fb_url // Ensure fb_url is included in the object
             }));
             distributeImages(images);
         })
@@ -418,8 +436,8 @@ function fetchSubmissions(taskId) {
 // Distribute images across columns in the modal
 function distributeImages(images) {
     const board = document.getElementById('submissionBoard');
-    board.innerHTML = ''; 
-    const modalWidth = board.clientWidth; 
+    board.innerHTML = '';
+    const modalWidth = board.clientWidth;
     const desiredColumnWidth = 150;
     const columnCount = Math.floor(modalWidth / desiredColumnWidth);
     const columns = [];
