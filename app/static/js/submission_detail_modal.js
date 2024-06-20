@@ -28,6 +28,15 @@ function showSubmissionDetail(image) {
         facebookLink.style.display = 'none';  // Hide the Facebook link if no URL is available
     }
 
+    // Update the Instagram link if available
+    const instagramLink = document.getElementById('instagramLink');
+    if (image.instagram_url && isValidUrl(image.instagram_url)) {
+        instagramLink.href = image.instagram_url;
+        instagramLink.style.display = 'inline';  // Show the Instagram link if a URL is available
+    } else {
+        instagramLink.style.display = 'none';  // Hide the Instagram link if no URL is available
+    }
+
     submissionModal.style.display = 'block';
     submissionModal.style.backgroundColor = 'rgba(0,0,0,0.7)';
 }

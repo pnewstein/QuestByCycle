@@ -1,10 +1,44 @@
+from requests_oauthlib import OAuth1Session
+from flask import url_for
+
 import requests
 import json
 import mimetypes
-from requests_oauthlib import OAuth1Session
+
+
+def post_to_social_media(image_url, image_path, status, game):
+    twitter_url, fb_url, instagram_url = None, None, None
+
+    if game.twitter_api_key and game.twitter_api_secret and game.twitter_access_token and game.twitter_access_token_secret:
+        media_id, error = upload_media_to_twitter(image_path, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
+        if not error:
+            twitter_url, error = post_to_twitter(status, media_id, game.twitter_username, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
+            if error:
+                print(f"Failed to post tweet: {error}")
+
+    if game.facebook_access_token and game.facebook_page_id:
+        page_access_token = get_facebook_page_access_token(game.facebook_access_token, game.facebook_page_id)
+        media_response = upload_image_to_facebook(game.facebook_page_id, image_path, page_access_token)
+        if media_response and 'id' in media_response:
+            image_id = media_response['id']
+            fb_url, error = post_to_facebook_with_image(game.facebook_page_id, status, image_id, page_access_token)
+            if error:
+                print(f"Failed to post image to Facebook: {error}")
+
+    print("Posting to Instagram")
+    if game.instagram_user_id and game.instagram_access_token:
+        public_image_url = url_for('static', filename=image_url, _external=True)
+        instagram_url, error = post_to_instagram(public_image_url, status, game.instagram_user_id, game.instagram_access_token)
+        if error:
+            print(f"Failed to post image to Instagram: {error}")
+        else:
+            print(f"Instagram URL: {instagram_url}")
+    return twitter_url, fb_url, instagram_url
+
 
 def authenticate_twitter(api_key, api_secret, access_token, access_token_secret):
     return OAuth1Session(api_key, api_secret, access_token, access_token_secret)
+
 
 def upload_media_to_twitter(file_path, api_key, api_secret, access_token, access_token_secret):
     twitter = authenticate_twitter(api_key, api_secret, access_token, access_token_secret)
@@ -20,6 +54,7 @@ def upload_media_to_twitter(file_path, api_key, api_secret, access_token, access
         else:
             return None, response.text
 
+
 def post_to_twitter(status, media_ids, twitter_username, api_key, api_secret, access_token, access_token_secret):
     url = "https://api.twitter.com/2/tweets"
     payload = {
@@ -32,34 +67,11 @@ def post_to_twitter(status, media_ids, twitter_username, api_key, api_secret, ac
     response = twitter.post(url, json=payload)
     if response.status_code == 201:
         tweet_id = response.json().get('data').get('id')
-        tweet_url = f"https://twitter.com/{twitter_username}/status/{tweet_id}"
-        return tweet_url, None
+        twitter_url = f"https://twitter.com/{twitter_username}/status/{tweet_id}"
+        return twitter_url, None
     else:
         return None, response.text
 
-def get_facebook_user_access_token(app_id, app_secret, redirect_uri, code):
-    url = 'https://graph.facebook.com/v19.0/oauth/access_token'
-    params = {
-        'client_id': app_id,
-        'redirect_uri': redirect_uri,
-        'client_secret': app_secret,
-        'code': code
-    }
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    return response.json()['access_token']
-
-def get_long_lived_user_access_token(app_id, app_secret, short_lived_token):
-    url = 'https://graph.facebook.com/v19.0/oauth/access_token'
-    params = {
-        'grant_type': 'fb_exchange_token',
-        'client_id': app_id,
-        'client_secret': app_secret,
-        'fb_exchange_token': short_lived_token
-    }
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    return response.json()['access_token']
 
 def get_facebook_page_access_token(user_access_token, page_id):
     url = f'https://graph.facebook.com/v19.0/{page_id}'
@@ -70,6 +82,7 @@ def get_facebook_page_access_token(user_access_token, page_id):
     response = requests.get(url, params=params)
     response.raise_for_status()
     return response.json()['access_token']
+
 
 def upload_image_to_facebook(page_id, image_path, access_token):
     print(f"Preparing to upload image to Facebook Page ID: {page_id}")
@@ -99,6 +112,7 @@ def upload_image_to_facebook(page_id, image_path, access_token):
         print(f"Failed to upload image: {response.text}")
         return None
 
+
 def post_to_facebook_with_image(page_id, message, media_object_id, access_token):
     url = f"https://graph.facebook.com/v19.0/{page_id}/feed"
     payload = {
@@ -114,20 +128,46 @@ def post_to_facebook_with_image(page_id, message, media_object_id, access_token)
     else:
         return None, response.text
 
-def post_photo_to_instagram(page_id, image_url, caption, access_token):
-    url = f'https://graph.facebook.com/v19.0/{page_id}/media'
-    payload = {
-        'image_url': image_url,
-        'caption': caption,
-        'access_token': access_token
-    }
-    container_response = requests.post(url, data=payload)
-    container_id = container_response.json()['id']
 
-    publish_url = f'https://graph.facebook.com/v19.0/{page_id}/media_publish'
-    publish_payload = {
-        'creation_id': container_id,
-        'access_token': access_token
-    }
-    publish_response = requests.post(publish_url, data=publish_payload)
-    return publish_response.json()
+def post_to_instagram(image_url, caption, user_id, access_token):
+    try:
+        # Step 1: Create Media Container
+        upload_url = f"https://graph.facebook.com/v20.0/{user_id}/media"
+        payload = {
+            'image_url': image_url,
+            'caption': caption,
+            'access_token': access_token
+        }
+        print(f"Uploading image to Instagram container: {upload_url}")
+        print(f"Payload: {payload}")
+
+        response = requests.post(upload_url, data=payload)
+        response_data = response.json()
+        print(f"Instagram upload response: {response_data}")
+
+        if 'id' not in response_data:
+            raise Exception("Failed to upload image to Instagram.")
+
+        container_id = response_data['id']
+
+        # Step 2: Publish the Media Container
+        publish_url = f"https://graph.facebook.com/v20.0/{user_id}/media_publish"
+        publish_payload = {
+            'creation_id': container_id,
+            'access_token': access_token
+        }
+        print(f"Publishing image on Instagram: {publish_url}")
+        print(f"Publish Payload: {publish_payload}")
+
+        publish_response = requests.post(publish_url, data=publish_payload)
+        publish_data = publish_response.json()
+        print(f"Instagram publish response: {publish_data}")
+
+        if 'id' not in publish_data:
+            raise Exception("Failed to publish image on Instagram.")
+
+        return f"https://www.instagram.com/p/{publish_data['id']}/", None
+
+    except Exception as e:
+        print(f"Error posting to Instagram: {e}")
+        return None, str(e)

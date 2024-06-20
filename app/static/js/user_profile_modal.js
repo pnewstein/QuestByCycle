@@ -172,6 +172,7 @@ function showUserProfileModal(userId) {
                                                 <p><strong>Submitted At:</strong> ${submission.timestamp}</p>
                                                 ${submission.twitter_url ? `<p><a href="${submission.twitter_url}" target="_blank" class="blue_button">View on Twitter</a></p>` : ''}
                                                 ${submission.fb_url ? `<p><a href="${submission.fb_url}" target="_blank" class="blue_button">View on Facebook</a></p>` : ''}
+                                                ${submission.instagram_url ? `<p><a href="${submission.instagram_url}" target="_blank" class="blue_button">View on Instagram</a></p>` : ''}
                                                 ${isCurrentUser ? `<button class="btn btn-danger" onclick="deleteSubmission(${submission.id}, 'profileSubmissions', ${data.user.id})">Delete</button>` : ''}
                                             </div>`).join('') : '<p>No task submissions yet.</p>'}
                                     </div>
