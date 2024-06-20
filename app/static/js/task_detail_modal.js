@@ -374,7 +374,7 @@ function submitTaskDetails(event, taskId) {
             updateFacebookLink(data.fb_url);
         }
         if (data.instagram_url) {
-            console.debug('Updating Instagram link:', data.fb_url);
+            console.debug('Updating Instagram link:', data.instagram_url);
             updateInstagramLink(data.instagram_url);
         }
         openTaskDetailModal(taskId);
