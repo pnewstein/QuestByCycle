@@ -4,6 +4,7 @@ from flask import url_for
 import requests
 import json
 import mimetypes
+import base64
 
 
 def post_to_social_media(image_url, image_path, status, game):
@@ -129,6 +130,15 @@ def post_to_facebook_with_image(page_id, message, media_object_id, access_token)
         return None, response.text
 
 
+def instagram_id_to_shortcode(instagram_id):
+    # Convert the numeric ID to an integer
+    numeric_id = int(instagram_id)
+    
+    # Base64 encode the numeric ID
+    shortcode = base64.urlsafe_b64encode(numeric_id.to_bytes((numeric_id.bit_length() + 7) // 8, 'big')).rstrip(b'=').decode('ascii')
+    
+    return shortcode
+
 def post_to_instagram(image_url, caption, user_id, access_token):
     try:
         # Step 1: Create Media Container
@@ -166,8 +176,12 @@ def post_to_instagram(image_url, caption, user_id, access_token):
         if 'id' not in publish_data:
             raise Exception("Failed to publish image on Instagram.")
 
-        return f"https://www.instagram.com/p/{publish_data['id']}/", None
+        # Convert media_id to shortcode and construct the correct Instagram URL
+        media_id = publish_data['id']
+        shortcode = instagram_id_to_shortcode(media_id)
+        instagram_url = f"https://www.instagram.com/p/{shortcode}/"
+        
+        return instagram_url, None
 
     except Exception as e:
-        print(f"Error posting to Instagram: {e}")
         return None, str(e)
