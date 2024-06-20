@@ -27,6 +27,13 @@ function resetModalContent() {
         facebookLink.href = '#'; // Reset to default or placeholder link
     }
 
+
+    const instagramLink = document.getElementById('instagramLink');
+    if (instagramLink) {
+        instagramLink.style.display = 'none';
+        instagramLink.href = '#'; // Reset to default or placeholder link
+    }
+
     const modalTaskActions = document.getElementById('modalTaskActions');
     if (modalTaskActions) {
         modalTaskActions.innerHTML = '';

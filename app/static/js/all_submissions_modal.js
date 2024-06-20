@@ -77,7 +77,7 @@ function displayAllSubmissions(submissions, isAdmin) {
         facebookLink.className = 'submission-comment';
 
         const instagramLink = document.createElement('p');
-        instagramLink.textContent = `Instagram: ${submission.twitter_url}`;
+        instagramLink.textContent = `Instagram: ${submission.instagram_url}`;
         instagramLink.className = 'submission-comment';
 
         info.appendChild(userDetails);
