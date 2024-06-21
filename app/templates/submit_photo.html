@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Submit Photo</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main1.css') }}">
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
 </head>
 <body>
     <h1>Upload Your Photo for the Task</h1>
