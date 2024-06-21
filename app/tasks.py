@@ -493,7 +493,7 @@ def submit_photo(task_id):
 
             twitter_url, fb_url, instagram_url = None, None, None
             if image_url:
-                twitter_url, fb_url, instagram_url = post_to_social_media(image_path, status, game)
+                twitter_url, fb_url, instagram_url = post_to_social_media(image_url, image_path, status, game)
 
             new_submission = TaskSubmission(
                 task_id=task_id,
