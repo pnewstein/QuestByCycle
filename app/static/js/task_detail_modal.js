@@ -145,7 +145,7 @@ const userToken = localStorage.getItem('userToken');
 const currentUserId = localStorage.getItem('current_user_id');
 
 // Function to manage the dynamic creation and adjustment of the verification form
-function manageVerificationSection(taskId, canVerify, verificationType, nextEligibleTime, nextAvailableTime) {
+function manageVerificationSection(taskId, canVerify, verificationType, nextEligibleTime) {
     const userTaskData = document.querySelector('.user-task-data');
     userTaskData.innerHTML = '';
 
@@ -153,7 +153,7 @@ function manageVerificationSection(taskId, canVerify, verificationType, nextElig
         const verifyForm = document.createElement('div');
         verifyForm.id = `verifyTaskForm-${taskId}`;
         verifyForm.className = 'verify-task-form';
-        verifyForm.style.display = 'show'; // Hide by default
+        verifyForm.style.display = 'block'; // Show by default
 
         // Ensure verificationType is correctly passed and utilized
         const formHTML = getVerificationFormHTML(verificationType.trim().toLowerCase());
@@ -165,9 +165,6 @@ function manageVerificationSection(taskId, canVerify, verificationType, nextElig
 
     console.log("Next Eligible Time:", nextEligibleTime);
     console.log("Can Verify:", canVerify);
-    console.log("Next Available Time:", nextAvailableTime);
-    console.log("Current Time:", new Date());
-    console.log("Condition Result:", !canVerify && nextAvailableTime && nextAvailableTime > new Date());
     console.log("Countdown Element:", document.getElementById('modalCountdown'));
 }
 
@@ -239,6 +236,7 @@ function setupSubmissionForm(taskId) {
     const submissionForm = document.getElementById(`verifyTaskForm-${taskId}`);
     if (submissionForm) {
         submissionForm.addEventListener('submit', function(event) {
+            showLoadingModal();
             submitTaskDetails(event, taskId);
         });
     } else {
@@ -266,7 +264,6 @@ function updateTwitterLink(url) {
         console.debug('Twitter link element not found');
     }
 }
-
 
 function setTwitterLink(url) {
     const twitterLink = document.getElementById('twitterLink');
@@ -340,6 +337,7 @@ function submitTaskDetails(event, taskId) {
     const form = event.target;
     const formData = new FormData(form);
     formData.append('user_id', currentUserId); // Add user_id to form data
+    formData.append('sid', socket.id); // Add sid to form data
 
     console.debug('Submitting form with data:', formData);
 
@@ -389,7 +387,6 @@ function submitTaskDetails(event, taskId) {
         resetModalContent();
     });
 }
-
 
 // Fetch and Display Submissions
 function fetchSubmissions(taskId) {

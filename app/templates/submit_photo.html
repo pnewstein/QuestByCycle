@@ -2,14 +2,79 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Submit Photo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main1.css') }}">
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 </head>
 <body>
     <h1>Upload Your Photo for the Task</h1>
-    <form method="post" enctype="multipart/form-data">
+    <form id="submitPhotoForm" method="post" enctype="multipart/form-data" action="{{ url_for('tasks.submit_photo', task_id=task.id) }}">
         {{ form.csrf_token }}
         <input type="file" name="photo" accept="image/*" capture="camera">
         <button type="submit">Submit</button>
     </form>
+    {% include 'modals/loading_modal.html' %}
+
+    <script>
+        let isSubmitting = false;
+
+        socket.on('connect', () => {
+            console.log('Socket.IO connected. SID:', socket.id);
+
+            // Handle photo submission
+            document.getElementById('submitPhotoForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                if (isSubmitting) return;
+                isSubmitting = true;
+
+                showLoadingModal(); // Show the loading modal on form submission
+
+                const form = event.target;
+                const formData = new FormData(form);
+                const sid = socket.id;
+                formData.append('sid', sid); // Add sid to form data
+
+                const csrfTokenElement = document.querySelector('meta[name="csrf-token"]');
+                const csrfToken = csrfTokenElement ? csrfTokenElement.getAttribute('content') : null;
+                if (csrfToken) {
+                    console.log('CSRF Token:', csrfToken);  // Log CSRF token for debugging
+                } else {
+                    console.error('CSRF token not found');
+                    alert('CSRF token not found');
+                    hideLoadingModal(); // Hide the loading modal if there's an error
+                    return;
+                }
+
+                formData.append('csrf_token', csrfToken);  // Ensure CSRF token is added to the form data
+
+                console.log('Form Data before submission:', ...formData);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-CSRF-Token': csrfToken  // Set CSRF token in headers
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.statusText}`);
+                    }
+                })
+                .then(data => {
+                    console.log('Response Data:', data);  // Add this line for debugging
+                    alert('Photo submitted successfully!');
+                    form.reset();
+                })
+                .finally(() => {
+                    isSubmitting = false;
+                    hideLoadingModal(); // Hide the loading modal after submission is complete
+                });
+            });
+        });
+    </script>
 </body>
 </html>

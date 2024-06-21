@@ -1,39 +1,67 @@
 from requests_oauthlib import OAuth1Session
 from flask import url_for
+from flask_socketio import SocketIO, emit
 
 import requests
 import json
 import mimetypes
-import base64
+
+def emit_status(message, sid, progress=None):
+    from app import socketio
+    data = {'status': message}
+    if progress is not None:
+        data['progress'] = progress
+    socketio.emit('loading_status', data, room=sid)
 
 
-def post_to_social_media(image_url, image_path, status, game):
+def post_to_social_media(image_url, image_path, status, game, sid):
     twitter_url, fb_url, instagram_url = None, None, None
 
+    emit_status('Posting to Twitter...', sid, progress=10)
     if game.twitter_api_key and game.twitter_api_secret and game.twitter_access_token and game.twitter_access_token_secret:
-        media_id, error = upload_media_to_twitter(image_path, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
-        if not error:
-            twitter_url, error = post_to_twitter(status, media_id, game.twitter_username, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
-            if error:
-                print(f"Failed to post tweet: {error}")
+        try:
+            media_id, error = upload_media_to_twitter(image_path, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
+            if not error:
+                twitter_url, error = post_to_twitter(status, media_id, game.twitter_username, game.twitter_api_key, game.twitter_api_secret, game.twitter_access_token, game.twitter_access_token_secret)
+                if error:
+                    print(f"Failed to post tweet: {error}")
+        except requests.exceptions.RequestException as e:
+            print(f"Error during Twitter API call: {e}")
 
+    emit_status('Posting to Facebook...', sid, progress=50)
     if game.facebook_access_token and game.facebook_page_id:
-        page_access_token = get_facebook_page_access_token(game.facebook_access_token, game.facebook_page_id)
-        media_response = upload_image_to_facebook(game.facebook_page_id, image_path, page_access_token)
-        if media_response and 'id' in media_response:
-            image_id = media_response['id']
-            fb_url, error = post_to_facebook_with_image(game.facebook_page_id, status, image_id, page_access_token)
-            if error:
-                print(f"Failed to post image to Facebook: {error}")
+        try:
+            page_access_token = get_facebook_page_access_token(game.facebook_access_token, game.facebook_page_id)
+            media_response = upload_image_to_facebook(game.facebook_page_id, image_path, page_access_token)
+            if media_response and 'id' in media_response:
+                image_id = media_response['id']
+                fb_url, error = post_to_facebook_with_image(game.facebook_page_id, status, image_id, page_access_token)
+                if error:
+                    print(f"Failed to post image to Facebook: {error}")
+        except requests.exceptions.RequestException as e:
+            print(f"Error during Facebook API call: {e}")
+        except json.JSONDecodeError as e:
+            print(f"JSON decode error during Facebook API call: {e}")
+        except Exception as e:
+            print(f"Unexpected error during Facebook API call: {e}")
 
-    print("Posting to Instagram")
+    emit_status('Posting to Instagram...', sid, progress=80)
     if game.instagram_user_id and game.instagram_access_token:
-        public_image_url = url_for('static', filename=image_url, _external=True)
-        instagram_url, error = post_to_instagram(public_image_url, status, game.instagram_user_id, game.instagram_access_token)
-        if error:
-            print(f"Failed to post image to Instagram: {error}")
-        else:
-            print(f"Instagram URL: {instagram_url}")
+        try:
+            public_image_url = url_for('static', filename=image_url, _external=True)
+            instagram_url, error = post_to_instagram(public_image_url, status, game.instagram_user_id, game.instagram_access_token)
+            if error:
+                print(f"Failed to post image to Instagram: {error}")
+            else:
+                print(f"Instagram URL: {instagram_url}")
+        except requests.exceptions.RequestException as e:
+            print(f"Error during Instagram API call: {e}")
+        except json.JSONDecodeError as e:
+            print(f"JSON decode error during Instagram API call: {e}")
+        except Exception as e:
+            print(f"Unexpected error during Instagram API call: {e}")
+
+    emit_status('Submission complete', sid, progress=100)
     return twitter_url, fb_url, instagram_url
 
 
@@ -194,5 +222,9 @@ def post_to_instagram(image_url, caption, user_id, access_token):
 
         return permalink, None
 
+    except json.JSONDecodeError as e:
+        return None, f"JSON decode error: {str(e)}"
+    except requests.exceptions.RequestException as e:
+        return None, f"HTTP error: {str(e)}"
     except Exception as e:
-        return None, str(e)
+        return None, f"Unexpected error: {str(e)}"
