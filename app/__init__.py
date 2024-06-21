@@ -15,6 +15,7 @@ from .config import load_config
 from flask_wtf.csrf import CSRFProtect
 from datetime import timedelta
 from flask_mail import Mail
+from flask_socketio import SocketIO
 
 # Global variable to track the first request
 has_run = False
@@ -23,6 +24,7 @@ has_run = False
 login_manager = LoginManager()
 migrate = Migrate()
 mail = Mail()
+socketio = SocketIO()
 
 def create_app():
     app = Flask(__name__)
@@ -68,6 +70,7 @@ def create_app():
     csrf.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
+    socketio.init_app(app)
 
     # Create super admin
     with app.app_context():

@@ -19,3 +19,4 @@ PyJWT==2.8.0
 pyzt
 openai==1.30.5
 bleach==6.1.0
+flask_socketio==5.3.6

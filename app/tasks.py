@@ -2,12 +2,13 @@ from flask import Blueprint, make_response, jsonify, render_template, request, f
 from flask_login import login_required, current_user
 from app.utils import update_user_score, getLastRelevantCompletionTime, check_and_award_badges, check_and_revoke_badges, save_badge_image, save_submission_image, can_complete_task
 from app.forms import TaskForm, PhotoForm
-from app.social import post_to_twitter, upload_media_to_twitter, post_to_facebook_with_image, upload_image_to_facebook, get_facebook_page_access_token, post_to_instagram, post_to_social_media
+from app.social import post_to_social_media
 from .models import db, Game, Task, Badge, UserTask, TaskSubmission
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 from datetime import datetime, timezone, timedelta
 from io import BytesIO
+from flask_socketio import emit
 
 import base64
 import csv
@@ -53,6 +54,11 @@ ALLOWED_ATTRIBUTES = {
 
 def sanitize_html(html_content):
     return bleach.clean(html_content, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
+
+
+def emit_status(message, sid):
+    from app import socketio
+    socketio.emit('loading_status', {'status': message}, room=sid)
 
 
 @tasks_bp.route('/<int:game_id>/manage_tasks', methods=['GET'])
@@ -140,6 +146,10 @@ def submit_task(task_id):
     verification_type = task.verification_type
     image_file = request.files.get('image')
     comment = sanitize_html(request.form.get('verificationComment', ''))
+    sid = request.form.get('sid')
+
+    if not sid:
+        return jsonify({'success': False, 'message': 'No session ID provided'}), 400
 
     if verification_type == 'qr_code':
         return jsonify({'success': True, 'message': 'QR Code verification does not require any submission'}), 200
@@ -152,18 +162,23 @@ def submit_task(task_id):
     if task.verification_type == 'Pause':
         return jsonify({'success': False, 'message': 'This task is currently paused'}), 403
 
+    emit_status('Initializing submission process...', sid)
+
     try:
         image_url = None
         if image_file and image_file.filename:
+            emit_status('Saving submission image...', sid)
             image_url = save_submission_image(image_file)
             image_path = os.path.join(current_app.static_folder, image_url)
-        
+
         display_name = current_user.display_name or current_user.username
         status = f"{display_name} completed '{task.title}'! #QuestByCycle"
-        
-        if image_url:
-            twitter_url, fb_url, instagram_url = post_to_social_media(image_url, image_path, status, game)
 
+        if image_url:
+            emit_status('Posting to social media...', sid)
+            twitter_url, fb_url, instagram_url = post_to_social_media(image_url, image_path, status, game, sid)
+
+        emit_status('Saving submission details...', sid)
         new_submission = TaskSubmission(
             task_id=task_id,
             user_id=current_user.id,
@@ -190,12 +205,21 @@ def submit_task(task_id):
         user_task.points_awarded = (user_task.points_awarded or 0) + task.points
         user_task.completed = True
 
+        emit_status('Finalizing submission...', sid)
+
         db.session.commit()
 
         update_user_score(current_user.id)
         check_and_award_badges(current_user.id, task_id)
 
         total_points = sum(ut.points_awarded for ut in UserTask.query.filter_by(user_id=current_user.id))
+
+        emit_status('Submission complete!', sid)
+        try:
+            from app import socketio
+            socketio.emit('submission_complete', {'status': "Submission Complete"}, room=sid)
+        except Exception as e:
+            flash(f'Issue submitting verification: {e}', 'error')
 
         return jsonify({
             'success': True,
@@ -479,22 +503,32 @@ def submit_photo(task_id):
     game_end = game.end_date
     now = datetime.now()
 
-    if not (game_start <= now <= game_end):
-        return jsonify({'success': False, 'message': 'This task cannot be completed outside of the game dates'}), 403
-
     if request.method == 'POST':
+        sid = request.form.get('sid')
+        print(f"Received SID: {sid}")  # Add this line for debugging
+
+        if not sid:
+            return jsonify({'success': False, 'message': 'No session ID provided'}), 400
+
+        if not (game_start <= now <= game_end):
+            return jsonify({'success': False, 'message': 'This task cannot be completed outside of the game dates'}), 403
+
+        emit_status('Initializing submission process...', sid)
+
         photo = request.files.get('photo')
         if photo:
+            emit_status('Saving submission image...', sid)
             image_url = save_submission_image(photo)
             image_path = os.path.join(current_app.static_folder, image_url)
             display_name = current_user.display_name or current_user.username
             status = f"{display_name} completed '{task.title}'! #QuestByCycle"
 
-
             twitter_url, fb_url, instagram_url = None, None, None
             if image_url:
-                twitter_url, fb_url, instagram_url = post_to_social_media(image_url, image_path, status, game)
+                emit_status('Posting to social media...', sid)
+                twitter_url, fb_url, instagram_url = post_to_social_media(image_url, image_path, status, game, sid)
 
+            emit_status('Saving submission details...', sid)
             new_submission = TaskSubmission(
                 task_id=task_id,
                 user_id=current_user.id,
@@ -519,9 +553,17 @@ def submit_photo(task_id):
                 user_task.completions += 1
                 user_task.points_awarded += task.points
 
+            emit_status('Finalizing submission...', sid)
             db.session.commit()
 
             update_user_score(current_user.id)
+
+            emit_status('Submission complete!', sid)
+            try:
+                from app import socketio
+                socketio.emit('submission_complete', {'status': "Submission Complete"}, room=sid)
+            except Exception as e:
+                flash(f'Issue submitting verification: {e}', 'error')
 
             flash('Photo submitted successfully!', 'success')
             return redirect(url_for('main.index', game_id=task.game_id))
@@ -529,6 +571,7 @@ def submit_photo(task_id):
             flash('No photo detected, please try again.', 'error')
 
     return render_template('submit_photo.html', form=form, task=task)
+
 
 
 def allowed_file(filename):
