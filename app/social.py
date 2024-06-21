@@ -130,14 +130,23 @@ def post_to_facebook_with_image(page_id, message, media_object_id, access_token)
         return None, response.text
 
 
-def instagram_id_to_shortcode(instagram_id):
-    # Convert the numeric ID to an integer
-    numeric_id = int(instagram_id)
+def get_instagram_permalink(media_id, access_token):
+    permalink_url = f"https://graph.facebook.com/{media_id}?fields=permalink&access_token={access_token}"
     
-    # Base64 encode the numeric ID
-    shortcode = base64.urlsafe_b64encode(numeric_id.to_bytes((numeric_id.bit_length() + 7) // 8, 'big')).rstrip(b'=').decode('ascii')
+    try:
+        permalink_response = requests.get(permalink_url)
+        permalink_data = permalink_response.json()
+        print(f"Instagram permalink response: {permalink_data}")
+
+        if 'permalink' in permalink_data:
+            return permalink_data['permalink'], None
+        else:
+            raise Exception("Permalink not available yet.")
+    except Exception as e:
+        print(f"Error fetching permalink: {e}")
     
-    return shortcode
+    return None, "Failed to retrieve permalink after multiple attempts."
+
 
 def post_to_instagram(image_url, caption, user_id, access_token):
     try:
@@ -176,12 +185,14 @@ def post_to_instagram(image_url, caption, user_id, access_token):
         if 'id' not in publish_data:
             raise Exception("Failed to publish image on Instagram.")
 
-        # Convert media_id to shortcode and construct the correct Instagram URL
         media_id = publish_data['id']
-        shortcode = instagram_id_to_shortcode(media_id)
-        instagram_url = f"https://www.instagram.com/p/{shortcode}/"
-        
-        return instagram_url, None
+
+        # Get the permalink of the published media
+        permalink, error = get_instagram_permalink(media_id, access_token)
+        if error:
+            raise Exception(error)
+
+        return permalink, None
 
     except Exception as e:
         return None, str(e)
