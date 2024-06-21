@@ -60,10 +60,6 @@ QuestByCycle is a Flask-based web application designed to engage and motivate th
 
 ```GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO username;```
 
-```ALTER TABLE badge ALTER COLUMN name TYPE VARCHAR(255);```
-
-```ALTER TABLE badge ALTER COLUMN description TYPE VARCHAR(500);```
-
 ```ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO username;```
 
 ```\q```
@@ -80,7 +76,7 @@ QuestByCycle is a Flask-based web application designed to engage and motivate th
 
 7. Run the application:
 
-```gunicorn --bind 0.0.0.0:8000 wsgi:app```
+```gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 -b | 127.0.0.1:5000 wsgi:app```
 
 8. Update instructions:
 

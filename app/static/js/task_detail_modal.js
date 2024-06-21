@@ -341,6 +341,8 @@ function submitTaskDetails(event, taskId) {
 
     console.debug('Submitting form with data:', formData);
 
+    showLoadingModal(); // Show the loading modal
+
     fetch(`/tasks/task/${taskId}/submit`, {
         method: 'POST',
         body: formData,
@@ -349,7 +351,13 @@ function submitTaskDetails(event, taskId) {
             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        hideLoadingModal(); // Hide the loading modal upon receiving the response
+        if (!response.ok) {
+            throw new Error(`Server responded with status ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         console.debug('Response data:', data);
 
@@ -379,12 +387,12 @@ function submitTaskDetails(event, taskId) {
         form.reset();
     })
     .catch(error => {
+        hideLoadingModal(); // Ensure the loading modal is hidden on error
         console.error("Submission error:", error);
         alert('Error during submission: ' + error.message);
     })
     .finally(() => {
         isSubmitting = false;
-        resetModalContent();
     });
 }
 
