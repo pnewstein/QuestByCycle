@@ -70,7 +70,7 @@ def create_app():
     csrf.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
-    socketio.init_app(app)
+    socketio.init_app(app, async_mode='gevent', logger=True, engineio_logger=True)
 
     # Create super admin
     with app.app_context():
