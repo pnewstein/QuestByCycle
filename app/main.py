@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import func
 from datetime import datetime, timedelta, timezone
 from pytz import utc
+from flask_wtf.csrf import generate_csrf
 
 import bleach
 import os
@@ -457,3 +458,11 @@ def contact():
         flash('Validation failed. Please ensure all fields are filled correctly.', 'warning')
 
     return redirect(url_for('main.index'))
+
+
+@main_bp.route('/refresh-csrf', methods=['GET'])
+def refresh_csrf():
+    new_csrf_token = generate_csrf()
+    response = jsonify({'csrf_token': new_csrf_token})
+    response.set_cookie('csrf_token', new_csrf_token)
+    return response

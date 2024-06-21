@@ -1,3 +1,15 @@
+function refreshCSRFToken() {
+    fetch('/refresh-csrf')
+        .then(response => response.json())
+        .then(data => {
+            document.querySelector('meta[name="csrf-token"]').setAttribute('content', data.csrf_token);
+        })
+        .catch(error => console.error('Error refreshing CSRF token:', error));
+}
+
+// Refresh the CSRF token every 15 minutes (900000 milliseconds)
+setInterval(refreshCSRFToken, 900000);
+
 function updateMeter(gameId) {
     fetch(`games/get_game_points/${gameId}`)
         .then(response => response.json())
