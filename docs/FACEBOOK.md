@@ -51,7 +51,13 @@ To interact with Facebook APIs, you need an access token. Follow these steps to 
 
 3. **Generate Access Token**:
    - In **System User Details**, click **Generate New Token**.
-   - Select the app and choose the necessary permissions.
+   - Select the app and choose the necessary permissions:
+      - instagram_basic
+      - instagram_content_publish
+      - pages_manage_posts
+      - pages_read_engagement
+      - pages_read_user_content
+      - publish_video
    - Click **Generate Token** and note down the **Access Token**.
 s
 ## Step 4: Obtain Facebook Page ID
