@@ -57,6 +57,7 @@ def sanitize_html(html_content):
 
 
 def emit_status(message, sid):
+    print(f'Emitting status: {message} to SID: {sid}')  # Debugging
     from app import socketio
     socketio.emit('loading_status', {'status': message}, room=sid)
 
@@ -215,11 +216,9 @@ def submit_task(task_id):
         total_points = sum(ut.points_awarded for ut in UserTask.query.filter_by(user_id=current_user.id))
 
         emit_status('Submission complete!', sid)
-        try:
-            from app import socketio
-            socketio.emit('submission_complete', {'status': "Submission Complete"}, room=sid)
-        except Exception as e:
-            flash(f'Issue submitting verification: {e}', 'error')
+        
+        from app import socketio
+        socketio.emit('submission_complete', {'status': "Submission Complete"}, room=sid)
 
         return jsonify({
             'success': True,
@@ -233,6 +232,7 @@ def submit_task(task_id):
         })
     except Exception as e:
         db.session.rollback()
+        emit_status('Submission failed.', sid)  # Emit failure status
         return jsonify({'success': False, 'message': str(e)})
     
 

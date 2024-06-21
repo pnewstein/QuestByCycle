@@ -285,20 +285,6 @@
     <script src="{{ url_for('static', filename='js/generated_task.js') }}"></script>
 
     <script>
-        document.getElementById('taskSearchInput').addEventListener('input', function () {
-            const searchValue = this.value.toLowerCase();
-            const tasks = document.querySelectorAll('#taskTableBody tr');
-            tasks.forEach(task => {
-                const taskTitle = task.querySelector('td:nth-child(1) button').textContent.toLowerCase();
-                if (taskTitle.includes(searchValue)) {
-                    task.style.display = '';
-                } else {
-                    task.style.display = 'none';
-                }
-            });
-        });
-    </script>
-    <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize Quill editor if the container exists (i.e., user is admin)
             const quillEditorContainer = document.getElementById('quill-editor');
@@ -316,7 +302,7 @@
                         ]
                     }
                 });
-
+    
                 // On form submit, copy the content from Quill to the hidden input
                 document.querySelector('form').onsubmit = function() {
                     var messageInput = document.querySelector('#message-input');
@@ -324,11 +310,11 @@
                     return true;
                 };
             }
-
+    
             document.querySelectorAll('.activity-message').forEach(function(element) {
                 element.innerHTML = element.innerHTML.replace(/<\/?p[^>]*>/g, '');
             });
-
+    
             // Function to scroll messages container
             function scrollMessagesContainer(direction) {
                 const scrollAmount = direction === 'up' ? -100 : 100;
@@ -337,29 +323,49 @@
                     behavior: 'smooth'
                 });
             }
-
+    
             // Event listeners for desktop and mobile
             const scrollUpButton = document.getElementById('scrollUpButton');
             const scrollDownButton = document.getElementById('scrollDownButton');
-
+    
             // Adding both click and touchstart event listeners
-            scrollUpButton.addEventListener('click', function() {
-                scrollMessagesContainer('up');
-            });
-            scrollUpButton.addEventListener('touchstart', function(event) {
-                event.preventDefault(); // Prevents additional mouse events
-                scrollMessagesContainer('up');
-            });
-
-            scrollDownButton.addEventListener('click', function() {
-                scrollMessagesContainer('down');
-            });
-            scrollDownButton.addEventListener('touchstart', function(event) {
-                event.preventDefault(); // Prevents additional mouse events
-                scrollMessagesContainer('down');
-            });
+            if (scrollUpButton) {
+                scrollUpButton.addEventListener('click', function() {
+                    scrollMessagesContainer('up');
+                });
+                scrollUpButton.addEventListener('touchstart', function(event) {
+                    event.preventDefault(); // Prevents additional mouse events
+                    scrollMessagesContainer('up');
+                });
+            }
+    
+            if (scrollDownButton) {
+                scrollDownButton.addEventListener('click', function() {
+                    scrollMessagesContainer('down');
+                });
+                scrollDownButton.addEventListener('touchstart', function(event) {
+                    event.preventDefault(); // Prevents additional mouse events
+                    scrollMessagesContainer('down');
+                });
+            }
+    
+            // Initialize the task search input event listener
+            const taskSearchInput = document.getElementById('taskSearchInput');
+            if (taskSearchInput) {
+                taskSearchInput.addEventListener('input', function () {
+                    const searchValue = this.value.toLowerCase();
+                    const tasks = document.querySelectorAll('#taskTableBody tr');
+                    tasks.forEach(task => {
+                        const taskTitle = task.querySelector('td:nth-child(1) button').textContent.toLowerCase();
+                        if (taskTitle.includes(searchValue)) {
+                            task.style.display = '';
+                        } else {
+                            task.style.display = 'none';
+                        }
+                    });
+                });
+            }
         });
-
     </script>
     <style>
         .shout-messages-container {
