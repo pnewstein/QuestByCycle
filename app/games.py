@@ -1,9 +1,8 @@
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
-from app.models import db, Game, Task, UserTask, TaskSubmission
+from app.models import db, Game, Task, UserTask
 from app.forms import GameForm
-from app.social import get_facebook_page_access_token
-from datetime import datetime, timedelta, timezone
+from app.utils import save_leaderboard_image, generate_smoggy_images, allowed_file
 
 import bleach
 import os
@@ -75,9 +74,25 @@ def create_game():
             allow_joins=form.allow_joins.data,
             admin_id=current_user.id
         )
+        if 'leaderboard_image' in request.files:
+            image_file = request.files['leaderboard_image']
+            if image_file and allowed_file(image_file.filename):
+                try:
+                    filename = save_leaderboard_image(image_file)
+                    game.leaderboard_image = filename
+                except ValueError as e:
+                    flash(f'Error saving leaderboard image: {e}', 'error')
+                    return render_template('create_game.html', title='Create Game', form=form)
+            else:
+                flash('Invalid file type for leaderboard image', 'error')
+                return render_template('create_game.html', title='Create Game', form=form)
+
         db.session.add(game)
         try:
             db.session.commit()
+            if game.leaderboard_image:
+                image_path = os.path.join(current_app.root_path, 'static', game.leaderboard_image)
+                generate_smoggy_images(image_path, game.id)
             flash('Game created successfully!', 'success')
             return redirect(url_for('admin.admin_dashboard'))
         except Exception as e:
@@ -91,23 +106,39 @@ def update_game(game_id):
     game = Game.query.get_or_404(game_id)
     form = GameForm(obj=game)
     if form.validate_on_submit():
-        form.populate_obj(game)  # This will automatically update all fields including new ones
-        game.title = sanitize_html(game.title)
-        game.description = sanitize_html(game.description)
-        game.description2 = sanitize_html(game.description2)
-        game.game_goal = game.game_goal
-        game.details = sanitize_html(game.details)
-        game.awards = sanitize_html(game.awards)
-        game.beyond = sanitize_html(game.beyond)
-        game.twitter_username = sanitize_html(game.twitter_username)
-        game.twitter_api_key = sanitize_html(game.twitter_api_key)
-        game.twitter_api_secret = sanitize_html(game.twitter_api_secret)
-        game.twitter_access_token = sanitize_html(game.twitter_access_token)
-        game.twitter_access_token_secret = sanitize_html(game.twitter_access_token_secret)
-        game.facebook_app_id = sanitize_html(game.facebook_app_id)
-        game.facebook_app_secret = sanitize_html(game.facebook_app_secret)
-        game.facebook_access_token = sanitize_html(game.facebook_access_token)
-        game.facebook_page_id = sanitize_html(game.facebook_page_id)
+        game.title = sanitize_html(form.title.data)
+        game.description = sanitize_html(form.description.data)
+        game.description2 = sanitize_html(form.description2.data)
+        game.start_date = form.start_date.data
+        game.end_date = form.end_date.data
+        game.game_goal = form.game_goal.data
+        game.details = sanitize_html(form.details.data)
+        game.awards = sanitize_html(form.awards.data)
+        game.beyond = sanitize_html(form.beyond.data)
+        game.twitter_username = sanitize_html(form.twitter_username.data)
+        game.twitter_api_key = sanitize_html(form.twitter_api_key.data)
+        game.twitter_api_secret = sanitize_html(form.twitter_api_secret.data)
+        game.twitter_access_token = sanitize_html(form.twitter_access_token.data)
+        game.twitter_access_token_secret = sanitize_html(form.twitter_access_token_secret.data)
+        game.facebook_app_id = sanitize_html(form.facebook_app_id.data)
+        game.facebook_app_secret = sanitize_html(form.facebook_app_secret.data)
+        game.facebook_access_token = sanitize_html(form.facebook_access_token.data)
+        game.facebook_page_id = sanitize_html(form.facebook_page_id.data)
+        game.is_public = form.is_public.data
+        game.allow_joins = form.allow_joins.data
+
+        if 'leaderboard_image' in request.files and request.files['leaderboard_image'].filename:
+            image_file = request.files['leaderboard_image']
+            if image_file and allowed_file(image_file.filename):
+                try:
+                    filename = save_leaderboard_image(image_file)
+                    game.leaderboard_image = filename
+
+                    image_path = os.path.join(current_app.root_path, 'static', game.leaderboard_image)
+                    generate_smoggy_images(image_path, game.id)
+                except ValueError as e:
+                    flash(f'Error saving leaderboard image: {e}', 'error')
+                    return render_template('update_game.html', form=form, game_id=game_id, leaderboard_image=game.leaderboard_image)
 
         try:
             db.session.commit()
@@ -116,7 +147,7 @@ def update_game(game_id):
         except Exception as e:
             db.session.rollback()
             flash(f'An error occurred while updating the game: {e}', 'error')
-    return render_template('update_game.html', form=form, game_id=game_id)
+    return render_template('update_game.html', form=form, game_id=game_id, leaderboard_image=game.leaderboard_image)
 
 
 @games_bp.route('/register_game/<int:game_id>', methods=['POST'])

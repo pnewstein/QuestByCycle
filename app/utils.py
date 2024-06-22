@@ -3,6 +3,7 @@ from .models import db, Task, Badge, UserTask, User, ShoutBoardMessage, TaskSubm
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 from flask_mail import Message, Mail
+from PIL import Image
 
 
 import uuid
@@ -15,6 +16,49 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
+def save_leaderboard_image(image_file):
+    if not hasattr(image_file, 'filename'):
+        raise ValueError("Invalid file object passed.")
+    
+    try:
+        ext = image_file.filename.rsplit('.', 1)[-1].lower()
+        if ext not in ALLOWED_EXTENSIONS:
+            raise ValueError("File extension not allowed.")
+        filename = secure_filename(f"{uuid.uuid4()}.{ext}")
+        rel_path = os.path.join('images', 'leaderboard', filename)
+        abs_path = os.path.join(current_app.root_path, 'static', rel_path)
+
+        leaderboard_images_dir = os.path.join(current_app.root_path, 'static/images/leaderboard')
+        if not os.path.exists(leaderboard_images_dir):
+            os.makedirs(leaderboard_images_dir)
+
+        print(f"Saving file to {abs_path}")
+        image_file.save(abs_path)
+        print(f"File saved successfully to {abs_path}")
+        return rel_path
+
+    except Exception as e:
+        print(f"Error saving leaderboard image: {e}")
+        raise ValueError(f"Failed to save image: {str(e)}")
+
+def create_smog_effect(image, smog_level):
+    smog_overlay = Image.new('RGBA', image.size, (169, 169, 169, int(255 * smog_level)))
+    smog_image = Image.alpha_composite(image.convert('RGBA'), smog_overlay)
+    return smog_image
+
+def generate_smoggy_images(image_path, game_id):
+    try:
+        original_image = Image.open(image_path)
+
+        for i in range(10):
+            smog_level = i / 9.0
+            smoggy_image = create_smog_effect(original_image, smog_level)
+            smoggy_image.save(os.path.join(current_app.root_path, f'static/images/leaderboard/smoggy_skyline_{game_id}_{i}.png'))
+            print(f"Smoggy image saved: smoggy_skyline_{game_id}_{i}.png")
+    except Exception as e:
+        print(f"Error generating smoggy images: {e}")
+        raise ValueError(f"Failed to generate smoggy images: {str(e)}")
 
 def update_user_score(user_id):
     try:
