@@ -92,6 +92,10 @@
             <textarea name="beyond" id="beyond-textarea" hidden>{{ form.beyond.data }}</textarea>
         </div>
         <div class="form-group">
+            <label for="leaderboard_image">Leaderboard Background Image</label>
+            {{ form.leaderboard_image(class_="form-control", id="leaderboard_image") }}
+        </div>
+        <div class="form-group">
             <label for="is_public">Is Public</label>
             {{ form.is_public(class_="form-control", id="is_public") }}
         </div>

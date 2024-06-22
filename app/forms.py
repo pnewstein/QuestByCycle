@@ -63,6 +63,7 @@ class GameForm(FlaskForm):
     awards = TextAreaField('Awards Details')
     beyond = TextAreaField('Sustainability Details')
     game_goal = IntegerField('Game Goal')  # Add a default value or make it required
+    leaderboard_image = FileField('Leaderboard Background Image (height: 400px; .png only)', validators=[FileAllowed(['png'], 'Images only!')])  # 
     twitter_username = StringField('Twitter Username')
     twitter_api_key = StringField('Twitter API Key')
     twitter_api_secret = StringField('Twitter API Secret')

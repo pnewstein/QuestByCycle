@@ -151,6 +151,7 @@ class Game(db.Model):
     awards = db.Column(db.Text)
     beyond = db.Column(db.Text)
     sponsors = db.relationship('Sponsor', back_populates='game', cascade='all, delete-orphan')
+    leaderboard_image = db.Column(db.String(500), nullable=True)  # New field for leaderboard image
 
     twitter_username = db.Column(db.String(500), nullable=True)
     twitter_api_key = db.Column(db.String(500), nullable=True)
@@ -190,8 +191,7 @@ class Game(db.Model):
                     break
                 except IntegrityError:
                     db.session.rollback()
-
-                    
+          
 game_participants = db.Table('game_participants',
     db.Column('game_id', db.Integer, db.ForeignKey('game.id'), primary_key=True),
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)

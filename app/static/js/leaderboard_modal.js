@@ -6,6 +6,8 @@ function showLeaderboardModal(selectedGameId) {
         return;
     }
 
+    console.log(`Fetching leaderboard data for game ID: ${selectedGameId}`);
+
     fetch('/leaderboard_partial?game_id=' + selectedGameId)
         .then(response => {
             if (!response.ok) {
@@ -16,7 +18,7 @@ function showLeaderboardModal(selectedGameId) {
         .then(data => {
             leaderboardContent.innerHTML = '';
             appendGameSelector(leaderboardContent, data, selectedGameId);
-            appendCompletionMeter(leaderboardContent, data);
+            appendCompletionMeter(leaderboardContent, data, selectedGameId);
             appendLeaderboardTable(leaderboardContent, data);
             openModal('leaderboardModal');
         })
@@ -101,7 +103,7 @@ function appendTableCell(row, content, isLink = false, userId = null) {
     row.appendChild(cell);
 }
 
-function appendCompletionMeter(parentElement, data) {
+function appendCompletionMeter(parentElement, data, selectedGameId) {
     if (data.total_game_points && data.game_goal) {
         const meterContainer = document.createElement('div');
         meterContainer.className = 'completion-meter-container';
@@ -135,6 +137,7 @@ function appendCompletionMeter(parentElement, data) {
         meterBar.className = 'meter-bar';
         meterBar.id = 'meterBar';
         meterBar.style.height = '0%';
+        meterBar.style.opacity = '1'; // Set initial opacity to 1 (0% transparent)
         meterBar.dataset.label = `${percentReduction.toFixed(1)}% Reduced`;
         completionMeter.appendChild(meterBar);
 
@@ -143,15 +146,17 @@ function appendCompletionMeter(parentElement, data) {
 
         setTimeout(() => {
             meterBar.style.height = `${percentReduction}%`;
-            updateMeterBackground(percentReduction);
+            meterBar.style.opacity = `${1 - percentReduction / 100}`; // Update opacity based on percent reduction
+            updateMeterBackground(percentReduction, selectedGameId);
         }, 100);
     }
 }
 
-function updateMeterBackground(percent) {
+
+function updateMeterBackground(percent, selectedGameId) {
     const completionMeter = document.getElementById('completionMeter');
-    const imageIndex = Math.floor(percent / 20); // Change the background every 20%
-    completionMeter.style.backgroundImage = `url('static/images/clearMeterBG_${imageIndex}.png')`;
+    const imageIndex = 9 - Math.min(Math.floor(percent / 10), 9); // Invert the index for the clearest image at 100%
+    completionMeter.style.backgroundImage = `url('/static/images/leaderboard/smoggy_skyline_${selectedGameId}_${imageIndex}.png')`;
 }
 
 function closeLeaderboardModal() {
