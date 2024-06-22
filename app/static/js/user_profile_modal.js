@@ -74,9 +74,6 @@ function showUserProfileModal(userId) {
                         <div class="profile-picture-container position-relative mx-auto mb-3">
                             <img src="/static/${data.user.profile_picture}" alt="Profile Picture" class="profile-picture rounded-circle shadow-lg border border-white border-4">
                             ${isCurrentUser ? `<input type="file" id="profilePictureInput" name="profile_picture" accept="image/*">` : ''}
-                            <div class="profile-picture-overlay">
-                                <span class="text-white">Change Picture</span>
-                            </div>
                         </div>` : ''}
                     <div class="header-bg position-absolute w-100 h-100 top-0 start-0"></div>
                     <div class="header-content position-relative z-index-1">
