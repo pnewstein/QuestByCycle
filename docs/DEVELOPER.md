@@ -341,6 +341,99 @@ Before deploying to production, ensure the following settings in `config.toml`:
 1. **Set up the server**:
    - Install required packages: `Python`, `PostgreSQL`, `Nginx`, `Gunicorn`.
 
+   - NGINX Config:
+\`\`\`
+    # Serve robots.txt
+    location = /robots.txt {
+        alias /var/www/html/app/robots.txt;
+    }
+    a
+    # Security Headers
+    add_header Strict-Transport-Security "max-age=3600; includeSubDomains" always;
+    add_header X-Content-Type-Options nosniff;
+    add_header X-Frame-Options DENY;
+    add_header X-XSS-Protection "1; mode=block";
+
+    # Content Security Policy
+    add_header Content-Security-Policy "
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' https://code.jquery.com https://cdnjs.cloudflare.com https://stackpath.bootstrapcdn.com https://cdn.jsdelivr.net https://code.jquery.com https://cdnjs.cloudflare.com https://www.googletagmanager.com;
+        style-src 'self' 'unsafe-inline' https://stackpath.bootstrapcdn.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;
+        img-src 'self' data:;
+        font-src 'self' data: https://cdn.jsdelivr.net;
+        connect-src 'self' https://www.google-analytics.com https://questbycycle.org wss://questbycycle.org;
+        frame-src 'self';
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+    ";
+
+    # Gzip Compression
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+
+    # Serve Static Files - CSS
+    location /static/css/ {
+        alias /var/www/html/app/static/css/;
+        expires 1h; # Cache CSS files for 1 hour
+        add_header Cache-Control "public, max-age=3600, must-revalidate";
+        try_files $uri $uri/ =404;
+    }
+
+   # Serve Static Files - Video
+    location /static/videos/ {
+        alias /var/www/html/app/static/videos/;
+        expires 30d;
+        add_header Cache-Control "public, max-age=, max-age=2592000, must-revalidate";
+        try_files $uri $uri/ =404;
+    }
+
+
+    # Serve Static Files - Photos
+    location /static/photos/ {
+        alias /var/www/html/app/static/photos/;
+        expires 30d; # Cache photos for 30 days
+        add_header Cache-Control "public, max-age=2592000, must-revalidate";
+        try_files $uri $uri/ =404;
+    }
+
+    # Serve Other Static Files
+    location /static/ {
+        alias /var/www/html/app/static/;
+        expires 1h; # Cache other static files for 1 hour
+        add_header Cache-Control "public, max-age=3600, must-revalidate";
+        try_files $uri $uri/ =404;
+    }
+
+    # Proxy Pass for Application
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /socket.io/ {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        # Allow WebSocket origin
+        proxy_set_header Origin "https://questbycycle.org";
+    }
+
+    client_max_body_size 10M;
+
+    # First attempt to serve request as file, then as directory, then fall back to displaying a 404.
+    try_files $uri $uri/ =404;
+}
+\`\`\`
 2. **Clone the repository**:
    \`\`\`bash
    git clone https://github.com/your-repo/your-project.git
