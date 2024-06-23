@@ -89,7 +89,7 @@ You will see a form with the following fields. Fill them out as described:
 
 ### Step 3: Social Media Integration
 
-Fill in the social media integration fields if your game will use Twitter and Facebook. These fields help automate posts and updates related to the game, enhancing engagement and visibility.
+Fill in the social media integration fields if your game will use Twitter and Facebook. These fields help automate posts and updates related to the game, enhancing engagement and visibility. If these fields are left blank. They will not auto upload to the various social media platform. There are no repercusions.
 
 1. **Twitter Username**:
    - **Purpose**: The Twitter handle used to post updates about the game.
