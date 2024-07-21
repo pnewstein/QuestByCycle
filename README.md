@@ -76,7 +76,7 @@ QuestByCycle is a Flask-based web application designed to engage and motivate th
 
 7. Run the application:
 
-```gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 -b | 127.0.0.1:5000 wsgi:app```
+```gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 -b 127.0.0.1:5000 wsgi:app```
 
 8. Update instructions:
 
