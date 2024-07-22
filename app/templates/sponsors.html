@@ -4,6 +4,9 @@
 <div class="container">
     <a href="{{ url_for('main.index') }}" class="button">Back to Home</a> 
     <h2>Sponsors</h2>
+    {% if game_id %}
+        <h3>Displaying sponsors for game: {{ game_id }}</h3>
+    {% endif %}
     <div class="row">
         {% for sponsor in sponsors %}
             {% if sponsor.tier == 'Gold' %}

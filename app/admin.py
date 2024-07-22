@@ -268,8 +268,12 @@ def delete_sponsor(sponsor_id):
 
 @admin_bp.route('/sponsors', methods=['GET'])
 def sponsors():
-    sponsors = Sponsor.query.all()
-    return render_template('sponsors.html', sponsors=sponsors)
+    game_id = request.args.get('game_id', type=int)
+    if game_id:
+        sponsors = Sponsor.query.filter_by(game_id=game_id).all()
+    else:
+        sponsors = Sponsor.query.all()
+    return render_template('sponsors.html', sponsors=sponsors, game_id=game_id)
 
 
 @admin_bp.route('/admin/sponsors', methods=['GET', 'POST'])
@@ -279,20 +283,39 @@ def manage_sponsors():
         flash('Access denied.', 'danger')
         return redirect(url_for('auth.login'))
 
-    form = SponsorForm()
+    game_id = request.args.get('game_id', type=int)
+    if request.method == 'POST':
+        game_id = request.form.get('game_id', type=int)
+    
+    print(f"Game ID received (initial): {game_id}")  # Debugging line
+
+    form = SponsorForm(game_id=game_id)
+
     if form.validate_on_submit():
+        print("Form validated successfully.")  # Debugging line
         sponsor = Sponsor(
             name=sanitize_html(form.name.data),
             website=sanitize_html(form.website.data),
             logo=sanitize_html(form.logo.data),
             description=sanitize_html(form.description.data),
             tier=sanitize_html(form.tier.data),
-            game_id=form.game_id.data  # No need to sanitize as it's an integer
+            game_id=game_id
         )
+        print(f"Creating sponsor: {sponsor}")  # Debugging line
         db.session.add(sponsor)
-        db.session.commit()
-        flash('Sponsor added successfully!', 'success')
-        return redirect(url_for('admin.manage_sponsors'))
+        try:
+            db.session.commit()
+            print("Sponsor added successfully!")  # Debugging line
+            flash('Sponsor added successfully!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error adding sponsor: {e}")  # Debugging line
+            flash('An error occurred while adding the sponsor.', 'error')
+        return redirect(url_for('admin.manage_sponsors', game_id=game_id))
+    else:
+        print("Form validation failed.")  # Debugging line
+        print(form.errors)  # Debugging line
 
-    sponsors = Sponsor.query.all()
-    return render_template('manage_sponsors.html', form=form, sponsors=sponsors)
+    sponsors = Sponsor.query.filter_by(game_id=game_id).all() if game_id else Sponsor.query.all()
+    print(f"Sponsors for game ID {game_id}: {sponsors}")  # Debugging line
+    return render_template('manage_sponsors.html', form=form, sponsors=sponsors, game_id=game_id)

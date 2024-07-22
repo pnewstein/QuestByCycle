@@ -39,7 +39,6 @@
                 <a href="https://www.350eugene.org/" target="_blank">
                     <img src="{{ url_for('static', filename='images/350EUG-logo.png') }}" alt="350Eugene Logo" class="footer-logo">
                 </a>
-                <a href="{{ url_for('admin.sponsors') }}" class="see-more">see more</a>
             </div>
             <div class="footer-section links">
                 <a href="{{ url_for('auth.privacy_policy') }}">Privacy Policy</a>
@@ -47,13 +46,13 @@
                 <a href="{{ url_for('auth.license_agreement') }}">License Agreement</a>
             </div>
             <div class="footer-section social">
-                <a href="https://twitter.com/QuestByCycle" target="_blank" class="social-link">
+                <a href="{{ selected_game.twitter_url if selected_game else 'https://twitter.com/QuestByCycle' }}" target="_blank" class="social-link">
                     <i class="fab fa-twitter"></i>
                 </a>
-                <a href="https://facebook.com/QuestByCycle" target="_blank" class="social-link">
+                <a href="{{ selected_game.facebook_url if selected_game else 'https://facebook.com/QuestByCycle' }}" target="_blank" class="social-link">
                     <i class="fab fa-facebook-f"></i>
                 </a>
-                <a href="https://instagram.com/QuestByCycle" target="_blank" class="social-link">
+                <a href="{{ selected_game.instagram_url if selected_game else 'https://instagram.com/QuestByCycle' }}" target="_blank" class="social-link">
                     <i class="fab fa-instagram"></i>
                 </a>
             </div>
@@ -62,5 +61,6 @@
             &copy; {{ current_year }} QuestByCycle. All rights reserved. 
         </div>
     </footer>
+    
 </body>
 </html>

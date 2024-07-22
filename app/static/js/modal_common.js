@@ -48,6 +48,9 @@ function closeAllModals(id) {
         case 'submissionDetailModal':
             closeSubmissionDetailModal();
             break;
+        case 'sponsorsModal':
+            closeSponsorsModal();
+            break;
         case 'mySubmissionsModal':
             closeMySubmissionsModal();
             break;
