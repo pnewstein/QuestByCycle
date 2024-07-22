@@ -43,7 +43,6 @@
                     </form>
                     <a href="{{ url_for('tasks.manage_game_tasks', game_id=game.id) }}" class="btn btn-primary">Config Tasks</a>
                     <a href="{{ url_for('badges.manage_badges', game_id=game.id) }}" class="btn btn-primary">Config Badges</a>
-                    <a href="{{ url_for('admin.manage_sponsors', game_id=game.id) }}" class="btn btn-primary">Manage Sponsors</a>
                     <button class="btn btn-primary" onclick="openModal('editCarouselModal')">Edit Carousel</button>
                     <button id="allSubmissionsButton" class="btn btn-primary" style="margin-left: 10px;">All Submissions</button>
                 </div>
