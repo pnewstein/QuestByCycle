@@ -202,7 +202,9 @@ def index(game_id, task_id, user_id):
                            total_points=total_points,
                            completions=completed_tasks,
                            custom_games=custom_games,
-                           selected_game_id=game_id)
+                           selected_game_id=game_id,
+                           selected_game=game)
+
 
 
 @main_bp.route('/shout-board', methods=['POST'])

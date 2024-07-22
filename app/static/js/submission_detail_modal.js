@@ -48,6 +48,14 @@ function closeSubmissionDetailModal() {
     document.body.classList.remove('body-no-scroll');
 }
 
+function closeSponsorsModal() {
+    const sponsorsModal = document.getElementById('sponsorsModal');
+    sponsorsModal.style.display = 'none';
+    sponsorsModal.style.backgroundColor = ''; // Reset background color to default
+    document.body.classList.remove('body-no-scroll');
+}
+
+
 function isValidUrl(string) {
     try {
         new URL(string);

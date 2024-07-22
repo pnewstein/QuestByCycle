@@ -191,7 +191,19 @@ class Game(db.Model):
                     break
                 except IntegrityError:
                     db.session.rollback()
-          
+
+    @property
+    def twitter_url(self):
+        return f"https://twitter.com/{self.twitter_username}" if self.twitter_username else "https://twitter.com/QuestByCycle"
+
+    @property
+    def facebook_url(self):
+        return f"https://facebook.com/{self.facebook_page_id}" if self.facebook_page_id else "https://facebook.com/QuestByCycle"
+
+    @property
+    def instagram_url(self):
+        return f"https://instagram.com/{self.instagram_user_id}" if self.instagram_user_id else "https://instagram.com/QuestByCycle"
+
 game_participants = db.Table('game_participants',
     db.Column('game_id', db.Integer, db.ForeignKey('game.id'), primary_key=True),
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)

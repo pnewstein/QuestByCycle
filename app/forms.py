@@ -197,13 +197,16 @@ class SponsorForm(FlaskForm):
     website = StringField('Website', validators=[Optional(), URL()])
     logo = StringField('Logo URL', validators=[Optional(), URL()])
     description = TextAreaField('Description', validators=[Optional()])
-    tier = StringField('Tier', validators=[DataRequired()])
-    game_id = SelectField('Game', coerce=int, validators=[DataRequired()])
+    tier = SelectField('Tier', choices=[('Gold', 'Gold'), ('Silver', 'Silver'), ('Bronze', 'Bronze')], validators=[DataRequired()])
+    game_id = HiddenField('Game ID', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
-    def __init__(self, *args, **kwargs):
-        super(SponsorForm, self).__init__(*args, kwargs)
-        self.game_id.choices = [(game.id, game.title) for game in Game.query.order_by('title')]
+    def __init__(self, game_id=None, *args, **kwargs):
+        super(SponsorForm, self).__init__(*args, **kwargs)
+        if game_id:
+            self.game_id.data = game_id
+        print(f"SponsorForm initialized with game_id: {self.game_id.data}")  # Debugging line
+
 
 class CarouselImportForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
