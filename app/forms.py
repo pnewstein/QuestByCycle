@@ -169,6 +169,7 @@ class PhotoForm(FlaskForm):
 
 class ShoutBoardForm(FlaskForm):
     message = TextAreaField('Message', validators=[DataRequired(), Length(max=500)])
+    game_id = HiddenField('Game ID', validators=[DataRequired()])  # Add this field
     submit = SubmitField('Post')
 
 class BadgeForm(FlaskForm):

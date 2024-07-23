@@ -223,9 +223,11 @@ class ShoutBoardMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(500), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id', ondelete='CASCADE'), nullable=False)  # Add this line
     timestamp = db.Column(db.DateTime, index=True, default=lambda: datetime.now(utc))
     is_pinned = db.Column(db.Boolean, default=False)
     likes = db.relationship('ShoutBoardLike', backref='message', cascade="all, delete-orphan")
+
 
 class ShoutBoardLike(db.Model):
     id = db.Column(db.Integer, primary_key=True)
