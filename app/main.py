@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app
 from flask_login import current_user, login_required, logout_user
 from app.utils import save_profile_picture, award_badges
-from app.models import db, Game, User, Task, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage
+from app.models import db, Game, User, Task, Badge, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage
 from app.forms import ProfileForm, ShoutBoardForm, ContactForm
 from app.utils import send_email, allowed_file
 from .config import load_config
@@ -114,12 +114,17 @@ def index(game_id, task_id, user_id):
     game_participation = {game.id: has_joined} if game else {}
 
     form = ShoutBoardForm()
-    pinned_messages = ShoutBoardMessage.query.filter_by(is_pinned=True).order_by(ShoutBoardMessage.timestamp.desc()).all()
-    unpinned_messages = ShoutBoardMessage.query.filter_by(is_pinned=False).order_by(ShoutBoardMessage.timestamp.desc()).all()
+    pinned_messages = ShoutBoardMessage.query.filter_by(is_pinned=True, game_id=game_id).order_by(ShoutBoardMessage.timestamp.desc()).all()
+    unpinned_messages = ShoutBoardMessage.query.filter_by(is_pinned=False, game_id=game_id).order_by(ShoutBoardMessage.timestamp.desc()).all()
     completed_tasks = UserTask.query.filter(UserTask.completions > 0).order_by(UserTask.completed_at.desc()).all()
 
-    pinned_activities = pinned_messages
-    unpinned_activities = unpinned_messages + completed_tasks
+    if game:
+        pinned_activities = pinned_messages
+        unpinned_activities = unpinned_messages + [ut for ut in completed_tasks if ut.task.game_id == game_id]
+    else:
+        pinned_activities = []
+        unpinned_activities = []
+
     unpinned_activities.sort(key=lambda x: get_datetime(x), reverse=True)
     activities = pinned_activities + unpinned_activities
 
@@ -131,7 +136,7 @@ def index(game_id, task_id, user_id):
         user_games = current_user.participated_games
         profile = User.query.get_or_404(user_id)
         user_tasks = UserTask.query.filter_by(user_id=profile.id).all()
-        badges = profile.badges
+        badges = [badge for badge in profile.badges if any(task.game_id == game_id for task in badge.tasks)]
 
         if not profile.display_name:
             profile.display_name = profile.username
@@ -206,7 +211,6 @@ def index(game_id, task_id, user_id):
                            selected_game=game)
 
 
-
 @main_bp.route('/shout-board', methods=['POST'])
 @login_required
 def shout_board():
@@ -214,11 +218,12 @@ def shout_board():
     if form.validate_on_submit():
         is_pinned = 'is_pinned' in request.form  # Check if the pin checkbox was checked
         message_content = sanitize_html(request.form['message'])  # Sanitize the HTML content
-        shout_message = ShoutBoardMessage(message=message_content, user_id=current_user.id, is_pinned=is_pinned)
+        game_id = form.game_id.data  # Get the game ID from the form
+        shout_message = ShoutBoardMessage(message=message_content, user_id=current_user.id, game_id=game_id, is_pinned=is_pinned)
         db.session.add(shout_message)
         db.session.commit()
         flash('Your message has been posted!', 'success')
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.index', game_id=game_id))
     return render_template('shout_board.html', form=form)
 
 
