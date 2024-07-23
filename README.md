@@ -18,7 +18,6 @@ QuestByCycle is a Flask-based web application designed to engage and motivate th
 
 - Python 3.11+
 - PostgreSQL
-- msmtp
 
 ### Pre-installation
 
