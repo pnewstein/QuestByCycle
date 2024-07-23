@@ -23,7 +23,7 @@
                     class="img-fluid w-100" style="max-height: 500px; object-fit: cover;" loading="lazy">
             </div>
             <div class="text-center">
-                <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories</small></p>
+                <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories Below!</small></p>
             </div>
             <div class="introduction text-center mb-5">
                 <p class="font-weight-bold">Ready to transform your bike rides into a thrilling adventure that benefits the
@@ -52,7 +52,7 @@
                 </div>
                 <div class="col-md-6 mb-4">
                     <div class="text-center mb-4">
-                        <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories</small></p>
+                        <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories Below!</small></p>
                         <div id="taskImageCarousel" class="carousel slide" data-ride="carousel">
                             <ol class="carousel-indicators" style="visibility: hidden;">
                             {% for image in carousel_images %}
@@ -98,6 +98,8 @@
                     <div class="card mb-4 w-100">
                         <div class="card-body text-center">
                             <h5 class="card-title">Your Profile</h5>
+                            <p>Selected Game ID: {{ selected_game_id }}</p>
+
                             <div id="profileView">
                                 <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}"
                                     alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
@@ -106,21 +108,16 @@
                                 </p>
                             </div>
                             {% if current_user.is_admin %}
-                            <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-danger btn-block mt-2">Admin
-                                Dashboard</a>
+                                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-danger btn-block mt-2">Admin Dashboard</a>
                             {% endif %}
                             {% if current_user %}
-                            <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')"
-                                class="btn btn-info btn-block mt-3">View Profile</a>
-                            {% endif %}
-                            {% if current_user.is_admin %}
-                            <button class="btn btn-secondary btn-block mt-3" onclick="openModal('joinCustomGameModal')">Join
-                                Custom Game</button>
+                                <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-info btn-block mt-3">View Profile</a>
+                                <button class="btn btn-secondary btn-block mt-3" onclick="openModal('joinCustomGameModal')">Join Custom Game</button>
                             {% endif %}
                             {% if current_user %}
-                            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-block mt-3">Logout</a>
+                                <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-block mt-3">Logout</a>
                             {% endif %}
-                            {% if current_user.is_admin %}
+                            {% if current_user %}
                                 <!-- Dropdown for selecting joined games -->
                                 <div class="form-group mt-3">
                                     <label for="gameSelectDropdown">Select Active Game:</label>
@@ -146,16 +143,16 @@
             <h2>What's Happening</h2>
             <div class="game-item">
                 {% if current_user.is_admin %}
-                <form action="{{ url_for('main.shout_board') }}" method="post">
-                    {{ form.hidden_tag() }}
-                    <div class="form-group">
-                        <!-- Hidden input to store the message content -->
-                        <input type="hidden" name="message" id="message-input">
-                        <!-- Quill editor container -->
-                        <div id="quill-editor"></div>
-                    </div>
-                    {{ form.submit() }}
-                </form>
+                    <form action="{{ url_for('main.shout_board', game_id=selected_game_id) }}" method="post">
+                        {{ form.hidden_tag() }}
+                        <div class="form-group">
+                            <!-- Hidden input to store the message content -->
+                            <input type="hidden" name="message" id="message-input">
+                            <!-- Quill editor container -->
+                            <div id="quill-editor"></div>
+                        </div>
+                        {{ form.submit() }}
+                    </form>
                 {% endif %}
                 <div class="shout-messages-container">
                     <div class="shout-messages">
@@ -170,7 +167,7 @@
                             </strong>
                             <span class="activity-message" style="flex-grow: 1; height: 24px">{{ activity.message|safe }}</span>
                             {% if current_user.is_admin %}
-                            <form action="{{ url_for('main.pin_message', message_id=activity.id) }}" method="post">
+                            <form action="{{ url_for('main.pin_message', game_id=selected_game_id, message_id=activity.id) }}" method="post">
                                 {{ form.hidden_tag() }}
                                 <button type="submit" class="blue_button">{{ 'Unpin' if activity.is_pinned else 'Pin' }}</button>
                             </form>
