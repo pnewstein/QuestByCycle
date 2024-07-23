@@ -211,20 +211,33 @@ def index(game_id, task_id, user_id):
                            selected_game=game)
 
 
-@main_bp.route('/shout-board', methods=['POST'])
+@main_bp.route('/shout-board/<int:game_id>', methods=['POST'])
 @login_required
-def shout_board():
+def shout_board(game_id):
+    print(f"Game ID received (initial): {game_id}")  # Debugging line
+    
     form = ShoutBoardForm()
+    
+    if not form.game_id.data:
+        form.game_id.data = game_id
+
     if form.validate_on_submit():
-        is_pinned = 'is_pinned' in request.form  # Check if the pin checkbox was checked
-        message_content = sanitize_html(request.form['message'])  # Sanitize the HTML content
-        game_id = form.game_id.data  # Get the game ID from the form
-        shout_message = ShoutBoardMessage(message=message_content, user_id=current_user.id, game_id=game_id, is_pinned=is_pinned)
+        is_pinned = 'is_pinned' in request.form
+        message_content = sanitize_html(form.message.data)
+        shout_message = ShoutBoardMessage(
+            message=message_content,
+            user_id=current_user.id,
+            game_id=game_id,
+            is_pinned=is_pinned
+        )
         db.session.add(shout_message)
         db.session.commit()
         flash('Your message has been posted!', 'success')
         return redirect(url_for('main.index', game_id=game_id))
-    return render_template('shout_board.html', form=form)
+    else:
+        print("Form Errors:", form.errors)  # Output form errors to the console
+        flash('There was an error with your submission.', 'error')
+        return redirect(url_for('main.index', game_id=game_id))
 
 
 @main_bp.route('/like-message/<int:message_id>', methods=['POST'])
@@ -345,7 +358,6 @@ def user_profile(user_id):
     return jsonify(response_data)
 
 
-
 @main_bp.route('/profile/<int:user_id>/edit', methods=['POST'])
 @login_required
 def edit_profile(user_id):
@@ -411,9 +423,9 @@ def update_profile():
     return jsonify(success=True)
 
 
-@main_bp.route('/pin_message/<int:message_id>', methods=['POST'])
+@main_bp.route('/pin_message/<int:game_id>/<int:message_id>', methods=['POST'])
 @login_required
-def pin_message(message_id):
+def pin_message(game_id, message_id):
     message = ShoutBoardMessage.query.get_or_404(message_id)
     if not current_user.is_admin:
         flash('You do not have permission to perform this action.', 'danger')
@@ -422,7 +434,7 @@ def pin_message(message_id):
     message.is_pinned = not message.is_pinned  # Toggle the pin status
     db.session.commit()
     flash('Message pin status updated.', 'success')
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.index', game_id=game_id))
 
 
 @main_bp.route('/contact', methods=['POST'])
