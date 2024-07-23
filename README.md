@@ -20,19 +20,53 @@ QuestByCycle is a Flask-based web application designed to engage and motivate th
 - PostgreSQL
 - msmtp
 
+### Pre-installation
+
+0. Create new user:
+
+```adduser NEWUSER```
+```usermod -aG sudo NEWUSER```
+```su - NEWUSER```
+
+1. Copy over SSH key:
+
+```ssh-keygen -t rsa -b 4096 -C "your_email@example.com"```
+```cat ~/.ssh/id_rsa.pub``` <- Copy this key from local computer
+```mkdir -p ~/.ssh && nano ~/.ssh/authorized_keys``` Paste the key in here on remote server 
+Now login with ```ssh USER@HOST```
+
+1. Allocate Swap on low ram systems:
+
+```sudo fallocate -l 4G /swapfile```
+```sudo chmod 600 /swapfile```
+```sudo mkswap /swapfile```
+```sudo swapon /swapfile```
+```echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab```
+
+2. Install NGINX:
+```sudo apt install nginx```
+```sudo ufw allow 'Nginx Full'```
+```sudo ufw allow 'OpenSSH'```
+```sudo ufw enable```
+
+3. Edit NGINX config:
+```sudo nano /etc/nginx/sites-available/default```
+
+```sudo systemctl restart nginx.service```
+```sudo certbot --nginx -d DOMAINNAME```
+
 ### Installation
 
-1. Clone the repository:
+1. Clone and open the repository:
 
 ```git clone https://github.com/yourusername/QuestByCycle.git```
-
-2. Navigate into the project directory:
-
 ```cd QuestByCycle```
 
-3. Create and activate a virtual environment (optional):
+3. Create python3.11 virtual environment:
 
-```python3 -m venv venv```
+```sudo add-apt-repository ppa:deadsnakes/ppa```
+```sudo apt install python3.11 python3.11-venv python3-pip python3-gevent python3-certbot-nginx```
+```python3.11 -m venv venv```
 ```source venv/bin/activate```
 
 4. Install the requirements:
@@ -40,9 +74,15 @@ QuestByCycle is a Flask-based web application designed to engage and motivate th
 ```pip install -r requirements.txt```
 
 5. Set up the environment variables:
-- Edit `config.toml` to adjust the variables accordingly.
+    
+    - Edit `config.toml` to adjust the variables accordingly.
 
-6. Database Setup:
+6. Database Install and Setup:
+```sudo apt install postgresql postgresql-contrib```
+
+```sudo systemctl start postgresql```
+
+```sudo systemctl enable postgresql```
 
 ```sudo su - postgres```
 
