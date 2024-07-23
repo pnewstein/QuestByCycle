@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container">
-    <a href="{{ url_for('main.index') }}" class="button">Back to Home</a>
+    <a href="{{ url_for('main.index', game_id=game.id) }}" class="button">Back to Home</a>
 
     <div class="game-info-section">
         <div class="game-info-card">
