@@ -229,14 +229,18 @@ def update_carousel():
         flash(f'Error updating carousel: {e}', 'error')
     return redirect(url_for('admin.admin_dashboard'))
 
+
 @admin_bp.route('/sponsors/edit/<int:sponsor_id>', methods=['GET', 'POST'])
 @login_required
+@require_admin
 def edit_sponsor(sponsor_id):
-    if not current_user.is_admin:
-        flash('Access denied.', 'danger')
-        return redirect(url_for('auth.login'))
-
     sponsor = Sponsor.query.get_or_404(sponsor_id)
+
+    # Retrieve game_id from sponsor object or fall back to query parameters or form data
+    game_id = sponsor.game_id if sponsor.game_id else request.args.get('game_id', type=int)
+    if request.method == 'POST':
+        game_id = request.form.get('game_id', type=int)
+
     form = SponsorForm(obj=sponsor)
     if form.validate_on_submit():
         sponsor.name = sanitize_html(form.name.data)
@@ -244,12 +248,13 @@ def edit_sponsor(sponsor_id):
         sponsor.logo = sanitize_html(form.logo.data)
         sponsor.description = sanitize_html(form.description.data)
         sponsor.tier = sanitize_html(form.tier.data)
-        sponsor.game_id = sanitize_html(form.game_id.data)
+        sponsor.game_id = game_id  # Use game_id from form or fallback logic
         db.session.commit()
         flash('Sponsor updated successfully!', 'success')
-        return redirect(url_for('admin.manage_sponsors'))
+        return redirect(url_for('admin.manage_sponsors', game_id=game_id))  # Redirect with game_id
 
-    return render_template('edit_sponsors.html', form=form)
+    return render_template('edit_sponsors.html', form=form, sponsor=sponsor, game_id=game_id)
+
 
 
 @admin_bp.route('/sponsors/delete/<int:sponsor_id>', methods=['POST'])
@@ -258,12 +263,21 @@ def delete_sponsor(sponsor_id):
     if not current_user.is_admin:
         flash('Access denied.', 'danger')
         return redirect(url_for('auth.login'))
-    
+
+    game_id = request.form.get('game_id', type=int)  # Retrieve game_id from the form data
+
     sponsor = Sponsor.query.get_or_404(sponsor_id)
     db.session.delete(sponsor)
-    db.session.commit()
-    flash('Sponsor deleted successfully!', 'success')
-    return redirect(url_for('admin.manage_sponsors'))
+    try:
+        db.session.commit()
+        flash('Sponsor deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error occurred: {e}', 'danger')
+    
+    # Redirect to the manage sponsors page with the game_id
+    return redirect(url_for('admin.manage_sponsors', game_id=game_id))  
+
 
 
 @admin_bp.route('/sponsors', methods=['GET'])
@@ -273,7 +287,7 @@ def sponsors():
         sponsors = Sponsor.query.filter_by(game_id=game_id).all()
     else:
         sponsors = Sponsor.query.all()
-    return render_template('sponsors.html', sponsors=sponsors, game_id=game_id)
+    return render_template('modal/sponsors_modal.html', sponsors=sponsors, game_id=game_id)
 
 
 @admin_bp.route('/admin/sponsors', methods=['GET', 'POST'])
