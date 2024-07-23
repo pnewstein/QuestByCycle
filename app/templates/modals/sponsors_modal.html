@@ -20,7 +20,7 @@
                                     </div>
                                     <img class="card-img-top" src="{{ sponsor.logo }}" alt="{{ sponsor.name }} logo">
                                     <div class="card-body bg-light">
-                                        <p class="card-text">{{ sponsor.description }}</p>
+                                        <p class="card-text">{{ sponsor.description | safe }}</p>
                                         <p class="card-text"><strong>Tier:</strong> {{ sponsor.tier }}</p>
                                         {% if sponsor.website %}
                                             <a href="{{ sponsor.website }}" class="btn btn-warning" target="_blank">Visit Website</a>
@@ -36,7 +36,7 @@
                                     </div>
                                     <img class="card-img-top" src="{{ sponsor.logo }}" alt="{{ sponsor.name }} logo">
                                     <div class="card-body">
-                                        <p class="card-text">{{ sponsor.description }}</p>
+                                        <p class="card-text">{{ sponsor.description | safe }}</p>
                                         <p class="card-text"><strong>Tier:</strong> {{ sponsor.tier }}</p>
                                         {% if sponsor.website %}
                                             <a href="{{ sponsor.website }}" class="btn btn-secondary" target="_blank">Visit Website</a>
@@ -52,7 +52,7 @@
                                     </div>
                                     <img class="card-img-top" src="{{ sponsor.logo }}" alt="{{ sponsor.name }} logo">
                                     <div class="card-body">
-                                        <p class="card-text">{{ sponsor.description }}</p>
+                                        <p class="card-text">{{ sponsor.description | safe }}</p>
                                         <p class="card-text"><strong>Tier:</strong> {{ sponsor.tier }}</p>
                                         {% if sponsor.website %}
                                             <a href="{{ sponsor.website }}" class="btn btn-danger" target="_blank">Visit Website</a>
@@ -66,7 +66,7 @@
                                     <img class="card-img-top" src="{{ sponsor.logo }}" alt="{{ sponsor.name }} logo">
                                     <div class="card-body">
                                         <h5 class="card-title">{{ sponsor.name }}</h5>
-                                        <p class="card-text">{{ sponsor.description }}</p>
+                                        <p class="card-text">{{ sponsor.description | safe }}</p>
                                         <p class="card-text"><strong>Tier:</strong> {{ sponsor.tier }}</p>
                                         {% if sponsor.website %}
                                             <a href="{{ sponsor.website }}" class="btn btn-primary" target="_blank">Visit Website</a>

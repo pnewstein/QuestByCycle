@@ -4,8 +4,9 @@
 <div class="container">
     <a href="{{ url_for('admin.admin_dashboard') }}" class="button">Back to Dashboard</a> 
     <h2>Edit Sponsor</h2>
-    <form method="POST">
+    <form method="POST" action="{{ url_for('admin.edit_sponsor', sponsor_id=sponsor.id, game_id=sponsor.game_id) }}">
         {{ form.hidden_tag() }}
+        <input type="hidden" name="game_id" value="{{ game_id }}" />  <!-- Hidden field for game_id -->
         <div class="form-group">
             {{ form.name.label(class="form-control-label") }}
             {{ form.name(class="form-control") }}
@@ -59,10 +60,14 @@
         const descriptionEditor = new Quill('#description', quillOptions);
         const descriptionTextarea = document.getElementById('description-textarea');
 
+        // Set the initial content of the Quill editor
+        if (descriptionTextarea.value) {
+            descriptionEditor.root.innerHTML = descriptionTextarea.value;
+        }
+
         descriptionEditor.on('text-change', function() {
             descriptionTextarea.value = descriptionEditor.root.innerHTML;
         });
     });
 </script>
-
 {% endblock %}
