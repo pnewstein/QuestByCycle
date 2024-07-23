@@ -97,6 +97,11 @@ def index(game_id, task_id, user_id):
 
     game = Game.query.get(game_id) if game_id else None
 
+    # Ensure the user has joined the game before proceeding
+    if game_id and current_user.is_authenticated:
+        if game not in current_user.participated_games:
+            return redirect(url_for('main.index'))
+
     carousel_images_dir = os.path.join(current_app.root_path, 'static', 'images', current_app.config['CAROUSEL_IMAGES_DIR'])
 
     if not os.path.exists(carousel_images_dir):
