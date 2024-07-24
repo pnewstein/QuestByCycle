@@ -211,7 +211,7 @@ def submit_task(task_id):
         db.session.commit()
 
         update_user_score(current_user.id)
-        check_and_award_badges(current_user.id, task_id)
+        check_and_award_badges(current_user.id, task_id, task.game_id)
 
         total_points = sum(ut.points_awarded for ut in UserTask.query.filter_by(user_id=current_user.id))
 

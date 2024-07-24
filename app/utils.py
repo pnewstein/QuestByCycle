@@ -124,39 +124,6 @@ def update_user_score(user_id):
         return False
 
 
-def award_badge(user_id):
-    user = User.query.get(user_id)
-    completed_tasks = UserTask.query.filter_by(user_id=user_id, completions=1).all()
-
-    try:
-        for user_task in completed_tasks:
-            task = Task.query.get(user_task.task_id)
-            if task.badge and task.badge not in user.badges:
-                user.badges.append(task.badge)
-                shout_message = ShoutBoardMessage(message=f"{current_user.username} has just earned the {task.badge.name} badge!", user_id=user_id)
-                db.session.add(shout_message)
-                db.session.commit()
-                flash(f"Badge '{task.badge.name}' awarded for completing task '{task.title}'.")
-    except Exception as e:
-        db.session.rollback()  # Rollback in case of any exception
-        print(f"Failed to update badge for user ID {user_id}: {e}")
-        return False
-
-
-def award_badges(user_id):
-    user = User.query.get_or_404(user_id)
-    try:
-        for task in user.user_tasks:
-            if task.completed and task.task.badge_id:  # Assuming task links to UserTask which links to Task
-                badge = Badge.query.get(task.task.badge_id)
-                if badge and badge not in user.badges:
-                    user.badges.append(badge)
-        db.session.commit()
-        flash('Badges updated based on completed tasks.', 'success')
-    except Exception as e:
-        db.session.rollback()  # Rollback in case of any exception
-        print(f"Failed to update badges for user ID {user_id}: {e}")
-        return False
 
 
 def award_task_badge(user_id, task_id):
@@ -234,16 +201,21 @@ def save_badge_image(image_file):
 
 
 def save_submission_image(submission_image_file):
-    ext = submission_image_file.filename.rsplit('.', 1)[-1]
-    filename = secure_filename(f"{uuid.uuid4()}.{ext}")
-    uploads_dir = os.path.join(current_app.static_folder, 'images', 'verifications')
-    
-    # Ensure the upload directory exists
-    os.makedirs(uploads_dir, exist_ok=True)
-    
-    full_path = os.path.join(uploads_dir, filename)
-    submission_image_file.save(full_path)
-    return os.path.join('images', 'verifications', filename)
+    try:
+        ext = submission_image_file.filename.rsplit('.', 1)[-1]
+        filename = secure_filename(f"{uuid.uuid4()}.{ext}")
+        uploads_dir = os.path.join(current_app.static_folder, 'images', 'verifications')
+        
+        # Ensure the upload directory exists
+        os.makedirs(uploads_dir, exist_ok=True)
+        
+        full_path = os.path.join(uploads_dir, filename)
+        submission_image_file.save(full_path)
+        return os.path.join('images', 'verifications', filename)
+    except Exception as e:
+        current_app.logger.error(f"Failed to save image: {e}")
+        raise
+
 
 
 def can_complete_task(user_id, task_id):
@@ -331,7 +303,7 @@ def getLastRelevantCompletionTime(user_id, task_id):
     return last_relevant_completion.timestamp if last_relevant_completion else None
 
 
-def check_and_award_badges(user_id, task_id):
+def check_and_award_badges(user_id, task_id, game_id):
     print(f"Checking and awarding badges for user_id={user_id}, task_id={task_id}")
     user = User.query.get(user_id)
     task = Task.query.get(task_id)
@@ -349,7 +321,8 @@ def check_and_award_badges(user_id, task_id):
             user.badges.append(task.badge)
             db.session.add(ShoutBoardMessage(
                 message=f" earned the badge '{task.badge.name}' for task <strong><a href='javascript:void(0);' onclick='openTaskDetailModal({task.id})'>{task.title}</a></strong>.",
-                user_id=user_id
+                user_id=user_id,
+                game_id=game_id
             ))
             db.session.commit()
             print(f"Badge '{task.badge.name}' awarded to user '{user.display_name}' for completing task '{task.title}'")
@@ -374,7 +347,8 @@ def check_and_award_badges(user_id, task_id):
                     user.badges.append(badge)
                     db.session.add(ShoutBoardMessage(
                         message=f" earned the badge '{badge.name}' for completing all tasks in category '{task.category}' within game ID {task.game_id}.",
-                        user_id=user_id
+                        user_id=user_id,
+                        game_id=game_id
                     ))
                     db.session.commit()
                     print(f"Badge '{badge.name}' awarded for completing all tasks in category '{task.category}' within game ID {task.game_id}")
