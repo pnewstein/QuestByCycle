@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app
 from flask_login import current_user, login_required, logout_user
-from app.utils import save_profile_picture, award_badges
+from app.utils import save_profile_picture
 from app.models import db, Game, User, Task, Badge, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage
 from app.forms import ProfileForm, ShoutBoardForm, ContactForm
 from app.utils import send_email, allowed_file, generate_tutorial_game
