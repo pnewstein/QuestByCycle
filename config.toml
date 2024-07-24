@@ -7,10 +7,10 @@ CAROUSEL_IMAGES_DIR = "carousel_images"
 TASKCSV = "csv"
 
 [encryption]
-DEFAULT_SUPER_ADMIN_PASSWORD = "J133yd3ann!!"
-DEFAULT_SUPER_ADMIN_USERNAME = "admin"
-DEFAULT_SUPER_ADMIN_EMAIL = "jaron.rosenau@gmail.com"
-SECRET_KEY = "changethiskey"
+DEFAULT_SUPER_ADMIN_PASSWORD = ""
+DEFAULT_SUPER_ADMIN_USERNAME = ""
+DEFAULT_SUPER_ADMIN_EMAIL = ""
+SECRET_KEY = ""
 SESSION_COOKIE_SECURE = true
 SESSION_COOKIE_NAME = "QuestsByCycles_Session"
 SESSION_COOKIE_SAMESITE = "Lax"
@@ -19,7 +19,7 @@ SESSION_REFRESH_EACH_REQUEST = true
 REMEMBER_COOKIE_DURATION_DAYS = 7
 
 [openai]
-OPENAI_API_KEY = "sk-questbycycle-IrjdrsbKI9zgQh6rKXnTT3BlbkFJ5CnukaTicokRF6CvlWiQ"
+OPENAI_API_KEY = ""
 
 [flask]
 SQLALCHEMY_DATABASE_URI = "postgresql://username:password@localhost/databasename7"
@@ -30,9 +30,9 @@ MAIL_SERVER = "smtp.gmail.com"
 MAIL_PORT = 587
 MAIL_USE_TLS = true
 MAIL_USE_SSL = false
-MAIL_USERNAME = "jaron.rosenau@gmail.com"
-MAIL_PASSWORD = "chgemqgypjgsmrnf"
-MAIL_DEFAULT_SENDER = "denuoweb@hotmail.com"
+MAIL_USERNAME = ""
+MAIL_PASSWORD = ""
+MAIL_DEFAULT_SENDER = ""
 
 [social]
 twitter_username = ""
