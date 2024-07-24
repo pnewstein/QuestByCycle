@@ -97,14 +97,11 @@
                 <div class="col-md-6 mb-4">
                     <div class="card mb-4 w-100">
                         <div class="card-body text-center">
-                            <h5 class="card-title">Your Profile</h5>
-                            <p>Selected Game ID: {{ selected_game_id }}</p>
-
                             <div id="profileView">
                                 <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}"
                                     alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
-                                <p class="font-weight-bold">Name: {{ profile.display_name or profile.username }}</p>
-                                <p id="total-points" class="font-weight-bold">Your Total Completed Points: {{ total_points }}
+                                <p class="font-weight-bold">Welcome, {{ profile.display_name or profile.username }}</p>
+                                <p id="total-points" class="font-weight-bold">Your Total Carbon Reduction Points: {{ total_points }}
                                 </p>
                             </div>
                             {% if current_user.is_admin %}
