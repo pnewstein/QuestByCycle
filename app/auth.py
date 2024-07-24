@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import db, User, Sponsor
 from app.forms import LoginForm, RegistrationForm, SponsorForm, ForgotPasswordForm, ResetPasswordForm
-from app.utils import send_email
+from app.utils import send_email, generate_tutorial_game
 from flask_mail import Mail
 from sqlalchemy import or_
 from pytz import utc
@@ -157,6 +157,10 @@ def register():
         user.set_password(form.password.data)
         db.session.add(user)
         try:
+            db.session.commit()
+
+            tutorial_game = generate_tutorial_game()
+            user.participated_games.append(tutorial_game)
             db.session.commit()
 
             token = user.generate_verification_token()

@@ -1,5 +1,5 @@
 from flask import flash, current_app, jsonify
-from .models import db, Task, Badge, UserTask, User, ShoutBoardMessage, TaskSubmission
+from .models import db, Task, Badge, Game, UserTask, User, ShoutBoardMessage, TaskSubmission
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 from flask_mail import Message, Mail
@@ -8,6 +8,47 @@ from PIL import Image
 
 import uuid
 import os
+import csv
+import bleach
+
+
+ALLOWED_TAGS = [
+    'a', 'b', 'i', 'u', 'em', 'strong', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'blockquote', 'code', 'pre', 'br', 'div', 'span', 'ul', 'ol', 'li', 'hr',
+    'sub', 'sup', 's', 'strike', 'font', 'img', 'video', 'figure'
+]
+
+ALLOWED_ATTRIBUTES = {
+    '*': ['class', 'id'],
+    'a': ['href', 'title', 'target'],
+    'img': ['src', 'alt', 'width', 'height'],
+    'video': ['src', 'width', 'height', 'controls'],
+    'p': ['class'],
+    'span': ['class'],
+    'div': ['class'],
+    'h1': ['class'],
+    'h2': ['class'],
+    'h3': ['class'],
+    'h4': ['class'],
+    'h5': ['class'],
+    'h6': ['class'],
+    'blockquote': ['class'],
+    'code': ['class'],
+    'pre': ['class'],
+    'ul': ['class'],
+    'ol': ['class'],
+    'li': ['class'],
+    'hr': ['class'],
+    'sub': ['class'],
+    'sup': ['class'],
+    's': ['class'],
+    'strike': ['class'],
+    'font': ['color', 'face', 'size']
+}
+
+def sanitize_html(html_content):
+    return bleach.clean(html_content, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
+
 
 MAX_POINTS_INT = 2**63 - 1
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
@@ -378,3 +419,168 @@ def send_email(to, subject, template):
         sender=current_app.config['MAIL_DEFAULT_SENDER']
     )
     mail.send(msg)
+
+
+def generate_tutorial_game():
+    current_quarter = (datetime.now().month - 1) // 3 + 1
+    year = datetime.now().year
+    title = f"Tutorial Game Quarter {current_quarter} of {year}"
+    description = """
+    Welcome to this quarter's Tutorial Game! Embark on a quest to create a more sustainable future while enjoying everyday activities, having fun, and fostering teamwork in the real-life battle against climate change.
+
+    Task Instructions:
+
+    Concepts:
+
+    How to Play:
+
+    Play solo or join forces with friends in teams.
+    Explore the tasks and have fun completing them to earn Carbon Reduction Points.
+    Once a task is verified, you'll earn points displayed on the Leaderboard and badges of honor. Tasks can be verified by uploading an image from your computer, taking a photo, writing a comment, or using a QR code.
+    Earn achievement badges by completing a group of tasks or repeating tasks. Learn more about badge criteria by clicking on the task name. 
+
+    With each set of five badges that you are awarded, you will be entered into a drawing for prizes.
+    """
+
+    start_date = datetime(year, 3 * (current_quarter - 1) + 1, 1)
+    if current_quarter == 4:
+        end_date = datetime(year + 1, 1, 1) - timedelta(seconds=1)
+    else:
+        end_date = datetime(year, 3 * current_quarter + 1, 1) - timedelta(seconds=1)
+
+    existing_game = Game.query.filter_by(is_tutorial=True, start_date=start_date, end_date=end_date).first()
+    if existing_game:
+        return existing_game
+
+    tutorial_game = Game(
+        title=title,
+        description=description,
+        description2="Rules and guidelines for the tutorial game.",
+        start_date=start_date,
+        end_date=end_date,
+        game_goal=20000,
+        details="""
+        Verifying and Earning "Carbon Reduction" Points:
+
+        Sign In and Access Tasks: Log into the game, navigate to the homepage, and scroll down on the main game page to see the task list.
+        Complete a Task: Choose by clicking on a task from the list, and after completion, click "Verify Task". You will need to upload a picture as proof of your achievement and/or you can add a comment about your experience.
+        Submit Verification: After uploading your verification photo and adding a comment, click the "Submit Verification" button. You should receive a confirmation message indicating your task completion has been updated. Your image will appear at the bottom of the page and it will be automatically uploaded to Quest by Cycle’s social Media accounts.
+        Social Media Interaction: The uploaded photo will be shared on QuestByCycle’s Twitter, Facebook, and Instagram pages. You can view and expand thumbnail images of completed tasks by others, read comments, and visit their profiles by clicking on the images. Use the social media buttons to comment and engage with the community.
+        Explore the Leaderboard: Check the dynamic leaderboard to see the progress of players and teams. The community-wide impact is displayed via a "thermometer" showing collective carbon reduction efforts. Clicking on a player's name reveals their completed tasks and badges.
+
+        Earning Badges:
+
+        Task Categories: Each task belongs to a category. Completing all tasks in a category earns you a badge. The more tasks you complete, the higher your chances of earning badges.
+        Task Limits: The task detail popup provides completion limits. If you reach the limit set for a task, you will earn a badge.
+
+        Social Media Interaction:
+
+        Hall of Fame: Engage with the community by commenting and sharing your achievements on social media platforms directly through the game. Click on the thumbnail images in the task’s Hall of Fame (the task’s detail page). At the bottom, there will be buttons to take you to Facebook, Twitter, and Instagram where you can comment on various tasks that have been posted and communicate with other players. Through friendly competition, let's strive to reduce carbon emissions and make a positive impact on the atmosphere.
+        """,
+        awards="""
+        Arriving By Bike offered many prizes for this game. They are a locally owned bike shop in Eugene, Oregon, located at 2705 Willamette Street. The store offers a wide range of bikes, trailers, accessories, parts, rain gear, and apparel to support a biking lifestyle. They carry various bikes, including city, cargo, folding, touring, and adventure bikes, catering to urban transportation and touring needs. For more information, visit the store or call (541) 484-5410.
+
+        Stay tuned for more prizes... to be announced
+        """,
+        beyond="This is where info about other things of interest go.",
+        admin_id=1,  # Assuming admin_id=1 is the system admin
+        is_tutorial=True,
+        twitter_username="QuestByCycle",
+        twitter_api_key="yYQ5pIlQYt0pYlBhRboqv2yyS",
+        twitter_api_secret="yqZXI92CA78YS4lHvOxWL6ZgGiwbKIGLQnRrxvw1kGlsj05wMd",
+        twitter_access_token="1784398536639221760-Z17iOB2KaujwvI9oZo2bb26ikh1uuI",
+        twitter_access_token_secret="85ShcyqSRRLkJYLTdg9oP3QKoYw1DOqwzhhCi4VXbIcRO",
+        facebook_app_id="1161098738236104",
+        facebook_app_secret="4624d9c6ec41ca5e0f8016b61044279e",
+        facebook_access_token="EAAQgA13XesgBOx44CN6brFZCmQgswLybfR9HjWlRxukZAREnKCDpufWZCrkCcRzL3J1HUF0DQgW25lMiHHCvPoOKyrU8x5NqiAUAbllOU8rAkcLrWZC4MOZC3O50W1aqdD2cpFSC6M54AreKipf1UIQeeZCeb9AKyMXAZCVjfN0fh843B12uw0uwxPmCZC4JL1VWCgZDZD",
+        facebook_page_id="284084638127003",
+        instagram_access_token="EAAQgA13XesgBOx44CN6brFZCmQgswLybfR9HjWlRxukZAREnKCDpufWZCrkCcRzL3J1HUF0DQgW25lMiHHCvPoOKyrU8x5NqiAUAbllOU8rAkcLrWZC4MOZC3O50W1aqdD2cpFSC6M54AreKipf1UIQeeZCeb9AKyMXAZCVjfN0fh843B12uw0uwxPmCZC4JL1VWCgZDZD",
+        instagram_user_id="17841466280130339",
+        is_public=True,
+        allow_joins=True,
+        leaderboard_image="leaderboard_image.png"  # Assuming the image is stored in the static folder
+    )
+    db.session.add(tutorial_game)
+    db.session.commit()
+
+    # Import tasks and badges for the tutorial game
+    import_tasks_and_badges_from_csv(tutorial_game.id, os.path.join(current_app.static_folder, 'defaulttasks.csv'))
+
+    # Add pinned message from admin
+    try:
+        admin_id = 1  # Assuming admin_id=1 is the system admin
+        print(f"Creating pinned message for game_id: {tutorial_game.id}")
+        pinned_message = ShoutBoardMessage(
+            message="Get on your Bicycle this Quarter!",
+            user_id=admin_id,
+            game_id=tutorial_game.id,
+            is_pinned=True,
+            timestamp=datetime.UTC()
+        )
+        db.session.add(pinned_message)
+        db.session.commit()
+        print("Pinned message created successfully")
+    except Exception as e:
+        print(f"Error creating pinned message: {e}")
+        db.session.rollback()
+
+    return tutorial_game
+
+
+def import_tasks_and_badges_from_csv(game_id, csv_path):
+    print(f"Starting import for game_id: {game_id} from csv_path: {csv_path}")
+    
+    try:
+        with open(csv_path, mode='r', encoding='utf-8') as csv_file:
+            data = csv.DictReader(csv_file)
+            for row in data:
+                print(f"Processing row: {row}")
+
+                badge_name = sanitize_html(row['badge_name'])
+                badge_description = sanitize_html(row['badge_description'])
+                
+                # Generate the badge image filename if it's not provided
+                if 'badge_image_filename' in row and row['badge_image_filename']:
+                    badge_image_filename = row['badge_image_filename']
+                else:
+                    badge_image_filename = f"{badge_name.lower().replace(' ', '_')}.png"
+                
+                badge_image_path = os.path.join(current_app.static_folder, 'images', 'badge_images', badge_image_filename)
+
+                print(f"Badge details - Name: {badge_name}, Description: {badge_description}, Image Path: {badge_image_path}")
+
+                if not os.path.exists(badge_image_path):
+                    print(f"Badge image not found at {badge_image_path}, skipping badge creation")
+                    continue
+
+                badge = Badge.query.filter_by(name=badge_name).first()
+                if not badge:
+                    badge = Badge(
+                        name=badge_name,
+                        description=badge_description,
+                        image=badge_image_filename  # Store the filename, not the full path
+                    )
+                    db.session.add(badge)
+                    db.session.flush()
+                    print(f"Added new badge: {badge}")
+
+                task = Task(
+                    category=sanitize_html(row['category']),
+                    title=sanitize_html(row['title']),
+                    description=sanitize_html(row['description']),
+                    tips=sanitize_html(row['tips']),
+                    points=int(row['points'].replace(',', '')),
+                    completion_limit=int(row['completion_limit']),
+                    frequency=sanitize_html(row['frequency']),
+                    verification_type=sanitize_html(row['verification_type']),
+                    badge_id=badge.id,
+                    game_id=game_id
+                )
+                db.session.add(task)
+                print(f"Added new task: {task}")
+
+            db.session.commit()
+            print("Import completed successfully")
+    except Exception as e:
+        print(f"Error during import: {e}")
+        db.session.rollback()

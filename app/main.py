@@ -3,7 +3,7 @@ from flask_login import current_user, login_required, logout_user
 from app.utils import save_profile_picture, award_badges
 from app.models import db, Game, User, Task, Badge, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage
 from app.forms import ProfileForm, ShoutBoardForm, ContactForm
-from app.utils import send_email, allowed_file
+from app.utils import send_email, allowed_file, generate_tutorial_game
 from .config import load_config
 from werkzeug.utils import secure_filename
 from sqlalchemy import func
@@ -83,17 +83,18 @@ def index(game_id, task_id, user_id):
     if user_id is None and current_user.is_authenticated:
         user_id = current_user.id
 
-    # Auto join the first or earliest game 
+    # Check and generate the tutorial game for the current quarter if not already present
+    tutorial_game = generate_tutorial_game()
+
     if game_id is None and current_user.is_authenticated:
         joined_games = current_user.participated_games
         if joined_games:
             game_id = joined_games[0].id
         else:
-            earliest_game = Game.query.order_by(Game.start_date.asc()).first()
-            if earliest_game:
-                current_user.participated_games.append(earliest_game)
+            if tutorial_game not in current_user.participated_games:
+                current_user.participated_games.append(tutorial_game)
                 db.session.commit()
-                game_id = earliest_game.id
+            game_id = tutorial_game.id
 
     game = Game.query.get(game_id) if game_id else None
 
