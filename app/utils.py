@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 from flask_mail import Message, Mail
 from PIL import Image
-
+from pytz import utc
 
 import uuid
 import os
@@ -515,7 +515,7 @@ def generate_tutorial_game():
             user_id=admin_id,
             game_id=tutorial_game.id,
             is_pinned=True,
-            timestamp=datetime.UTC()
+            timestamp=datetime.now(utc)
         )
         db.session.add(pinned_message)
         db.session.commit()
