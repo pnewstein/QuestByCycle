@@ -83,18 +83,10 @@ def index(game_id, task_id, user_id):
     if user_id is None and current_user.is_authenticated:
         user_id = current_user.id
 
-    # Check and generate the tutorial game for the current quarter if not already present
-    tutorial_game = generate_tutorial_game()
-
     if game_id is None and current_user.is_authenticated:
         joined_games = current_user.participated_games
         if joined_games:
             game_id = joined_games[0].id
-        else:
-            if tutorial_game not in current_user.participated_games:
-                current_user.participated_games.append(tutorial_game)
-                db.session.commit()
-            game_id = tutorial_game.id
 
     game = Game.query.get(game_id) if game_id else None
 

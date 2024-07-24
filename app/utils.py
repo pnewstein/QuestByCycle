@@ -399,6 +399,11 @@ def generate_tutorial_game():
     current_quarter = (datetime.now().month - 1) // 3 + 1
     year = datetime.now().year
     title = f"Tutorial Game - Q{current_quarter} {year}"
+
+    existing_game = Game.query.filter_by(is_tutorial=True, title=title).first()
+    if existing_game:
+        return  # Just return, do nothing if the game already exists
+
     description = """
     Welcome to the newest Tutorial Game! Embark on a quest to create a more sustainable future while enjoying everyday activities, having fun, and fostering teamwork in the real-life battle against climate change.
 
@@ -419,10 +424,6 @@ def generate_tutorial_game():
         end_date = datetime(year + 1, 1, 1) - timedelta(seconds=1)
     else:
         end_date = datetime(year, 3 * current_quarter + 1, 1) - timedelta(seconds=1)
-
-    existing_game = Game.query.filter_by(is_tutorial=True, start_date=start_date, end_date=end_date).first()
-    if existing_game:
-        return existing_game
 
     tutorial_game = Game(
         title=title,

@@ -51,7 +51,6 @@ def sanitize_html(html_content):
     return bleach.clean(html_content, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
 
 mail = Mail()
-
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -75,6 +74,12 @@ def login():
 
         if user and user.check_password(password):
             login_user(user, remember=form.remember_me.data)
+
+            tutorial_game = generate_tutorial_game()
+            if tutorial_game not in user.participated_games:
+                user.participated_games.append(tutorial_game)
+                db.session.commit()
+
             flash('Logged in successfully.')
             next_page = request.args.get('next')
             if user.is_admin:
@@ -84,6 +89,7 @@ def login():
         else:
             flash('Invalid email or password.')
     return render_template('login.html', form=form)
+
 
 @auth_bp.route('/resend_verification_email', methods=['POST'])
 def resend_verification_email():
