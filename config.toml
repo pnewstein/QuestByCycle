@@ -7,22 +7,22 @@ CAROUSEL_IMAGES_DIR = "carousel_images"
 TASKCSV = "csv"
 
 [encryption]
-DEFAULT_SUPER_ADMIN_PASSWORD = "password"
+DEFAULT_SUPER_ADMIN_PASSWORD = "J133yd3ann!!"
 DEFAULT_SUPER_ADMIN_USERNAME = "admin"
-DEFAULT_SUPER_ADMIN_EMAIL = "user@example.com"
+DEFAULT_SUPER_ADMIN_EMAIL = "jaron.rosenau@gmail.com"
 SECRET_KEY = "changethiskey"
 SESSION_COOKIE_SECURE = true
 SESSION_COOKIE_NAME = "QuestsByCycles_Session"
 SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_DOMAIN = false
 SESSION_REFRESH_EACH_REQUEST = true
-REMEMBER_COOKIE_DURATION_DAYS = 180
+REMEMBER_COOKIE_DURATION_DAYS = 7
 
 [openai]
-OPENAI_API_KEY = ""
+OPENAI_API_KEY = "sk-questbycycle-IrjdrsbKI9zgQh6rKXnTT3BlbkFJ5CnukaTicokRF6CvlWiQ"
 
 [flask]
-SQLALCHEMY_DATABASE_URI = "postgresql://username:password@localhost/databasename"
+SQLALCHEMY_DATABASE_URI = "postgresql://username:password@localhost/databasename7"
 DEBUG = true
 
 [mail]
@@ -30,6 +30,6 @@ MAIL_SERVER = "smtp.gmail.com"
 MAIL_PORT = 587
 MAIL_USE_TLS = true
 MAIL_USE_SSL = false
-MAIL_USERNAME = ""
-MAIL_PASSWORD = ""
-MAIL_DEFAULT_SENDER = ""
+MAIL_USERNAME = "jaron.rosenau@gmail.com"
+MAIL_PASSWORD = "chgemqgypjgsmrnf"
+MAIL_DEFAULT_SENDER = "denuoweb@hotmail.com"

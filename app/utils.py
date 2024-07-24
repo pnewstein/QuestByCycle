@@ -424,9 +424,9 @@ def send_email(to, subject, template):
 def generate_tutorial_game():
     current_quarter = (datetime.now().month - 1) // 3 + 1
     year = datetime.now().year
-    title = f"Tutorial Game Quarter {current_quarter} of {year}"
+    title = f"Tutorial Game - Q{current_quarter} {year}"
     description = """
-    Welcome to this quarter's Tutorial Game! Embark on a quest to create a more sustainable future while enjoying everyday activities, having fun, and fostering teamwork in the real-life battle against climate change.
+    Welcome to the newest Tutorial Game! Embark on a quest to create a more sustainable future while enjoying everyday activities, having fun, and fostering teamwork in the real-life battle against climate change.
 
     Task Instructions:
 
@@ -438,8 +438,6 @@ def generate_tutorial_game():
     Explore the tasks and have fun completing them to earn Carbon Reduction Points.
     Once a task is verified, you'll earn points displayed on the Leaderboard and badges of honor. Tasks can be verified by uploading an image from your computer, taking a photo, writing a comment, or using a QR code.
     Earn achievement badges by completing a group of tasks or repeating tasks. Learn more about badge criteria by clicking on the task name. 
-
-    With each set of five badges that you are awarded, you will be entered into a drawing for prizes.
     """
 
     start_date = datetime(year, 3 * (current_quarter - 1) + 1, 1)
@@ -478,11 +476,9 @@ def generate_tutorial_game():
         Hall of Fame: Engage with the community by commenting and sharing your achievements on social media platforms directly through the game. Click on the thumbnail images in the task’s Hall of Fame (the task’s detail page). At the bottom, there will be buttons to take you to Facebook, Twitter, and Instagram where you can comment on various tasks that have been posted and communicate with other players. Through friendly competition, let's strive to reduce carbon emissions and make a positive impact on the atmosphere.
         """,
         awards="""
-        Arriving By Bike offered many prizes for this game. They are a locally owned bike shop in Eugene, Oregon, located at 2705 Willamette Street. The store offers a wide range of bikes, trailers, accessories, parts, rain gear, and apparel to support a biking lifestyle. They carry various bikes, including city, cargo, folding, touring, and adventure bikes, catering to urban transportation and touring needs. For more information, visit the store or call (541) 484-5410.
-
-        Stay tuned for more prizes... to be announced
+        Stay tuned for prizes...
         """,
-        beyond="This is where info about other things of interest go.",
+        beyond="Visit your local bike club!",
         admin_id=1,  # Assuming admin_id=1 is the system admin
         is_tutorial=True,
         twitter_username="QuestByCycle",
