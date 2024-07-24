@@ -33,3 +33,16 @@ MAIL_USE_SSL = false
 MAIL_USERNAME = "jaron.rosenau@gmail.com"
 MAIL_PASSWORD = "chgemqgypjgsmrnf"
 MAIL_DEFAULT_SENDER = "denuoweb@hotmail.com"
+
+[social]
+twitter_username = ""
+twitter_api_key = ""
+twitter_api_secret = ""
+twitter_access_token = ""
+twitter_access_token_secret = ""
+facebook_app_id = ""
+facebook_app_secret = ""
+facebook_access_token = ""
+facebook_page_id = ""
+instagram_access_token = ""
+instagram_user_id = ""

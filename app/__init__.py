@@ -61,6 +61,19 @@ def create_app():
     app.config['MAIL_PASSWORD'] = app.config['mail']['MAIL_PASSWORD']
     app.config['MAIL_DEFAULT_SENDER'] = app.config['mail']['MAIL_DEFAULT_SENDER']
 
+    # Load social media configurations
+    app.config['TWITTER_USERNAME'] = app.config['social']['twitter_username']
+    app.config['TWITTER_API_KEY'] = app.config['social']['twitter_api_key']
+    app.config['TWITTER_API_SECRET'] = app.config['social']['twitter_api_secret']
+    app.config['TWITTER_ACCESS_TOKEN'] = app.config['social']['twitter_access_token']
+    app.config['TWITTER_ACCESS_TOKEN_SECRET'] = app.config['social']['twitter_access_token_secret']
+    app.config['FACEBOOK_APP_ID'] = app.config['social']['facebook_app_id']
+    app.config['FACEBOOK_APP_SECRET'] = app.config['social']['facebook_app_secret']
+    app.config['FACEBOOK_ACCESS_TOKEN'] = app.config['social']['facebook_access_token']
+    app.config['FACEBOOK_PAGE_ID'] = app.config['social']['facebook_page_id']
+    app.config['INSTAGRAM_ACCESS_TOKEN'] = app.config['social']['instagram_access_token']
+    app.config['INSTAGRAM_USER_ID'] = app.config['social']['instagram_user_id']
+
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1, x_proto=1, x_port=1)
 
     # Initialize extensions
