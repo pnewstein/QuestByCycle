@@ -86,6 +86,7 @@ User=APPUSER
 Group=APPUSER
 WorkingDirectory=/opt/QuestByCycle
 ExecStart=/opt/QuestByCycle/venv/bin/gunicorn --config /opt/QuestByCycle/gunicorn.conf.py wsgi:app
+Nice=-10
 
 [Install]
 WantedBy=multi-user.target
