@@ -137,23 +137,26 @@ Now login with ```ssh USER@HOST```
 ```\q```
 ```exit```
 ```flask db upgrade```
+## Connect Game to X
+https://developer.x.com/en/portal/dashboard
 
-## Facebook API
-https://developers.facebook.com/tools/explorer/
-Permissions 
-Reset
+## Connect Game to Facebook and Instagram
+Create 'app' here to get app id and app secret: https://developers.facebook.com/
+Use this to generate the access token: https://developers.facebook.com/tools/explorer/
 
-Clear
+Permissions required:
 pages_show_list
 pages_read_engagement
 pages_read_user_content
 pages_manage_posts
 pages_manage_engagement
+instagram_basic
+instagram_branded_content_ads_brand
+instagram_branded_content_brand
+instagram_branded_content_creator
 
-get code put here to get page access:
-https://graph.facebook.com/v12.0/oauth/access_token?grant_type=fb_exchange_token&client_id=CLIENTID&client_secret=CLIENTSECRET&fb_exchange_token=EXPLORERGENERATEDTOKEN
-
-Put page access token in edit game
+## Connect OpenAI API for Task and Badge Generation
+https://platform.openai.com/api-keys
 
 ## msmtp
 ```
