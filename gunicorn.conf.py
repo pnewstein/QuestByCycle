@@ -1,0 +1,9 @@
+command = '/opt/QuestByCycle/venv/bin/gunicorn'
+pythonpath = '/opt/QuestByCycle'
+bind = '127.0.0.1:5000'  # Localhost and a non-standard HTTP port
+workers = 1  # Number of worker processes
+user = 'appuser'
+group = 'appuser'
+loglevel = 'info'
+errorlog = '/opt/QuestByCycle/logs/gunicorn-error.log'
+accesslog = '/opt/QuestByCycle/logs/gunicorn-access.log'
