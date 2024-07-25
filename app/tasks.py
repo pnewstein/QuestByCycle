@@ -479,11 +479,10 @@ def generate_qr(task_id):
         <div class="qrcodeHeader">
             <img src="{url_for('static', filename='images/welcomeQuestByCycle.png')}" alt="Welcome">
         </div>
-        <h1>Congratulations! You made it!</h1>
+        <h1>Congratulations!</h1>
+        <h2>Quest By Cycle is a free eco-adventure game where players pedal their way to sustainability, earn rewards, and transform communities—all while having fun!</h2>
         <h2>Scan to complete '{task.title}' and gain {task.points} points!</h2>
         <img src="data:image/png;base64,{img_data}" alt="QR Code">
-        <br>
-        <button class="no-print" onclick="window.print();">Print this page</button>
     </body>
     </html>
     """
