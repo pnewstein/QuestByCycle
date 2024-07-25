@@ -21,15 +21,10 @@ QuestByCycle is a Flask-based web application designed to engage and motivate th
 
 ### Server Setup
 
-0. Create new user:
 
-```adduser NEWUSER```
-```usermod -aG sudo NEWUSER```
-```su - NEWUSER```
+1. Login with SSH key:
 
-1. Copy over SSH key:
-
-```ssh-keygen -t rsa -b 4096 -C "your_email@example.com"```
+```ssh-keygen -t rsa -b 4096 -C "YOUR_EMAIL"```
 ```cat ~/.ssh/id_rsa.pub``` <- Copy this key from local computer
 ```mkdir -p ~/.ssh && nano ~/.ssh/authorized_keys``` Paste the key in here on remote server 
 Now login with ```ssh USER@HOST```
@@ -47,6 +42,11 @@ Now login with ```ssh USER@HOST```
 ```sudo ufw allow 'Nginx Full'```
 ```sudo ufw allow 'OpenSSH'```
 ```sudo ufw enable```
+Set directory permissions to 775:
+```sudo find /var/www/html/ -type d -exec chmod 775 {} \;```
+
+Set file permissions to 664:
+```sudo find /var/www/html/ -type f -exec chmod 664 {} \;```
 
 4. Edit NGINX config:
 ```sudo nano /etc/nginx/sites-available/default```
@@ -54,29 +54,55 @@ Now login with ```ssh USER@HOST```
 ```sudo systemctl restart nginx.service```
 ```sudo certbot --nginx -d DOMAINNAME```
 
-### Installation
+### Installation and Deployment
 
 1. Clone and open the repository:
 
-```git clone https://github.com/yourusername/QuestByCycle.git```
+``` cd /opt```
+```git clone https://github.com/denuoweb/QuestByCycle.git```
 ```cd QuestByCycle```
 
-3. Create python3.11 virtual environment:
+2. Install python3.11:
 
 ```sudo add-apt-repository ppa:deadsnakes/ppa```
 ```sudo apt install python3.11 python3.11-venv python3-pip python3-gevent python3-certbot-nginx```
-```python3.11 -m venv venv```
-```source venv/bin/activate```
 
-4. Install the requirements:
+3. Create new user:
 
-```pip install -r requirements.txt```
+```sudo adduser --system --group --disabled-login APPUSER```
+```sudo chown -R APPUSER:APPUSER /opt/QuestByCycle```
 
-5. Set up the environment variables:
+4. Prepare the Deployment:
+
+```sudo nano /etc/systemd/system/questbycycleApp.service```
+
+```markdown
+[Unit]
+Description=gunicorn daemon for QuestByCycle application
+After=network.target
+
+[Service]
+User=APPUSER
+Group=APPUSER
+WorkingDirectory=/opt/QuestByCycle
+ExecStart=/opt/QuestByCycle/venv/bin/gunicorn --config /opt/QuestByCycle/gunicorn.conf.py wsgi:app
+
+[Install]
+WantedBy=multi-user.target
+```
+
+5. Start the virtual environment
+```sudo -u APPUSER -H bash -c "python3.11 -m venv /opt/QuestByCycle/venv"```
+
+6. Install the requirements:
+
+```sudo -u APPUSER /bin/bash -c "source /opt/QuestByCycle/venv/bin/activate && pip install -r /opt/QuestByCycle/requirements.txt"```
+
+7. Set up the environment variables:
     
-    - Edit `config.toml` to adjust the variables accordingly.
+    - Copy `config.toml.example` to `config.toml` and adjust the variables accordingly.
 
-6. Database Install and Setup:
+8. PostgresDB Setup:
 ```sudo apt install postgresql postgresql-contrib```
 
 ```sudo systemctl start postgresql```
@@ -105,7 +131,7 @@ Now login with ```ssh USER@HOST```
 
 ```exit```
 
-6. Initialize the database:
+9. Initialize the database:
 
 ```flask db init```
 
@@ -113,18 +139,10 @@ Now login with ```ssh USER@HOST```
 
 ```flask db upgrade```
 
-7. Run the application:
+10. Deploy
 
-```gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 -b 127.0.0.1:5000 wsgi:app```
-
-8. Update postgresdb instructions:
-
-```sudo su - postgres```
-```psql```
-```\c DATABASENAME```
-```POSTGRESQL COMMANDS```
-```\q```
-```exit```
+```sudo systemctl start questbycycleApp.service```
+```sudo systemctl enable questbycycleApp.service```
 
 ## Connect Game to X
 https://developer.x.com/en/portal/dashboard
