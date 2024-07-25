@@ -73,6 +73,7 @@ def create_app():
     app.config['FACEBOOK_PAGE_ID'] = app.config['social']['facebook_page_id']
     app.config['INSTAGRAM_ACCESS_TOKEN'] = app.config['social']['instagram_access_token']
     app.config['INSTAGRAM_USER_ID'] = app.config['social']['instagram_user_id']
+    app.config['SOCKETIO_SERVER_URL'] = app.config['socketio']['SERVER_URL']
 
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1, x_proto=1, x_port=1)
 
@@ -127,5 +128,10 @@ def create_app():
     def inject_logout_form():
         from app.forms import LogoutForm  # Local import to avoid circular dependency
         return dict(logout_form=LogoutForm())
+    
+    @app.context_processor
+    def inject_socketio_url():
+        return dict(socketio_server_url=app.config['SOCKETIO_SERVER_URL'])
+
 
     return app
