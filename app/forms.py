@@ -158,7 +158,7 @@ class ProfileForm(FlaskForm):
 
 
 class TaskSubmissionForm(FlaskForm):
-    evidence = FileField('Upload Evidence', validators=[FileAllowed(['jpg', 'png', 'pdf'], 'Images and PDFs only!')])
+    evidence = FileField('Upload Evidence', validators=[FileAllowed(['jpg', 'jpeg,' 'png'], 'Images only!')])
     comment = TextAreaField('Comment')  # Assuming you might also want to submit a comment
     submit = SubmitField('Submit Task')
 
