@@ -143,7 +143,7 @@ WantedBy=multi-user.target
 10. Deploy
     
 Without service provider:
-gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 -b 127.0.0.1:5000 wsgi:app
+```gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 -b 127.0.0.1:5000 wsgi:app```
 
 With service provider:
 ```sudo systemctl start questbycycleApp.service```
