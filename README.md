@@ -19,7 +19,7 @@ QuestByCycle is a Flask-based web application designed to engage and motivate th
 - Python 3.11+
 - PostgreSQL
 
-### Pre-installation
+### Server Setup
 
 0. Create new user:
 
@@ -34,7 +34,7 @@ QuestByCycle is a Flask-based web application designed to engage and motivate th
 ```mkdir -p ~/.ssh && nano ~/.ssh/authorized_keys``` Paste the key in here on remote server 
 Now login with ```ssh USER@HOST```
 
-1. Allocate Swap on low ram systems:
+2. Allocate Swap on low ram systems:
 
 ```sudo fallocate -l 4G /swapfile```
 ```sudo chmod 600 /swapfile```
@@ -42,15 +42,15 @@ Now login with ```ssh USER@HOST```
 ```sudo swapon /swapfile```
 ```echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab```
 
-2. Install NGINX:
+3. Install NGINX:
 ```sudo apt install nginx```
 ```sudo ufw allow 'Nginx Full'```
 ```sudo ufw allow 'OpenSSH'```
 ```sudo ufw enable```
 
-3. Edit NGINX config:
+4. Edit NGINX config:
 ```sudo nano /etc/nginx/sites-available/default```
-
+    [Example default](/docs/default.NGINX)
 ```sudo systemctl restart nginx.service```
 ```sudo certbot --nginx -d DOMAINNAME```
 
@@ -117,26 +117,15 @@ Now login with ```ssh USER@HOST```
 
 ```gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 -b 127.0.0.1:5000 wsgi:app```
 
-8. Update instructions:
+8. Update postgresdb instructions:
 
-```ssh questbycycle.org```
-```cd QuestByCycle/```
-```git pull```
-```cd QuestByCycle/```
-```screen -r```
-
-```Ctrl-c```
-
-```sudo rm -rf *```
-```cp -r ~/QuestByCycle/* /var/www/html```
-```flask db migrate -m "pulled updates"```
 ```sudo su - postgres```
 ```psql```
 ```\c DATABASENAME```
-
+```POSTGRESQL COMMANDS```
 ```\q```
 ```exit```
-```flask db upgrade```
+
 ## Connect Game to X
 https://developer.x.com/en/portal/dashboard
 
