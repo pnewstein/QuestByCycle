@@ -199,7 +199,7 @@ def game_info(game_id):
         return redirect(url_for('main.index'))
 
     # Render the game_info.html template with the fetched game details
-    return render_template('game_info.html', game=game_details)
+    return render_template('game_info.html', game=game_details, game_id=game_id)
 
 
 @games_bp.route('/get_game_points/<int:game_id>', methods=['GET'])
