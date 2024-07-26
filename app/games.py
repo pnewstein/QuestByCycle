@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
-from app.models import db, Game, Task, UserTask
+from app.models import db, Game, Task, UserTask, user_games
 from app.forms import GameForm
 from app.utils import save_leaderboard_image, generate_smoggy_images, allowed_file
 
@@ -149,14 +149,14 @@ def update_game(game_id):
             flash(f'An error occurred while updating the game: {e}', 'error')
     return render_template('update_game.html', form=form, game_id=game_id, leaderboard_image=game.leaderboard_image)
 
-
 @games_bp.route('/register_game/<int:game_id>', methods=['POST'])
 @login_required
 def register_game(game_id):
     try:
         game = Game.query.get_or_404(game_id)
         if game not in current_user.participated_games:
-            current_user.participated_games.append(game)
+            stmt = user_games.insert().values(user_id=current_user.id, game_id=game_id)
+            db.session.execute(stmt)
             db.session.commit()
             flash('You have successfully joined the game.', 'success')
         else:
@@ -187,7 +187,6 @@ def delete_game(game_id):
 
     return redirect(url_for('admin.admin_dashboard'))
 
-
 @games_bp.route('/game-info/<int:game_id>')
 def game_info(game_id):
     # Fetch game details using the provided game_id
@@ -200,7 +199,6 @@ def game_info(game_id):
 
     # Render the game_info.html template with the fetched game details
     return render_template('game_info.html', game=game_details, game_id=game_id)
-
 
 @games_bp.route('/get_game_points/<int:game_id>', methods=['GET'])
 @login_required
@@ -218,13 +216,11 @@ def get_game_points(game_id):
 
     return jsonify(total_game_points=total_game_points, game_goal=game_goal)
 
-
 @games_bp.route('/game/<int:game_id>/details')
 @login_required
 def game_details(game_id):
     game = Game.query.get_or_404(game_id)
     return render_template('details.html', game=game)
-
 
 @games_bp.route('/game/<int:game_id>/awards')
 @login_required
@@ -232,13 +228,11 @@ def game_awards(game_id):
     game = Game.query.get_or_404(game_id)
     return render_template('awards.html', game=game)
 
-
 @games_bp.route('/game/<int:game_id>/beyond')
 @login_required
 def game_beyond(game_id):
     game = Game.query.get_or_404(game_id)
     return render_template('beyond.html', game=game)
-
 
 @games_bp.route('/join_custom_game', methods=['POST'])
 @login_required
@@ -260,7 +254,8 @@ def join_custom_game():
     if game in current_user.participated_games:
         flash('You are already registered for this game.', 'info')
     else:
-        current_user.participated_games.append(game)
+        stmt = user_games.insert().values(user_id=current_user.id, game_id=game.id)
+        db.session.execute(stmt)
         db.session.commit()
         flash('You have successfully joined the custom game.', 'success')
 

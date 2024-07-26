@@ -29,7 +29,8 @@ user_badges = db.Table('user_badges',
 
 user_games = db.Table('user_games',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('game_id', db.Integer, db.ForeignKey('game.id'), primary_key=True)
+    db.Column('game_id', db.Integer, db.ForeignKey('game.id'), primary_key=True),
+    db.Column('joined_at', db.DateTime, default=datetime.now(utc))
 )
 
 class UserTask(db.Model):
