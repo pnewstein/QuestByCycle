@@ -137,6 +137,7 @@ def user_management():
     users = User.query.all()
     return render_template('user_management.html', users=users)
 
+
 @admin_bp.route('/user_details/<int:user_id>', methods=['GET'])
 @login_required
 @require_super_admin
@@ -158,9 +159,11 @@ def user_details(user_id):
         'profile_picture': user.profile_picture,
         'age_group': user.age_group,
         'interests': user.interests,
-        'email_verified': user.email_verified
+        'email_verified': user.email_verified,
+        'participated_games': user.get_participated_games()
     }
     return jsonify(user_details)
+
 
 @admin_bp.route('/update_user/<int:user_id>', methods=['POST'])
 @login_required
