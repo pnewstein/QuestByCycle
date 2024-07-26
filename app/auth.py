@@ -1,7 +1,7 @@
 from cryptography.fernet import Fernet
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_user, logout_user, login_required, current_user
-from app.models import db, User, Sponsor
+from app.models import db, User, Game
 from app.forms import LoginForm, RegistrationForm, SponsorForm, ForgotPasswordForm, ResetPasswordForm
 from app.utils import send_email, generate_tutorial_game
 from flask_mail import Mail
@@ -135,7 +135,7 @@ def register():
         email = sanitize_html(form.email.data)
         base_username = email.split('@')[0]
         existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
+        if (existing_user):
             flash('Email already registered. Please use a different email.', 'warning')
             return redirect(url_for('auth.register'))
 
@@ -163,8 +163,13 @@ def register():
         try:
             db.session.commit()
 
-            tutorial_game = generate_tutorial_game()
+            # Check for tutorial game and add user to it
+            tutorial_game = Game.query.filter_by(is_tutorial=True).first()
             if tutorial_game:
+                user.participated_games.append(tutorial_game)
+                db.session.commit()
+            else:
+                tutorial_game = generate_tutorial_game()
                 user.participated_games.append(tutorial_game)
                 db.session.commit()
 
