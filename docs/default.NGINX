@@ -2,12 +2,12 @@
 server {
     server_name _;
 
-    root /var/www/html;
+    root /opt/QuestByCycle/;
     index index.html index.htm index.nginx-debian.html;
 
     # Serve robots.txt
     location = /robots.txt {
-        alias /var/www/html/app/robots.txt;
+        alias /opt/QuestByCycle/app/robots.txt;
     }
 
     # ModSecurity Configuration
@@ -43,7 +43,7 @@ server {
 
     # Serve Static Files - CSS
     location /static/css/ {
-        alias /var/www/html/app/static/css/;
+        alias /opt/QuestByCycle/app/static/css/;
         expires 1h; # Cache CSS files for 1 hour
         add_header Cache-Control "public, max-age=3600, must-revalidate";
         try_files $uri $uri/ =404;
@@ -51,7 +51,7 @@ server {
 
    # Serve Static Files - Video
     location /static/videos/ {
-        alias /var/www/html/app/static/videos/;
+        alias /opt/QuestByCycle/app/static/videos/;
         expires 30d;
         add_header Cache-Control "public, max-age=, max-age=2592000, must-revalidate";
         try_files $uri $uri/ =404;
@@ -60,7 +60,7 @@ server {
 
     # Serve Static Files - Photos
     location /static/photos/ {
-        alias /var/www/html/app/static/photos/;
+        alias /opt/QuestByCycle/app/static/photos/;
         expires 30d; # Cache photos for 30 days
         add_header Cache-Control "public, max-age=2592000, must-revalidate";
         try_files $uri $uri/ =404;
@@ -68,7 +68,7 @@ server {
 
     # Serve Other Static Files
     location /static/ {
-        alias /var/www/html/app/static/;
+        alias /opt/QuestByCycle/app/static/;
         expires 1h; # Cache other static files for 1 hour
         add_header Cache-Control "public, max-age=3600, must-revalidate";
         try_files $uri $uri/ =404;
