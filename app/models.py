@@ -105,7 +105,11 @@ class User(UserMixin, db.Model):
 
     def is_already_liking(self, task):
         return TaskLike.query.filter_by(user_id=self.id, task_id=task.id).count() > 0
-
+    
+    def get_participated_games(self):
+        return [{'id': game.id, 'title': game.title} for game in self.participated_games]
+    
+    
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(140))

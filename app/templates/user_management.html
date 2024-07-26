@@ -68,6 +68,9 @@
             </div>
         </form>
 
+        <h2>Participated Games</h2>
+        <ul id="participatedGamesList"></ul>
+
         <form id="deleteUserForm" action="" method="post" onsubmit="return confirmDelete()">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-danger">Delete User</button>

@@ -18,6 +18,15 @@ document.getElementById('userDropdown').addEventListener('change', function() {
                 document.getElementById('age_group').value = data.age_group;
                 document.getElementById('interests').value = data.interests;
                 document.getElementById('email_verified').checked = data.email_verified;
+
+                var participatedGamesList = document.getElementById('participatedGamesList');
+                participatedGamesList.innerHTML = '';
+                data.participated_games.forEach(function(game) {
+                    var listItem = document.createElement('li');
+                    listItem.textContent = game.title;
+                    participatedGamesList.appendChild(listItem);
+                });
+
                 document.getElementById('userDetails').style.display = 'block';
             })
             .catch(error => console.error('Error:', error));
