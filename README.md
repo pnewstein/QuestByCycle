@@ -42,11 +42,6 @@ Now login with ```ssh USER@HOST```
 ```sudo ufw allow 'Nginx Full'```
 ```sudo ufw allow 'OpenSSH'```
 ```sudo ufw enable```
-Set directory permissions to 775:
-```sudo find /var/www/html/ -type d -exec chmod 775 {} \;```
-
-Set file permissions to 664:
-```sudo find /var/www/html/ -type f -exec chmod 664 {} \;```
 
 4. Edit NGINX config:
 ```sudo nano /etc/nginx/sites-available/default```
@@ -99,11 +94,7 @@ WantedBy=multi-user.target
 
 ```sudo -u APPUSER /bin/bash -c "source /opt/QuestByCycle/venv/bin/activate && pip install -r /opt/QuestByCycle/requirements.txt"```
 
-7. Set up the environment variables:
-    
-    - Copy `config.toml.example` to `config.toml` and adjust the variables accordingly.
-
-8. PostgresDB Setup:
+7. PostgresDB Setup:
 ```sudo apt install postgresql postgresql-contrib```
 
 ```sudo systemctl start postgresql```
@@ -131,6 +122,10 @@ WantedBy=multi-user.target
 ```\q```
 
 ```exit```
+
+8. Set up the environment variables:
+    
+    - Copy `config.toml.example` to `config.toml` and adjust the variables accordingly.
 
 9. Initialize the database:
 
