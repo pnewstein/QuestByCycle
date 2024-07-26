@@ -120,10 +120,10 @@
                                     <label for="gameSelectDropdown">Select Active Game:</label>
                                     <select id="gameSelectDropdown" class="form-control"
                                         onchange="window.location.href = this.value;">
-                                        {% for game in current_user.participated_games %}
+                                        {% for game, joined_at in user_games %}
                                         <option value="{{ url_for('main.index', game_id=game.id) }}"
                                             {% if game.id == selected_game_id %}selected{% endif %}>
-                                            {{ game.title }}
+                                            {{ game.title }} - Joined on: {{ joined_at.strftime('%m-%d-%Y') }}
                                         </option>
                                         {% endfor %}
                                     </select>

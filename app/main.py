@@ -1,12 +1,13 @@
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app
 from flask_login import current_user, login_required, logout_user
 from app.utils import save_profile_picture
-from app.models import db, Game, User, Task, Badge, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage
+from app.models import db, Game, User, Task, Badge, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage, user_games
 from app.forms import ProfileForm, ShoutBoardForm, ContactForm
 from app.utils import send_email, allowed_file, generate_tutorial_game
 from .config import load_config
 from werkzeug.utils import secure_filename
 from sqlalchemy import func
+from sqlalchemy.orm import aliased
 from datetime import datetime, timedelta, timezone
 from pytz import utc
 from flask_wtf.csrf import generate_csrf
@@ -74,7 +75,7 @@ def get_datetime(activity):
 @main_bp.route('/<int:game_id>/<int:task_id>', defaults={'user_id': None})
 @main_bp.route('/<int:game_id>/<int:task_id>/<int:user_id>')
 def index(game_id, task_id, user_id):
-    user_games = []
+    user_games_list = []
     profile = None
     user_tasks = []
     badges = []
@@ -131,7 +132,10 @@ def index(game_id, task_id, user_id):
     if current_user.is_authenticated:
         liked_message_ids = {like.message_id for like in ShoutBoardLike.query.filter_by(user_id=current_user.id)}
         liked_task_ids = {like.task_id for like in TaskLike.query.filter_by(user_id=current_user.id)}
-        user_games = current_user.participated_games
+        
+        # Fetch games along with joined_at timestamps
+        user_games_list = db.session.query(Game, user_games.c.joined_at).join(user_games, user_games.c.game_id == Game.id).filter(user_games.c.user_id == current_user.id).all()
+        
         profile = User.query.get_or_404(user_id)
         user_tasks = UserTask.query.filter_by(user_id=profile.id).all()
         badges = [badge for badge in profile.badges if any(task.game_id == game_id for task in badge.tasks)]
@@ -190,9 +194,9 @@ def index(game_id, task_id, user_id):
 
     return render_template('index.html',
                            form=form,
-                           games=user_games,
+                           games=user_games_list,
                            game=game,
-                           user_games=user_games,
+                           user_games=user_games_list,
                            activities=activities,
                            tasks=tasks,
                            game_participation=game_participation,
