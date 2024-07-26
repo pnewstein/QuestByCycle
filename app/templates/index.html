@@ -81,9 +81,9 @@
                         <br>
                         <div class="text-center mb-4">
                             {% if current_user.is_authenticated %}
+                                {% if selected_game_id %}
                                 <a href="{{ url_for('games.game_info', game_id=selected_game_id) }}" class="btn btn-primary btn-lg mb-2">Let's Get Started!</a>
                                 <button class="btn btn-secondary btn-lg mb-2" onclick="openModal('contactModal')">Contact Us</button>
-                                {% if selected_game_id %}
                                     <button class="btn btn-primary btn-lg mb-2" onclick="openModal('sponsorsModal', '{{ selected_game_id }}')">Sponsors</button>
                                 {% else %}
                                     <button class="btn btn-primary btn-lg mb-2" onclick="openModal('sponsorsModal', '{{ selected_game_id }}')">Sponsors</button>
