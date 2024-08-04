@@ -16,6 +16,7 @@ main {
     background-attachment: fixed;
 }
 
+
 .modal-backdrop {
     z-index: 1040 !important;
 }
@@ -264,6 +265,29 @@ main {
 .table th {
     background-color: #007bff;
     color: #ffffff;
+}
+
+/* Flex the items in the container */
+.form-group-1 {
+    display: block;
+    text-align: left; /* Ensure text and elements align to the left */
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Align items to the start of the container */
+    margin-bottom: 8px; /* Adds some space between each checkbox entry */
+}
+
+/* Override default margins to ensure alignment */
+.form-check-input {
+    margin-left: 0; /* Ensure the checkbox starts at the very left */
+    margin-right: 10px; /* Provide some space between the checkbox and label */
+}
+
+.form-check-label {
+    margin: 0; /* Reset any margin that might be causing alignment issues */
 }
 
 .form-group {

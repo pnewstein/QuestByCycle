@@ -317,6 +317,24 @@ def user_profile(user_id):
     task_submissions = user.task_submissions
     profile_messages = ProfileWallMessage.query.filter_by(user_id=user_id).order_by(ProfileWallMessage.timestamp.desc()).all()
 
+    # Define riding preferences choices here
+    riding_preferences_choices = [
+        ('new_novice', 'New and novice rider'),
+        ('middle_school', 'Middle school rider'),
+        ('high_school', 'High school rider'),
+        ('college', 'College student rider'),
+        ('families', 'Families who ride with their children'),
+        ('grandparents', 'Grandparents who ride with their grandchildren'),
+        ('seasoned', 'Seasoned riders who ride all over town for their transportation needs'),
+        ('adaptive', 'Adaptive bike users'),
+        ('occasional', 'Occasional rider'),
+        ('ebike', 'E-bike rider'),
+        ('long_distance', 'Long distance rider'),
+        ('no_car', 'Don’t own a car'),
+        ('commute', 'Commute'),
+        ('seasonal', 'Seasonal riders: I don’t like riding in inclement weather')
+    ]
+
     response_data = {
         'current_user_id': current_user.id,
         'user': {
@@ -327,6 +345,12 @@ def user_profile(user_id):
             'display_name': user.display_name,
             'interests': user.interests,
             'age_group': user.age_group,
+            'riding_preferences': user.riding_preferences or [],  # Ensure this is a list
+            'ride_description': user.ride_description,
+            'bike_picture': user.bike_picture,
+            'bike_description': user.bike_description,
+            'upload_to_socials': user.upload_to_socials,
+            'show_carbon_game': user.show_carbon_game,
             'badges': [{'id': badge.id, 'name': badge.name, 'description': badge.description, 'category': badge.category, 'image': badge.image} for badge in badges]
         },
         'user_tasks': [
@@ -337,7 +361,7 @@ def user_profile(user_id):
             {
                 'id': message.id,
                 'content': message.content,
-                'timestamp': message.timestamp,
+                'timestamp': message.timestamp.strftime('%B %d, %Y %H:%M'),
                 'author_id': message.author_id,
                 'author': {
                     'username': message.author.username,
@@ -354,7 +378,8 @@ def user_profile(user_id):
         'task_submissions': [
             {'id': submission.id, 'task': {'title': submission.task.title}, 'comment': submission.comment, 'timestamp': submission.timestamp.strftime('%B %d, %Y %H:%M'), 'image_url': submission.image_url, 'twitter_url': submission.twitter_url, 'fb_url': submission.fb_url, 'instagram_url': submission.instagram_url}
             for submission in task_submissions
-        ]
+        ],
+        'riding_preferences_choices': riding_preferences_choices  # Use centralized preferences
     }
 
     return jsonify(response_data)
@@ -371,6 +396,13 @@ def edit_profile(user_id):
     user.display_name = sanitize_html(request.form.get('display_name', user.display_name))
     user.interests = sanitize_html(request.form.get('interests', user.interests))
     user.age_group = sanitize_html(request.form.get('age_group', user.age_group))
+    
+    # Update new fields
+    user.riding_preferences = request.form.getlist('riding_preferences')
+    user.ride_description = sanitize_html(request.form.get('ride_description', user.ride_description))
+    user.bike_description = sanitize_html(request.form.get('bike_description', user.bike_description))
+    user.upload_to_socials = 'upload_to_socials' in request.form
+    user.show_carbon_game = 'show_carbon_game' in request.form
 
     if 'profile_picture' in request.files:
         profile_picture_file = request.files['profile_picture']
@@ -378,12 +410,48 @@ def edit_profile(user_id):
             filename = save_profile_picture(profile_picture_file, user.profile_picture)
             user.profile_picture = filename
     
+    if 'bike_picture' in request.files:
+        bike_picture_file = request.files['bike_picture']
+        if bike_picture_file and allowed_file(bike_picture_file.filename):
+            bike_filename = save_profile_picture(bike_picture_file)  # Assuming you have a separate method for saving bike images
+            user.bike_picture = bike_filename
+
     try:
         db.session.commit()
         return jsonify({'message': 'Profile updated successfully'})
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+@main_bp.route('/update_profile', methods=['POST'])
+@login_required
+def update_profile():
+    if 'profile_picture' in request.files:
+        file = request.files['profile_picture']
+        if file:
+            old_filename = current_user.profile_picture
+            current_user.profile_picture = save_profile_picture(file, old_filename)
+    
+    current_user.display_name = sanitize_html(request.form.get('display_name', current_user.display_name))
+    current_user.age_group = sanitize_html(request.form.get('age_group', current_user.age_group))
+    current_user.interests = sanitize_html(request.form.get('interests', current_user.interests))
+
+    # Update new fields
+    current_user.riding_preferences = request.form.getlist('riding_preferences')
+    current_user.ride_description = sanitize_html(request.form.get('ride_description', current_user.ride_description))
+    current_user.bike_description = sanitize_html(request.form.get('bike_description', current_user.bike_description))
+    current_user.upload_to_socials = 'upload_to_socials' in request.form
+    current_user.show_carbon_game = 'show_carbon_game' in request.form
+
+    if 'bike_picture' in request.files:
+        bike_picture_file = request.files['bike_picture']
+        if bike_picture_file and allowed_file(bike_picture_file.filename):
+            bike_filename = save_profile_picture(bike_picture_file)  # Assuming you have a separate method for saving bike images
+            current_user.bike_picture = bike_filename
+
+    db.session.commit()
+    return jsonify(success=True)
 
 
 @main_bp.route('/like_task/<int:task_id>', methods=['POST'])
@@ -406,23 +474,6 @@ def like_task(task_id):
     # Fetch the new like count for the task
     new_like_count = TaskLike.query.filter_by(task_id=task.id).count()
     return jsonify(success=success, new_like_count=new_like_count, already_liked=already_liked)
-
-
-@main_bp.route('/update_profile', methods=['POST'])
-@login_required
-def update_profile():
-    if 'profile_picture' in request.files:
-        file = request.files['profile_picture']
-        if file:
-            old_filename = current_user.profile_picture
-            current_user.profile_picture = save_profile_picture(file, old_filename)
-    
-    current_user.display_name = sanitize_html(request.form.get('display_name', current_user.display_name))
-    current_user.age_group = sanitize_html(request.form.get('age_group', current_user.age_group))
-    current_user.interests = sanitize_html(request.form.get('interests', current_user.interests))
-
-    db.session.commit()
-    return jsonify(success=True)
 
 
 @main_bp.route('/pin_message/<int:game_id>/<int:message_id>', methods=['POST'])
