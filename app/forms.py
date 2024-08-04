@@ -1,10 +1,10 @@
 from flask_wtf import FlaskForm
 from flask import current_app
-from wtforms import StringField, SelectField, SubmitField, IntegerField, HiddenField, PasswordField, TextAreaField, BooleanField
+from wtforms import StringField, SelectField, SubmitField, IntegerField, HiddenField, PasswordField, TextAreaField, BooleanField, FieldList, FormField
 from wtforms.validators import DataRequired, NumberRange, EqualTo, Optional, Email, Length, ValidationError, URL
 from wtforms.fields import DateField
-from flask_wtf.file import FileField, FileAllowed, FileRequired
-from app.models import Badge, Task, Game
+from flask_wtf.file import FileField, FileAllowed
+from app.models import Badge
 
 import os
 
@@ -149,12 +149,25 @@ class TaskImportForm(FlaskForm):
         self.default_badge_image.choices = [('','None')] + [(filename, filename) for filename in os.listdir(badge_image_directory)]
 
 
+
+class RidingPreferenceForm(FlaskForm):
+    preference = BooleanField(label='')  # Placeholder for the label; it will be set dynamically
+
 class ProfileForm(FlaskForm):
     display_name = StringField('Player/Team Name', validators=[Optional()])
-    profile_picture = FileField('Profile Picture', validators=[FileRequired(), FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
+    profile_picture = FileField('Profile Picture', validators=[Optional(), FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
     age_group = SelectField('Age Group', choices=[('teen', 'Teen'), ('adult', 'Adult'), ('senior', 'Senior')])
     interests = StringField('Interests', validators=[Optional()])
+    ride_description = StringField('Describe the type of riding you like to do:', validators=[Optional(), Length(max=500)])
+    bike_picture = FileField('Upload Your Bicycle Picture', validators=[Optional(), FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
+    bike_description = StringField('Bicycle Description', validators=[Optional(), Length(max=500)])
+    upload_to_socials = BooleanField('Upload Activities to Social Media', default=True)
+    show_carbon_game = BooleanField('Show Carbon Reduction Game', default=True)
+
     submit = SubmitField('Update Profile')
+
+    def __init__(self, *args, **kwargs):
+        super(ProfileForm, self).__init__(*args, **kwargs)
 
 
 class TaskSubmissionForm(FlaskForm):

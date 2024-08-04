@@ -69,6 +69,14 @@ class User(UserMixin, db.Model):
     shoutboard_messages = db.relationship('ShoutBoardMessage', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     task_submissions = db.relationship('TaskSubmission', backref='submitter', lazy='dynamic', cascade='all, delete-orphan')
 
+    # New fields for riding preferences and toggles
+    riding_preferences = db.Column(db.JSON, nullable=True)  # JSON to store the list of selected preferences
+    ride_description = db.Column(db.String(500), nullable=True)  # Description for type of riding
+    bike_picture = db.Column(db.String(200), nullable=True)  # Bike picture URL
+    bike_description = db.Column(db.String(500), nullable=True)  # Description of the bicycle
+    upload_to_socials = db.Column(db.Boolean, default=True)  # Toggle for auto-uploading to socials
+    show_carbon_game = db.Column(db.Boolean, default=True)  # Toggle for showing carbon reduction game
+
     def generate_verification_token(self, expiration=320000):
         return jwt.encode(
             {'verify_email': self.id, 'exp': time() + expiration},

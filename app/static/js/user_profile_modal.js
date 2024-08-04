@@ -58,6 +58,11 @@ function showUserProfileModal(userId) {
     fetch(`/profile/${userId}`)
         .then(response => response.json())
         .then(data => {
+            if (!data.riding_preferences_choices) {
+                console.error('Riding preferences choices data is missing.');
+                return;
+            }
+
             const userProfileDetails = document.getElementById('userProfileDetails');
             if (!userProfileDetails) {
                 console.error('User profile details container not found');
@@ -117,15 +122,50 @@ function showUserProfileModal(userId) {
                                                 <label for="interests">Interests:</label>
                                                 <textarea class="form-control" id="interests" name="interests">${data.user.interests || ''}</textarea>
                                             </div>
+                                            <div class="form-group-1">
+                                                <label for="ridingPreferences">Riding Preferences:</label>
+                                                ${data.riding_preferences_choices.map((choice, index) => `
+                                                    <div class="form-check">
+                                                        <input type="checkbox" class="form-check-input" id="ridingPref-${index}" name="riding_preferences" value="${choice[0]}" ${data.user.riding_preferences.includes(choice[0]) ? 'checked' : ''}>
+                                                        <label class="form-check-label" for="ridingPref-${index}">${choice[1]}</label>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
                                             <div class="form-group">
-                                                <label for="profilePictureInput">Profile Picture:</label>
-                                                <input type="file" class="form-control" id="profilePictureInput" name="profile_picture" accept="image/*">
+                                                <label for="rideDescription">Describe the type of riding you like to do:</label>
+                                                <textarea class="form-control" id="rideDescription" name="ride_description">${data.user.ride_description || ''}</textarea>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="bikePicture">Upload Your Bicycle Picture:</label>
+                                                <input type="file" class="form-control" id="bikePicture" name="bike_picture" accept="image/*">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="bikeDescription">Bicycle Description:</label>
+                                                <textarea class="form-control" id="bikeDescription" name="bike_description">${data.user.bike_description || ''}</textarea>
+                                            </div>
+                                            <div class="form-group-1 form-check">
+                                                <input type="checkbox" class="form-check-input" id="uploadToSocials" name="upload_to_socials" ${data.user.upload_to_socials ? 'checked' : ''}>
+                                                <label class="form-check-label" for="uploadToSocials">Upload Activities to Social Media</label>
+                                            </div>
+                                            <div class="form-group-1 form-check">
+                                                <input type="checkbox" class="form-check-input" id="showCarbonGame" name="show_carbon_game" ${data.user.show_carbon_game ? 'checked' : ''}>
+                                                <label class="form-check-label" for="showCarbonGame">Show Carbon Reduction Game</label>
                                             </div>
                                             <button type="button" class="btn btn-primary" onclick="saveProfile(${userId})">Save</button>
                                         </form>` : `
                                         <p><strong>Display Name:</strong> ${data.user.display_name || ''}</p>
                                         <p><strong>Age Group:</strong> ${data.user.age_group || ''}</p>
                                         <p><strong>Interests:</strong> ${data.user.interests || ''}</p>
+                                        <p><strong>Riding Preferences:</strong> ${data.user.riding_preferences.join(', ')}</p>
+                                        <p><strong>Ride Description:</strong> ${data.user.ride_description || ''}</p>
+                                        ${data.user.bike_picture ? `
+                                            <div class="form-group">
+                                                <label for="bikePicture">Your Bicycle Picture:</label>
+                                                <img src="${data.user.bike_picture}" alt="Bicycle Picture" class="img-fluid">
+                                            </div>` : ''}
+                                        <p><strong>Bicycle Description:</strong> ${data.user.bike_description || ''}</p>
+                                        <p><strong>Uploads to Social Media:</strong> ${data.user.upload_to_socials ? 'Yes' : 'No'}</p>
+                                        <p><strong>Shows Carbon Reduction Game:</strong> ${data.user.show_carbon_game ? 'Yes' : 'No'}</p>
                                     `}
                                 </section>
                             </div>
@@ -203,6 +243,41 @@ function showUserProfileModal(userId) {
         });
 }
 
+function saveProfile(userId) {
+    const formData = new FormData(document.getElementById('editProfileForm'));
+
+    // Collect riding preferences from checkboxes
+    const ridingPreferences = [];
+    formData.forEach((value, key) => {
+        if (key.startsWith('riding_preferences-')) {
+            ridingPreferences.push(value);
+        }
+    });
+
+    formData.set('riding_preferences', JSON.stringify(ridingPreferences)); // Store the preferences as a JSON string
+
+    fetch(`/profile/${userId}/edit`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(`Error: ${data.error}`);
+        } else {
+            alert('Profile updated successfully.');
+            showUserProfileModal(userId);  // Reload profile details to reflect changes
+        }
+    })
+    .catch(error => {
+        console.error('Error updating profile:', error);
+        alert('Failed to update profile. Please try again.');
+    });
+}
+
 function buildMessageTree(messages, parentId, isCurrentUser, currentUserId, profileUserId, depth) {
     if (depth > 3) return '';  // Limit replies to a depth of 3
 
@@ -276,31 +351,6 @@ function postReply(profileUserId, messageId) {
     .catch(error => {
         console.error('Error posting reply:', error);
         alert('Failed to post reply. Please try again.');
-    });
-}
-
-function saveProfile(userId) {
-    const formData = new FormData(document.getElementById('editProfileForm'));
-
-    fetch(`/profile/${userId}/edit`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert(`Error: ${data.error}`);
-        } else {
-            alert('Profile updated successfully.');
-            showUserProfileModal(userId);  // Reload profile details to reflect changes
-        }
-    })
-    .catch(error => {
-        console.error('Error updating profile:', error);
-        alert('Failed to update profile. Please try again.');
     });
 }
 
