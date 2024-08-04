@@ -73,3 +73,4 @@ If your app needs to interact with a Facebook Page, you will need the Page ID:
      ```bash
      curl -X GET "https://graph.facebook.com/v19.0/{page-name}?access_token={access-token}"
      ```
+Access Token Debugger: `https://developers.facebook.com/tools/debug/accesstoken/`
