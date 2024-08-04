@@ -123,7 +123,7 @@
                                         {% for game, joined_at in user_games %}
                                         <option value="{{ url_for('main.index', game_id=game.id) }}"
                                             {% if game.id == selected_game_id %}selected{% endif %}>
-                                            {{ game.title }} - Joined on: {{ joined_at.strftime('%m-%d-%Y') }}
+                                            {{ game.title }} - Joined on: {{ joined_at.strftime('%m-%d-%Y') if joined_at else 'N/A' }}
                                         </option>
                                         {% endfor %}
                                     </select>
