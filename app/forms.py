@@ -159,8 +159,6 @@ class ProfileForm(FlaskForm):
     age_group = SelectField('Age Group', choices=[('teen', 'Teen'), ('adult', 'Adult'), ('senior', 'Senior')])
     interests = StringField('Interests', validators=[Optional()])
     ride_description = StringField('Describe the type of riding you like to do:', validators=[Optional(), Length(max=500)])
-    bike_picture = FileField('Upload Your Bicycle Picture', validators=[Optional(), FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
-    bike_description = StringField('Bicycle Description', validators=[Optional(), Length(max=500)])
     upload_to_socials = BooleanField('Upload Activities to Social Media', default=True)
     show_carbon_game = BooleanField('Show Carbon Reduction Game', default=True)
 
@@ -187,6 +185,12 @@ class ProfileForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
+
+class BikeForm(FlaskForm):
+    bike_picture = FileField('Upload Your Bicycle Picture', validators=[Optional(), FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
+    bike_description = StringField('Bicycle Description', validators=[Optional(), Length(max=500)])
+    submit = SubmitField('Update Bike')
+
 
 class TaskSubmissionForm(FlaskForm):
     evidence = FileField('Upload Evidence', validators=[FileAllowed(['jpg', 'jpeg,' 'png'], 'Images only!')])
