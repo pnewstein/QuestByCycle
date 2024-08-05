@@ -78,7 +78,6 @@ function showUserProfileModal(userId) {
                     ${data.user.profile_picture ? `
                         <div class="profile-picture-container position-relative mx-auto mb-3">
                             <img src="/static/${data.user.profile_picture}" alt="Profile Picture" class="profile-picture rounded-circle shadow-lg border border-white border-4">
-                            ${isCurrentUser ? `<input type="file" id="profilePictureInput" name="profile_picture" accept="image/*">` : ''}
                         </div>` : ''}
                     <div class="header-bg position-absolute w-100 h-100 top-0 start-0"></div>
                     <div class="header-content position-relative z-index-1">
@@ -112,7 +111,11 @@ function showUserProfileModal(userId) {
                             <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                                 <section class="profile mb-4">
                                     ${isCurrentUser ? `
-                                        <form id="editProfileForm">
+                                        <form id="editProfileForm" enctype="multipart/form-data">
+                                        <div class="form-group">
+                                            <label for="profilePictureInput">Profile Picture:</label>
+                                            <input type="file" class="form-control" id="profilePictureInput" name="profile_picture" accept="image/*">
+                                        </div>
                                             <div class="form-group">
                                                 <label for="displayName">Display Name:</label>
                                                 <input type="text" class="form-control" id="displayName" name="display_name" value="${data.user.display_name || ''}">
@@ -152,7 +155,7 @@ function showUserProfileModal(userId) {
                                                 <input type="checkbox" class="form-check-input" id="showCarbonGame" name="show_carbon_game" ${data.user.show_carbon_game ? 'checked' : ''}>
                                                 <label class="form-check-label" for="showCarbonGame">Show Carbon Reduction Game</label>
                                             </div>
-                                            <button type="button" class="btn btn-primary" onclick="saveProfile(${userId})">Save</button>
+                                            <button type="button" class="btn btn-primary" onclick="saveProfile(${userId})">Save Profile</button>
                                         </form>` : `
                                         <p><strong>Display Name:</strong> ${data.user.display_name || ''}</p>
                                         <p><strong>Age Group:</strong> ${data.user.age_group || ''}</p>
@@ -275,6 +278,12 @@ function saveProfile(userId) {
     const form = document.getElementById('editProfileForm');
     const formData = new FormData(form);
 
+    // Append profile picture to FormData if it exists
+    const profilePictureInput = document.getElementById('profilePictureInput');
+    if (profilePictureInput.files.length > 0) {
+        formData.append('profile_picture', profilePictureInput.files[0]);
+    }
+
     // Collect riding preferences from checkboxes
     const ridingPreferences = [];
     form.querySelectorAll('input[name="riding_preferences"]:checked').forEach((checkbox) => {
@@ -299,22 +308,23 @@ function saveProfile(userId) {
         },
         body: formData
     })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                console.error('Server error:', data.error);
-                alert(`Error: ${data.error}`);
-            } else {
-                console.log('Profile updated successfully:', data);
-                alert('Profile updated successfully.');
-                showUserProfileModal(userId);  // Reload profile details to reflect changes
-            }
-        })
-        .catch(error => {
-            console.error('Error updating profile:', error);
-            alert('Failed to update profile. Please try again.');
-        });
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            console.error('Server error:', data.error);
+            alert(`Error: ${data.error}`);
+        } else {
+            console.log('Profile updated successfully:', data);
+            alert('Profile updated successfully.');
+            showUserProfileModal(userId);  // Reload profile details to reflect changes
+        }
+    })
+    .catch(error => {
+        console.error('Error updating profile:', error);
+        alert('Failed to update profile. Please try again.');
+    });
 }
+
 
 function saveBike(userId) {
     const form = document.getElementById('editBikeForm');
@@ -332,7 +342,7 @@ function saveBike(userId) {
         console.log(`${key}: ${value}`);
     });
 
-    fetch(`/profile/${userId}/edit`, { // Ensure the correct endpoint handles bike information
+    fetch(`/profile/${userId}/edit-bike`, { // Ensure the correct endpoint handles bike information
         method: 'POST',
         headers: {
             'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -355,7 +365,6 @@ function saveBike(userId) {
             alert('Failed to update bike details. Please try again.');
         });
 }
-
 function buildMessageTree(messages, parentId, isCurrentUser, currentUserId, profileUserId, depth) {
     if (depth > 3) return '';  // Limit replies to a depth of 3
 
