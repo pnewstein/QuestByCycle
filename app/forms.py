@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask import current_app
-from wtforms import StringField, SelectField, SubmitField, IntegerField, HiddenField, PasswordField, TextAreaField, BooleanField, FieldList, FormField
+from wtforms import StringField, SelectField, SubmitField, IntegerField, HiddenField, PasswordField, TextAreaField, BooleanField, SelectMultipleField, FieldList, FormField
 from wtforms.validators import DataRequired, NumberRange, EqualTo, Optional, Email, Length, ValidationError, URL
 from wtforms.fields import DateField
 from flask_wtf.file import FileField, FileAllowed
@@ -164,11 +164,29 @@ class ProfileForm(FlaskForm):
     upload_to_socials = BooleanField('Upload Activities to Social Media', default=True)
     show_carbon_game = BooleanField('Show Carbon Reduction Game', default=True)
 
+    # Add riding preferences as a FieldList
+    # Use FieldList and SelectMultipleField for multiple choices
+    riding_preferences = SelectMultipleField('Riding Preferences', choices=[
+        ('new_novice', 'New and novice rider'),
+        ('middle_school', 'Middle school rider'),
+        ('high_school', 'High school rider'),
+        ('college', 'College student rider'),
+        ('families', 'Families who ride with their children'),
+        ('grandparents', 'Grandparents who ride with their grandchildren'),
+        ('seasoned', 'Seasoned riders who ride all over town for their transportation needs'),
+        ('adaptive', 'Adaptive bike users'),
+        ('occasional', 'Occasional rider'),
+        ('ebike', 'E-bike rider'),
+        ('long_distance', 'Long distance rider'),
+        ('no_car', 'Don’t own a car'),
+        ('commute', 'Commute'),
+        ('seasonal', 'Seasonal riders: I don’t like riding in inclement weather')
+    ], validators=[Optional()])
+
     submit = SubmitField('Update Profile')
 
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
-
 
 class TaskSubmissionForm(FlaskForm):
     evidence = FileField('Upload Evidence', validators=[FileAllowed(['jpg', 'jpeg,' 'png'], 'Images only!')])

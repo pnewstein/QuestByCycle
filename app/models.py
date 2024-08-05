@@ -70,7 +70,7 @@ class User(UserMixin, db.Model):
     task_submissions = db.relationship('TaskSubmission', backref='submitter', lazy='dynamic', cascade='all, delete-orphan')
 
     # New fields for riding preferences and toggles
-    riding_preferences = db.Column(db.JSON, nullable=True)  # JSON to store the list of selected preferences
+    riding_preferences = db.Column(db.ARRAY(db.String), nullable=True)  # Use ARRAY if using Postgres, or JSON for other databases
     ride_description = db.Column(db.String(500), nullable=True)  # Description for type of riding
     bike_picture = db.Column(db.String(200), nullable=True)  # Bike picture URL
     bike_description = db.Column(db.String(500), nullable=True)  # Description of the bicycle
