@@ -200,6 +200,28 @@ def save_badge_image(image_file):
         raise ValueError(f"Failed to save image: {str(e)}")
 
 
+def save_bicycle_picture(bicycle_picture_file, old_filename=None):
+    """
+    Save the uploaded bicycle picture, replacing the old one if provided.
+    """
+    if old_filename:
+        old_path = os.path.join(current_app.root_path, 'static', old_filename)
+        if os.path.exists(old_path):
+            os.remove(old_path)  # Remove the old file
+
+    ext = bicycle_picture_file.filename.rsplit('.', 1)[-1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise ValueError("File extension not allowed.")
+    
+    filename = secure_filename(f"{uuid.uuid4()}.{ext}")
+    uploads_path = os.path.join(current_app.root_path, 'static', current_app.config['main']['UPLOAD_FOLDER'], 'bicycle_pictures')
+    if not os.path.exists(uploads_path):
+        os.makedirs(uploads_path)
+
+    bicycle_picture_file.save(os.path.join(uploads_path, filename))
+    return os.path.join(current_app.config['main']['UPLOAD_FOLDER'], 'bicycle_pictures', filename)
+
+
 def save_submission_image(submission_image_file):
     try:
         ext = submission_image_file.filename.rsplit('.', 1)[-1]

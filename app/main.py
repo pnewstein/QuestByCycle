@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app
 from flask_login import current_user, login_required, logout_user
-from app.utils import save_profile_picture
+from app.utils import save_profile_picture, save_bicycle_picture
 from app.models import db, Game, User, Task, Badge, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage, user_games
 from app.forms import ProfileForm, ShoutBoardForm, ContactForm
 from app.utils import send_email, allowed_file, generate_tutorial_game
@@ -388,40 +388,78 @@ def user_profile(user_id):
 @main_bp.route('/profile/<int:user_id>/edit', methods=['POST'])
 @login_required
 def edit_profile(user_id):
-    if current_user.id != user_id:
+    if user_id != current_user.id:
+        print(f'Unauthorized access attempt by user {current_user.id}')
         return jsonify({'error': 'Unauthorized access'}), 403
-    
+
+    form = ProfileForm(request.form)  # Initialize form with request data
+
     user = User.query.get_or_404(user_id)
-    
-    user.display_name = sanitize_html(request.form.get('display_name', user.display_name))
-    user.interests = sanitize_html(request.form.get('interests', user.interests))
-    user.age_group = sanitize_html(request.form.get('age_group', user.age_group))
-    
-    # Update new fields
-    user.riding_preferences = request.form.getlist('riding_preferences')
-    user.ride_description = sanitize_html(request.form.get('ride_description', user.ride_description))
-    user.bike_description = sanitize_html(request.form.get('bike_description', user.bike_description))
-    user.upload_to_socials = 'upload_to_socials' in request.form
-    user.show_carbon_game = 'show_carbon_game' in request.form
 
+    # Debug: Print form data received from the client
+    print('Form data received:')
+    for key in request.form:
+        print(f'{key}: {request.form.getlist(key)}')
+
+    # Print the uploaded files
     if 'profile_picture' in request.files:
-        profile_picture_file = request.files['profile_picture']
-        if profile_picture_file and allowed_file(profile_picture_file.filename):
-            filename = save_profile_picture(profile_picture_file, user.profile_picture)
-            user.profile_picture = filename
-    
+        print(f"Profile Picture: {request.files['profile_picture'].filename}")
     if 'bike_picture' in request.files:
-        bike_picture_file = request.files['bike_picture']
-        if bike_picture_file and allowed_file(bike_picture_file.filename):
-            bike_filename = save_profile_picture(bike_picture_file)  # Assuming you have a separate method for saving bike images
-            user.bike_picture = bike_filename
+        print(f"Bike Picture: {request.files['bike_picture'].filename}")
 
-    try:
-        db.session.commit()
-        return jsonify({'message': 'Profile updated successfully'})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+    if form.validate_on_submit():
+        print('Form validated successfully.')
+
+        try:
+            # Handle profile picture upload
+            if form.profile_picture.data:
+                user.profile_picture = save_profile_picture(form.profile_picture.data, user.profile_picture)
+                print(f'Updated profile picture: {user.profile_picture}')
+
+            # Handle bicycle picture upload
+            if form.bike_picture.data:
+                user.bike_picture = save_bicycle_picture(form.bike_picture.data, user.bike_picture)
+                print(f'Updated bike picture: {user.bike_picture}')
+
+            # Update other fields
+            user.display_name = form.display_name.data
+            print(f'Updated display name: {user.display_name}')
+
+            user.interests = form.interests.data
+            print(f'Updated interests: {user.interests}')
+
+            # Update riding preferences
+            user.riding_preferences = request.form.getlist('riding_preferences')  # Corrected here
+            print(f'Updated riding preferences: {user.riding_preferences}')
+
+            user.ride_description = form.ride_description.data
+            print(f'Updated ride description: {user.ride_description}')
+
+            user.bike_description = form.bike_description.data
+            print(f'Updated bike description: {user.bike_description}')
+
+            user.upload_to_socials = form.upload_to_socials.data
+            print(f'Updated upload to socials: {user.upload_to_socials}')
+
+            user.show_carbon_game = form.show_carbon_game.data
+            print(f'Updated show carbon game: {user.show_carbon_game}')
+
+            db.session.commit()
+            print('Profile updated successfully in the database.')
+            return jsonify({'success': True})
+
+        except Exception as e:
+            db.session.rollback()
+            print(f'Exception occurred: {str(e)}')
+            return jsonify({'error': f'Failed to update profile: {str(e)}'}), 500
+
+    # Debug: Log form validation errors
+    print('Form validation failed.')
+    for field, errors in form.errors.items():
+        for error in errors:
+            print(f'Error in the {field} field - {error}')
+
+    return jsonify({'error': 'Invalid form submission'}), 400
 
 
 @main_bp.route('/update_profile', methods=['POST'])

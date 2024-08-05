@@ -116,7 +116,11 @@ function showUserProfileModal(userId) {
                                             </div>
                                             <div class="form-group">
                                                 <label for="ageGroup">Age Group:</label>
-                                                <input type="text" class="form-control" id="ageGroup" name="age_group" value="${data.user.age_group || ''}">
+                                                <select class="form-control" id="ageGroup" name="age_group">
+                                                    <option value="teen" ${data.user.age_group === 'teen' ? 'selected' : ''}>Teen</option>
+                                                    <option value="adult" ${data.user.age_group === 'adult' ? 'selected' : ''}>Adult</option>
+                                                    <option value="senior" ${data.user.age_group === 'senior' ? 'selected' : ''}>Senior</option>
+                                                </select>
                                             </div>
                                             <div class="form-group">
                                                 <label for="interests">Interests:</label>
@@ -124,12 +128,14 @@ function showUserProfileModal(userId) {
                                             </div>
                                             <div class="form-group-1">
                                                 <label for="ridingPreferences">Riding Preferences:</label>
-                                                ${data.riding_preferences_choices.map((choice, index) => `
-                                                    <div class="form-check">
-                                                        <input type="checkbox" class="form-check-input" id="ridingPref-${index}" name="riding_preferences" value="${choice[0]}" ${data.user.riding_preferences.includes(choice[0]) ? 'checked' : ''}>
-                                                        <label class="form-check-label" for="ridingPref-${index}">${choice[1]}</label>
-                                                    </div>
-                                                `).join('')}
+                                                <div id="ridingPreferences">
+                                                    ${data.riding_preferences_choices.map((choice, index) => `
+                                                        <div class="form-check">
+                                                            <input type="checkbox" class="form-check-input" id="ridingPref-${index}" name="riding_preferences" value="${choice[0]}" ${data.user.riding_preferences.includes(choice[0]) ? 'checked' : ''}>
+                                                            <label class="form-check-label" for="ridingPref-${index}">${choice[1]}</label>
+                                                        </div>
+                                                    `).join('')}
+                                                </div>
                                             </div>
                                             <div class="form-group">
                                                 <label for="rideDescription">Describe the type of riding you like to do:</label>
@@ -138,6 +144,10 @@ function showUserProfileModal(userId) {
                                             <div class="form-group">
                                                 <label for="bikePicture">Upload Your Bicycle Picture:</label>
                                                 <input type="file" class="form-control" id="bikePicture" name="bike_picture" accept="image/*">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="bikePicturePreview">Current Bicycle Picture:</label>
+                                                <img src="/static/${data.user.bike_picture}" id="bikePicturePreview" alt="Bicycle Picture" class="img-fluid">
                                             </div>
                                             <div class="form-group">
                                                 <label for="bikeDescription">Bicycle Description:</label>
@@ -152,6 +162,7 @@ function showUserProfileModal(userId) {
                                                 <label class="form-check-label" for="showCarbonGame">Show Carbon Reduction Game</label>
                                             </div>
                                             <button type="button" class="btn btn-primary" onclick="saveProfile(${userId})">Save</button>
+
                                         </form>` : `
                                         <p><strong>Display Name:</strong> ${data.user.display_name || ''}</p>
                                         <p><strong>Age Group:</strong> ${data.user.age_group || ''}</p>
@@ -164,8 +175,11 @@ function showUserProfileModal(userId) {
                                                 <img src="${data.user.bike_picture}" alt="Bicycle Picture" class="img-fluid">
                                             </div>` : ''}
                                         <p><strong>Bicycle Description:</strong> ${data.user.bike_description || ''}</p>
+                                        <!-- Only show these fields to the current user -->
+                                        ${isCurrentUser ? `
                                         <p><strong>Uploads to Social Media:</strong> ${data.user.upload_to_socials ? 'Yes' : 'No'}</p>
                                         <p><strong>Shows Carbon Reduction Game:</strong> ${data.user.show_carbon_game ? 'Yes' : 'No'}</p>
+                                        ` : ''}
                                     `}
                                 </section>
                             </div>
@@ -244,17 +258,31 @@ function showUserProfileModal(userId) {
 }
 
 function saveProfile(userId) {
-    const formData = new FormData(document.getElementById('editProfileForm'));
+    const form = document.getElementById('editProfileForm');
+    const formData = new FormData(form);
+
+    // Append bicycle picture to FormData if it exists
+    const bikePictureInput = document.getElementById('bikePicture');
+    if (bikePictureInput.files.length > 0) {
+        formData.append('bike_picture', bikePictureInput.files[0]);
+    }
 
     // Collect riding preferences from checkboxes
     const ridingPreferences = [];
-    formData.forEach((value, key) => {
-        if (key.startsWith('riding_preferences-')) {
-            ridingPreferences.push(value);
-        }
+    form.querySelectorAll('input[name="riding_preferences"]:checked').forEach((checkbox) => {
+        ridingPreferences.push(checkbox.value);
     });
 
-    formData.set('riding_preferences', JSON.stringify(ridingPreferences)); // Store the preferences as a JSON string
+    formData.delete('riding_preferences');
+    ridingPreferences.forEach((preference) => {
+        formData.append('riding_preferences', preference);
+    });
+
+    // Debug: Print form data to the console
+    console.log('Form data before submission:');
+    formData.forEach((value, key) => {
+        console.log(`${key}: ${value}`);
+    });
 
     fetch(`/profile/${userId}/edit`, {
         method: 'POST',
@@ -266,8 +294,10 @@ function saveProfile(userId) {
     .then(response => response.json())
     .then(data => {
         if (data.error) {
+            console.error('Server error:', data.error);
             alert(`Error: ${data.error}`);
         } else {
+            console.log('Profile updated successfully:', data);
             alert('Profile updated successfully.');
             showUserProfileModal(userId);  // Reload profile details to reflect changes
         }
@@ -277,6 +307,7 @@ function saveProfile(userId) {
         alert('Failed to update profile. Please try again.');
     });
 }
+
 
 function buildMessageTree(messages, parentId, isCurrentUser, currentUserId, profileUserId, depth) {
     if (depth > 3) return '';  // Limit replies to a depth of 3
