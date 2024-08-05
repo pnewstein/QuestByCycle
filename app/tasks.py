@@ -175,7 +175,8 @@ def submit_task(task_id):
         display_name = current_user.display_name or current_user.username
         status = f"{display_name} completed '{task.title}'! #QuestByCycle"
 
-        if image_url:
+        # Check if user has allowed uploading to socials
+        if image_url and current_user.upload_to_socials:
             emit_status('Posting to social media...', sid)
             twitter_url, fb_url, instagram_url = post_to_social_media(image_url, image_path, status, game, sid)
 
@@ -234,7 +235,7 @@ def submit_task(task_id):
         db.session.rollback()
         emit_status('Submission failed.', sid)  # Emit failure status
         return jsonify({'success': False, 'message': str(e)})
-    
+
 
 @tasks_bp.route('/task/<int:task_id>/update', methods=['POST'])
 @login_required
@@ -523,7 +524,8 @@ def submit_photo(task_id):
             status = f"{display_name} completed '{task.title}'! #QuestByCycle"
 
             twitter_url, fb_url, instagram_url = None, None, None
-            if image_url:
+            # Check if user has allowed uploading to socials
+            if image_url and current_user.upload_to_socials:
                 emit_status('Posting to social media...', sid)
                 twitter_url, fb_url, instagram_url = post_to_social_media(image_url, image_path, status, game, sid)
 
@@ -570,7 +572,6 @@ def submit_photo(task_id):
             flash('No photo detected, please try again.', 'error')
 
     return render_template('submit_photo.html', form=form, task=task)
-
 
 
 def allowed_file(filename):
