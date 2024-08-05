@@ -127,7 +127,7 @@ function showUserProfileModal(userId) {
                                                 <textarea class="form-control" id="interests" name="interests">${data.user.interests || ''}</textarea>
                                             </div>
                                             <div class="form-group-1">
-                                                <label for="ridingPreferences">Riding Preferences:</label>
+                                                <label for="ridingPreferences"><b>Riding Preferences:</b></label>
                                                 <div id="ridingPreferences">
                                                     ${data.riding_preferences_choices.map((choice, index) => `
                                                         <div class="form-check">
