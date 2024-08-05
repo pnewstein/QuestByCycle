@@ -19,7 +19,7 @@ function initializeQuill() {
     });
 
     const form = document.getElementById('messageForm');
-    form.onsubmit = function(event) {
+    form.onsubmit = function (event) {
         event.preventDefault();  // Prevent the default form submission
         const messageContent = document.querySelector('input[name=content]');
         messageContent.value = quill.root.innerHTML;
@@ -39,19 +39,19 @@ function postMessage(form) {
         },
         body: JSON.stringify({ content: messageContent })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert(`Error: ${data.error}`);
-        } else {
-            alert('Message posted successfully.');
-            showUserProfileModal(form.dataset.userid);  // Reload profile details to reflect changes
-        }
-    })
-    .catch(error => {
-        console.error('Error posting message:', error);
-        alert('Failed to post message. Please try again.');
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(`Error: ${data.error}`);
+            } else {
+                alert('Message posted successfully.');
+                showUserProfileModal(form.dataset.userid);  // Reload profile details to reflect changes
+            }
+        })
+        .catch(error => {
+            console.error('Error posting message:', error);
+            alert('Failed to post message. Please try again.');
+        });
 }
 
 function showUserProfileModal(userId) {
@@ -94,6 +94,9 @@ function showUserProfileModal(userId) {
                         <ul class="nav nav-tabs" id="profileTabs" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="true">Profile</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" id="bike-tab" data-toggle="tab" href="#bike" role="tab" aria-controls="bike" aria-selected="false">Bike</a>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <a class="nav-link" id="badges-earned-tab" data-toggle="tab" href="#badges-earned" role="tab" aria-controls="badges-earned" aria-selected="false">Badges Earned</a>
@@ -141,18 +144,6 @@ function showUserProfileModal(userId) {
                                                 <label for="rideDescription">Describe the type of riding you like to do:</label>
                                                 <textarea class="form-control" id="rideDescription" name="ride_description">${data.user.ride_description || ''}</textarea>
                                             </div>
-                                            <div class="form-group">
-                                                <label for="bikePicture">Upload Your Bicycle Picture:</label>
-                                                <input type="file" class="form-control" id="bikePicture" name="bike_picture" accept="image/*">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="bikePicturePreview">Current Bicycle Picture:</label>
-                                                <img src="/static/${data.user.bike_picture}" id="bikePicturePreview" alt="Bicycle Picture" class="img-fluid">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="bikeDescription">Bicycle Description:</label>
-                                                <textarea class="form-control" id="bikeDescription" name="bike_description">${data.user.bike_description || ''}</textarea>
-                                            </div>
                                             <div class="form-group-1 form-check">
                                                 <input type="checkbox" class="form-check-input" id="uploadToSocials" name="upload_to_socials" ${data.user.upload_to_socials ? 'checked' : ''}>
                                                 <label class="form-check-label" for="uploadToSocials">Upload Activities to Social Media</label>
@@ -162,24 +153,47 @@ function showUserProfileModal(userId) {
                                                 <label class="form-check-label" for="showCarbonGame">Show Carbon Reduction Game</label>
                                             </div>
                                             <button type="button" class="btn btn-primary" onclick="saveProfile(${userId})">Save</button>
-
                                         </form>` : `
                                         <p><strong>Display Name:</strong> ${data.user.display_name || ''}</p>
                                         <p><strong>Age Group:</strong> ${data.user.age_group || ''}</p>
                                         <p><strong>Interests:</strong> ${data.user.interests || ''}</p>
                                         <p><strong>Riding Preferences:</strong> ${data.user.riding_preferences.join(', ')}</p>
                                         <p><strong>Ride Description:</strong> ${data.user.ride_description || ''}</p>
-                                        ${data.user.bike_picture ? `
-                                            <div class="form-group">
-                                                <label for="bikePicture">Your Bicycle Picture:</label>
-                                                <img src="${data.user.bike_picture}" alt="Bicycle Picture" class="img-fluid">
-                                            </div>` : ''}
-                                        <p><strong>Bicycle Description:</strong> ${data.user.bike_description || ''}</p>
                                         <!-- Only show these fields to the current user -->
                                         ${isCurrentUser ? `
                                         <p><strong>Uploads to Social Media:</strong> ${data.user.upload_to_socials ? 'Yes' : 'No'}</p>
                                         <p><strong>Shows Carbon Reduction Game:</strong> ${data.user.show_carbon_game ? 'Yes' : 'No'}</p>
                                         ` : ''}
+                                    `}
+                                </section>
+                            </div>
+                            <div class="tab-pane fade" id="bike" role="tabpanel" aria-labelledby="bike-tab">
+                                <section class="bike mb-4">
+                                    <h2 class="h2">Bike Details</h2>
+                                    ${isCurrentUser ? `
+                                        <form id="editBikeForm">
+                                            <div class="form-group">
+                                                <label for="bikePicture">Upload Your Bicycle Picture:</label>
+                                                <input type="file" class="form-control" id="bikePicture" name="bike_picture" accept="image/*">
+                                            </div>
+                                            ${data.user.bike_picture ? `
+                                                <div class="form-group">
+                                                    <label for="bikePicturePreview">Current Bicycle Picture:</label>
+                                                    <img src="/static/${data.user.bike_picture}" id="bikePicturePreview" alt="Bicycle Picture" class="img-fluid">
+                                                </div>
+                                            ` : ''}
+                                            <div class="form-group">
+                                                <label for="bikeDescription">Bicycle Description:</label>
+                                                <textarea class="form-control" id="bikeDescription" name="bike_description">${data.user.bike_description || ''}</textarea>
+                                            </div>
+                                            <button type="button" class="btn btn-primary" onclick="saveBike(${userId})">Save Bike Details</button>
+                                        </form>` : `
+                                        ${data.user.bike_picture ? `
+                                            <div class="form-group">
+                                                <label for="bikePicture">Your Bicycle Picture:</label>
+                                                <img src="/static/${data.user.bike_picture}" alt="Bicycle Picture" class="img-fluid">
+                                            </div>` : ''}
+                                        <p><strong>Bicycle Description:</strong> ${data.user.bike_description || ''}</p>
                                     `}
                                 </section>
                             </div>
@@ -261,12 +275,6 @@ function saveProfile(userId) {
     const form = document.getElementById('editProfileForm');
     const formData = new FormData(form);
 
-    // Append bicycle picture to FormData if it exists
-    const bikePictureInput = document.getElementById('bikePicture');
-    if (bikePictureInput.files.length > 0) {
-        formData.append('bike_picture', bikePictureInput.files[0]);
-    }
-
     // Collect riding preferences from checkboxes
     const ridingPreferences = [];
     form.querySelectorAll('input[name="riding_preferences"]:checked').forEach((checkbox) => {
@@ -291,39 +299,78 @@ function saveProfile(userId) {
         },
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            console.error('Server error:', data.error);
-            alert(`Error: ${data.error}`);
-        } else {
-            console.log('Profile updated successfully:', data);
-            alert('Profile updated successfully.');
-            showUserProfileModal(userId);  // Reload profile details to reflect changes
-        }
-    })
-    .catch(error => {
-        console.error('Error updating profile:', error);
-        alert('Failed to update profile. Please try again.');
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Server error:', data.error);
+                alert(`Error: ${data.error}`);
+            } else {
+                console.log('Profile updated successfully:', data);
+                alert('Profile updated successfully.');
+                showUserProfileModal(userId);  // Reload profile details to reflect changes
+            }
+        })
+        .catch(error => {
+            console.error('Error updating profile:', error);
+            alert('Failed to update profile. Please try again.');
+        });
 }
 
+function saveBike(userId) {
+    const form = document.getElementById('editBikeForm');
+    const formData = new FormData(form);
+
+    // Append bicycle picture to FormData if it exists
+    const bikePictureInput = document.getElementById('bikePicture');
+    if (bikePictureInput.files.length > 0) {
+        formData.append('bike_picture', bikePictureInput.files[0]);
+    }
+
+    // Debug: Print form data to the console
+    console.log('Form data before submission:');
+    formData.forEach((value, key) => {
+        console.log(`${key}: ${value}`);
+    });
+
+    fetch(`/profile/${userId}/edit`, { // Ensure the correct endpoint handles bike information
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Server error:', data.error);
+                alert(`Error: ${data.error}`);
+            } else {
+                console.log('Bike details updated successfully:', data);
+                alert('Bike details updated successfully.');
+                showUserProfileModal(userId);  // Reload profile details to reflect changes
+            }
+        })
+        .catch(error => {
+            console.error('Error updating bike details:', error);
+            alert('Failed to update bike details. Please try again.');
+        });
+}
 
 function buildMessageTree(messages, parentId, isCurrentUser, currentUserId, profileUserId, depth) {
     if (depth > 3) return '';  // Limit replies to a depth of 3
 
     const nestedMessages = messages.filter(message => message.parent_id === parentId)
-                                   .map(message => {
-        const replies = buildMessageTree(messages, message.id, isCurrentUser, currentUserId, profileUserId, depth + 1);
-        const canReply = (depth < 2) && (currentUserId === profileUserId ||
-                         currentUserId === message.author_id ||
-                         currentUserId === message.user_id ||
-                         (message.parent_id && currentUserId === messages.find(m => m.id === message.parent_id).author_id));
-        const canDelete = currentUserId === message.author_id || currentUserId === profileUserId;
+        .map(message => {
+            const replies = buildMessageTree(messages, message.id, isCurrentUser, currentUserId, profileUserId, depth + 1);
+            const canReply = (depth < 2) && (currentUserId === profileUserId ||
+                currentUserId === message.author_id ||
+                currentUserId === message.user_id ||
+                (message.parent_id && currentUserId === messages.find(m => m.id === message.parent_id).author_id));
+            const canDelete = currentUserId === message.author_id || currentUserId === profileUserId;
 
-        const displayName = message.author.display_name || message.author.username;
+            const displayName = message.author.display_name || message.author.username;
 
-        return `
+            return `
             <li class="list-group-item ${message.parent_id ? 'reply-message' : ''}" data-messageid="${message.id}">
                 <div class="message-content">
                     ${message.content}
@@ -348,7 +395,7 @@ function buildMessageTree(messages, parentId, isCurrentUser, currentUserId, prof
                 </ul>
             </li>
         `;
-    }).join('');
+        }).join('');
 
     return nestedMessages;
 }
@@ -370,19 +417,19 @@ function postReply(profileUserId, messageId) {
         },
         body: JSON.stringify({ content: replyContent })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert(`Error: ${data.error}`);
-        } else {
-            alert('Reply posted successfully.');
-            showUserProfileModal(profileUserId);  // Reload profile details to reflect changes
-        }
-    })
-    .catch(error => {
-        console.error('Error posting reply:', error);
-        alert('Failed to post reply. Please try again.');
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(`Error: ${data.error}`);
+            } else {
+                alert('Reply posted successfully.');
+                showUserProfileModal(profileUserId);  // Reload profile details to reflect changes
+            }
+        })
+        .catch(error => {
+            console.error('Error posting reply:', error);
+            alert('Failed to post reply. Please try again.');
+        });
 }
 
 function deleteSubmission(submissionId, context, userId) {
@@ -392,21 +439,21 @@ function deleteSubmission(submissionId, context, userId) {
             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Submission deleted successfully.');
-            if (context === 'profileSubmissions') {
-                showUserProfileModal(userId);  // Reload profile submissions
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Submission deleted successfully.');
+                if (context === 'profileSubmissions') {
+                    showUserProfileModal(userId);  // Reload profile submissions
+                }
+            } else {
+                throw new Error(data.message);
             }
-        } else {
-            throw new Error(data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error deleting submission:', error);
-        alert('Error during deletion: ' + error.message);
-    });
+        })
+        .catch(error => {
+            console.error('Error deleting submission:', error);
+            alert('Error during deletion: ' + error.message);
+        });
 }
 
 function editMessage(messageId, userId) {
@@ -434,19 +481,19 @@ function saveMessage(messageId, userId) {
         },
         body: JSON.stringify({ content: newContent })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert(`Error: ${data.error}`);
-        } else {
-            alert('Message updated successfully.');
-            showUserProfileModal(userId);  // Reload profile details to reflect changes
-        }
-    })
-    .catch(error => {
-        console.error('Error updating message:', error);
-        alert('Failed to update message. Please try again.');
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(`Error: ${data.error}`);
+            } else {
+                alert('Message updated successfully.');
+                showUserProfileModal(userId);  // Reload profile details to reflect changes
+            }
+        })
+        .catch(error => {
+            console.error('Error updating message:', error);
+            alert('Failed to update message. Please try again.');
+        });
 }
 
 function cancelEditMessage(messageId, originalContent) {
@@ -462,19 +509,19 @@ function deleteMessage(messageId, userId) {
             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Message deleted successfully.');
-            showUserProfileModal(userId);  // Reload profile messages to reflect changes
-        } else {
-            throw new Error(data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error deleting message:', error);
-        alert('Error during deletion: ' + error.message);
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Message deleted successfully.');
+                showUserProfileModal(userId);  // Reload profile messages to reflect changes
+            } else {
+                throw new Error(data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting message:', error);
+            alert('Error during deletion: ' + error.message);
+        });
 }
 
 function closeUserProfileModal() {

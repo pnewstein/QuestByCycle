@@ -396,17 +396,6 @@ def edit_profile(user_id):
 
     user = User.query.get_or_404(user_id)
 
-    # Debug: Print form data received from the client
-    print('Form data received:')
-    for key in request.form:
-        print(f'{key}: {request.form.getlist(key)}')
-
-    # Print the uploaded files
-    if 'profile_picture' in request.files:
-        print(f"Profile Picture: {request.files['profile_picture'].filename}")
-    if 'bike_picture' in request.files:
-        print(f"Bike Picture: {request.files['bike_picture'].filename}")
-
     if form.validate_on_submit():
         print('Form validated successfully.')
 
@@ -414,35 +403,35 @@ def edit_profile(user_id):
             # Handle profile picture upload
             if form.profile_picture.data:
                 user.profile_picture = save_profile_picture(form.profile_picture.data, user.profile_picture)
-                print(f'Updated profile picture: {user.profile_picture}')
 
             # Handle bicycle picture upload
-            if form.bike_picture.data:
-                user.bike_picture = save_bicycle_picture(form.bike_picture.data, user.bike_picture)
-                print(f'Updated bike picture: {user.bike_picture}')
+            if 'bike_picture' in request.files:
+                bike_picture_file = request.files['bike_picture']
+                if bike_picture_file and allowed_file(bike_picture_file.filename):
+                    bike_filename = save_bicycle_picture(bike_picture_file, user.bike_picture)
+                    user.bike_picture = bike_filename
 
             # Update other fields
-            user.display_name = form.display_name.data
-            print(f'Updated display name: {user.display_name}')
+            if form.display_name.data:
+                user.display_name = form.display_name.data
 
-            user.interests = form.interests.data
-            print(f'Updated interests: {user.interests}')
+            if form.interests.data:
+                user.interests = form.interests.data
 
             # Update riding preferences
-            user.riding_preferences = request.form.getlist('riding_preferences')  # Corrected here
-            print(f'Updated riding preferences: {user.riding_preferences}')
+            user.riding_preferences = request.form.getlist('riding_preferences')
 
-            user.ride_description = form.ride_description.data
-            print(f'Updated ride description: {user.ride_description}')
+            if form.ride_description.data:
+                user.ride_description = form.ride_description.data
 
-            user.bike_description = form.bike_description.data
-            print(f'Updated bike description: {user.bike_description}')
+            if form.bike_description.data:
+                user.bike_description = form.bike_description.data
 
-            user.upload_to_socials = form.upload_to_socials.data
-            print(f'Updated upload to socials: {user.upload_to_socials}')
+            if form.upload_to_socials.data is not None:
+                user.upload_to_socials = form.upload_to_socials.data
 
-            user.show_carbon_game = form.show_carbon_game.data
-            print(f'Updated show carbon game: {user.show_carbon_game}')
+            if form.show_carbon_game.data is not None:
+                user.show_carbon_game = form.show_carbon_game.data
 
             db.session.commit()
             print('Profile updated successfully in the database.')
@@ -460,6 +449,7 @@ def edit_profile(user_id):
             print(f'Error in the {field} field - {error}')
 
     return jsonify({'error': 'Invalid form submission'}), 400
+
 
 
 @main_bp.route('/update_profile', methods=['POST'])
