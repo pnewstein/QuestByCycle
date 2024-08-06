@@ -124,6 +124,8 @@ def update_game(game_id):
         game.facebook_app_secret = sanitize_html(form.facebook_app_secret.data)
         game.facebook_access_token = sanitize_html(form.facebook_access_token.data)
         game.facebook_page_id = sanitize_html(form.facebook_page_id.data)
+        game.instagram_user_id = sanitize_html(form.instagram_user_id.data)
+        game.instagram_access_token = sanitize_html(form.instagram_access_token.data)
         game.is_public = form.is_public.data
         game.allow_joins = form.allow_joins.data
 
