@@ -25,6 +25,75 @@ main {
     z-index: 1050 !important;
 }
 
+.shepherd-modal-overlay-container {
+    background-color: rgba(0, 0, 0, 0.2); /* Semi-transparent overlay */
+    z-index: 1000; /* Lower z-index to not block shepherd elements */
+  }
+  
+  .shepherd-modal-overlay-container.shepherd-modal-is-visible {
+    backdrop-filter: none; /* Remove blur effect */
+  }
+  
+  .shepherd-element {
+    z-index: 10050 !important; /* Higher z-index for shepherd elements */
+  }
+  
+  .shepherd-step {
+    background-color: rgba(255, 255, 255, 0.95); /* Slight transparency for steps */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1); /* Subtle shadow for clarity */
+    max-width: 600px; /* Limit width for better readability */
+    margin: auto; /* Center the steps */
+  }
+  
+  .shepherd-step .shepherd-header {
+    border-bottom: 1px solid #ddd;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.95); /* Match step background */
+  }
+  
+  .shepherd-step .shepherd-content {
+    padding: 20px;
+    font-size: 16px; /* Ensure readable font size */
+    color: #b9b9b9; /* Clear text color */
+  }
+  
+  .shepherd-step .shepherd-footer {
+    text-align: right;
+    padding: 10px 20px;
+    background-color: rgba(255, 255, 255, 0.95); /* Consistent background */
+  }
+  
+  .shepherd-button {
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .shepherd-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .shepherd-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .shepherd-cancel-icon {
+    z-index: 1100; /* Ensure the cancel icon is on top */
+  }
+  
+  .shepherd-arrow {
+    display: block; /* Ensure the arrow is displayed */
+  }
+  
+  
+
 .user-profile {
     background: #fff;
     padding: 30px;

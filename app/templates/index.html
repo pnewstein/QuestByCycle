@@ -82,8 +82,8 @@
                         <div class="text-center mb-4">
                             {% if current_user.is_authenticated %}
                                 {% if selected_game_id %}
-                                <a href="{{ url_for('games.game_info', game_id=selected_game_id) }}" class="btn btn-primary btn-lg mb-2">Let's Get Started!</a>
-                                <button class="btn btn-secondary btn-lg mb-2" onclick="openModal('contactModal')">Contact Us</button>
+                                <a href="{{ url_for('games.game_info', game_id=selected_game_id) }}" class="btn btn-primary btn-lg mb-2" id="lets-get-started-button">Let's Get Started!</a>
+                                <button class="btn btn-secondary btn-lg mb-2" onclick="openModal('contactModal')" id="contact-us-button">Contact Us</button>
                                     <button class="btn btn-primary btn-lg mb-2" onclick="openModal('sponsorsModal', '{{ selected_game_id }}')">Sponsors</button>
                                 {% else %}
                                     <button class="btn btn-primary btn-lg mb-2" onclick="openModal('sponsorsModal', '{{ selected_game_id }}')">Sponsors</button>
@@ -108,7 +108,7 @@
                                 <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-danger btn-block mt-2">Admin Dashboard</a>
                             {% endif %}
                             {% if current_user %}
-                                <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-info btn-block mt-3">View Profile</a>
+                                <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-info btn-block mt-3" id="view-profile-button">View Profile</a>
                                 <button class="btn btn-secondary btn-block mt-3" onclick="openModal('joinCustomGameModal')">Join Custom Game</button>
                             {% endif %}
                             {% if current_user %}
@@ -136,7 +136,7 @@
         </div>
     </div>
     {% if current_user.is_authenticated %}
-        <div class="container mt-5">
+        <div class="container mt-5" id="whats-happening-step">
             <h2>What's Happening</h2>
             <div class="game-item">
                 {% if current_user.is_admin %}
@@ -209,7 +209,7 @@
                 </div>
             </div>
         </div>
-        <div class="container mt-5">
+        <div class="container mt-5" id="available-tasks-step">
             {% if has_joined %}
                 <h2>Available Tasks</h2>
                 <div class="game-item">
@@ -256,6 +256,8 @@
         </div>
     {% endif %}
 
+    <div id="onboardingStatus" data-start-onboarding="{{ 'true' if start_onboarding else 'false' }}"></div>
+
     <div id="game_IdHolder" data-game-id="{{ selected_game_id }}" style="display:none;"></div>
 
     {% include 'modals/task_detail_modal.html' %}
@@ -271,7 +273,7 @@
     {% include 'modals/sponsors_modal.html' %}
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
-
+   
     <script src="{{ url_for('static', filename='js/modal_common.js') }}"></script>
     <script src="{{ url_for('static', filename='js/all_submissions_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/contact_modal.js') }}"></script>
@@ -283,7 +285,8 @@
     <script src="{{ url_for('static', filename='js/user_profile_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/index_management.js') }}"></script>
     <script src="{{ url_for('static', filename='js/generated_task.js') }}"></script>
-
+    <script type="module" src="{{ url_for('static', filename='js/shepherd_tour.js') }}"></script>   
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize Quill editor if the container exists (i.e., user is admin)

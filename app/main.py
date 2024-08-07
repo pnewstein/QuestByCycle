@@ -80,10 +80,13 @@ def index(game_id, task_id, user_id):
     user_tasks = []
     badges = []
     total_points = None
+    start_onboarding = False
 
+    # Check if the user is authenticated and set the user_id
     if user_id is None and current_user.is_authenticated:
         user_id = current_user.id
 
+    # Check if the game_id is None and set it from the joined games if available
     if game_id is None and current_user.is_authenticated:
         joined_games = current_user.participated_games
         if joined_games:
@@ -96,6 +99,14 @@ def index(game_id, task_id, user_id):
         if game not in current_user.participated_games:
             return redirect(url_for('main.index'))
 
+    # Determine if the user needs onboarding
+    if current_user.is_authenticated and not current_user.onboarded:
+        start_onboarding = True  # Trigger the onboarding script
+    else:
+        current_user.onboarded = True
+        db.session.commit()
+
+    # Load carousel images
     carousel_images_dir = os.path.join(current_app.root_path, 'static', 'images', current_app.config['CAROUSEL_IMAGES_DIR'])
 
     if not os.path.exists(carousel_images_dir):
@@ -104,6 +115,7 @@ def index(game_id, task_id, user_id):
     carousel_images = os.listdir(carousel_images_dir)
     carousel_images = [os.path.join('images', current_app.config['CAROUSEL_IMAGES_DIR'], filename) for filename in carousel_images]
 
+    # If the user is authenticated, load user-specific tasks and data
     if current_user.is_authenticated:
         user_tasks = UserTask.query.filter_by(user_id=current_user.id).all()
         total_points = sum(ut.points_awarded for ut in user_tasks if ut.task.game_id == game_id)
@@ -112,6 +124,7 @@ def index(game_id, task_id, user_id):
     has_joined = game in current_user.participated_games if game else False
     game_participation = {game.id: has_joined} if game else {}
 
+    # Load forms and messages for the Shout Board
     form = ShoutBoardForm()
     pinned_messages = ShoutBoardMessage.query.filter_by(is_pinned=True, game_id=game_id).order_by(ShoutBoardMessage.timestamp.desc()).all()
     unpinned_messages = ShoutBoardMessage.query.filter_by(is_pinned=False, game_id=game_id).order_by(ShoutBoardMessage.timestamp.desc()).all()
@@ -209,9 +222,22 @@ def index(game_id, task_id, user_id):
                            total_points=total_points,
                            completions=completed_tasks,
                            custom_games=custom_games,
-                           selected_game_id=game_id,
-                           selected_game=game)
+                           selected_game_id=game_id or 0,
+                           selected_game=game,
+                           start_onboarding=start_onboarding)  # Pass start_onboarding to template if needed
 
+@main_bp.route('/mark-onboarding-complete', methods=['POST'])
+@login_required
+def mark_onboarding_complete():
+    try:
+        # Update the onboarded status in the database
+        current_user.onboarded = True
+        db.session.commit()
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        print(f"Error marking onboarding complete: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
 
 @main_bp.route('/shout-board/<int:game_id>', methods=['POST'])
 @login_required
