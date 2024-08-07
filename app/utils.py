@@ -342,7 +342,7 @@ def check_and_award_badges(user_id, task_id, game_id):
         if task.badge and task.badge not in user.badges:
             user.badges.append(task.badge)
             db.session.add(ShoutBoardMessage(
-                message=f" earned the badge '{task.badge.name}' for task <strong><a href='javascript:void(0);' onclick='openTaskDetailModal({task.id})'>{task.title}</a></strong>.",
+                message=f" earned the badge '{task.badge.name}' for task <a href='javascript:void(0);' onclick='openTaskDetailModal({task.id})'>{task.title}</a>",
                 user_id=user_id,
                 game_id=game_id
             ))
@@ -368,7 +368,7 @@ def check_and_award_badges(user_id, task_id, game_id):
                 if badge not in user.badges:
                     user.badges.append(badge)
                     db.session.add(ShoutBoardMessage(
-                        message=f" earned the badge '{badge.name}' for completing all tasks in category '{task.category}' within game ID {task.game_id}.",
+                        message=f" earned the badge '{badge.name}' for completing all tasks in category '{task.category}'",
                         user_id=user_id,
                         game_id=game_id
                     ))
