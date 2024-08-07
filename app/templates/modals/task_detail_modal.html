@@ -6,38 +6,51 @@
             <h2 id="modalTaskTitle" class="text-center">Task Title</h2>
         </div>
         <div class="modal-body">
-            <p id="modalTaskDescription" class="text-muted text-center">Description</p>
+
+            <!-- Description Section -->
+            <div class="box-container description-box">
+                <h4 class="box-title">Description</h4>
+                <p id="modalTaskDescription" class="text-muted text-center"></p>
+            </div>
+
+            <!-- Task Details Grid -->
             <div class="task-details-grid">
-                <div class="task-detail-item">
+                <div class="task-detail-item" onclick="toggleContent(this)">
                     <h4 class="text-primary">Points per Completion</h4>
-                    <span id="modalTaskPoints" class="text-info"></span>
+                    <span id="modalTaskPoints" class="text-info hidden"></span>
                 </div>
-                <div class="task-detail-item">
+                <div class="task-detail-item" onclick="toggleContent(this)">
                     <h4 class="text-primary">Badge</h4>
-                    <img id="modalTaskBadgeImage" src="" alt="Badge Image" class="badge-image">
+                    <img id="modalTaskBadgeImage" src="badge.png" alt="Badge Image" class="badge-image hidden">
                 </div>
-                <div class="task-detail-item">
+                <div class="task-detail-item" onclick="toggleContent(this)">
                     <h4 class="text-primary">Category</h4>
-                    <span id="modalTaskCategory" class="text-info"></span>
+                    <span id="modalTaskCategory" class="text-info hidden"></span>
                 </div>
-                <div class="task-detail-item">
+                <div class="task-detail-item" onclick="toggleContent(this)">
                     <h4 class="text-primary">Completion Limit</h4>
-                    <span id="modalTaskCompletionLimit" class="text-info"></span>
+                    <span id="modalTaskCompletionLimit" class="text-info hidden"></span>
                 </div>
-                <div class="task-detail-item">
+                <div class="task-detail-item" onclick="toggleContent(this)">
                     <h4 class="text-primary">Submission Requirements</h4>
-                    <span id="modalTaskVerificationType" class="text-info"></span>
+                    <span id="modalTaskVerificationType" class="text-info hidden"></span>
                 </div>
-                <div class="task-detail-item">
+                <div class="task-detail-item" onclick="toggleContent(this)">
                     <h4 class="text-primary">Your Total Completions</h4>
-                    <span id="modalTaskCompletions" class="text-info"></span>
+                    <span id="modalTaskCompletions" class="text-info hidden"></span>
                 </div>
-                <div class="task-detail-item">
+                <div class="task-detail-item" onclick="toggleContent(this)">
                     <h4 class="text-primary">Eligibility</h4>
-                    <span id="modalCountdown" class="text-info"></span>
+                    <span id="modalCountdown" class="text-info hidden"></span>
                 </div>
             </div>
-            <p id="modalTaskTips" class="text-primary">Tips</p>
+
+            <!-- Tips Section -->
+            <div class="box-container tips-box">
+                <h4 class="box-title">Tips</h4>
+                <p id="modalTaskTips" class="text-primary"></p>
+            </div>
+
             <div class="user-task-data">
                 <!-- Elements like verification button and form will be dynamically appended here -->
             </div>
@@ -51,7 +64,20 @@
     </div>
 </div>
 
+<script>
+    function toggleContent(element) {
+        // Toggle all span and img children within the clicked item
+        const contents = element.querySelectorAll('span, img'); // Select both <span> and <img> elements
+        contents.forEach(content => {
+            content.classList.toggle('hidden'); // Toggle the hidden class
+        });
+    }
+</script>
 <style>
+    .hidden {
+        display: none !important; /* Ensure it overrides any other style */
+    }
+
     .modal {
         position: fixed;
         display: none;
@@ -64,6 +90,7 @@
         background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('/static/images/header-bg.jpg') no-repeat center center/cover;
         animation: fadeIn 0.3s;
     }
+
     .modal-content {
         background: rgba(255, 255, 255, 0.9);
         margin: 5% auto;
@@ -76,10 +103,12 @@
         box-shadow: 0 8px 16px rgba(0,0,0,0.3);
         transition: all 0.3s ease;
     }
+
     .modal-content:hover {
         box-shadow: 0 12px 24px rgba(0,0,0,0.4);
         transform: translateY(-5px);
     }
+
     .close-button {
         position: absolute;
         top: 15px;
@@ -92,35 +121,42 @@
         cursor: pointer;
         transition: color 0.3s ease;
     }
+
     .close-button:hover,
     .close-button:focus {
         color: #ccc;
         text-decoration: none;
         cursor: pointer;
     }
+
     .modal-header {
         border-bottom: 2px solid #eee;
         padding-bottom: 15px;
         text-align: center;
     }
+
     .modal-header h2 {
         font-size: 2em;
         font-weight: bold;
         color: #333;
     }
+
     .modal-body {
         padding: 30px;
         overflow-y: auto;
         max-height: 95%;
     }
+
     .modal-footer {
         padding-top: 15px;
         text-align: center;
         border-top: 2px solid #eee;
     }
+
     .text-info {
         color: #003942 !important;
     }
+
     .task-details-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -129,6 +165,7 @@
         border-bottom: 2px solid #eee;
         padding-bottom: 20px;
     }
+
     .task-detail-item {
         background: rgba(0, 0, 0, 0.1);
         border-radius: 10px;
@@ -139,31 +176,38 @@
         align-items: center;
         text-align: center;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer; /* Add cursor pointer for clickability */
     }
+
     .task-detail-item:hover {
         transform: translateY(-5px);
         box-shadow: 0 8px 16px rgba(0,0,0,0.2);
     }
+
     .task-detail-item h4 {
         margin-bottom: 10px;
         font-size: 20px;
         color: #fff;
         font-weight: bold;
     }
+
     .task-detail-item span,
     .task-detail-item img {
         font-size: 18px;
         color: #ddd;
     }
+
     .badge-image {
         width: 70px;
         height: 70px;
         margin: 10px 0;
         transition: transform 0.3s ease;
     }
+
     .badge-image:hover {
         transform: scale(3);
     }
+
     .photo-board {
         display: flex;
         flex-wrap: wrap;
@@ -176,19 +220,27 @@
         max-height: 300px;
         overflow-y: auto;
     }
+
     .photo-board img {
         width: 100px;
         height: 100px;
         border-radius: 10px;
         transition: transform 0.3s ease;
     }
+
     .photo-board img:hover {
         transform: scale(1.3);
     }
+
     @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
     }
+
     .epic-form {
         max-width: 600px;
         margin: 0 auto;
@@ -264,56 +316,86 @@
             transform: translateY(0);
         }
     }
+
     @media (max-width: 480px) {
-    .modal-content {
-        max-width: 290px; /* Ensure the modal content does not exceed 290px */
-        margin: 0 auto; /* Centering the modal content if the overall modal is wider */
-        padding: 10px; /* Adjust padding to ensure content fits nicely within the modal */
+        .modal-content {
+            max-width: 290px; /* Ensure the modal content does not exceed 290px */
+            margin: 0 auto; /* Centering the modal content if the overall modal is wider */
+            padding: 5px; /* Adjust padding to ensure content fits nicely within the modal */
+        }
+
+        .close-button {
+            position: absolute; /* Positioning the close button for easy access */
+            top: 5px; /* Align top position */
+            right: 10px; /* Align right position */
+            font-size: 1.2em; /* Making the button slightly larger for easier interaction */
+            z-index: 1000; /* Ensuring the button is above other elements */
+        }
+
+        .modal-header {
+            text-align: center;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-header h2 {
+            font-size: 1.2em; /* Adjusting font size for better visibility */
+            word-wrap: break-word; /* Ensures text wraps within the defined width */
+        }
+
+        .modal-body {
+            padding: 5px; /* Provides enough padding to make content readable without clutter */
+        }
+
+        .modal-body .text-muted {
+            color: #6c757d; /* Standard muted text color for contrast */
+        }
+
+        .task-details-grid {
+            display: block; /* Change display to block to stack elements vertically */
+            margin-bottom: 10px; /* Adds bottom margin for spacing between items */
+        }
+
+        .task-detail-item {
+            margin-bottom: 5px; /* Adds bottom margin for each detail item */
+        }
+
+        .task-detail-item h4 {
+            font-size: 1em; /* Reduce font size to fit the smaller layout */
+        }
+
+        .task-detail-item .text-info {
+            font-size: 0.9em; /* Smaller font size for detail information */
+        }
     }
 
-    .close-button {
-        position: absolute; /* Positioning the close button for easy access */
-        top: 5px; /* Align top position */
-        right: 10px; /* Align right position */
-        font-size: 1.2em; /* Making the button slightly larger for easier interaction */
-        z-index: 1000; /* Ensuring the button is above other elements */
+    /* New styles for description and tips boxes */
+    .box-container {
+        background-color: rgba(255, 255, 255, 0.85);
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 10px;
+        margin-bottom: 20px;
     }
 
-    .modal-header {
+    .box-title {
+        font-size: 1.5em;
+        color: #333;
+        margin-bottom: 10px;
+        font-weight: bold;
         text-align: center;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #eee;
     }
 
-    .modal-header h2 {
-        font-size: 1.2em; /* Adjusting font size for better visibility */
-        word-wrap: break-word; /* Ensures text wraps within the defined width */
+    .description-box p {
+        color: #555;
+        font-size: 1em;
+        text-align: justify;
     }
 
-    .modal-body {
-        padding: 10px; /* Provides enough padding to make content readable without clutter */
+    .tips-box p {
+        color: #006400;
+        font-size: 1em;
+        text-align: justify;
     }
-
-    .modal-body .text-muted {
-        color: #6c757d; /* Standard muted text color for contrast */
-    }
-
-    .task-details-grid {
-        display: block; /* Change display to block to stack elements vertically */
-        margin-bottom: 10px; /* Adds bottom margin for spacing between items */
-    }
-
-    .task-detail-item {
-        margin-bottom: 10px; /* Adds bottom margin for each detail item */
-    }
-
-    .task-detail-item h4 {
-        font-size: 1em; /* Reduce font size to fit the smaller layout */
-    }
-
-    .task-detail-item .text-info {
-        font-size: 0.9em; /* Smaller font size for detail information */
-    }
-}
 
 </style>
