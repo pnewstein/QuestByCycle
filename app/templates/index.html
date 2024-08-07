@@ -157,46 +157,49 @@
                         <div class="activity{% if activity.is_pinned %} pinned{% endif %}">
                             {% if activity.__tablename__ == 'shout_board_message' %}
                             <strong>
-                                {{ activity.timestamp.strftime('%m-%d %H:%M') }} -
+                                {{ activity.timestamp.strftime('%m-%d') }} -
                                 <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
                                     {{ activity.user.display_name or activity.user.username }}
                                 </a>
                             </strong>
-                            <span class="activity-message" style="flex-grow: 1; height: auto">{{ activity.message|safe }}</span>
+                            <span class="activity-message">{{ activity.message|safe }}</span>
                             {% if current_user.is_admin %}
                             <form action="{{ url_for('main.pin_message', game_id=selected_game_id, message_id=activity.id) }}" method="post">
                                 {{ form.hidden_tag() }}
                                 <button type="submit" class="blue_button">{{ 'Unpin' if activity.is_pinned else 'Pin' }}</button>
                             </form>
                             {% endif %}
-                            <button type="button" class="blue_button like-button" id="like-button-{{ activity.id }}"
-                                onclick="likeMessage('{{ activity.id }}')">
-                                {{ 'Liked' if activity.liked_by_user else 'Like' }}
-                            </button>
-                            <span id="like-count-{{ activity.id }}" class="like-count">{{ activity.likes|length }}</span>👍
+                            <div class="like-section">
+                                <button type="button" class="blue_button like-button" id="like-button-{{ activity.id }}"
+                                    onclick="likeMessage('{{ activity.id }}')">
+                                    {{ 'Liked' if activity.liked_by_user else 'Like' }}
+                                </button>
+                                <span id="like-count-{{ activity.id }}" class="like-count">{{ activity.likes|length }}</span>👍
+                            </div>
                             {% elif activity.__tablename__ == 'user_tasks' %}
                             <strong>
-                                {{ activity.completed_at.strftime('%m-%d %H:%M') }} -
+                                {{ activity.completed_at.strftime('%m-%d') }} -
                                 <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
                                     {{ activity.user.display_name or activity.user.username }}
                                 </a>
                             </strong>
-                            <span class="activity-message" style="flex-grow: 1;">
+                            <span class="activity-message">
                                 <strong>
                                     completed a task
-                                    <a href="javascript:void(0);" onclick="openTaskDetailModal('{{ activity.task.id }}')">
+                                    <a href="javascript:void(0);" class="task-title" onclick="openTaskDetailModal('{{ activity.task.id }}')">
                                         {{ activity.task.title }}
                                     </a>
                                 </strong>
                             </span>
-                            <button class="blue_button like-button" id="like-button-{{ activity.task.id }}"
-                                onclick="likeTask('{{ activity.task.id }}');"
-                                class="{{ 'liked-button-style' if activity.task.liked_by_user else '' }}"
-                                {{ 'disabled' if activity.task.liked_by_user }}>
-                                {{ 'Liked' if activity.task.liked_by_user else 'Like' }}
-                            </button>
-                            <span id="like-count-{{ activity.task.id }}" class="like-count">{{ activity.task.likes|length
-                                }}</span>👍
+                            <div class="like-section">
+                                <button class="blue_button like-button" id="like-button-{{ activity.task.id }}"
+                                    onclick="likeTask('{{ activity.task.id }}');"
+                                    class="{{ 'liked-button-style' if activity.task.liked_by_user else '' }}"
+                                    {{ 'disabled' if activity.task.liked_by_user }}>
+                                    {{ 'Liked' if activity.task.liked_by_user else 'Like' }}
+                                </button>
+                                <span id="like-count-{{ activity.task.id }}" class="like-count">{{ activity.task.likes|length }}</span>👍
+                            </div>
                             {% endif %}
                         </div>
                         {% endfor %}
@@ -367,6 +370,54 @@
         });
     </script>
     <style>
+        .activity-message {
+            flex-grow: 1;
+            white-space: normal;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            word-wrap: break-word;
+            max-width: 100%;  /* Ensures content doesn't exceed container width */
+            display: flex; /* Use flexbox for better layout control */
+            flex-direction: column; /* Arrange children in a column to wrap text */
+        }
+
+        .task-title {
+            display: inline-block;
+            max-width: 100%;
+            white-space: normal;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            word-wrap: break-word;
+        }
+
+        .like-section {
+            display: flex;
+            align-items: center; /* Align items vertically in the center */
+            gap: 0.5rem; /* Add spacing between elements */
+            margin-top: 5px; /* Add spacing between like section and other content */
+        }
+
+        /* Responsive adjustments for screens under 480px */
+        @media (max-width: 480px) {
+            .activity-message {
+                font-size: 0.9rem; /* Adjust font size for better readability */
+                line-height: 1.2; /* Adjust line-height for better spacing */
+            }
+
+            .task-title {
+                display: block; /* Ensure task title wraps on small screens */
+                font-size: 0.9rem; /* Adjust font size for the task title */
+                word-break: break-word; /* Break long words */
+            }
+
+            .activity {
+                padding: 5px; /* Add padding for smaller screens */
+                box-sizing: border-box; /* Include padding in element's total width */
+            }
+
+            /* Add styles for other elements if needed */
+        }
+
         .shout-messages-container {
             position: relative;
         }
