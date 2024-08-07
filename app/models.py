@@ -76,6 +76,7 @@ class User(UserMixin, db.Model):
     bike_description = db.Column(db.String(500), nullable=True)  # Description of the bicycle
     upload_to_socials = db.Column(db.Boolean, default=True)  # Toggle for auto-uploading to socials
     show_carbon_game = db.Column(db.Boolean, default=True)  # Toggle for showing carbon reduction game
+    onboarded = db.Column(db.Boolean, default=False, nullable=True)  # New field to track onboarding status
 
     def generate_verification_token(self, expiration=320000):
         return jwt.encode(
