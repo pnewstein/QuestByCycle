@@ -118,15 +118,15 @@
                                 <!-- Dropdown for selecting joined games -->
                                 <div class="form-group mt-3">
                                     <label for="gameSelectDropdown">Select Active Game:</label>
-                                    <select id="gameSelectDropdown" class="form-control"
-                                        onchange="window.location.href = this.value;">
+                                    <select id="gameSelectDropdown" class="form-control" onchange="window.location.href = this.value;">
                                         {% for game, joined_at in user_games %}
-                                        <option value="{{ url_for('main.index', game_id=game.id) }}"
-                                            {% if game.id == selected_game_id %}selected{% endif %}>
+                                        <option value="{{ url_for('main.index', game_id=game.id) }}" {% if game.id == selected_game_id %}selected{% endif %}>
                                             {{ game.title }} - Joined on: {{ joined_at.strftime('%m-%d-%Y') if joined_at else 'N/A' }}
                                         </option>
                                         {% endfor %}
                                     </select>
+                                    <!-- Add link to restart the Shepherd tour -->
+                                    <a href="javascript:void(0);" id="restart-tour-link" class="mt-2 d-block">Tour the Quest by Cycle Platform</a>
                                 </div>
                             {% endif %}
                         </div>
