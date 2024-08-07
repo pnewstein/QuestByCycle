@@ -136,21 +136,18 @@ def submit_task(task_id):
     task = Task.query.get_or_404(task_id)
     game = Game.query.get_or_404(task.game_id)
     now = datetime.now()
-    game_start = game.start_date
-    game_end = game.end_date
-    user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
-    twitter_url, fb_url, instagram_url = None, None, None
 
-    if not (game_start <= now <= game_end):
+    if not (game.start_date <= now <= game.end_date):
         return jsonify({'success': False, 'message': 'This task cannot be completed outside of the game dates'}), 403
+
+    sid = request.form.get('sid')
+    if not sid:
+        print("No session ID provided.")
+        return jsonify({'success': False, 'message': 'No session ID provided'}), 400
 
     verification_type = task.verification_type
     image_file = request.files.get('image')
     comment = sanitize_html(request.form.get('verificationComment', ''))
-    sid = request.form.get('sid')
-
-    if not sid:
-        return jsonify({'success': False, 'message': 'No session ID provided'}), 400
 
     if verification_type == 'qr_code':
         return jsonify({'success': True, 'message': 'QR Code verification does not require any submission'}), 200
@@ -175,7 +172,7 @@ def submit_task(task_id):
         display_name = current_user.display_name or current_user.username
         status = f"{display_name} completed '{task.title}'! #QuestByCycle"
 
-        # Check if user has allowed uploading to socials
+        twitter_url, fb_url, instagram_url = None, None, None
         if image_url and current_user.upload_to_socials:
             emit_status('Posting to social media...', sid)
             twitter_url, fb_url, instagram_url = post_to_social_media(image_url, image_path, status, game, sid)
@@ -193,6 +190,7 @@ def submit_task(task_id):
         )
         db.session.add(new_submission)
 
+        user_task = UserTask.query.filter_by(user_id=current_user.id, task_id=task_id).first()
         if not user_task:
             user_task = UserTask(
                 user_id=current_user.id,
@@ -205,7 +203,7 @@ def submit_task(task_id):
 
         user_task.completions = (user_task.completions or 0) + 1
         user_task.points_awarded = (user_task.points_awarded or 0) + task.points
-        user_task.completed = True
+        user_task.completed_at = datetime.now()
 
         emit_status('Finalizing submission...', sid)
 
