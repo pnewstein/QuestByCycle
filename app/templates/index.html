@@ -154,7 +154,7 @@
                 <div class="shout-messages-container">
                     <div class="shout-messages">
                         {% for activity in activities %}
-                        <div class="activity{% if activity.is_pinned %} pinned{% endif %}">
+                        <div class="activity{% if activity.is_pinned %} pinned{% endif %} message-divider">
                             {% if activity.__tablename__ == 'shout_board_message' %}
                             <strong>
                                 {{ activity.timestamp.strftime('%m-%d') }} -
@@ -184,12 +184,10 @@
                                 </a>
                             </strong>
                             <span class="activity-message">
-                                <strong>
-                                    completed a task
-                                    <a href="javascript:void(0);" class="task-title" onclick="openTaskDetailModal('{{ activity.task.id }}')">
-                                        {{ activity.task.title }}
-                                    </a>
-                                </strong>
+                                completed a task <br>
+                                <a href="javascript:void(0);" class="task-title" onclick="openTaskDetailModal('{{ activity.task.id }}')">
+                                    {{ activity.task.title }}
+                                </a>
                             </span>
                             <div class="like-section">
                                 <button class="blue_button like-button" id="like-button-{{ activity.task.id }}"
@@ -394,10 +392,17 @@
             margin-top: 5px; /* Add spacing between like section and other content */
         }
 
+        /* Add dashed lines between each message */
+        .message-divider {
+            border-bottom: 1px dashed #ddd; /* Adds a dashed line below each message */
+            padding-bottom: 10px; /* Adjust padding for visual spacing */
+            margin-bottom: 10px; /* Adjust margin for spacing between messages */
+        }
+
         /* Responsive adjustments for screens under 480px */
         @media (max-width: 480px) {
             .activity-message {
-                font-size: 0.9rem; /* Adjust font size for better readability */
+                font-size: 1rem; /* Adjust font size for better readability */
                 line-height: 1.2; /* Adjust line-height for better spacing */
             }
 
