@@ -162,7 +162,7 @@
                                     {{ activity.user.display_name or activity.user.username }}
                                 </a>
                             </strong>
-                            <span class="activity-message" style="flex-grow: 1; height: 24px">{{ activity.message|safe }}</span>
+                            <span class="activity-message" style="flex-grow: 1; height: auto">{{ activity.message|safe }}</span>
                             {% if current_user.is_admin %}
                             <form action="{{ url_for('main.pin_message', game_id=selected_game_id, message_id=activity.id) }}" method="post">
                                 {{ form.hidden_tag() }}
