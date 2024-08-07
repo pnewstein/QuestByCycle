@@ -1056,6 +1056,13 @@ small {
     overflow: hidden;
 }
 
+.epic-tagline small {
+    color: #111; /* Use a darker color code here */
+    font-weight: normal; /* Optional: reset the font weight if needed */
+    text-transform: none; /* Optional: remove uppercase transformation */
+    text-shadow: none; /* Optional: remove text shadow */
+}
+
 .epic-tagline::before,
 .epic-tagline::after {
     content: '';
