@@ -4,15 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Initializing Shepherd Tour...');
   
   const onboardingStatusElement = document.getElementById('onboardingStatus');
-  const startOnboarding = onboardingStatusElement.getAttribute('data-start-onboarding') === 'true';
-  
-  // Check if onboarding is needed
-  console.log('Start onboarding status:', startOnboarding);
-  if (!startOnboarding) {
-    console.log('Onboarding already completed for this user.');
-    return; // Exit if onboarding is not needed
-  }
+  const startOnboarding = onboardingStatusElement ? onboardingStatusElement.getAttribute('data-start-onboarding') === 'true' : false;
 
+  // Initialize Shepherd tour
   const tour = new Shepherd.Tour({
     useModalOverlay: true,
     defaultStepOptions: {
@@ -25,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
           action: () => {
             console.log('Next button clicked');
             tour.next();
+            updateStepCounter();
           }
         }
       ]
@@ -33,340 +28,174 @@ document.addEventListener('DOMContentLoaded', () => {
 
   console.log('Shepherd Tour initialized:', tour);
 
-  // Step 1: Introduction
-  tour.addStep({
-    id: 'introduction',
-    text: 'Welcome to Quest by Cycle! Ready to explore?',
-    attachTo: {
-      on: 'bottom'
+  // Define steps
+  const steps = [
+    {
+      id: 'introduction',
+      text: 'Welcome to Quest by Cycle! Ready to start your journey?',
+      attachTo: { on: 'bottom' },
+      modalOverlayOpeningPadding: 10,
+      modalOverlayOpeningRadius: 8,
     },
-    modalOverlayOpeningPadding: 10,
-    modalOverlayOpeningRadius: 8,
-    buttons: [
+    {
+      id: 'lets-get-started',
+      text: 'Visit "Let\'s Get Started!" when you join a new game to view the rules.',
+      attachTo: { element: '#lets-get-started-button', on: 'bottom' }
+    },
+    {
+      id: 'contact-us',
+      text: 'Need help or want to reach out? Click here to contact us.',
+      attachTo: { element: '#contact-us-button', on: 'bottom' }
+    },
+    {
+      id: 'select-active-game',
+      text: 'Use this dropdown to select your active game. Everyone automatically joins a default game.',
+      attachTo: { element: '#gameSelectDropdown', on: 'bottom' }
+    },
+    {
+      id: 'whats-happening',
+      text: 'Check out what\'s happening to see who is completing what tasks!',
+      attachTo: { element: '#whats-happening-step', on: 'top' },
+      scrollTo: true
+    },
+    {
+      id: 'available-tasks',
+      text: 'This list is this games available tasks. Complete these to earn points and rewards!',
+      attachTo: { element: '#available-tasks-step', on: 'top' },
+      scrollTo: true
+    },
+    {
+      id: 'view-profile',
+      text: 'Access your profile here to check your progress and update your information.',
+      attachTo: { element: '#view-profile-button', on: 'bottom' },
+      scrollTo: true,
+      buttons: [
+        {
+          text: 'Next',
+          action: () => {
+            console.log('View Profile button clicked');
+            document.getElementById('view-profile-button').click(); // Open the modal
+            setTimeout(() => {
+              tour.next();
+              updateStepCounter();
+            }, 500); // Proceed to the next step after a short delay
+          }
+        }
+      ]
+    },
+    {
+      id: 'profile-display-name',
+      text: 'Here you can update your display name.',
+      attachTo: { element: '#displayName', on: 'bottom' },
+      canClickTarget: true
+    },
+    {
+      id: 'profile-age-group',
+      text: 'Select your age group from this dropdown.',
+      attachTo: { element: '#ageGroup', on: 'bottom' },
+      canClickTarget: true
+    },
+    {
+      id: 'profile-interests',
+      text: 'Describe your interests here.',
+      attachTo: { element: '#interests', on: 'bottom' },
+      canClickTarget: true,
+      scrollTo: true
+    },
+    {
+      id: 'profile-riding-preferences',
+      text: 'Check your riding preferences.',
+      attachTo: { element: '#ridingPreferences', on: 'bottom' },
+      canClickTarget: true,
+      scrollTo: true
+    },
+    {
+      id: 'profile-ride-description',
+      text: 'Describe the type of riding you like to do.',
+      attachTo: { element: '#rideDescription', on: 'bottom' },
+      canClickTarget: true,
+      scrollTo: true
+    },
+    {
+      id: 'profile-upload-to-socials',
+      text: 'Check to allow auto posting to a game\'s social media accounts.',
+      attachTo: { element: '#uploadToSocials', on: 'top' }, // Adjust position
+      canClickTarget: true,
+      scrollTo: true,
+      modalOverlayOpeningPadding: 20 // Add padding
+    },
+    {
+      id: 'profile-save',
+      text: 'Finally, save your profile with this button.',
+      attachTo: { element: '#editProfileForm .btn-primary', on: 'bottom' },
+      canClickTarget: true,
+      advanceOn: { selector: '#editProfileForm .btn-primary', event: 'click' },
+      modalOverlayOpeningPadding: 10,
+      modalOverlayOpeningRadius: 8,
+    },
+    {
+      id: 'completion-step',
+      text: 'Congratulations, you have completed the onboarding!',
+      buttons: [
+        {
+          text: 'Finish',
+          action: () => {
+            console.log('Onboarding completed');
+            markOnboardingComplete(); // Trigger the onboarding complete function
+            tour.complete();
+          }
+        }
+      ]
+    }
+  ];
+
+  // Add steps to the tour
+  steps.forEach((step, index) => {
+    step.buttons = step.buttons || [
       {
-        text: 'Next',
+        text: `Next (${index + 1}/${steps.length})`,
         action: () => {
-          console.log('Next button clicked');
           tour.next();
+          updateStepCounter();
         }
       }
-    ]
+    ];
+    tour.addStep(step);
   });
 
-  console.log('Added introduction step.');
-
-  // Step 2: Let's Get Started Button
-  tour.addStep({
-    id: 'lets-get-started',
-    text: 'Click "Let\'s Get Started!" to learn the game rules.',
-    attachTo: {
-      element: '#lets-get-started-button',
-      on: 'bottom'
-    },
-    buttons: [
-      {
-        text: 'Next',
-        action: () => {
-          console.log('Next button clicked');
-          tour.next();
-        }
+  // Function to update step counter
+  function updateStepCounter() {
+    const currentStep = tour.getCurrentStep();
+    if (currentStep && currentStep.buttons && currentStep.buttons.length > 0) {
+      const currentIndex = steps.findIndex(step => step.id === currentStep.id) + 1;
+      const totalSteps = steps.length;
+      const nextButton = currentStep.buttons[0].text;
+      if (nextButton.includes('Next')) {
+        currentStep.updateButton(0, { text: `Next (${currentIndex}/${totalSteps})` });
       }
-    ]
-  });
+    }
+  }
 
-  console.log('Added Let\'s Get Started button step.');
+  console.log('Steps added to the tour.');
 
-  // Step 3: Contact Us Button
-  tour.addStep({
-    id: 'contact-us',
-    text: 'Need help or want to reach out? Click here to contact us.',
-    attachTo: {
-      element: '#contact-us-button',
-      on: 'bottom'
-    },
-    buttons: [
-      {
-        text: 'Next',
-        action: () => {
-          console.log('Next button clicked');
-          tour.next();
-        }
-      }
-    ]
-  });
-
-  console.log('Added Contact Us button step.');
-
-  // Step 4: Select Active Game Dropdown
-  tour.addStep({
-    id: 'select-active-game',
-    text: 'Use this dropdown to select your active game.',
-    attachTo: {
-      element: '#gameSelectDropdown',
-      on: 'bottom'
-    },
-    buttons: [
-      {
-        text: 'Next',
-        action: () => {
-          console.log('Next button clicked');
-          tour.next();
-        }
-      }
-    ]
-  });
-
-  console.log('Added Select Active Game dropdown step.');
-
-  // Step 5: What's Happening Section
-  tour.addStep({
-    id: 'whats-happening',
-    text: 'Check out what\'s happening in your current game right now!',
-    attachTo: {
-      element: '#whats-happening-step',
-      on: 'top'
-    },
-    scrollTo: true, // Enable scrolling for this step
-    buttons: [
-      {
-        text: 'Next',
-        action: () => {
-          console.log('Next button clicked');
-          tour.next();
-        }
-      }
-    ]
-  });
-
-  console.log('Added What\'s Happening section step.');
-
-  // Step 6: Available Tasks Section
-  tour.addStep({
-    id: 'available-tasks',
-    text: 'These are your available tasks. Complete them to earn points and rewards!',
-    attachTo: {
-      element: '#available-tasks-step',
-      on: 'top'
-    },
-    scrollTo: true, // Enable scrolling for this step
-    buttons: [
-      {
-        text: 'Next',
-        action: () => {
-          console.log('Next button clicked');
-          tour.next();
-        }
-      }
-    ]
-  });
-
-  console.log('Added Available Tasks section step.');
-
-  // Step 7: View Profile Button
-  tour.addStep({
-    id: 'view-profile',
-    text: 'Access your profile here to check your progress and update your information.',
-    attachTo: {
-      element: '#view-profile-button',
-      on: 'bottom'
-    },
-    scrollTo: true, // Enable scrolling for this step
-    buttons: [
-      {
-        text: 'Next',
-        action: () => {
-          console.log('View Profile button clicked');
-          document.getElementById('view-profile-button').click(); // Open the modal
-          setTimeout(() => tour.next(), 500); // Proceed to the next step after a short delay
-        }
-      }
-    ]
-  });
-
-  console.log('Added View Profile button step.');
-
-  // Step 8: Profile Modal - Display Name
-  tour.addStep({
-    id: 'profile-display-name',
-    text: 'Here you can update your display name.',
-    attachTo: {
-      element: '#displayName',
-      on: 'bottom'
-    },
-    canClickTarget: true, // Allow clicking on target elements
-    buttons: [
-      {
-        text: 'Next',
-        action: () => {
-          console.log('Next button clicked');
-          tour.next();
-        }
-      }
-    ]
-  });
-
-  console.log('Added Display Name step.');
-
-  // Step 9: Profile Modal - Age Group
-  tour.addStep({
-    id: 'profile-age-group',
-    text: 'Select your age group from this dropdown.',
-    attachTo: {
-      element: '#ageGroup',
-      on: 'bottom'
-    },
-    canClickTarget: true, // Allow clicking on target elements
-    buttons: [
-      {
-        text: 'Next',
-        action: () => {
-          console.log('Next button clicked');
-          tour.next();
-        }
-      }
-    ]
-  });
-
-  console.log('Added Age Group step.');
-
-  // Step 10: Profile Modal - Interests
-  tour.addStep({
-    id: 'profile-interests',
-    text: 'Describe your interests here.',
-    attachTo: {
-      element: '#interests',
-      on: 'bottom'
-    },
-    canClickTarget: true, // Allow clicking on target elements
-    scrollTo: true, // Enable scrolling for this step
-    buttons: [
-      {
-        text: 'Next',
-        action: () => {
-          console.log('Next button clicked');
-          tour.next();
-        }
-      }
-    ]
-  });
-
-  console.log('Added Interests step.');
-
-  // Step 11: Profile Modal - Riding Preferences
-  tour.addStep({
-    id: 'profile-riding-preferences',
-    text: 'Check your riding preferences.',
-    attachTo: {
-      element: '#ridingPreferences',
-      on: 'bottom'
-    },
-    canClickTarget: true, // Allow clicking on target elements
-    scrollTo: true, // Enable scrolling for this step
-    buttons: [
-      {
-        text: 'Next',
-        action: () => {
-          console.log('Next button clicked');
-          tour.next();
-        }
-      }
-    ]
-  });
-
-  console.log('Added Riding Preferences step.');
-
-  // Step 12: Profile Modal - Ride Description
-  tour.addStep({
-    id: 'profile-ride-description',
-    text: 'Describe the type of riding you like to do.',
-    attachTo: {
-      element: '#rideDescription',
-      on: 'bottom'
-    },
-    canClickTarget: true, // Allow clicking on target elements
-    scrollTo: true, // Enable scrolling for this step
-    buttons: [
-      {
-        text: 'Next',
-        action: () => {
-          console.log('Next button clicked');
-          tour.next();
-        }
-      }
-    ]
-  });
-
-  console.log('Added Ride Description step.');
-
-  // Step 13: Profile Modal - Upload to Social Media
-  tour.addStep({
-    id: 'profile-upload-to-socials',
-    text: 'Enable this option to upload your activities to social media.',
-    attachTo: {
-      element: '#uploadToSocials',
-      on: 'bottom'
-    },
-    canClickTarget: true, // Allow clicking on target elements
-    scrollTo: true, // Enable scrolling for this step
-    buttons: [
-      {
-        text: 'Next',
-        action: () => {
-          console.log('Next button clicked');
-          tour.next();
-        }
-      }
-    ]
-  });
-
-  console.log('Added Upload to Social Media step.');
-
-  // Step 14: Profile Modal - Save Profile
-  tour.addStep({
-    id: 'profile-save',
-    text: 'Finally, save your profile with this button.',
-    attachTo: {
-      element: '#editProfileForm .btn-primary',
-      on: 'bottom'
-    },
-    canClickTarget: true, // Allow the user to click the target element
-    advanceOn: {
-      selector: '#editProfileForm .btn-primary', // Selector for the Save Profile button
-      event: 'click' // The event that will trigger advancing to the next step
-    },
-    modalOverlayOpeningPadding: 10,
-    modalOverlayOpeningRadius: 8,
-    // No buttons, as we want the user to click the element
-  });
-
-  console.log('Added Save Profile step.');
-
-  // Step 15: Final Completion Step
-  tour.addStep({
-    id: 'completion-step',
-    text: 'Congratulations, you have completed the onboarding!',
-    buttons: [
-      {
-        text: 'Finish',
-        action: () => {
-          console.log('Onboarding completed');
-          markOnboardingComplete(); // Trigger the onboarding complete function
-          tour.complete();
-        }
-      }
-    ]
-  });
-
-  console.log('Added completion step.');
-
-  // Start the tour automatically on page load
-  tour.start();
-  console.log('Shepherd Tour started.');
+  // Start the tour automatically if needed
+  if (startOnboarding) {
+    tour.start();
+    console.log('Shepherd Tour started automatically.');
+  }
 
   // Function to send a request to mark onboarding as complete
   function markOnboardingComplete() {
-    const userId = document.querySelector('meta[name="current-user-id"]').getAttribute('content'); // Fetch user ID
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content'); // Fetch CSRF token
+    const userIdMeta = document.querySelector('meta[name="current-user-id"]');
+    const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+    
+    if (!userIdMeta || !csrfTokenMeta) {
+      console.error('Meta tags for user ID or CSRF token not found.');
+      return;
+    }
+
+    const userId = userIdMeta.getAttribute('content');
+    const csrfToken = csrfTokenMeta.getAttribute('content');
 
     fetch('/mark-onboarding-complete', {
       method: 'POST',
@@ -388,6 +217,16 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .catch(error => {
       console.error('Error:', error);
+    });
+  }
+
+  // Add the event listener for the "Show me a tour" link
+  const restartTourLink = document.getElementById('restart-tour-link');
+  if (restartTourLink) {
+    restartTourLink.addEventListener('click', () => {
+      console.log('Restarting Shepherd Tour...');
+      tour.start(); // Start the tour when the link is clicked
+      updateStepCounter(); // Ensure step counter is updated
     });
   }
 });

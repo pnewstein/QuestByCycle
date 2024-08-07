@@ -39,29 +39,29 @@ main {
   }
   
   .shepherd-step {
-    background-color: rgba(255, 255, 255, 0.95); /* Slight transparency for steps */
+    background-color: rgba(34, 34, 34, 0.95); /* Dark background for steps */
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1); /* Subtle shadow for clarity */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for clarity */
     max-width: 600px; /* Limit width for better readability */
     margin: auto; /* Center the steps */
   }
   
   .shepherd-step .shepherd-header {
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #444;
     padding: 10px;
-    background-color: rgba(255, 255, 255, 0.95); /* Match step background */
+    background-color: rgba(34, 34, 34, 0.95); /* Match step background */
   }
   
   .shepherd-step .shepherd-content {
     padding: 20px;
     font-size: 16px; /* Ensure readable font size */
-    color: #b9b9b9; /* Clear text color */
+    color: #f0f0f0; /* Light text color */
   }
   
   .shepherd-step .shepherd-footer {
     text-align: right;
     padding: 10px 20px;
-    background-color: rgba(255, 255, 255, 0.95); /* Consistent background */
+    background-color: rgba(34, 34, 34, 0.95); /* Consistent background */
   }
   
   .shepherd-button {
@@ -92,8 +92,6 @@ main {
     display: block; /* Ensure the arrow is displayed */
   }
   
-  
-
 .user-profile {
     background: #fff;
     padding: 30px;

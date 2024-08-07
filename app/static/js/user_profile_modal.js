@@ -148,8 +148,8 @@ function showUserProfileModal(userId) {
                                                 <textarea class="form-control" id="rideDescription" name="ride_description">${data.user.ride_description || ''}</textarea>
                                             </div>
                                             <div class="form-group-1 form-check">
-                                                <input type="checkbox" class="form-check-input" id="uploadToSocials" name="upload_to_socials" ${data.user.upload_to_socials ? 'checked' : ''}>
-                                                <label class="form-check-label" for="uploadToSocials">Upload Activities to Social Media</label>
+                                                <input type="checkbox" class="form-check-input" name="upload_to_socials" ${data.user.upload_to_socials ? 'checked' : ''}>
+                                                <label class="form-check-label"  id="uploadToSocials" for="uploadToSocials">Upload Activities to Social Media</label>
                                             </div>
                                             <div class="form-group-1 form-check">
                                                 <input type="checkbox" class="form-check-input" id="showCarbonGame" name="show_carbon_game" ${data.user.show_carbon_game ? 'checked' : ''}>
