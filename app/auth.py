@@ -2,7 +2,7 @@ from cryptography.fernet import Fernet
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import db, User, Game
-from app.forms import LoginForm, RegistrationForm, SponsorForm, ForgotPasswordForm, ResetPasswordForm, DeleteUserForm
+from app.forms import LoginForm, RegistrationForm, ForgotPasswordForm, ResetPasswordForm, UpdatePasswordForm
 from app.utils import send_email, generate_tutorial_game
 from flask_mail import Mail
 from sqlalchemy import or_
@@ -225,6 +225,22 @@ def forgot_password():
             flash('No account found with that email.', 'warning')
         return redirect(url_for('auth.login'))
     return render_template('forgot_password.html', form=form)
+
+
+@auth_bp.route('/update_password', methods=['GET', 'POST'])
+@login_required
+def update_password():
+    form = UpdatePasswordForm()
+    if form.validate_on_submit():
+        user = current_user
+        if user.check_password(form.current_password.data):
+            user.set_password(form.new_password.data)
+            db.session.commit()
+            flash('Your password has been updated.', 'success')
+            return redirect(url_for('main.index'))
+        else:
+            flash('Current password is incorrect.', 'danger')
+    return render_template('update_password.html', form=form)
 
 
 @auth_bp.route('/verify_email/<token>')

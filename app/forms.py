@@ -40,6 +40,13 @@ class ForgotPasswordForm(FlaskForm):
     submit = SubmitField('Request Password Reset')
 
 
+class UpdatePasswordForm(FlaskForm):
+    current_password = PasswordField('Current Password', validators=[DataRequired()])
+    new_password = PasswordField('New Password', validators=[DataRequired(), Length(min=8)])
+    confirm_password = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('new_password')])
+    submit = SubmitField('Update Password')
+
+
 class ResetPasswordForm(FlaskForm):
     password = PasswordField('New Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
@@ -54,7 +61,7 @@ class AddUserForm(FlaskForm):
 
 class DeleteUserForm(FlaskForm):
     submit = SubmitField('Delete Account')
-    
+
 class GameForm(FlaskForm):
     title = StringField('Game Title', validators=[DataRequired()])
     description = StringField('Game Description', validators=[DataRequired(), Length(max=1000)])
