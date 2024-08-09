@@ -52,7 +52,9 @@ class AddUserForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Add User')
 
-
+class DeleteUserForm(FlaskForm):
+    submit = SubmitField('Delete Account')
+    
 class GameForm(FlaskForm):
     title = StringField('Game Title', validators=[DataRequired()])
     description = StringField('Game Description', validators=[DataRequired(), Length(max=1000)])

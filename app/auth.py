@@ -1,8 +1,8 @@
 from cryptography.fernet import Fernet
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import db, User, Game
-from app.forms import LoginForm, RegistrationForm, SponsorForm, ForgotPasswordForm, ResetPasswordForm
+from app.forms import LoginForm, RegistrationForm, SponsorForm, ForgotPasswordForm, ResetPasswordForm, DeleteUserForm
 from app.utils import send_email, generate_tutorial_game
 from flask_mail import Mail
 from sqlalchemy import or_
@@ -55,44 +55,51 @@ mail = Mail()
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+    try:
+        if form.validate_on_submit():
+            email = sanitize_html(form.email.data)
+            password = form.password.data
+            if not email or not password:
+                flash('Please enter both email and password.')
+                return redirect(url_for('auth.login'))
 
-    if form.validate_on_submit():
-        email = sanitize_html(form.email.data)
-        password = form.password.data
-        if not email or not password:
-            flash('Please enter both email and password.')
-            return redirect(url_for('auth.login'))
+            user = User.query.filter_by(email=email).first()
 
-        user = User.query.filter_by(email=email).first()
+            if user is None:
+                flash('Invalid email or password.')
+                return redirect(url_for('auth.login'))
 
-        if user is None:
-            flash('Invalid email or password.')
-            return redirect(url_for('auth.login'))
+            # Check if email verification is required and if the user's email is verified
+            if current_app.config.get('MAIL_PASSWORD') and not user.email_verified:
+                flash('Please verify your email before logging in.', 'warning')
+                return render_template('login.html', form=form, show_resend=True, email=email)
 
-        if not user.email_verified:
-            flash('Please verify your email before logging in.', 'warning')
-            return render_template('login.html', form=form, show_resend=True, email=email)
+            if user and user.check_password(password):
+                login_user(user, remember=form.remember_me.data)
 
-        if user and user.check_password(password):
-            login_user(user, remember=form.remember_me.data)
+                generate_tutorial_game()
 
-            generate_tutorial_game()
+                # Check if the user has zero participated games and add to tutorial game if true
+                if len(user.participated_games) == 0:
+                    tutorial_game = Game.query.filter_by(is_tutorial=True).first()
+                    if tutorial_game:
+                        user.participated_games.append(tutorial_game)
+                        db.session.commit()
 
-            # Check if the user has zero participated games and add to tutorial game if true
-            if len(user.participated_games) == 0:
-                tutorial_game = Game.query.filter_by(is_tutorial=True).first()
-                if tutorial_game:
-                    user.participated_games.append(tutorial_game)
-                    db.session.commit()
-
-            flash('Logged in successfully.')
-            next_page = request.args.get('next')
-            if user.is_admin:
-                return redirect(next_page or url_for('admin.admin_dashboard'))
+                flash('Logged in successfully.')
+                next_page = request.args.get('next')
+                if user.is_admin:
+                    return redirect(next_page or url_for('admin.admin_dashboard'))
+                else:
+                    return redirect(next_page or url_for('main.index'))
             else:
-                return redirect(next_page or url_for('main.index'))
-        else:
-            flash('Invalid email or password.')
+                flash('Invalid email or password.')
+
+    except Exception as e:
+        current_app.logger.error(f'Login error: {e}')
+        flash('An unexpected error occurred during login. Please try again later.', 'error')
+        return redirect(url_for('auth.login'))
+    
     return render_template('login.html', form=form)
 
 
@@ -134,66 +141,69 @@ def decrypt_message(encrypted_message, key):
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
-    if form.validate_on_submit():
-        if not form.accept_license.data:
-            flash('You must agree to the terms of service, license agreement, and privacy policy.', 'warning')
-            return render_template('register.html', form=form)
+    try:
+        if form.validate_on_submit():
+            if not form.accept_license.data:
+                flash('You must agree to the terms of service, license agreement, and privacy policy.', 'warning')
+                return render_template('register.html', form=form)
 
-        email = sanitize_html(form.email.data)
-        base_username = email.split('@')[0]
-        existing_user = User.query.filter_by(email=email).first()
-        if (existing_user):
-            flash('Email already registered. Please use a different email.', 'warning')
-            return redirect(url_for('auth.register'))
+            email = sanitize_html(form.email.data)
+            base_username = email.split('@')[0]
+            existing_user = User.query.filter_by(email=email).first()
+            if existing_user:
+                flash('Email already registered. Please use a different email.', 'warning')
+                return redirect(url_for('auth.register'))
 
-        counter = 1
-        username = base_username
-        while User.query.filter(or_(User.username == username, User.email == email)).first():
-            username = f"{base_username}{counter}"
-            counter += 1
+            counter = 1
+            username = base_username
+            while User.query.filter(or_(User.username == username, User.email == email)).first():
+                username = f"{base_username}{counter}"
+                counter += 1
 
-        user = User(
-            username=sanitize_html(username),
-            email=email,
-            license_agreed=form.accept_license.data,
-            email_verified=False,
-            is_admin=False,
-            created_at=datetime.now(utc),
-            score=0,
-            display_name=None,
-            profile_picture=None,
-            age_group=None,
-            interests=None
-        )
-        user.set_password(form.password.data)
-        db.session.add(user)
-        try:
-            db.session.commit()
-
-            # Check for tutorial game and add user to it
-            tutorial_game = Game.query.filter_by(is_tutorial=True).first()
-            if tutorial_game:
-                user.participated_games.append(tutorial_game)
-                db.session.commit()
-            else:
-                tutorial_game = generate_tutorial_game()
-                user.participated_games.append(tutorial_game)
+            user = User(
+                username=sanitize_html(username),
+                email=email,
+                license_agreed=form.accept_license.data,
+                email_verified=False,  # Initially set to False
+                is_admin=False,
+                created_at=datetime.now(utc),
+                score=0,
+                display_name=None,
+                profile_picture=None,
+                age_group=None,
+                interests=None
+            )
+            user.set_password(form.password.data)
+            db.session.add(user)
+            try:
                 db.session.commit()
 
-            token = user.generate_verification_token()
-            verify_url = url_for('auth.verify_email', token=token, _external=True)
-            html = render_template('verify_email.html', verify_url=verify_url)
-            subject = "QuestByCycle verify email"
-            send_email(user.email, subject, html)
+                # Check if email verification is required
+                if current_app.config.get('MAIL_PASSWORD'):
+                    token = user.generate_verification_token()
+                    verify_url = url_for('auth.verify_email', token=token, _external=True)
+                    html = render_template('verify_email.html', verify_url=verify_url)
+                    subject = "QuestByCycle verify email"
+                    send_email(user.email, subject, html)
+                    flash('A verification email has been sent to you. Please check your inbox.', 'info')
+                else:
+                    user.email_verified = True  # Automatically verify email
+                    db.session.commit()
+                    flash('Registration successful. Your email has been automatically verified.', 'success')
+                    login_user(user)  # Log in the user automatically if email verification is bypassed
 
-            flash('A verification email has been sent to you. Please check your inbox.', 'info')
-            return redirect(url_for('auth.login'))
+                return redirect(url_for('auth.login'))
 
-        except Exception as e:
-            db.session.rollback()
-            flash('Registration failed due to an unexpected error. Please try again.', 'error')
-            current_app.logger.error(f'Failed to register user or send verification email: {e}')
-            return render_template('register.html', title='Register', form=form)
+            except Exception as e:
+                db.session.rollback()
+                flash('Registration failed due to an unexpected error. Please try again.', 'error')
+                current_app.logger.error(f'Failed to register user or send verification email: {e}')
+                return render_template('register.html', title='Register', form=form)
+
+    except Exception as e:
+        current_app.logger.error(f'Registration error: {e}')
+        flash('An unexpected error occurred during registration. Please try again later.', 'error')
+        return redirect(url_for('auth.register'))
 
     return render_template('register.html', title='Register', form=form)
 
@@ -265,3 +275,21 @@ def reset_password(token):
         return redirect(url_for('auth.login'))
     
     return render_template('reset_password.html', form=form)
+
+
+@auth_bp.route('/delete_account', methods=['POST'])
+@login_required
+def delete_account():
+    user = current_user  # Get the logged-in user directly
+
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        flash('Your account has been deleted.', 'success')
+        logout_user()  # Log the user out after deletion
+        return redirect(url_for('main.index'))
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error deleting user: {e}")
+        flash('An error occurred while deleting your account.', 'error')
+        return redirect(url_for('main.index'))
