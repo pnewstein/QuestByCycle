@@ -224,7 +224,8 @@ def index(game_id, task_id, user_id):
                            custom_games=custom_games,
                            selected_game_id=game_id or 0,
                            selected_game=game,
-                           start_onboarding=start_onboarding)  # Pass start_onboarding to template if needed
+                           task_id=task_id,
+                           start_onboarding=start_onboarding)
 
 @main_bp.route('/mark-onboarding-complete', methods=['POST'])
 @login_required
