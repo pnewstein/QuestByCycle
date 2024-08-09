@@ -11,18 +11,19 @@
             <div class="modal-body">
                 <form id="joinCustomGameForm" action="{{ url_for('games.join_custom_game') }}" method="post">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" id="customGameCodeInput" name="custom_game_code" value=""/>
                     <div class="form-group">
                         <label for="customGameCode">Enter Custom Game Code:</label>
-                        <input type="text" id="customGameCode" name="custom_game_code" class="form-control" placeholder="Enter game code" required>
+                        <input type="text" id="customGameCode" class="form-control" placeholder="Enter game code" required>
                     </div>
                     <button type="submit" class="btn btn-primary btn-block mt-3">Join Custom Game</button>
                 </form>
                 <div class="mt-4">
                     <h5>Available Custom Games</h5>
-                    <ul class="list-group">
+                    <ul class="list-group" id="customGameList">
                         {% for game in custom_games %}
                             {% if game.is_public %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <li class="list-group-item d-flex justify-content-between align-items-center" data-game-code="{{ game.custom_game_code }}">
                                     {{ game.title }}
                                     <span class="badge badge-primary badge-pill">{{ game.custom_game_code }}</span>
                                 </li>
@@ -50,6 +51,7 @@
     }
     .list-group-item {
         background-color: #f8f9fa;
+        cursor: pointer;
     }
     .list-group-item:hover {
         background-color: #e9ecef;
@@ -58,3 +60,16 @@
         font-size: 1rem;
     }
 </style>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('#customGameList .list-group-item').forEach(function (item) {
+            item.addEventListener('click', function () {
+                const gameCode = this.getAttribute('data-game-code');
+                if (confirm('Do you want to join?')) {
+                    document.getElementById('customGameCodeInput').value = gameCode;
+                    document.getElementById('joinCustomGameForm').submit();
+                }
+            });
+        });
+    });
+</script>
