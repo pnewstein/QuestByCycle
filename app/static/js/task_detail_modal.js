@@ -478,28 +478,18 @@ function fetchSubmissions(taskId) {
         });
 }
 
-// Distribute images across columns in the modal
+// Distribute images in a single row in the modal
 function distributeImages(images) {
     const board = document.getElementById('submissionBoard');
-    board.innerHTML = '';
-    const modalWidth = board.clientWidth;
-    const desiredColumnWidth = 150;
-    const columnCount = Math.floor(modalWidth / desiredColumnWidth);
-    const columns = [];
+    board.innerHTML = ''; // Clear existing content
 
-    for (let i = 0; i < columnCount; i++) {
-        const column = document.createElement('div');
-        column.className = 'photo-column';
-        board.appendChild(column);
-        columns.push(column);
-    }
-
-    images.forEach((image, index) => {
+    images.forEach(image => {
         const img = document.createElement('img');
         img.src = image.url;
         img.alt = "Loaded Image";
         img.onerror = () => img.src = document.getElementById('taskDetailModal').getAttribute('data-placeholder-url');
         img.onclick = () => showSubmissionDetail(image);
-        columns[index % columnCount].prepend(img);
+        img.style.margin = '10px'; // Add some margin between images if needed
+        board.appendChild(img); // Append directly to the board
     });
 }
