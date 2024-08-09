@@ -286,7 +286,25 @@
     <script src="{{ url_for('static', filename='js/index_management.js') }}"></script>
     <script src="{{ url_for('static', filename='js/generated_task.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='js/shepherd_tour.js') }}"></script>   
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to get URL parameters
+            function getQueryParam(param) {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(param);
+            }
     
+            // Get task_id from URL
+            const taskId = "{{ task_id }}";
+    
+            // If task_id exists, trigger the task detail modal
+            if (taskId) {
+                console.log(`Found task_id: ${taskId}. Opening modal...`);
+                openTaskDetailModal(taskId);
+            }
+        });
+    
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize Quill editor if the container exists (i.e., user is admin)
