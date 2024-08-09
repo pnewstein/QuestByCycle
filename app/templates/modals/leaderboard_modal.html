@@ -1,36 +1,41 @@
-<!-- Updated Leaderboard Modal Structure -->
-<div id="leaderboardModal" class="modal" tabindex="-1" role="dialog" aria-labelledby="leaderboardModalLabel" aria-hidden="true">
-    <div id="leaderboardModalContent" class="modal-content">
-        <div class="modal-body">
-            <div class="completion-meter-container mb-4 text-center">
-                <div class="inspirational-text mb-3 font-italic">
-                    It takes a village to enact change…
-                </div>
-                <div class="meter-label mb-2 font-weight-bold">Completion Meter</div>
-                <div class="completion-meter" id="completionMeter">
-                    <div class="click-text">Click to view all game submissions:</div>
-                    <div class="meter-bar" id="meterBar" style="height: 0%;" data-label="0% Reduced"></div>
-                </div>
+<div id="leaderboardModal" class="modal">
+    <div class="modal-dialog modal-lg">
+        <div id="leaderboardModalContent" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Leaderboard</h5>
+                <span class="close-button" onclick="closeLeaderboardModal()">&times;</span>
             </div>
-            <div id="leaderboardTableContainer" class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th scope="col">Rank</th>
-                            <th scope="col">Player</th>
-                            <th scope="col">Points</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboardTableBody">
-                        <!-- Leaderboard rows will be dynamically inserted here -->
-                    </tbody>
-                </table>
+            <div class="modal-body">
+                <div class="completion-meter-container mb-4 text-center">
+                    <div class="inspirational-text mb-3 font-italic">
+                        It takes a village to enact change…
+                    </div>
+                    <div class="meter-label mb-2 font-weight-bold">Completion Meter</div>
+                    <div class="completion-meter" id="completionMeter">
+                        <div class="click-text">Click to view all game submissions:</div>
+                        <div class="meter-bar" id="meterBar" style="height: 0%;" data-label="0% Reduced"></div>
+                    </div>
+                </div>
+                <div id="leaderboardTableContainer" class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Rank</th>
+                                <th scope="col">Player</th>
+                                <th scope="col">Points</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardTableBody">
+                            <!-- Leaderboard rows will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
 <style>
+
     .leaderboard-container {
         display: flex;
         justify-content: space-between;
@@ -130,5 +135,11 @@
         text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.7);
         font-size: 1.5em;
     }
-
+    .close-button {
+        color: #000; /* Change to your desired color */
+        font-size: 1.5rem; /* Adjust the size */
+        cursor: pointer;
+        z-index: 1000; /* Bring it to the front */
+        position: relative; /* Ensure proper positioning */
+    }
 </style>
