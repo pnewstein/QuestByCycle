@@ -158,6 +158,9 @@ function showUserProfileModal(userId) {
                                             <button type="button" class="btn btn-primary" onclick="saveProfile(${userId})">Save Profile</button>
                                         </form>
                                         <br>
+                                        <form id="updatePasswordForm">
+                                            <button type="button" class="btn btn-primary" onclick="window.location.href='/auth/update_password';">Update Password</button>
+                                        </form>
                                         <form id="deleteAccountForm" onsubmit="event.preventDefault(); deleteAccount();">
                                             <button type="submit" class="btn btn-danger">Delete My Account</button>
                                         </form>` : `
