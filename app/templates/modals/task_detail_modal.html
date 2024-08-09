@@ -210,19 +210,17 @@
 
     .photo-board {
         display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        justify-content: center;
-        padding: 20px;
+        justify-content: flex-start; /* Align images in a single row */
+        flex-wrap: nowrap; /* Prevent wrapping to the next line */
+        overflow-x: auto; /* Allow horizontal scrolling if there are many images */
+        padding: 10px;
         background: rgba(0, 0, 0, 0.1);
         border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         max-height: 300px;
-        overflow-y: auto;
     }
 
     .photo-board img {
-        width: 100px;
         height: 100px;
         border-radius: 10px;
         transition: transform 0.3s ease;

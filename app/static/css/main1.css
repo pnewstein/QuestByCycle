@@ -893,43 +893,6 @@ footer {
     gap: 10px;
 }
 
-.photo-board {
-    margin-top: 10px;
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    justify-content: center; 
-    flex-wrap: wrap; 
-    gap: 10px; 
-    padding: 10px;
-    transition: all 0.3s ease-in-out;
-}
-
-.photo-board img {
-    width: 100%;
-    height: auto;
-    border-radius: 4px;
-}
-
-.photo-column {
-    flex: 1 1 150px; 
-    overflow: auto;
-    display: flex;
-    flex-direction: row;
-    width: 150px; 
-    gap: 10px;
-}
-
-.photo-column img {
-    width: 100%; 
-    height: auto; 
-    transition: transform 0.3s ease-in-out;
-}
-
-.photo-column img:hover {
-    transform: scale(1.1);
-    z-index: 1;
-}
-
 .social-button {
     background: none;
     border: none;
@@ -1806,26 +1769,6 @@ small {
         border-top: 1px solid #eee;
         max-height: 200px;
     }
-
-    .photo-column {
-        flex: 1 1 150px; 
-        display: flex;
-        flex-direction: row;
-        width: fit-content; 
-        gap: 10px;
-    }
-    
-    .photo-column img {
-        width: 100%; 
-        height: auto; 
-        transition: transform 0.3s ease-in-out;
-    }
-    
-    .photo-column img:hover {
-        transform: scale(1.1);
-        z-index: 1;
-    }
-    
 
     .footer-links a, .dropdown-content a {
         padding: 10px 15px; 
