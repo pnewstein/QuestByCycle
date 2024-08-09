@@ -298,7 +298,7 @@
             const taskId = "{{ task_id }}";
     
             // If task_id exists, trigger the task detail modal
-            if (taskId) {
+            if (taskId != 'None') {
                 console.log(`Found task_id: ${taskId}. Opening modal...`);
                 openTaskDetailModal(taskId);
             }
