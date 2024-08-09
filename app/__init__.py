@@ -1,4 +1,4 @@
-from flask import Flask, render_template, current_app
+from flask import Flask, render_template, current_app, flash, redirect, url_for
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -133,5 +133,15 @@ def create_app():
     def inject_socketio_url():
         return dict(socketio_server_url=app.config['SOCKETIO_SERVER_URL'])
 
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        # Log the error details
+        app.logger.error(f"Unhandled Exception: {e}")
+        
+        # Flash a user-friendly message
+        flash('An unexpected error occurred. Please try again later.', 'error')
+        
+        # Redirect to a safe page (e.g., home or login)
+        return redirect(url_for('main.index'))
 
     return app
