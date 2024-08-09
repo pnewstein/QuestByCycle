@@ -156,6 +156,10 @@ function showUserProfileModal(userId) {
                                                 <label class="form-check-label" for="showCarbonGame">Show Carbon Reduction Game</label>
                                             </div>
                                             <button type="button" class="btn btn-primary" onclick="saveProfile(${userId})">Save Profile</button>
+                                        </form>
+                                        <br>
+                                        <form id="deleteAccountForm" onsubmit="event.preventDefault(); deleteAccount();">
+                                            <button type="submit" class="btn btn-danger">Delete My Account</button>
                                         </form>` : `
                                         <p><strong>Display Name:</strong> ${data.user.display_name || ''}</p>
                                         <p><strong>Age Group:</strong> ${data.user.age_group || ''}</p>
@@ -464,6 +468,53 @@ function deleteSubmission(submissionId, context, userId) {
             alert('Error during deletion: ' + error.message);
         });
 }
+
+function deleteAccount() {
+    console.log('deleteAccount called');  // Debugging: Log function call
+
+    if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+        console.log('Account deletion cancelled by the user.');  // Debugging: Log cancellation
+        return;  // Exit if the user does not confirm
+    }
+
+    console.log('User confirmed account deletion. Proceeding with deletion request.');  // Debugging: Log confirmation
+
+    fetch(`/auth/delete_account`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => {
+        console.log('Received response from server:', response);  // Debugging: Log response
+
+        if (response.redirected) {
+            console.log('Redirecting to:', response.url);  // Debugging: Log redirection
+            window.location.href = response.url;
+        } else {
+            return response.json();
+        }
+    })
+    .then(data => {
+        if (data) {
+            console.log('Parsed response data:', data);  // Debugging: Log parsed data
+            if (data.error) {
+                console.error(`Error received from server: ${data.error}`);  // Debugging: Log server error
+                alert(`Error: ${data.error}`);
+            } else {
+                console.log('Account deletion successful. Redirecting to homepage.');  // Debugging: Log success
+                alert('Your account has been successfully deleted.');
+                window.location.href = '/';  // Redirect to the homepage or any other page after deletion
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting account:', error);  // Debugging: Log fetch error
+        alert('Failed to delete account. Please try again.');
+    });
+}
+
 
 function editMessage(messageId, userId) {
     const messageElement = document.querySelector(`li[data-messageid="${messageId}"]`);

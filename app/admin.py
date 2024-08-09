@@ -1,8 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_required, current_user
 from app.models import db, User, Game, Sponsor
-from app.forms import AddUserForm, CarouselImportForm, ForgotPasswordForm, SponsorForm
-from app.utils import send_email
+from app.forms import CarouselImportForm, SponsorForm
 from functools import wraps
 from werkzeug.utils import secure_filename
 
@@ -213,6 +212,7 @@ def delete_user(user_id):
         current_app.logger.error(f"Error deleting user: {e}")
         flash('An error occurred while deleting the user.', 'error')
     return redirect(url_for('admin.user_management'))
+
 
 @admin_bp.route('/update_carousel', methods=['POST'])
 @login_required

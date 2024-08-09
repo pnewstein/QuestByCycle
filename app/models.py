@@ -117,7 +117,35 @@ class User(UserMixin, db.Model):
     
     def get_participated_games(self):
         return [{'id': game.id, 'title': game.title} for game in self.participated_games]
-    
+        
+    def delete_user(self):
+        # Delete ProfileWallMessages where the user is the author or recipient
+        ProfileWallMessage.query.filter_by(author_id=self.id).delete(synchronize_session=False)
+        ProfileWallMessage.query.filter_by(user_id=self.id).delete(synchronize_session=False)
+
+        # Delete related UserTasks
+        for user_task in self.user_tasks:
+            db.session.delete(user_task)
+
+        # Delete related TaskLikes
+        for task_like in self.task_likes:
+            db.session.delete(task_like)
+
+        # Delete related ShoutBoardMessages
+        for message in self.shoutboard_messages:
+            db.session.delete(message)
+
+        # Delete related TaskSubmissions
+        for submission in self.task_submissions:
+            db.session.delete(submission)
+
+        # Remove user from games
+        self.participated_games.clear()
+
+        # Delete the user
+        db.session.delete(self)
+        db.session.commit()
+
     
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -285,6 +313,7 @@ class ProfileWallMessage(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     parent_id = db.Column(db.Integer, db.ForeignKey('profile_wall_message.id', ondelete='CASCADE'), nullable=True)
 
-    user = db.relationship('User', foreign_keys=[user_id], backref='profile_messages_received')
-    author = db.relationship('User', foreign_keys=[author_id], backref='profile_messages_sent')
+    user = db.relationship('User', foreign_keys=[user_id], backref=db.backref('profile_messages_received', cascade="all, delete-orphan"))
+    author = db.relationship('User', foreign_keys=[author_id], backref=db.backref('profile_messages_sent', cascade="all, delete-orphan"))
     replies = db.relationship('ProfileWallMessage', backref=db.backref('parent', remote_side=[id]), cascade="all, delete-orphan")
+
