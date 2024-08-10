@@ -17,7 +17,6 @@ QuestByCycle is a Flask-based web application designed to engage and motivate th
 ### Prerequisites
 
 - Python 3.11+
-- Pipenv
 - PostgreSQL
 
 ### Server Setup
@@ -72,6 +71,7 @@ Now login with ```ssh USER@HOST```
 
 3. Install ```Poetry```
 ```curl -sSL https://install.python-poetry.org | python3 -```
+```poetry env use python3.11```
 ```poetry install```
 
 4. Prepare the Deployment:
