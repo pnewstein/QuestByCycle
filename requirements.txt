@@ -11,7 +11,7 @@ email-validator==1.2.1
 SQLAlchemy~=2.0.22
 qrcode==7.4.2
 psycopg2-binary==2.9.9
-gunicorn==21.2.0
+gunicorn==22.0.0
 qrcode[pil]==7.4.2
 tweepy==4.14.0
 flask-mail==0.9.1
