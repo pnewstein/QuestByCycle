@@ -60,6 +60,8 @@ Now login with ```ssh USER@HOST```
 2.Clone and open the repository:
 
 ``` cd /opt```
+``` sudo mkdir QuestByCycle```
+``` chown APPUSER:APPUSER QuestByCycle```
 ```git clone https://github.com/denuoweb/QuestByCycle.git```
 ```cd QuestByCycle```
 
