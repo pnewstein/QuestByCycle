@@ -17,6 +17,7 @@ QuestByCycle is a Flask-based web application designed to engage and motivate th
 ### Prerequisites
 
 - Python 3.11+
+- Pipenv
 - PostgreSQL
 
 ### Server Setup
@@ -51,7 +52,12 @@ Now login with ```ssh USER@HOST```
 
 ### Installation and Deployment
 
-1. Clone and open the repository:
+1. Create new user:
+
+```sudo adduser --system --group --disabled-login APPUSER```
+```sudo -u APPUSER mkdir /opt/QuestByCycle```
+
+2.Clone and open the repository:
 
 ``` cd /opt```
 ```git clone https://github.com/denuoweb/QuestByCycle.git```
@@ -62,10 +68,9 @@ Now login with ```ssh USER@HOST```
 ```sudo add-apt-repository ppa:deadsnakes/ppa```
 ```sudo apt install python3.11 python3.11-venv python3-pip python3-gevent python3-certbot-nginx```
 
-3. Create new user:
-
-```sudo adduser --system --group --disabled-login APPUSER```
-```sudo chown -R APPUSER:APPUSER /opt/QuestByCycle```
+3. Install ```Poetry```
+```curl -sSL https://install.python-poetry.org | python3 -```
+```poetry install```
 
 4. Prepare the Deployment:
 
@@ -80,19 +85,16 @@ After=network.target
 User=APPUSER
 Group=APPUSER
 WorkingDirectory=/opt/QuestByCycle
-ExecStart=/opt/QuestByCycle/venv/bin/gunicorn --config /opt/QuestByCycle/gunicorn.conf.py wsgi:app
+ExecStart=/home/APPUSER/.cache/pypoetry/virtualenvs/questbycycle-BK-IO7k_-py3.11/bin/gunicorn --config /opt/QuestByCycle/gunicorn.conf.py wsgi:app
 Nice=-10
+Environment="PATH=/home/APPUSER/.cache/pypoetry/virtualenvs/questbycycle-BK-IO7k_-py3.11/bin"
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-5. Start the virtual environment
-```sudo -u APPUSER -H bash -c "python3.11 -m venv /opt/QuestByCycle/venv"```
-
-6. Install the requirements:
-
-```sudo -u APPUSER /bin/bash -c "source /opt/QuestByCycle/venv/bin/activate && pip install -r /opt/QuestByCycle/requirements.txt"```
+5. Install the requirements and set up the environment
+```sudo -u APPUSER /bin/bash -c "cd /opt/QuestByCycle && /home/APPUSER/.local/bin/pipenv install"```
 
 7. PostgresDB Setup:
 ```sudo apt install postgresql postgresql-contrib```
