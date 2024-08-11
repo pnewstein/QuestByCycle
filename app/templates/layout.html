@@ -5,23 +5,148 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %} - QuestByCycle</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main1.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/quill.snow.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/katex.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/atom-one-dark.min.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@13.0.0/dist/css/shepherd.css">
+
+    <!-- Inline Critical CSS -->
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            padding: 0;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        .content-wrap {
+            flex: 1;
+            background: url('/static/images/header-bg.jpg') stretch;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 95%;
+            margin: auto;
+            background-color: #D0E6B5;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            overflow: hidden;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease;
+        }
+
+        .flash-message {
+            width: 50%;
+            margin: 20px auto; 
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 1em; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+            transition: opacity 0.3s ease-in-out; 
+        }
+
+        .flash-success {
+            background-color: #a8d5a3; 
+            color: #3c763d;
+            border: 1px solid #96c48b;
+        }
+
+        .carousel-inner {
+            height: 300px;                  
+            max-width: 400px;               
+            width: 80%;                     
+            overflow: hidden;   
+            position: relative;      
+            margin: auto;                   
+            display: block;                 
+        }
+
+        .footer {
+            background-color: #2C3E50;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            padding: 20px 50px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-section.logos {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer-section.logos p {
+            margin-right: 10px;
+        }
+
+        .footer-section {
+            flex: 1;
+            padding: 10px;
+            min-width: 300px; 
+        }
+
+
+        .footer-section.links {
+            margin-bottom: 20px;
+        }
+
+        .footer-section.legal {
+            margin-top: 20px;
+        }
+
+        .footer-logo {
+            height: auto;
+            width: 100px; 
+        }
+
+
+        .social-link {
+            margin: 0 10px;
+            font-size: 24px;
+            color: #ffe07a; 
+        }
+
+        .social-link:hover {
+            color: #bfc2b1; 
+        }
+    </style>
+
+    <!-- Load non-critical CSS asynchronously -->
+    <link rel="preload" href="{{ url_for('static', filename='css/main1.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/main1.css') }}"></noscript>
+    <link rel="preload" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"></noscript>
+    <link rel="preload" href="{{ url_for('static', filename='css/quill.snow.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/quill.snow.css') }}"></noscript>
+    <link rel="preload" href="{{ url_for('static', filename='css/katex.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/katex.min.css') }}"></noscript>
+    <link rel="preload" href="{{ url_for('static', filename='css/atom-one-dark.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/atom-one-dark.min.css') }}"></noscript>
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/shepherd.js@13.0.0/dist/css/shepherd.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@13.0.0/dist/css/shepherd.css"></noscript>
+    
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="current-user-id" content="{{ current_user.id }}">
-    
-    <script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/katex.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/quill.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/shepherd.js@13.0.0/dist/esm/shepherd.mjs"></script>
+
+    <!-- Defer non-critical JavaScript -->
+    <script defer src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/katex.min.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/quill.min.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script defer type="module" src="https://cdn.jsdelivr.net/npm/shepherd.js@13.0.0/dist/esm/shepherd.mjs"></script>
 </head>
 <body data-user-id="{{ current_user.id if current_user.is_authenticated else 'none' }}">
     <div class="content-wrap">

@@ -224,17 +224,6 @@ main {
     background-color: #0056b3;
 }
 
-.flash-message {
-    width: 50%;
-    margin: 20px auto; 
-    padding: 15px;
-    border-radius: 5px;
-    text-align: center;
-    font-size: 1em; 
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
-    transition: opacity 0.3s ease-in-out; 
-}
-
 .flash-success {
     background-color: #a8d5a3; 
     color: #3c763d;
@@ -257,11 +246,6 @@ main {
     background-color: #b8dfe6; 
     color: #31708f;
     border: 1px solid #a3cbd3;
-}
-
-.content-wrap {
-    flex: 1; 
-    background: url('/static/images/header-bg.jpg') stretch;
 }
 
 a {
@@ -300,18 +284,6 @@ main {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
     background-color: #fff; 
     margin-bottom: 20px; 
-}
-
-.container {
-    width: 100%; 
-    max-width: 95%; 
-    margin: auto; 
-    background-color: #D0E6B5;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    overflow: hidden; 
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease;
 }
 
 .table {
@@ -1157,16 +1129,6 @@ small {
     z-index: -1;
 }
 
-.carousel-inner {
-    height: 300px;                  
-    max-width: 400px;               
-    width: 80%;                     
-    overflow: hidden;   
-    position: relative;      
-    margin: auto;                   
-    display: block;                 
-}
-
 .user-profile {
     max-width: 1000px;
     margin: auto;
@@ -1330,38 +1292,6 @@ small {
     color: #333;
 }
 
-.footer {
-    background-color: #2C3E50;
-    color: #ffffff;
-    font-family: Arial, sans-serif;
-    padding: 20px 50px;
-    box-sizing: border-box;
-    width: 100%;
-}
-
-.footer-content {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.footer-section.logos {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.footer-section.logos p {
-    margin-right: 10px;
-}
-
-.footer-section {
-    flex: 1;
-    padding: 10px;
-    min-width: 300px; 
-}
-
 .see-more {
     margin-left: 10px;
     text-decoration: none;
@@ -1374,14 +1304,6 @@ small {
     color: #bfc2b1; 
 }
 
-.footer-section.links {
-    margin-bottom: 20px;
-}
-
-.footer-section.legal {
-    margin-top: 20px;
-}
-
 .logos {
     display: flex;
     justify-content: center;
@@ -1390,11 +1312,6 @@ small {
 
 .logos a {
     margin: 0 15px;
-}
-
-.footer-logo {
-    height: auto;
-    width: 100px; 
 }
 
 .text {
@@ -1441,16 +1358,6 @@ small {
     font-style: italic;
     font-size: 1.2em; 
     color: #555; 
-}
-
-.social-link {
-    margin: 0 10px;
-    font-size: 24px;
-    color: #ffe07a; 
-}
-
-.social-link:hover {
-    color: #bfc2b1; 
 }
 
 .user-management-container {
