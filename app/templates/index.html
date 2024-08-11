@@ -20,7 +20,7 @@
         {% if not current_user.is_authenticated %}
             <div class="text-center mb-4">
                 <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Quest by Cycle"
-                    class="img-fluid w-100" style="max-height: 500px; object-fit: cover;" loading="lazy">
+                class="img-fluid w-100" style="max-width: 100%; height: auto; aspect-ratio: 16/9;" loading="eager" fetchpriority="high">           
             </div>
             <div class="text-center">
                 <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories Below!</small></p>
@@ -41,14 +41,14 @@
             {% if not current_user.is_authenticated %}
             <div class="embed-responsive embed-responsive-16by9 mb-4">
                 <video class="embed-responsive-item" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}"
-                    autoplay loop controls></video>
+                    autoplay loop controls style="aspect-ratio: 16/9;"></video>
             </div>
             {% endif %}
 
             {% if current_user.is_authenticated %}
                 <div class="text-center mb-4">
                     <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Quest by Cycle"
-                        class="img-fluid w-100" style="max-height: 500px; object-fit: cover;">
+                        class="img-fluid w-100" style="max-width: 100%; height: auto; aspect-ratio: 16/9;">
                 </div>
                 <div class="col-md-6 mb-4">
                     <div class="text-center mb-4">
@@ -63,9 +63,15 @@
                             <div class="carousel-inner">
                                 {% for image in carousel_images %}
                                 <div class="carousel-item{% if loop.first %} active{% endif %}" style="height: 300px;">
-                                    <img src="{{ url_for('static', filename=image) }}"
+                                    <img src="{{ url_for('static', filename=image['large']) }}"
+                                        srcset="{{ url_for('static', filename=image['small']) }} 480w, 
+                                                {{ url_for('static', filename=image['medium']) }} 768w, 
+                                                {{ url_for('static', filename=image['large']) }} 1200w"
+                                        sizes="(max-width: 600px) 480px, 
+                                            (max-width: 900px) 768px, 
+                                            1200px"
                                         class="d-block w-100 h-100" alt="Carousel Image"
-                                        style="height: 300px; width: 100%; object-fit: cover;" loading="lazy">
+                                        style="height: 100%; width: 100%; object-fit: cover;" loading="lazy">
                                 </div>
                                 {% endfor %}
                             </div>
@@ -99,7 +105,7 @@
                         <div class="card-body text-center">
                             <div id="profileView">
                                 <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}"
-                                    alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
+                                    alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px; height: auto;">
                                 <p class="font-weight-bold">Welcome, {{ profile.display_name or profile.username }}</p>
                                 <p id="total-points" class="font-weight-bold">Your Total Carbon Reduction Points: {{ total_points }}
                                 </p>

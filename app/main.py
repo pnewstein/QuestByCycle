@@ -113,7 +113,12 @@ def index(game_id, task_id, user_id):
         os.makedirs(carousel_images_dir)
 
     carousel_images = os.listdir(carousel_images_dir)
-    carousel_images = [os.path.join('images', current_app.config['CAROUSEL_IMAGES_DIR'], filename) for filename in carousel_images]
+
+    carousel_images = [{
+        'small': os.path.join('images', current_app.config['CAROUSEL_IMAGES_DIR'], 'small', filename),
+        'medium': os.path.join('images', current_app.config['CAROUSEL_IMAGES_DIR'], 'medium', filename),
+        'large': os.path.join('images', current_app.config['CAROUSEL_IMAGES_DIR'], 'large', filename)
+    } for filename in carousel_images]
 
     # If the user is authenticated, load user-specific tasks and data
     if current_user.is_authenticated:
