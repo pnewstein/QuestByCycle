@@ -257,6 +257,17 @@ def verify_email(token):
     user.email_verified = True
     db.session.commit()
     login_user(user)  # Log in the user
+
+    # Ensure the tutorial game exists
+    generate_tutorial_game()
+
+    # Check if the user has zero participated games and add to tutorial game if true
+    if len(user.participated_games) == 0:
+        tutorial_game = Game.query.filter_by(is_tutorial=True).first()
+        if tutorial_game:
+            user.participated_games.append(tutorial_game)
+            db.session.commit()
+
     flash('Your email has been verified and you have been logged in.', 'success')
     return redirect(url_for('main.index'))
 
