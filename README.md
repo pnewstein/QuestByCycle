@@ -38,13 +38,14 @@ Now login with ```ssh USER@HOST```
 ```echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab```
 
 3. Install NGINX:
+```sudo apt-get install curl gnupg2 ca-certificates lsb-release ubuntu-keyring```
 ```sudo apt install nginx```
 ```sudo ufw allow 'Nginx Full'```
 ```sudo ufw allow 'OpenSSH'```
 ```sudo ufw enable```
 
 4. Edit NGINX config:
-```sudo nano /etc/nginx/sites-available/default```
+```sudo nano /etc/nginx/conf.d/default.conf```
     [Example default](/docs/default.NGINX)
 ```sudo systemctl restart nginx.service```
 ```sudo certbot --nginx -d DOMAINNAME```
@@ -69,10 +70,10 @@ Now login with ```ssh USER@HOST```
 ```sudo add-apt-repository ppa:deadsnakes/ppa```
 ```sudo apt install python3.11 python3.11-venv python3-pip python3-gevent python3-certbot-nginx```
 
-3. Install ```Poetry```
-```curl -sSL https://install.python-poetry.org | python3 -```
-```poetry env use python3.11```
-```poetry install```
+3. Install Poetry:
+```sudo -u APPUSER HOME=/home/APPUSER curl -sSL https://install.python-poetry.org | sudo -u APPUSER HOME=/home/APPUSER python3 -```
+```sudo -u APPUSER /home/APPUSER/.local/bin/poetry env use /usr/bin/python3.11```
+```sudo -u APPUSER /home/APPUSER/.local/bin/poetry install```
 
 4. Prepare the Deployment:
 
@@ -87,16 +88,13 @@ After=network.target
 User=APPUSER
 Group=APPUSER
 WorkingDirectory=/opt/QuestByCycle
-ExecStart=/home/APPUSER/.cache/pypoetry/virtualenvs/questbycycle-BK-IO7k_-py3.11/bin/gunicorn --config /opt/QuestByCycle/gunicorn.conf.py wsgi:app
+ExecStart=/home/APPUSER/.cache/pypoetry/virtualenvs/questbycycle-BK-IO7k_-py3/bin/gunicorn  --worker-class geventwebsocket.gunicorn.workers.GeventWebSocketWorker  --config /opt/QuestByCycle/gunicorn.conf.py wsgi:app
 Nice=-10
-Environment="PATH=/home/APPUSER/.cache/pypoetry/virtualenvs/questbycycle-BK-IO7k_-py3.11/bin"
+Environment="PATH=/home/APPUSER/.cache/pypoetry/virtualenvs/questbycycle-BK-IO7k_-py3/bin"
 
 [Install]
 WantedBy=multi-user.target
 ```
-
-5. Install the requirements and set up the environment
-```sudo -u APPUSER /bin/bash -c "cd /opt/QuestByCycle && /home/APPUSER/.local/bin/pipenv install"```
 
 7. PostgresDB Setup:
 ```sudo apt install postgresql postgresql-contrib```
