@@ -19,8 +19,8 @@
 
         {% if not current_user.is_authenticated %}
             <div class="text-center mb-4">
-                <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Welcome to Quest by Cycle"
-                class="img-fluid w-100" style="max-width: 100%; height: auto; aspect-ratio: 16/9;" loading="eager" fetchpriority="high">           
+                <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}" alt="Welcome to Quest by Cycle"
+                    class="img-fluid w-100" style="max-width: 100%; height: auto; aspect-ratio: 16/9;" loading="lazy">
             </div>
             <div class="text-center">
                 <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories Below!</small></p>
@@ -47,7 +47,7 @@
 
             {% if current_user.is_authenticated %}
                 <div class="text-center mb-4">
-                    <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.png') }}" alt="Quest by Cycle"
+                    <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}" alt="Quest by Cycle"
                         class="img-fluid w-100" style="max-width: 100%; height: auto; aspect-ratio: 16/9;">
                 </div>
                 <div class="col-md-6 mb-4">
@@ -63,10 +63,10 @@
                             <div class="carousel-inner">
                                 {% for image in carousel_images %}
                                 <div class="carousel-item{% if loop.first %} active{% endif %}" style="height: 300px;">
-                                    <img src="{{ url_for('static', filename=image['large']) }}"
-                                        srcset="{{ url_for('static', filename=image['small']) }} 480w, 
-                                                {{ url_for('static', filename=image['medium']) }} 768w, 
-                                                {{ url_for('static', filename=image['large']) }} 1200w"
+                                    <img src="{{ url_for('static', filename='images/carousel_images/' + image['large']) }}"
+                                        srcset="{{ url_for('static', filename='images/carousel_images/' + image['small']) }} 480w, 
+                                                {{ url_for('static', filename='images/carousel_images/' + image['medium']) }} 768w, 
+                                                {{ url_for('static', filename='images/carousel_images/' + image['large']) }} 1200w"
                                         sizes="(max-width: 600px) 480px, 
                                             (max-width: 900px) 768px, 
                                             1200px"
@@ -74,7 +74,8 @@
                                         style="height: 100%; width: 100%; object-fit: cover;" loading="lazy">
                                 </div>
                                 {% endfor %}
-                            </div>
+                            </div>                    
+                            
                             <a class="carousel-control-prev" href="#taskImageCarousel" role="button" data-slide="prev">
                                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                 <span class="sr-only">Previous</span>

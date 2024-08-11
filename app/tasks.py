@@ -476,7 +476,7 @@ def generate_qr(task_id):
     </head>
     <body>
         <div class="qrcodeHeader">
-            <img src="{url_for('static', filename='images/welcomeQuestByCycle.png')}" alt="Welcome">
+            <img src="{url_for('static', filename='images/welcomeQuestByCycle.webp')}" alt="Welcome">
         </div>
         <h1>Congratulations!</h1>
         <h2>Quest By Cycle is a free eco-adventure game where players pedal their way to sustainability, earn rewards, and transform communities—all while having fun!</h2>

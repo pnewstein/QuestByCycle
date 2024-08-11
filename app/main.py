@@ -106,18 +106,19 @@ def index(game_id, task_id, user_id):
         current_user.onboarded = True
         db.session.commit()
 
-    # Load carousel images
+    # Assuming 'CAROUSEL_IMAGES_DIR' is 'carousel_images'
     carousel_images_dir = os.path.join(current_app.root_path, 'static', 'images', current_app.config['CAROUSEL_IMAGES_DIR'])
 
     if not os.path.exists(carousel_images_dir):
         os.makedirs(carousel_images_dir)
 
-    carousel_images = os.listdir(carousel_images_dir)
+    # List all files in the directory without the '_size' suffix
+    carousel_images = [filename.split('_')[0] for filename in os.listdir(carousel_images_dir) if filename.endswith('.webp')]
 
     carousel_images = [{
-        'small': os.path.join('images', current_app.config['CAROUSEL_IMAGES_DIR'], 'small', filename),
-        'medium': os.path.join('images', current_app.config['CAROUSEL_IMAGES_DIR'], 'medium', filename),
-        'large': os.path.join('images', current_app.config['CAROUSEL_IMAGES_DIR'], 'large', filename)
+        'small': f"{filename}_small.webp",
+        'medium': f"{filename}_medium.webp",
+        'large': f"{filename}_large.webp"
     } for filename in carousel_images]
 
     # If the user is authenticated, load user-specific tasks and data
