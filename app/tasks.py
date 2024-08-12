@@ -140,6 +140,11 @@ def submit_task(task_id):
     if not (game.start_date <= now <= game.end_date):
         return jsonify({'success': False, 'message': 'This task cannot be completed outside of the game dates'}), 403
 
+    # Check if the user can verify the task
+    can_verify, next_eligible_time = can_complete_task(current_user.id, task_id)
+    if not can_verify:
+        return jsonify({'success': False, 'message': f'You cannot submit this task again until {next_eligible_time}'}), 403
+
     sid = request.form.get('sid')
     if not sid:
         print("No session ID provided.")
@@ -500,14 +505,27 @@ def submit_photo(task_id):
     game_end = game.end_date
     now = datetime.now()
 
+    # Check if task is enabled
+    if not task.enabled:
+        flash('This task is not enabled.', 'error')
+        return jsonify({'success': False, 'message': 'This task is not enabled'}), 403
+
+    # Check if the current time is within the game dates
+    if not (game_start <= now <= game_end):
+        flash('This task cannot be completed outside of the game dates.', 'error')
+        return jsonify({'success': False, 'message': 'This task cannot be completed outside of the game dates'}), 403
+
+    # Check if the user can verify the task
+    can_verify, next_eligible_time = can_complete_task(current_user.id, task_id)
+    if not can_verify:
+        flash(f'You cannot submit this task again until {next_eligible_time}', 'error')
+        return jsonify({'success': False, 'message': f'You cannot submit this task again until {next_eligible_time}'}), 403
+
     if request.method == 'POST':
         sid = request.form.get('sid')
 
         if not sid:
             return jsonify({'success': False, 'message': 'No session ID provided'}), 400
-
-        if not (game_start <= now <= game_end):
-            return jsonify({'success': False, 'message': 'This task cannot be completed outside of the game dates'}), 403
 
         emit_status('Initializing submission process...', sid)
 
@@ -553,6 +571,7 @@ def submit_photo(task_id):
             db.session.commit()
 
             update_user_score(current_user.id)
+            check_and_award_badges(current_user.id, task_id, task.game_id)
 
             emit_status('Submission complete!', sid)
             try:
