@@ -494,8 +494,6 @@ def generate_qr(task_id):
     response = make_response(html_content)
     response.headers['Content-Type'] = 'text/html'
     return response
-
-
 @tasks_bp.route('/submit_photo/<int:task_id>', methods=['GET', 'POST'])
 @login_required
 def submit_photo(task_id):
@@ -584,13 +582,12 @@ def submit_photo(task_id):
                 return jsonify({'success': False, 'message': f'Issue submitting verification: {e}'}), 500
 
             message = 'Photo submitted successfully!'
-            return jsonify({'success': True, 'message': message, 'redirect_url': url_for('tasks.submit_photo', task_id=task_id)}), 200
+            return jsonify({'success': True, 'message': message, 'redirect_url': url_for('main.index', game_id=game.id, task_id=task_id)}), 200
 
         else:
             return jsonify({'success': False, 'message': 'No photo detected, please try again.'}), 400
 
     return render_template('submit_photo.html', form=form, task=task, task_id=task_id)
-
 
 
 def allowed_file(filename):

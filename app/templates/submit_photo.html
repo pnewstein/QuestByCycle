@@ -19,6 +19,7 @@
             // Initialize Socket.IO connection
             const socket = io();
     
+            // Handle form submission
             submitPhotoForm.addEventListener('submit', function(event) {
                 event.preventDefault();
                 if (isSubmitting) return;
@@ -30,6 +31,8 @@
                 const sid = socket.id;
                 if (!sid) {
                     console.error('No session ID provided');
+                    hideFloatingModal();
+                    isSubmitting = false;
                     return;
                 }
     
@@ -99,8 +102,7 @@
                 }
             }
         });
-    </script>
-    
+    </script>    
     <style>
         body {
             display: flex;
