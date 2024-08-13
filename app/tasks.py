@@ -495,6 +495,7 @@ def generate_qr(task_id):
     response.headers['Content-Type'] = 'text/html'
     return response
 
+
 @tasks_bp.route('/submit_photo/<int:task_id>', methods=['GET', 'POST'])
 @login_required
 def submit_photo(task_id):
@@ -505,25 +506,27 @@ def submit_photo(task_id):
     game_end = game.end_date
     now = datetime.now()
 
-    # Check if task is enabled
     if not task.enabled:
-        flash('This task is not enabled.', 'error')
-        return jsonify({'success': False, 'message': 'This task is not enabled'}), 403
+        message = 'This task is not enabled.'
+        if request.method == 'POST':
+            return jsonify({'success': False, 'message': message}), 400
+        flash(message, 'error')
+        return redirect(url_for('tasks.submit_photo', task_id=task_id))
 
-    # Check if the current time is within the game dates
     if not (game_start <= now <= game_end):
-        flash('This task cannot be completed outside of the game dates.', 'error')
-        return jsonify({'success': False, 'message': 'This task cannot be completed outside of the game dates'}), 403
-
-    # Check if the user can verify the task
-    can_verify, next_eligible_time = can_complete_task(current_user.id, task_id)
-    if not can_verify:
-        flash(f'You cannot submit this task again until {next_eligible_time}', 'error')
-        return jsonify({'success': False, 'message': f'You cannot submit this task again until {next_eligible_time}'}), 403
+        message = 'This task cannot be completed outside of the game dates.'
+        if request.method == 'POST':
+            return jsonify({'success': False, 'message': message}), 400
+        flash(message, 'error')
+        return redirect(url_for('tasks.submit_photo', task_id=task_id))
 
     if request.method == 'POST':
-        sid = request.form.get('sid')
+        can_verify, next_eligible_time = can_complete_task(current_user.id, task_id)
+        if not can_verify:
+            message = f'You cannot submit this task again until {next_eligible_time}.'
+            return jsonify({'success': False, 'message': message}), 400
 
+        sid = request.form.get('sid')
         if not sid:
             return jsonify({'success': False, 'message': 'No session ID provided'}), 400
 
@@ -578,16 +581,16 @@ def submit_photo(task_id):
                 from app import socketio
                 socketio.emit('submission_complete', {'status': "Submission Complete"}, room=sid)
             except Exception as e:
-                flash(f'Issue submitting verification: {e}', 'error')
+                return jsonify({'success': False, 'message': f'Issue submitting verification: {e}'}), 500
 
-            flash('Photo submitted successfully!', 'success')
-            redirect_url = url_for('main.index', game_id=task.game_id, task_id=task_id)
-            return jsonify({'success': True, 'redirect_url': redirect_url})
+            message = 'Photo submitted successfully!'
+            return jsonify({'success': True, 'message': message, 'redirect_url': url_for('tasks.submit_photo', task_id=task_id)}), 200
+
         else:
-            flash('No photo detected, please try again.', 'error')
-            return jsonify({'success': False, 'message': 'No photo detected, please try again.'})
+            return jsonify({'success': False, 'message': 'No photo detected, please try again.'}), 400
 
     return render_template('submit_photo.html', form=form, task=task, task_id=task_id)
+
 
 
 def allowed_file(filename):

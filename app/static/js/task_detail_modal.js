@@ -1,6 +1,14 @@
 // Task detail modal management functions
 function openTaskDetailModal(taskId) {
     resetModalContent();
+
+    // Show flash messages in the modal
+    const flashMessagesContainer = document.getElementById('flash-messages-data');
+    const modalFlashContainer = document.getElementById('modal-flash-messages');
+    if (flashMessagesContainer && modalFlashContainer) {
+        modalFlashContainer.innerHTML = flashMessagesContainer.innerHTML;
+    }
+
     fetch(`/tasks/detail/${taskId}/user_completion`)
         .then(response => response.json())
         .then(data => {
@@ -354,6 +362,15 @@ function submitTaskDetails(event, taskId) {
     .then(response => {
         hideLoadingModal(); // Hide the loading modal upon receiving the response
         if (!response.ok) {
+            if (response.status === 403) {
+                // Handle the specific case where the game is out of date
+                return response.json().then(data => {
+                    if (data.message === 'This task cannot be completed outside of the game dates') {
+                        throw new Error('The game has ended and you can no longer submit tasks.');
+                    }
+                    throw new Error(data.message || `Server responded with status ${response.status}`);
+                });
+            }
             throw new Error(`Server responded with status ${response.status}`);
         }
         return response.json();
@@ -389,7 +406,11 @@ function submitTaskDetails(event, taskId) {
     .catch(error => {
         hideLoadingModal(); // Ensure the loading modal is hidden on error
         console.error("Submission error:", error);
-        alert('Error during submission: ' + error.message);
+        if (error.message === 'The game has ended and you can no longer submit tasks.') {
+            alert('The game has ended, and you can no longer submit tasks for this game.');
+        } else {
+            alert('Error during submission: ' + error.message);
+        }
     })
     .finally(() => {
         isSubmitting = false;
