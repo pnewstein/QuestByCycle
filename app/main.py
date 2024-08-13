@@ -1,8 +1,9 @@
-from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, jsonify, send_file, render_template, request, redirect, url_for, flash, current_app, Response
 from flask_login import current_user, login_required, logout_user
 from app.utils import save_profile_picture, save_bicycle_picture
 from app.models import db, Game, User, Task, Badge, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage, user_games
 from app.forms import ProfileForm, ShoutBoardForm, ContactForm, BikeForm
+from app.sitemap import generate_static_urls, generate_dynamic_urls
 from app.utils import send_email, allowed_file, generate_tutorial_game
 from .config import load_config
 from werkzeug.utils import secure_filename
@@ -11,11 +12,13 @@ from sqlalchemy.orm import aliased
 from datetime import datetime, timedelta, timezone
 from pytz import utc
 from flask_wtf.csrf import generate_csrf
+from PIL import Image
+from io import BytesIO
 
 import bleach
 import os
 import logging
-
+import io
 main_bp = Blueprint('main', __name__)
 
 ALLOWED_TAGS = [
@@ -106,21 +109,6 @@ def index(game_id, task_id, user_id):
         current_user.onboarded = True
         db.session.commit()
 
-    # Assuming 'CAROUSEL_IMAGES_DIR' is 'carousel_images'
-    carousel_images_dir = os.path.join(current_app.root_path, 'static', 'images', current_app.config['CAROUSEL_IMAGES_DIR'])
-
-    if not os.path.exists(carousel_images_dir):
-        os.makedirs(carousel_images_dir)
-
-    # List all files in the directory without the '_size' suffix
-    carousel_images = [filename.split('_')[0] for filename in os.listdir(carousel_images_dir) if filename.endswith('.webp')]
-
-    carousel_images = [{
-        'small': f"{filename}_small.webp",
-        'medium': f"{filename}_medium.webp",
-        'large': f"{filename}_large.webp"
-    } for filename in carousel_images]
-
     # If the user is authenticated, load user-specific tasks and data
     if current_user.is_authenticated:
         user_tasks = UserTask.query.filter_by(user_id=current_user.id).all()
@@ -210,6 +198,21 @@ def index(game_id, task_id, user_id):
     tasks.sort(key=lambda x: (-x.is_sponsored, -x.personal_completions, -x.total_completions))
 
     custom_games = Game.query.filter(Game.custom_game_code.isnot(None), Game.is_public.is_(True)).all()
+
+    carousel_images = []
+    if current_user.is_authenticated and game_id:
+        task_submissions = TaskSubmission.query.join(Task).filter(Task.game_id == game_id).all()
+        for submission in task_submissions:
+            if submission.image_url:
+                image_url = submission.image_url.lstrip('/')  # Ensure no leading slash
+                carousel_images.append({
+                    'small': submission.image_url.replace('static/', ''),  # Remove 'static/' prefix
+                    'medium': submission.image_url.replace('static/', ''),
+                    'large': submission.image_url.replace('static/', ''),
+                    'task_title': submission.task.title,
+                    'comment': submission.comment
+                })
+
 
     return render_template('index.html',
                            form=form,

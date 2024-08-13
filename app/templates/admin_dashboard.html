@@ -43,8 +43,6 @@
                     </form>
                     <a href="{{ url_for('tasks.manage_game_tasks', game_id=game.id) }}" class="btn btn-primary">Config Tasks</a>
                     <a href="{{ url_for('badges.manage_badges', game_id=game.id) }}" class="btn btn-primary">Config Badges</a>
-                    <button class="btn btn-primary" onclick="openModal('editCarouselModal')">Edit Carousel</button>
-                    <button id="allSubmissionsButton" class="btn btn-primary" style="margin-left: 10px;">All Submissions</button>
                 </div>
             {% else %}
                 <p>No games found.</p>
@@ -54,7 +52,6 @@
 </div>
 
 {% include 'modals/all_submissions_modal.html' %}
-{% include 'modals/edit_carousel_modal.html' %}
 
 <script src="{{ url_for('static', filename='js/all_submissions_modal.js') }}"></script>
 
