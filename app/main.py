@@ -3,7 +3,6 @@ from flask_login import current_user, login_required, logout_user
 from app.utils import save_profile_picture, save_bicycle_picture
 from app.models import db, Game, User, Task, Badge, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage, user_games
 from app.forms import ProfileForm, ShoutBoardForm, ContactForm, BikeForm
-from app.sitemap import generate_static_urls, generate_dynamic_urls
 from app.utils import send_email, allowed_file, generate_tutorial_game
 from .config import load_config
 from werkzeug.utils import secure_filename
@@ -621,3 +620,49 @@ def refresh_csrf():
     response = jsonify({'csrf_token': new_csrf_token})
     response.set_cookie('csrf_token', new_csrf_token)
     return response
+
+
+# Define the route for resizing images on the fly
+@main_bp.route('/resize_image')
+def resize_image():
+    image_path = request.args.get('path')
+    width = request.args.get('width', type=int)
+
+    if not image_path or not width:
+        return jsonify({'error': "Invalid request: Missing 'path' or 'width'"}), 400
+
+    try:
+        full_image_path = os.path.join(current_app.static_folder, image_path.lstrip('/'))
+        if not os.path.exists(full_image_path):
+            current_app.logger.error(f"File not found: {full_image_path}")
+            return jsonify({'error': 'File not found'}), 404
+
+        # Open the image
+        with Image.open(full_image_path) as img:
+            # Calculate the height to maintain aspect ratio
+            ratio = width / float(img.width)
+            height = int(img.height * ratio)
+            
+            # Resize the image using LANCZOS resampling
+            img_resized = img.resize((width, height), Image.Resampling.LANCZOS)
+
+            # Preserve transparency by handling different image modes
+            if img_resized.mode in ('RGBA', 'LA') or (img_resized.mode == 'P' and 'transparency' in img_resized.info):
+                # Preserve transparency by using the original mode (with transparency)
+                img_resized = img_resized.convert('RGBA')
+                # Save to a BytesIO object with transparency preserved
+                img_io = io.BytesIO()
+                img_resized.save(img_io, 'WEBP', lossless=True, transparency=0)
+            else:
+                # Convert non-transparent images to RGB
+                img_resized = img_resized.convert('RGB')
+                img_io = io.BytesIO()
+                img_resized.save(img_io, 'WEBP')
+
+            img_io.seek(0)
+
+            return send_file(img_io, mimetype='image/webp')
+
+    except Exception as e:
+        current_app.logger.error(f"Exception occurred during image processing: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
