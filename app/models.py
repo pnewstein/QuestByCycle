@@ -170,6 +170,9 @@ class Task(db.Model):
     submissions = db.relationship('TaskSubmission', back_populates='task', cascade='all, delete-orphan')
     likes = db.relationship('TaskLike', backref='task', cascade="all, delete-orphan")
 
+    def __repr__(self):
+        return f'<Task {self.id}>'
+    
 class TaskLike(db.Model):
     __tablename__ = 'task_likes'
     id = db.Column(db.Integer, primary_key=True)
