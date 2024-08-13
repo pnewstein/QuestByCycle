@@ -1120,6 +1120,16 @@ small {
     padding: 15px;
 }
 
+.carousel-caption h5 {
+    color: #fff;
+    font-size: 1.25rem;
+}
+
+.carousel-caption p {
+    color: #ddd;
+    font-size: 1rem;
+}
+
 .carousel-control-prev, .carousel-control-next {
     width: 5%;
 }
