@@ -1,20 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
     <div class="container mt-5">
-        {% if current_user.is_authenticated %}
-        <div id="flash-messages" style="display: none;">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    <div id="flash-messages-data">
-                        {% for category, message in messages %}
-                            <div class="flash-message {{ category }}">{{ message }}</div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            {% endwith %}
-        </div>
-        {% endif %}
-
         {% if not current_user.is_authenticated %}
             <div class="text-center mb-4">
                 <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}" alt="Welcome to Quest by Cycle"
@@ -93,8 +79,6 @@
                                 <a href="{{ url_for('games.game_info', game_id=selected_game_id) }}" class="btn btn-primary btn-lg mb-2" id="lets-get-started-button">Let's Get Started!</a>
                                 <button class="btn btn-secondary btn-lg mb-2" onclick="openModal('contactModal')" id="contact-us-button">Contact Us</button>
                                 <button class="btn btn-primary btn-lg mb-2" onclick="openModal('sponsorsModal', '{{ selected_game_id }}')">Sponsors</button>
-                            {% else %}
-                                <button class="btn btn-primary btn-lg mb-2" onclick="openModal('sponsorsModal', '{{ selected_game_id }}')">Sponsors</button>
                             {% endif %}
                         </div>
                     </div>
@@ -102,9 +86,26 @@
             {% endif %}
         
             {% if profile %}
-                <div class="col-md-6 mb-4">
+                <div class="col-md-6 mb-4">       
                     <div class="card mb-4 w-100">
                         <div class="card-body text-center">
+                            {% if current_user.is_authenticated %}
+                            <div id="flash-messages" style="display: none;">
+                                {% with messages = get_flashed_messages(with_categories=true) %}
+                                    {% if messages %}
+                                        <div id="flash-messages-data">
+                                            {% for category, message in messages %}
+                                                <div class="flash-message {{ category }}">{{ message }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                            <!-- Flash Messages for the modal -->
+                            <div id="modal-flash-messages">
+                                <!-- Flash messages will be dynamically inserted here -->
+                            </div>
+                            {% endif %}     
                             <div id="profileView">
                                 <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}"
                                     alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px; height: auto;">
@@ -125,17 +126,21 @@
                                 <!-- Dropdown for selecting joined games -->
                                 <div class="form-group mt-3">
                                     <label for="gameSelectDropdown">Select or Join Game:</label>
-                                    <select id="gameSelectDropdown" class="form-control" onchange="handleGameSelection(this)">
+                                    <button id="gameDropdownButton" class="btn btn-secondary dropdown-toggle">
+                                        Currently Viewing: <span class="game-title">{{ game.title }}</span>
+                                    </button>
+                                    <div id="gameDropdownMenu" class="dropdown-menu" style="display: none;">
                                         {% for game, joined_at in user_games %}
-                                        <option value="{{ url_for('main.index', game_id=game.id) }}" {% if game.id == selected_game_id %}selected{% endif %}>
-                                            {{ game.title }} - Joined on: {{ joined_at.strftime('%m-%d-%Y') if joined_at else 'N/A' }}
-                                        </option>
+                                        <a href="{{ url_for('main.index', game_id=game.id) }}" class="dropdown-item">
+                                            <span class="game-title">{{ game.title }}</span> - <small>Joined on: {{ joined_at.strftime('%m-%d-%Y') if joined_at else 'N/A' }}</small>
+                                        </a>
                                         {% endfor %}
-                                        <option value="join_custom_game">Join Custom Game</option> <!-- Add this line -->
-                                    </select>
-                                    <!-- Add link to restart the Shepherd tour -->
-                                    <a href="javascript:void(0);" id="restart-tour-link" class="mt-2 d-block">Tour the Quest by Cycle Platform</a>
-                                </div>
+                                        <div class="dropdown-divider"></div>
+                                        <a href="#" class="dropdown-item bold-item" onclick="handleGameSelection({ value: 'join_custom_game' })">
+                                            Join Custom Game
+                                        </a>
+                                    </div>
+                                </div>                              
                             {% endif %}
                         </div>
                     </div>
@@ -293,8 +298,68 @@
     <script src="{{ url_for('static', filename='js/index_management.js') }}"></script>
     <script src="{{ url_for('static', filename='js/generated_task.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='js/shepherd_tour.js') }}"></script>
+    <script type="module">
+        import { computePosition, autoUpdate, offset, flip, shift } from 'https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.10/+esm';
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const referenceElement = document.getElementById('gameDropdownButton');
+            const floatingElement = document.getElementById('gameDropdownMenu');
+
+            referenceElement.addEventListener('click', () => {
+                floatingElement.style.display = floatingElement.style.display === 'none' ? 'block' : 'none';
+
+                // Compute the position using Floating UI
+                computePosition(referenceElement, floatingElement, {
+                    placement: 'bottom-start',
+                    middleware: [
+                        offset(5),  // Offset the dropdown by 5px
+                        flip(),
+                        shift({ padding: 8 }),
+                    ],
+                }).then(({ x, y }) => {
+                    Object.assign(floatingElement.style, {
+                        left: `${x}px`,
+                        top: `${y}px`,
+                    });
+                });
+
+                // Automatically update position on resize or scroll
+                autoUpdate(referenceElement, floatingElement, () => {
+                    computePosition(referenceElement, floatingElement, {
+                        placement: 'bottom-start',
+                        middleware: [
+                            offset(5),
+                            flip(),
+                            shift({ padding: 8 }),
+                        ],
+                    }).then(({ x, y }) => {
+                        Object.assign(floatingElement.style, {
+                            left: `${x}px`,
+                            top: `${y}px`,
+                        });
+                    });
+                });
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!referenceElement.contains(e.target) && !floatingElement.contains(e.target)) {
+                    floatingElement.style.display = 'none';
+                }
+            });
+        });
+
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Show flash messages in the modal
+            const flashMessagesContainer = document.getElementById('flash-messages-data');
+            const modalFlashContainer = document.getElementById('modal-flash-messages');
+            if (flashMessagesContainer && modalFlashContainer) {
+                modalFlashContainer.innerHTML = flashMessagesContainer.innerHTML;
+            }
+
+
             // Function to get URL parameters
             function getQueryParam(param) {
                 const urlParams = new URLSearchParams(window.location.search);
@@ -308,6 +373,16 @@
             if (taskId != 'None') {
                 console.log(`Found task_id: ${taskId}. Opening modal...`);
                 openTaskDetailModal(taskId);
+            }
+
+            function handleGameSelection(option) {
+                const selectedValue = option.value;
+
+                if (selectedValue === 'join_custom_game') {
+                    openModal('joinCustomGameModal');
+                } else {
+                    window.location.href = selectedValue;
+                }
             }
         });
     
@@ -396,6 +471,33 @@
         });
     </script>
     <style>
+        .game-title {
+            font-weight: bold;
+        }
+
+        .bold-item {
+            font-weight: bold;
+        }
+
+        #gameDropdownMenu {
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 300px;
+            z-index: 1000;
+        }
+
+        .dropdown-item {
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f1f1f1;
+        }
+
         .activity-message {
             flex-grow: 1;
             white-space: normal;
