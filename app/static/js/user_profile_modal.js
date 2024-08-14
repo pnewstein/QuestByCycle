@@ -74,12 +74,15 @@ function showUserProfileModal(userId) {
             const messagesHtml = buildMessageTree(data.profile_messages, null, isCurrentUser, data.current_user_id, userId, 0);
 
             userProfileDetails.innerHTML = `
-                <header class="profile-header text-center py-5 mb-4 position-relative">
+                <header class="profile-header text-center py-5 mb-4 position-relative bg-gradient-primary">
                     ${data.user.profile_picture ? `
                         <div class="profile-picture-container position-relative mx-auto mb-3">
                             <img src="/static/${data.user.profile_picture}" alt="Profile Picture" class="profile-picture rounded-circle shadow-lg border border-white border-4">
+                            <button class="btn btn-light btn-sm position-absolute top-0 start-0 translate-middle badge badge-light rounded-pill" data-floating-ui-tooltip="Edit Profile Picture" onclick="editProfilePicture()">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
                         </div>` : ''}
-                    <div class="header-bg position-absolute w-100 h-100 top-0 start-0"></div>
+                    <div class="header-bg position-absolute w-100 h-100 top-0 start-0 bg-opacity-50"></div>
                     <div class="header-content position-relative z-index-1">
                         <h1 class="display-4 text-white font-weight-bold">${data.user.display_name || data.user.username}'s Profile</h1>
                     </div>
@@ -88,88 +91,105 @@ function showUserProfileModal(userId) {
                         <div class="decorative-triangle"></div>
                     </div>
                 </header>
-                <div class="row">
+                <div class="row g-4">
                     <div class="col-md-8">
                         <ul class="nav nav-tabs" id="profileTabs" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="true">Profile</a>
+                                <a class="nav-link active" id="profile-tab" data-bs-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="true">
+                                    <i class="bi bi-person-circle me-2"></i>Profile
+                                </a>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="bike-tab" data-toggle="tab" href="#bike" role="tab" aria-controls="bike" aria-selected="false">Bike</a>
+                                <a class="nav-link" id="bike-tab" data-bs-toggle="tab" href="#bike" role="tab" aria-controls="bike" aria-selected="false">
+                                    <i class="bi bi-bicycle me-2"></i>Bike
+                                </a>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="badges-earned-tab" data-toggle="tab" href="#badges-earned" role="tab" aria-controls="badges-earned" aria-selected="false">Badges Earned</a>
+                                <a class="nav-link" id="badges-earned-tab" data-bs-toggle="tab" href="#badges-earned" role="tab" aria-controls="badges-earned" aria-selected="false">
+                                    <i class="bi bi-trophy me-2"></i>Badges Earned
+                                </a>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="games-participated-tab" data-toggle="tab" href="#games-participated" role="tab" aria-controls="games-participated" aria-selected="false">Games Participated</a>
+                                <a class="nav-link" id="games-participated-tab" data-bs-toggle="tab" href="#games-participated" role="tab" aria-controls="games-participated" aria-selected="false">
+                                    <i class="bi bi-controller me-2"></i>Games Participated
+                                </a>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="task-submissions-tab" data-toggle="tab" href="#task-submissions" role="tab" aria-controls="task-submissions" aria-selected="false">Task Submissions</a>
+                                <a class="nav-link" id="task-submissions-tab" data-bs-toggle="tab" href="#task-submissions" role="tab" aria-controls="task-submissions" aria-selected="false">
+                                    <i class="bi bi-list-task me-2"></i>Task Submissions
+                                </a>
                             </li>
                         </ul>
-                        <div class="tab-content" id="profileTabsContent">
+                        <div class="tab-content bg-light p-4 rounded shadow-sm" id="profileTabsContent">
                             <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                                 <section class="profile mb-4">
                                     ${isCurrentUser ? `
-                                        <form id="editProfileForm" enctype="multipart/form-data">
-                                        <div class="form-group">
-                                            <label for="profilePictureInput">Profile Picture:</label>
-                                            <input type="file" class="form-control" id="profilePictureInput" name="profile_picture" accept="image/*">
-                                        </div>
-                                            <div class="form-group">
-                                                <label for="displayName">Display Name:</label>
-                                                <input type="text" class="form-control" id="displayName" name="display_name" value="${data.user.display_name || ''}">
+                                        <form id="editProfileForm" enctype="multipart/form-data" class="needs-validation" novalidate>
+                                            <div class="form-group mb-3">
+                                                <label for="profilePictureInput" class="form-label">Profile Picture:</label>
+                                                <input type="file" class="form-control" id="profilePictureInput" name="profile_picture" accept="image/*">
                                             </div>
-                                            <div class="form-group">
-                                                <label for="ageGroup">Age Group:</label>
-                                                <select class="form-control" id="ageGroup" name="age_group">
+                                            <div class="form-group mb-3">
+                                                <label for="displayName" class="form-label">Display Name:</label>
+                                                <input type="text" class="form-control" id="displayName" name="display_name" value="${data.user.display_name || ''}" required>
+                                                <div class="invalid-feedback">Display Name is required.</div>
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label for="ageGroup" class="form-label">Age Group:</label>
+                                                <select class="form-select" id="ageGroup" name="age_group">
                                                     <option value="teen" ${data.user.age_group === 'teen' ? 'selected' : ''}>Teen</option>
                                                     <option value="adult" ${data.user.age_group === 'adult' ? 'selected' : ''}>Adult</option>
                                                     <option value="senior" ${data.user.age_group === 'senior' ? 'selected' : ''}>Senior</option>
                                                 </select>
                                             </div>
-                                            <div class="form-group">
-                                                <label for="interests">Interests:</label>
-                                                <textarea class="form-control" id="interests" name="interests">${data.user.interests || ''}</textarea>
+                                            <div class="form-group mb-3">
+                                                <label for="interests" class="form-label">Interests:</label>
+                                                <textarea class="form-control" id="interests" name="interests" rows="3" placeholder="Describe your interests...">${data.user.interests || ''}</textarea>
                                             </div>
-                                            <div class="form-group-1">
-                                                <label for="ridingPreferences"><b>Riding Preferences:</b></label>
+                                            <div class="form-group mb-3">
+                                                <label for="ridingPreferences" class="form-label"><b>Riding Preferences:</b></label>
                                                 <div id="ridingPreferences">
                                                     ${data.riding_preferences_choices.map((choice, index) => `
-                                                        <div class="form-check">
-                                                            <input type="checkbox" class="form-check-input" id="ridingPref-${index}" name="riding_preferences" value="${choice[0]}" ${data.user.riding_preferences.includes(choice[0]) ? 'checked' : ''}>
-                                                            <label class="form-check-label" for="ridingPref-${index}">${choice[1]}</label>
+                                                        <div class="form-check mb-2">
+                                                            <input class="form-check-input" type="checkbox" id="ridingPref-${index}" name="riding_preferences" value="${choice[0]}" ${data.user.riding_preferences.includes(choice[0]) ? 'checked' : ''} style="width: 1.25rem; height: 1.25rem;">
+                                                            <label class="form-check-label ms-2" for="ridingPref-${index}">${choice[1]}</label>
                                                         </div>
                                                     `).join('')}
                                                 </div>
                                             </div>
-                                            <div class="form-group">
-                                                <label for="rideDescription">Describe the type of riding you like to do:</label>
-                                                <textarea class="form-control" id="rideDescription" name="ride_description">${data.user.ride_description || ''}</textarea>
+                                            <div class="form-group mb-3">
+                                                <label for="rideDescription" class="form-label">Describe the type of riding you like to do:</label>
+                                                <textarea class="form-control" id="rideDescription" name="ride_description" rows="3">${data.user.ride_description || ''}</textarea>
                                             </div>
-                                            <div class="form-group-1 form-check">
-                                                <input type="checkbox" class="form-check-input" name="upload_to_socials" ${data.user.upload_to_socials ? 'checked' : ''}>
-                                                <label class="form-check-label"  id="uploadToSocials" for="uploadToSocials">Upload Activities to Social Media</label>
+                                            <div class="form-check form-switch mb-3">
+                                                <input class="form-check-input" type="checkbox" id="uploadToSocials" name="upload_to_socials" ${data.user.upload_to_socials ? 'checked' : ''}>
+                                                <label class="form-check-label" for="uploadToSocials">Upload Activities to Social Media</label>
                                             </div>
-                                            <div class="form-group-1 form-check">
-                                                <input type="checkbox" class="form-check-input" id="showCarbonGame" name="show_carbon_game" ${data.user.show_carbon_game ? 'checked' : ''}>
+                                            <div class="form-check form-switch mb-3">
+                                                <input class="form-check-input" type="checkbox" id="showCarbonGame" name="show_carbon_game" ${data.user.show_carbon_game ? 'checked' : ''}>
                                                 <label class="form-check-label" for="showCarbonGame">Show Carbon Reduction Game</label>
                                             </div>
-                                            <button type="button" class="btn btn-primary" onclick="saveProfile(${userId})">Save Profile</button>
+                                            <div class="d-flex justify-content-between">
+                                                <button type="button" class="btn btn-success" onclick="saveProfile(${userId})"><i class="bi bi-save me-2"></i>Save Profile</button>
+                                            </div>
                                         </form>
-                                        <br>
-                                        <form id="updatePasswordForm">
-                                            <button type="button" class="btn btn-primary" onclick="window.location.href='/auth/update_password';">Update Password</button>
+                                        <hr>
+                                        <form id="updatePasswordForm" class="d-flex justify-content-between">
+                                            <button type="button" class="btn btn-primary w-100 me-2" onclick="window.location.href='/auth/update_password';">
+                                                <i class="bi bi-shield-lock-fill me-2"></i>Update Password
+                                            </button>
                                         </form>
-                                        <form id="deleteAccountForm" onsubmit="event.preventDefault(); deleteAccount();">
-                                            <button type="submit" class="btn btn-danger">Delete My Account</button>
+                                        <hr>
+                                        <form id="deleteAccountForm" onsubmit="event.preventDefault(); deleteAccount();" class="d-flex justify-content-between">
+                                            <button type="submit" class="btn btn-danger w-100">
+                                                <i class="bi bi-trash-fill me-2"></i>Delete My Account
+                                            </button>
                                         </form>` : `
                                         <p><strong>Display Name:</strong> ${data.user.display_name || ''}</p>
                                         <p><strong>Age Group:</strong> ${data.user.age_group || ''}</p>
                                         <p><strong>Interests:</strong> ${data.user.interests || ''}</p>
                                         <p><strong>Riding Preferences:</strong> ${data.user.riding_preferences.join(', ')}</p>
                                         <p><strong>Ride Description:</strong> ${data.user.ride_description || ''}</p>
-                                        <!-- Only show these fields to the current user -->
                                         ${isCurrentUser ? `
                                         <p><strong>Uploads to Social Media:</strong> ${data.user.upload_to_socials ? 'Yes' : 'No'}</p>
                                         <p><strong>Shows Carbon Reduction Game:</strong> ${data.user.show_carbon_game ? 'Yes' : 'No'}</p>
@@ -181,27 +201,30 @@ function showUserProfileModal(userId) {
                                 <section class="bike mb-4">
                                     <h2 class="h2">Bike Details</h2>
                                     ${isCurrentUser ? `
-                                        <form id="editBikeForm">
-                                            <div class="form-group">
-                                                <label for="bikePicture">Upload Your Bicycle Picture:</label>
+                                        <form id="editBikeForm" class="needs-validation" novalidate>
+                                            <div class="form-group mb-3">
+                                                <label for="bikePicture" class="form-label">Upload Your Bicycle Picture:</label>
                                                 <input type="file" class="form-control" id="bikePicture" name="bike_picture" accept="image/*">
                                             </div>
                                             ${data.user.bike_picture ? `
-                                                <div class="form-group">
-                                                    <label for="bikePicturePreview">Current Bicycle Picture:</label>
-                                                    <img src="/static/${data.user.bike_picture}" id="bikePicturePreview" alt="Bicycle Picture" class="img-fluid">
+                                                <div class="form-group mb-3">
+                                                    <label for="bikePicturePreview" class="form-label">Current Bicycle Picture:</label>
+                                                    <img src="/static/${data.user.bike_picture}" id="bikePicturePreview" alt="Bicycle Picture" class="img-fluid rounded shadow-sm">
                                                 </div>
                                             ` : ''}
-                                            <div class="form-group">
-                                                <label for="bikeDescription">Bicycle Description:</label>
-                                                <textarea class="form-control" id="bikeDescription" name="bike_description">${data.user.bike_description || ''}</textarea>
+                                            <div class="form-group mb-3">
+                                                <label for="bikeDescription" class="form-label">Bicycle Description:</label>
+                                                <textarea class="form-control" id="bikeDescription" name="bike_description" rows="3">${data.user.bike_description || ''}</textarea>
                                             </div>
-                                            <button type="button" class="btn btn-primary" onclick="saveBike(${userId})">Save Bike Details</button>
+                                            <div class="d-flex justify-content-between">
+                                                <button type="button" class="btn btn-success" onclick="saveBike(${userId})"><i class="bi bi-save me-2"></i>Save Bike Details</button>
+                                                <button type="button" class="btn btn-warning" onclick="resetBikeForm()"><i class="bi bi-arrow-clockwise me-2"></i>Reset</button>
+                                            </div>
                                         </form>` : `
                                         ${data.user.bike_picture ? `
-                                            <div class="form-group">
+                                            <div class="form-group mb-3">
                                                 <label for="bikePicture">Your Bicycle Picture:</label>
-                                                <img src="/static/${data.user.bike_picture}" alt="Bicycle Picture" class="img-fluid">
+                                                <img src="/static/${data.user.bike_picture}" alt="Bicycle Picture" class="img-fluid rounded shadow-sm">
                                             </div>` : ''}
                                         <p><strong>Bicycle Description:</strong> ${data.user.bike_description || ''}</p>
                                     `}
@@ -210,46 +233,48 @@ function showUserProfileModal(userId) {
                             <div class="tab-pane fade" id="badges-earned" role="tabpanel" aria-labelledby="badges-earned-tab">
                                 <section class="badges-earned mb-4">
                                     <h2 class="h2">Badges Earned</h2>
-                                    <div class="badges-container row">
+                                    <div class="badges-container row g-3">
                                         ${data.user.badges && data.user.badges.length > 0 ? data.user.badges.map(badge => `
-                                            <div class="badge-item col-md-4 d-flex flex-column align-items-center text-center p-3">
-                                                <img src="/static/images/badge_images/${badge.image}" alt="${badge.name}" class="badge-icon mb-2">
-                                                <h3 class="h5">${badge.name}</h3>
-                                                <p>${badge.description}</p>
+                                            <div class="badge-item col-md-4 d-flex flex-column align-items-center text-center p-3 border rounded shadow-sm bg-white">
+                                                <img src="/static/images/badge_images/${badge.image}" alt="${badge.name}" class="badge-icon mb-2 rounded-circle shadow-sm" style="width: 100px; height: 100px; object-fit: cover;">
+                                                <h3 class="h5 mt-2">${badge.name}</h3>
+                                                <p class="text-muted">${badge.description}</p>
                                                 <p><strong>Category:</strong> ${badge.category}</p>
-                                            </div>`).join('') : '<p>No badges earned yet.</p>'}
+                                            </div>`).join('') : '<p class="text-muted">No badges earned yet.</p>'}
                                     </div>
                                 </section>
                             </div>
                             <div class="tab-pane fade" id="games-participated" role="tabpanel" aria-labelledby="games-participated-tab">
                                 <section class="games-participated mb-4">
                                     <h2 class="h2">Games Participated</h2>
-                                    <div class="games-container row">
+                                    <div class="games-container row g-3">
                                         ${data.participated_games && data.participated_games.length > 0 ? data.participated_games.map(game => `
-                                            <div class="game-item col-md-6 p-3">
+                                            <div class="game-item col-md-6 p-3 border rounded shadow-sm bg-white">
                                                 <h3 class="h5">${game.title}</h3>
-                                                <p>${game.description}</p>
+                                                <p class="text-muted">${game.description}</p>
                                                 <p><strong>Start Date:</strong> ${game.start_date}</p>
                                                 <p><strong>End Date:</strong> ${game.end_date}</p>
-                                            </div>`).join('') : '<p>No games participated in yet.</p>'}
+                                            </div>`).join('') : '<p class="text-muted">No games participated in yet.</p>'}
                                     </div>
                                 </section>
                             </div>
                             <div class="tab-pane fade" id="task-submissions" role="tabpanel" aria-labelledby="task-submissions-tab">
                                 <section class="task-submissions mb-4">
                                     <h2 class="h2">Task Submissions</h2>
-                                    <div class="submissions-container row">
+                                    <div class="submissions-container row g-3">
                                         ${data.task_submissions && data.task_submissions.length > 0 ? data.task_submissions.map(submission => `
-                                            <div class="submission-item col-md-6 p-3">
-                                                ${submission.image_url ? `<img src="${submission.image_url}" alt="Submission Image" class="img-fluid mb-2">` : ''}
+                                            <div class="submission-item col-md-6 p-3 border rounded shadow-sm bg-white">
+                                                ${submission.image_url ? `<img src="${submission.image_url}" alt="Submission Image" class="img-fluid rounded mb-2" style="max-height: 200px; object-fit: cover;">` : ''}
                                                 <p><strong>Task:</strong> ${submission.task.title}</p>
-                                                <p>${submission.comment}</p>
+                                                <p class="text-muted">${submission.comment}</p>
                                                 <p><strong>Submitted At:</strong> ${submission.timestamp}</p>
-                                                ${submission.twitter_url ? `<p><a href="${submission.twitter_url}" target="_blank" class="blue_button">View on Twitter</a></p>` : ''}
-                                                ${submission.fb_url ? `<p><a href="${submission.fb_url}" target="_blank" class="blue_button">View on Facebook</a></p>` : ''}
-                                                ${submission.instagram_url ? `<p><a href="${submission.instagram_url}" target="_blank" class="blue_button">View on Instagram</a></p>` : ''}
-                                                ${isCurrentUser ? `<button class="btn btn-danger" onclick="deleteSubmission(${submission.id}, 'profileSubmissions', ${data.user.id})">Delete</button>` : ''}
-                                            </div>`).join('') : '<p>No task submissions yet.</p>'}
+                                                <div class="d-flex justify-content-start gap-2">
+                                                    ${submission.twitter_url ? `<a href="${submission.twitter_url}" target="_blank" class="btn btn-sm btn-twitter"><i class="bi bi-twitter"></i></a>` : ''}
+                                                    ${submission.fb_url ? `<a href="${submission.fb_url}" target="_blank" class="btn btn-sm btn-facebook"><i class="bi bi-facebook"></i></a>` : ''}
+                                                    ${submission.instagram_url ? `<a href="${submission.instagram_url}" target="_blank" class="btn btn-sm btn-instagram"><i class="bi bi-instagram"></i></a>` : ''}
+                                                </div>
+                                                ${isCurrentUser ? `<button class="btn btn-danger btn-sm mt-2" onclick="deleteSubmission(${submission.id}, 'profileSubmissions', ${data.user.id})">Delete</button>` : ''}
+                                            </div>`).join('') : '<p class="text-muted">No task submissions yet.</p>'}
                                     </div>
                                 </section>
                             </div>
@@ -258,14 +283,15 @@ function showUserProfileModal(userId) {
                     <div class="col-md-4">
                         <section class="message-board mb-4">
                             <h2 class="h2">Message Board</h2>
-                            <form id="messageForm" data-userid="${userId}">
-                                <div class="form-group">
-                                    <div id="editor" class="form-control" style="min-height: 70px;"></div>
-                                    <input type="hidden" id="messageContent" name="content">
+                            <form id="messageForm" data-userid="${userId}" class="needs-validation" novalidate>
+                                <div class="form-group mb-3">
+                                    <div id="editor" class="form-control quill-editor bg-white rounded" style="min-height: 100px;"></div>
+                                    <input type="hidden" id="messageContent" name="content" required>
+                                    <div class="invalid-feedback">Message cannot be empty.</div>
                                 </div>
-                                <button type="submit" class="btn btn-primary">Post</button>
+                                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-send-fill me-2"></i>Post</button>
                             </form>
-                            <ul class="list-group" id="messageBoard">
+                            <ul class="list-group mt-3" id="messageBoard">
                                 ${messagesHtml}
                             </ul>
                         </section>
@@ -280,6 +306,24 @@ function showUserProfileModal(userId) {
             alert('Could not load user profile. Please try again.');
         });
 }
+
+document.querySelectorAll('[data-floating-ui-tooltip]').forEach(el => {
+    tippy(el, {
+        content: el.getAttribute('data-floating-ui-tooltip'),
+        placement: 'top',
+        animation: 'scale-subtle',
+    });
+});
+
+document.querySelectorAll('.needs-validation').forEach(form => {
+    form.addEventListener('submit', event => {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    }, false);
+});
 
 function saveProfile(userId) {
     const form = document.getElementById('editProfileForm');
