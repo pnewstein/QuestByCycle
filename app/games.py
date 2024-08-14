@@ -260,5 +260,6 @@ def join_custom_game():
         db.session.execute(stmt)
         db.session.commit()
         flash('You have successfully joined the custom game.', 'success')
+        return redirect(url_for('main.index', game_id=game.id))
 
     return redirect(url_for('main.index'))
