@@ -78,9 +78,6 @@ function showUserProfileModal(userId) {
                     ${data.user.profile_picture ? `
                         <div class="profile-picture-container position-relative mx-auto mb-3">
                             <img src="/static/${data.user.profile_picture}" alt="Profile Picture" class="profile-picture rounded-circle shadow-lg border border-white border-4">
-                            <button class="btn btn-light btn-sm position-absolute top-0 start-0 translate-middle badge badge-light rounded-pill" data-floating-ui-tooltip="Edit Profile Picture" onclick="editProfilePicture()">
-                                <i class="bi bi-pencil-fill"></i>
-                            </button>
                         </div>` : ''}
                     <div class="header-bg position-absolute w-100 h-100 top-0 start-0 bg-opacity-50"></div>
                     <div class="header-content position-relative z-index-1">
@@ -200,6 +197,7 @@ function showUserProfileModal(userId) {
                             <div class="tab-pane fade" id="bike" role="tabpanel" aria-labelledby="bike-tab">
                                 <section class="bike mb-4">
                                     <h2 class="h2">Bike Details</h2>
+
                                     ${isCurrentUser ? `
                                         <form id="editBikeForm" class="needs-validation" novalidate>
                                             <div class="form-group mb-3">
@@ -209,7 +207,7 @@ function showUserProfileModal(userId) {
                                             ${data.user.bike_picture ? `
                                                 <div class="form-group mb-3">
                                                     <label for="bikePicturePreview" class="form-label">Current Bicycle Picture:</label>
-                                                    <img src="/static/${data.user.bike_picture}" id="bikePicturePreview" alt="Bicycle Picture" class="img-fluid rounded shadow-sm">
+                                                    <img src="/static/${data.user.bike_picture}" id="bikePicturePreview" alt="Bicycle Picture" class="img-fluid rounded shadow-sm" style="max-width: 100%; height: auto; object-fit: cover;">
                                                 </div>
                                             ` : ''}
                                             <div class="form-group mb-3">
@@ -218,16 +216,16 @@ function showUserProfileModal(userId) {
                                             </div>
                                             <div class="d-flex justify-content-between">
                                                 <button type="button" class="btn btn-success" onclick="saveBike(${userId})"><i class="bi bi-save me-2"></i>Save Bike Details</button>
-                                                <button type="button" class="btn btn-warning" onclick="resetBikeForm()"><i class="bi bi-arrow-clockwise me-2"></i>Reset</button>
                                             </div>
                                         </form>` : `
                                         ${data.user.bike_picture ? `
                                             <div class="form-group mb-3">
-                                                <label for="bikePicture">Your Bicycle Picture:</label>
+                                                <label for="bikePicture">Current Bicycle Picture:</label>
                                                 <img src="/static/${data.user.bike_picture}" alt="Bicycle Picture" class="img-fluid rounded shadow-sm">
                                             </div>` : ''}
                                         <p><strong>Bicycle Description:</strong> ${data.user.bike_description || ''}</p>
                                     `}
+
                                 </section>
                             </div>
                             <div class="tab-pane fade" id="badges-earned" role="tabpanel" aria-labelledby="badges-earned-tab">
