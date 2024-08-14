@@ -117,7 +117,6 @@
                             {% endif %}
                             {% if current_user %}
                                 <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-info btn-block mt-3" id="view-profile-button">View Profile</a>
-                                <button class="btn btn-secondary btn-block mt-3" onclick="openModal('joinCustomGameModal')">Join Custom Game</button>
                             {% endif %}
                             {% if current_user %}
                                 <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-block mt-3">Logout</a>
@@ -125,13 +124,14 @@
                             {% if current_user %}
                                 <!-- Dropdown for selecting joined games -->
                                 <div class="form-group mt-3">
-                                    <label for="gameSelectDropdown">Select Active Game:</label>
-                                    <select id="gameSelectDropdown" class="form-control" onchange="window.location.href = this.value;">
+                                    <label for="gameSelectDropdown">Select or Join Game:</label>
+                                    <select id="gameSelectDropdown" class="form-control" onchange="handleGameSelection(this)">
                                         {% for game, joined_at in user_games %}
                                         <option value="{{ url_for('main.index', game_id=game.id) }}" {% if game.id == selected_game_id %}selected{% endif %}>
                                             {{ game.title }} - Joined on: {{ joined_at.strftime('%m-%d-%Y') if joined_at else 'N/A' }}
                                         </option>
                                         {% endfor %}
+                                        <option value="join_custom_game">Join Custom Game</option> <!-- Add this line -->
                                     </select>
                                     <!-- Add link to restart the Shepherd tour -->
                                     <a href="javascript:void(0);" id="restart-tour-link" class="mt-2 d-block">Tour the Quest by Cycle Platform</a>
@@ -292,7 +292,7 @@
     <script src="{{ url_for('static', filename='js/user_profile_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/index_management.js') }}"></script>
     <script src="{{ url_for('static', filename='js/generated_task.js') }}"></script>
-    <script type="module" src="{{ url_for('static', filename='js/shepherd_tour.js') }}"></script>   
+    <script type="module" src="{{ url_for('static', filename='js/shepherd_tour.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Function to get URL parameters
