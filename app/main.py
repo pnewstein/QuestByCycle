@@ -11,7 +11,7 @@ from sqlalchemy.orm import aliased
 from datetime import datetime, timedelta, timezone
 from pytz import utc
 from flask_wtf.csrf import generate_csrf
-from PIL import Image
+from PIL import Image, ExifTags
 from io import BytesIO
 
 import bleach
@@ -631,7 +631,6 @@ def refresh_csrf():
     return response
 
 
-# Define the route for resizing images on the fly
 @main_bp.route('/resize_image')
 def resize_image():
     image_path = request.args.get('path')
@@ -648,6 +647,26 @@ def resize_image():
 
         # Open the image
         with Image.open(full_image_path) as img:
+            # Correct orientation based on EXIF data
+            try:
+                for orientation in ExifTags.TAGS.keys():
+                    if ExifTags.TAGS[orientation] == 'Orientation':
+                        break
+
+                exif = img._getexif()
+                if exif is not None:
+                    orientation = exif.get(orientation)
+
+                    if orientation == 3:
+                        img = img.rotate(180, expand=True)
+                    elif orientation == 6:
+                        img = img.rotate(-90, expand=True)
+                    elif orientation == 8:
+                        img = img.rotate(90, expand=True)
+            except (AttributeError, KeyError, IndexError):
+                # No EXIF orientation data, proceed without altering the image
+                pass
+
             # Calculate the height to maintain aspect ratio
             ratio = width / float(img.width)
             height = int(img.height * ratio)
