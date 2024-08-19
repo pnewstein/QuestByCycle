@@ -23,8 +23,8 @@
 
         <div class="row">
             {% if not current_user.is_authenticated %}
-            <div class="embed-responsive embed-responsive-16by9 mb-4">
-                <video class="embed-responsive-item" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}"
+            <div class="ratio ratio-16x9 mb-4">
+                <video class="w-100" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}"
                     autoplay loop controls></video>
             </div>
             {% endif %}
