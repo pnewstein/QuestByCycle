@@ -175,19 +175,28 @@ class ProfileForm(FlaskForm):
     # Use FieldList and SelectMultipleField for multiple choices
     riding_preferences = SelectMultipleField('Riding Preferences', choices=[
         ('new_novice', 'New and novice rider'),
-        ('middle_school', 'Middle school rider'),
-        ('high_school', 'High school rider'),
-        ('college', 'College student rider'),
+        ('elementary_school', 'In elementary school or younger'),
+        ('middle_school', 'In Middle school'),
+        ('high_school', 'In High school'),
+        ('college', 'College student'),
         ('families', 'Families who ride with their children'),
         ('grandparents', 'Grandparents who ride with their grandchildren'),
-        ('seasoned', 'Seasoned riders who ride all over town for their transportation needs'),
+        ('seasoned', 'Seasoned riders who ride all over town for their transportation'),
         ('adaptive', 'Adaptive bike users'),
         ('occasional', 'Occasional rider'),
         ('ebike', 'E-bike rider'),
         ('long_distance', 'Long distance rider'),
         ('no_car', 'Don’t own a car'),
-        ('commute', 'Commute'),
-        ('seasonal', 'Seasonal riders: I don’t like riding in inclement weather')
+        ('commute', 'Commute by bike'),
+        ('seasonal', 'Seasonal riders: I don’t like riding in inclement weather'),
+        ('environmentally_conscious', 'Environmentally Conscious Riders'),
+        ('social', 'Social Riders'),
+        ('fitness_focused', 'Fitness-Focused Riders'),
+        ('tech_savvy', 'Tech-Savvy Riders'),
+        ('local_history', 'Local History or Culture Enthusiasts'),
+        ('advocacy_minded', 'Advocacy-Minded Riders'),
+        ('bike_collectors', 'Bike Collectors or Bike Equipment Geek'),
+        ('freakbike', 'Freakbike rider/maker')
     ], validators=[Optional()])
 
     submit = SubmitField('Update Profile')

@@ -144,7 +144,7 @@ function showUserProfileModal(userId) {
                                                 <textarea class="form-control" id="interests" name="interests" rows="3" placeholder="Describe your interests...">${data.user.interests || ''}</textarea>
                                             </div>
                                             <div class="form-group mb-3">
-                                                <label for="ridingPreferences" class="form-label"><b>Riding Preferences:</b></label>
+                                                <label for="ridingPreferences" class="form-label"><b>Please specify characteristics about yourself. This information will help us tailor tasks for you: (Please check all that apply)</b></label>
                                                 <div id="ridingPreferences">
                                                     ${data.riding_preferences_choices.map((choice, index) => `
                                                         <div class="form-check mb-2">
@@ -160,11 +160,7 @@ function showUserProfileModal(userId) {
                                             </div>
                                             <div class="form-check form-switch mb-3">
                                                 <input class="form-check-input" type="checkbox" id="uploadToSocials" name="upload_to_socials" ${data.user.upload_to_socials ? 'checked' : ''}>
-                                                <label class="form-check-label" for="uploadToSocials">Upload Activities to Social Media</label>
-                                            </div>
-                                            <div class="form-check form-switch mb-3">
-                                                <input class="form-check-input" type="checkbox" id="showCarbonGame" name="show_carbon_game" ${data.user.show_carbon_game ? 'checked' : ''}>
-                                                <label class="form-check-label" for="showCarbonGame">Show Carbon Reduction Game</label>
+                                                <label class="form-check-label" for="uploadToSocials">Allow a game administrator to post your submissions to social media?</label>
                                             </div>
                                             <div class="d-flex justify-content-between">
                                                 <button type="button" class="btn btn-success" onclick="saveProfile(${userId})"><i class="bi bi-save me-2"></i>Save Profile</button>
