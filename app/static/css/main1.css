@@ -1130,20 +1130,24 @@ small {
     border-radius: 15px;
     overflow: hidden;
 }
-.carousel-caption {
+
+.minimized-caption {
     background: rgba(0, 0, 0, 0.6);
-    border-radius: 10px;
-    padding: 15px;
+    border-radius: 0px;
+    padding: 0px 0px;
+    margin: 0;
 }
 
-.carousel-caption h5 {
+.minimized-caption h5 {
     color: #fff;
-    font-size: 1.25rem;
+    font-size: 1rem;
+    margin-bottom: 0px;
 }
 
-.carousel-caption p {
+.minimized-caption p {
     color: #ddd;
-    font-size: 1rem;
+    font-size: 0.875rem;
+    margin-bottom: 0px;
 }
 
 .carousel-control-prev, .carousel-control-next {

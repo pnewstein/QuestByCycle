@@ -47,21 +47,17 @@
                             <div class="carousel-inner">
                                 {% for image in carousel_images %}
                                     <div class="carousel-item{% if loop.first %} active{% endif %}" style="height: 300px;">
-                                        <img src="{{ url_for('main.resize_image', path=image['large'], width=1200) }}"
-                                            srcset="{{ url_for('main.resize_image', path=image['small'], width=480) }} 480w, 
-                                                    {{ url_for('main.resize_image', path=image['medium'], width=768) }} 768w, 
-                                                    {{ url_for('main.resize_image', path=image['large'], width=1200) }} 1200w"
-                                            sizes="(max-width: 600px) 480px, 
-                                                    (max-width: 900px) 768px, 
-                                                    1200px"
+                                        <img src="{{ url_for('main.resize_image', path=image['small'], width=480) }}"
+                                            srcset="{{ url_for('main.resize_image', path=image['small'], width=480) }} 480w"
+                                            sizes="480px"
                                             class="d-block w-100 h-100" alt="Carousel Image"
                                             style="height: 100%; width: 100%; object-fit: cover;" loading="lazy">
-                                        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-75">
+                                        <div class="carousel-caption minimized-caption">
                                             <h5>{{ image.task_title }}</h5>
                                             <p>{{ image.comment }}</p>
                                         </div>
                                     </div>
-                                {% endfor %}
+                                {% endfor %}                            
                             </div>                    
             
                             <a class="carousel-control-prev" href="#taskImageCarousel" role="button" data-bs-slide="prev">
