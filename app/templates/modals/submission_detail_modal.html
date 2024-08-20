@@ -1,8 +1,11 @@
 <!-- Submission Detail Modal -->
 <div id="submissionDetailModal" class="modal">
     <div class="modal-content">
-        <span class="close-button" onclick="closeSubmissionDetailModal()">&times;</span>
-        <img id="submissionImage" class="verification-image" src="static/images/default_badge.png" alt="Submission Detail">
+        <div class="modal-header">
+            <h5 class="modal-title">Submission Detail</h5>
+            <button type="button" class="btn-close" aria-label="Close" onclick="closeSubmissionDetailModal()"></button>
+        </div>
+            <img id="submissionImage" class="verification-image" src="static/images/default_badge.png" alt="Submission Detail">
         <p id="submissionComment"></p>
         <div>
             <a id="submissionUserLink" class="button" href="#">User Profile</a>

@@ -75,6 +75,9 @@ function closeAllModals(id) {
         case 'editCarouselModal':
             closeEditCarouselModal();
             break;
+        case 'closeTaskDetailModal':
+            closeTaskDetailModal();
+            break;
     }
 }
 

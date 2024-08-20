@@ -3,6 +3,11 @@ function openTaskCreationModal() {
     openModal('taskCreationModal');
 }
 
+function closeTaskCreationModal() {
+    document.getElementById('taskCreationModal').style.display = 'none';
+    resetModalContent();  // Ensure clean state on next open
+}
+
 $(document).ready(function() {
     $('#generateAITaskModal').modal({
         show: false
