@@ -175,3 +175,4 @@ gunicorn.conf.py
 logs/gunicorn-error.log
 logs/gunicorn-access.log
 app/static/videos/welcomeQuestByCycle.mp4
+welcomeQuestByCycle.mp4
