@@ -112,10 +112,10 @@
                             {% if current_user.is_admin %}
                                 <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-danger btn-block mt-2">Admin Dashboard</a>
                             {% endif %}
+                            <br>
                             {% if current_user %}
                                 <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-info btn-block mt-3" id="view-profile-button">View Profile</a>
-                            {% endif %}
-                            {% if current_user %}
+                                <button id="leaderboardButton" data-game-id="{{ game.id }}" class="btn btn-info btn-block mt-3">View Leaderboard</button>
                                 <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-block mt-3">Logout</a>
                             {% endif %}
                             
@@ -225,7 +225,6 @@
             {% if has_joined %}
                 <h2>Available Tasks</h2>
                 <div class="game-item">
-                    <button id="leaderboardButton" data-game-id="{{ game.id }}" class="btn btn-info btn-lg mb-2">View Leaderboard</button>
                     <input type="text" id="taskSearchInput" class="form-control mb-3" placeholder="Search for tasks...">
                     <table class="table">
                         <colgroup>
