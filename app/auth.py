@@ -192,7 +192,17 @@ def register():
                     flash('Registration successful. Your email has been automatically verified.', 'success')
                     login_user(user)  # Log in the user automatically if email verification is bypassed
 
-                return redirect(url_for('auth.login'))
+                    # Ensure the tutorial game exists
+                    generate_tutorial_game()
+
+                    # Check if the user has zero participated games and add to tutorial game if true
+                    if len(user.participated_games) == 0:
+                        tutorial_game = Game.query.filter_by(is_tutorial=True).first()
+                        if tutorial_game:
+                            user.participated_games.append(tutorial_game)
+                            db.session.commit()
+
+                return redirect(url_for('main.index'))
 
             except Exception as e:
                 db.session.rollback()
