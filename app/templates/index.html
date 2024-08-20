@@ -80,9 +80,8 @@
                     </div>
                 </div>
             {% endif %}
-        
             {% if profile %}
-                <div class="col-md-6 mb-4">       
+                <div class="col-md-6 mb-4">
                     <div class="card mb-4 w-100">
                         <div class="card-body text-center">
                             {% if current_user.is_authenticated %}
@@ -101,14 +100,15 @@
                             <div id="modal-flash-messages">
                                 <!-- Flash messages will be dynamically inserted here -->
                             </div>
-                            {% endif %}     
+                            {% endif %}
+                            
                             <div id="profileView">
                                 <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}"
                                     alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px; height: auto;">
                                 <p class="font-weight-bold">Welcome, {{ profile.display_name or profile.username }}</p>
-                                <p id="total-points" class="font-weight-bold">Your Total Carbon Reduction Points: {{ total_points }}
-                                </p>
+                                <p id="total-points" class="font-weight-bold">Your Total Carbon Reduction Points: {{ total_points }}</p>
                             </div>
+            
                             {% if current_user.is_admin %}
                                 <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-danger btn-block mt-2">Admin Dashboard</a>
                             {% endif %}
@@ -118,25 +118,28 @@
                             {% if current_user %}
                                 <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-block mt-3">Logout</a>
                             {% endif %}
+                            
                             {% if current_user %}
                                 <!-- Dropdown for selecting joined games -->
-                                <div class="form-group mt-3">
-                                    <label for="gameSelectDropdown">Select or Join Game:</label>
-                                    <button id="gameDropdownButton" class="btn btn-secondary dropdown-toggle">
-                                        Currently Viewing: <span class="game-title">{{ game.title }}</span>
-                                    </button>
-                                    <div id="gameDropdownMenu" class="dropdown-menu" style="display: none;">
-                                        {% for game, joined_at in user_games %}
-                                        <a href="{{ url_for('main.index', game_id=game.id) }}" class="dropdown-item">
-                                            <span class="game-title">{{ game.title }}</span> - <small>Joined on: {{ joined_at.strftime('%m-%d-%Y') if joined_at else 'N/A' }}</small>
-                                        </a>
-                                        {% endfor %}
-                                        <div class="dropdown-divider"></div>
-                                        <a href="#" class="dropdown-item bold-item" onclick="handleGameSelection({ value: 'join_custom_game' })">
-                                            Join Custom Game
-                                        </a>
+                                <div class="form-group mt-3 d-flex flex-column align-items-center w-100">
+                                    <label for="gameSelectDropdown" class="mb-1 text-center w-100">Select or Join Game:</label>
+                                    <div class="dropdown w-100">
+                                        <button id="gameDropdownButton" class="btn btn-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <span class="game-title text-truncate">{{ game.title }}</span>
+                                        </button>
+                                        <div id="gameDropdownMenu" class="dropdown-menu dropdown-menu-scrollable w-100">
+                                            {% for game, joined_at in user_games %}
+                                            <a href="{{ url_for('main.index', game_id=game.id) }}" class="dropdown-item">
+                                                <span class="game-title text-truncate">{{ game.title }}</span> - <small>Joined on: {{ joined_at.strftime('%m-%d-%Y') if joined_at else 'N/A' }}</small>
+                                            </a>
+                                            {% endfor %}
+                                            <div class="dropdown-divider"></div>
+                                            <a href="#" class="dropdown-item bold-item" onclick="handleGameSelection({ value: 'join_custom_game' })">
+                                                Join Custom Game
+                                            </a>
+                                        </div>
                                     </div>
-                                </div>                              
+                                </div>
                             {% endif %}
                         </div>
                     </div>
@@ -467,10 +470,6 @@
         });
     </script>
     <style>
-        .game-title {
-            font-weight: bold;
-        }
-
         .bold-item {
             font-weight: bold;
         }
@@ -589,6 +588,24 @@
 
         .arrow-buttons .epic-button:focus {
             outline: none;
+        }
+
+        /* Truncate the text with ellipsis */
+        .game-title {
+            font-weight: bold;
+            display: inline-block;
+            max-width: 150px; /* Adjust this value as needed */
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            vertical-align: middle;
+        }
+
+        /* Scrollable dropdown menu with a maximum height */
+        .dropdown-menu-scrollable {
+            max-height: 200px; /* Adjust this value to set the height limit */
+            overflow-y: auto;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
         }
     </style>
 {% endblock %}
