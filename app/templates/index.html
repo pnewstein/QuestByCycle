@@ -110,9 +110,12 @@
                             </div>
             
                             {% if current_user.is_admin %}
-                                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-danger btn-block mt-2">Admin Dashboard</a>
+                                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-danger btn-block mt-2">Admin Dashboard</a> <br>
                             {% endif %}
                             {% if current_user %}
+                                <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-info btn-block mt-3" id="view-profile-button">View Profile</a>
+                                <button id="leaderboardButton" data-game-id="{{ game.id }}" class="btn btn-info btn-block mt-3">View Leaderboard</button>
+                                <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-block mt-3">Logout</a>
                                 <!-- Dropdown for selecting joined games -->
                                 <div class="form-group mt-3 w-100 text-center">
                                     <label for="gameSelectDropdown" class="mb-1 w-100">Select or Join Game:</label>
