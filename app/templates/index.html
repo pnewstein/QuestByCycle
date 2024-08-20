@@ -113,15 +113,12 @@
                                 <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-danger btn-block mt-2">Admin Dashboard</a>
                             {% endif %}
                             {% if current_user %}
-                                <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-info btn-block mt-3" id="view-profile-button">View Profile</a>
-                                <button id="leaderboardButton" data-game-id="{{ game.id }}" class="btn btn-info btn-block mt-3">View Leaderboard</button>
-                                <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-block mt-3">Logout</a>
                                 <!-- Dropdown for selecting joined games -->
                                 <div class="form-group mt-3 w-100 text-center">
                                     <label for="gameSelectDropdown" class="mb-1 w-100">Select or Join Game:</label>
                                     <div class="dropdown w-100">
-                                        <button id="gameDropdownButton" class="btn btn-secondary w-100 text-truncate d-flex justify-content-center align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <span class="game-title">{{ game.title }}</span>
+                                        <button id="gameDropdownButton" class="btn btn-secondary w-100 d-flex justify-content-center align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <span class="game-title w-100 text-center">{{ game.title }}</span>
                                         </button>
                                         <div id="gameDropdownMenu" class="dropdown-menu dropdown-menu-scrollable w-100">
                                             {% for game, joined_at in user_games %}
@@ -590,7 +587,6 @@
         #gameDropdownButton .game-title {
             font-weight: bold;
             display: inline-block;
-            max-width: 150px; /* Adjust this value as needed */
             white-space: wrap;
         }
 
