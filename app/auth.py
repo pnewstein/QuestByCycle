@@ -79,6 +79,15 @@ def login():
 
                 generate_tutorial_game()
 
+                # Automatically join the game if a game_id is provided
+                game_id = request.args.get('game_id')
+                if game_id:
+                    game = Game.query.get(game_id)
+                    if game and game not in user.participated_games:
+                        user.participated_games.append(game)
+                        db.session.commit()
+                        flash(f'You have successfully joined the game: {game.title}', 'success')
+
                 # Check if the user has zero participated games and add to tutorial game if true
                 if len(user.participated_games) == 0:
                     tutorial_game = Game.query.filter_by(is_tutorial=True).first()
@@ -101,6 +110,7 @@ def login():
         return redirect(url_for('auth.login'))
     
     return render_template('login.html', form=form)
+
 
 
 @auth_bp.route('/resend_verification_email', methods=['POST'])
@@ -192,6 +202,15 @@ def register():
                     flash('Registration successful. Your email has been automatically verified.', 'success')
                     login_user(user)  # Log in the user automatically if email verification is bypassed
 
+                    # Automatically join the game if a game_id is provided
+                    game_id = request.args.get('game_id')
+                    if game_id:
+                        game = Game.query.get(game_id)
+                        if game and game not in user.participated_games:
+                            user.participated_games.append(game)
+                            db.session.commit()
+                            flash(f'You have successfully joined the game: {game.title}', 'success')
+
                     # Ensure the tutorial game exists
                     generate_tutorial_game()
 
@@ -216,6 +235,7 @@ def register():
         return redirect(url_for('auth.register'))
 
     return render_template('register.html', title='Register', form=form)
+
 
 
 @auth_bp.route('/forgot_password', methods=['GET', 'POST'])

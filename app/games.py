@@ -1,11 +1,14 @@
-from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app, make_response
 from flask_login import login_required, current_user
 from app.models import db, Game, Task, UserTask, user_games
 from app.forms import GameForm
 from app.utils import save_leaderboard_image, generate_smoggy_images, allowed_file
+from io import BytesIO
 
 import bleach
 import os
+import qrcode
+import base64
 
 games_bp = Blueprint('games', __name__)
 
@@ -263,3 +266,52 @@ def join_custom_game():
         return redirect(url_for('main.index', game_id=game.id))
 
     return redirect(url_for('main.index'))
+
+@games_bp.route('/generate_qr_for_game/<int:game_id>')
+@login_required
+def generate_qr_for_game(game_id):
+    game = Game.query.get_or_404(game_id)
+    login_url = url_for('auth.login', game_id=game_id, _external=True)  # Generate the login URL with the game_id
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(login_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="white", back_color="black")
+    img_buffer = BytesIO()
+    img.save(img_buffer, format="PNG")
+    img_data = base64.b64encode(img_buffer.getvalue()).decode('utf-8')
+
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>QR Code for {game.title}</title>
+        <style>
+            body {{ text-align: center; padding: 20px; font-family: Arial, sans-serif; }}
+            .qrcodeHeader img {{ max-width: 100%; height: auto; }}
+            h1, h2 {{ margin: 10px 0; }}
+            img {{ margin-top: 20px; }}
+            @media print {{
+                .no-print {{ display: none; }}
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="qrcodeHeader">
+            <img src="{url_for('static', filename='images/welcomeQuestByCycle.webp')}" alt="Welcome">
+        </div>
+        <h1>Join the Game!</h1>
+        <h2>Scan to login or register and automatically join '{game.title}'!</h2>
+        <img src="data:image/png;base64,{img_data}" alt="QR Code">
+    </body>
+    </html>
+    """
+
+    response = make_response(html_content)
+    response.headers['Content-Type'] = 'text/html'
+    return response
