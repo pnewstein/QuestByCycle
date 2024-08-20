@@ -32,42 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const steps = [
     {
       id: 'introduction',
-      text: 'Welcome to Quest by Cycle! Ready to start your journey?',
-      attachTo: { on: 'bottom' },
+      text: 'Welcome to Quest by Cycle! Ready to start your journey? Please fill out your profile!',
+      attachTo: { on: 'top' },
       modalOverlayOpeningPadding: 10,
       modalOverlayOpeningRadius: 8,
     },
     {
-      id: 'lets-get-started',
-      text: 'Visit "Let\'s Get Started!" when you join a new game to view the rules.',
-      attachTo: { element: '#lets-get-started-button', on: 'bottom' }
-    },
-    {
-      id: 'contact-us',
-      text: 'Need help or want to reach out? Click here to contact us.',
-      attachTo: { element: '#contact-us-button', on: 'bottom' }
-    },
-    {
-      id: 'select-active-game',
-      text: 'Use this dropdown to select your active game. Everyone automatically joins a default game.',
-      attachTo: { element: '#gameSelectDropdown', on: 'bottom' }
-    },
-    {
-      id: 'whats-happening',
-      text: 'Check out what\'s happening to see who is completing what tasks!',
-      attachTo: { element: '#whats-happening-step', on: 'top' },
-      scrollTo: true
-    },
-    {
-      id: 'available-tasks',
-      text: 'This list is this games available tasks. Complete these to earn points and rewards!',
-      attachTo: { element: '#available-tasks-step', on: 'top' },
-      scrollTo: true
-    },
-    {
       id: 'view-profile',
-      text: 'Access your profile here to check your progress and update your information.',
-      attachTo: { element: '#view-profile-button', on: 'bottom' },
+      text: 'Access your profile here.',
+      attachTo: { element: '#view-profile-button', on: 'top' },
       scrollTo: true,
       buttons: [
         {
@@ -78,71 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
               tour.next();
               updateStepCounter();
-            }, 500); // Proceed to the next step after a short delay
-          }
-        }
-      ]
-    },
-    {
-      id: 'profile-display-name',
-      text: 'Here you can update your display name.',
-      attachTo: { element: '#displayName', on: 'bottom' },
-      canClickTarget: true
-    },
-    {
-      id: 'profile-age-group',
-      text: 'Select your age group from this dropdown.',
-      attachTo: { element: '#ageGroup', on: 'bottom' },
-      canClickTarget: true
-    },
-    {
-      id: 'profile-interests',
-      text: 'Describe your interests here.',
-      attachTo: { element: '#interests', on: 'bottom' },
-      canClickTarget: true,
-      scrollTo: true
-    },
-    {
-      id: 'profile-riding-preferences',
-      text: 'Check your riding preferences.',
-      attachTo: { element: '#ridingPreferences', on: 'bottom' },
-      canClickTarget: true,
-      scrollTo: true
-    },
-    {
-      id: 'profile-ride-description',
-      text: 'Describe the type of riding you like to do.',
-      attachTo: { element: '#rideDescription', on: 'bottom' },
-      canClickTarget: true,
-      scrollTo: true
-    },
-    {
-      id: 'profile-upload-to-socials',
-      text: 'Check to allow auto posting to a game\'s social media accounts.',
-      attachTo: { element: '#uploadToSocials', on: 'top' }, // Adjust position
-      canClickTarget: true,
-      scrollTo: true,
-      modalOverlayOpeningPadding: 20 // Add padding
-    },
-    {
-      id: 'profile-save',
-      text: 'Finally, save your profile with this button.',
-      attachTo: { element: '#editProfileForm .btn-primary', on: 'bottom' },
-      canClickTarget: true,
-      advanceOn: { selector: '#editProfileForm .btn-primary', event: 'click' },
-      modalOverlayOpeningPadding: 10,
-      modalOverlayOpeningRadius: 8,
-    },
-    {
-      id: 'completion-step',
-      text: 'Congratulations, you have completed the onboarding!',
-      buttons: [
-        {
-          text: 'Finish',
-          action: () => {
-            console.log('Onboarding completed');
-            markOnboardingComplete(); // Trigger the onboarding complete function
-            tour.complete();
+              console.log('Onboarding completed');
+              markOnboardingComplete(); // Trigger the onboarding complete function
+              tour.complete();
+            }, 200); // Proceed to the next step after a short delay
           }
         }
       ]
@@ -209,8 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(data => {
       if (data.success) {
         console.log('Onboarding marked as complete.');
-        // Optionally, redirect or refresh the page
-        location.reload();
       } else {
         console.error('Failed to mark onboarding as complete.');
       }
