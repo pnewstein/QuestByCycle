@@ -23,10 +23,14 @@
 
         <div class="row">
             {% if not current_user.is_authenticated %}
-            <div class="ratio ratio-16x9 mb-4">
-                <video class="w-100" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}"
-                    autoplay loop controls></video>
-            </div>
+                <div class="ratio ratio-16x9 mb-4">
+                    <video class="w-100" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}"
+                        autoplay loop controls></video>
+                </div>
+                <div class="ratio ratio-16x9 mb-4">
+                    <iframe src="https://www.youtube.com/embed/ABh1KtKRxm0?si=U6PxTipd5r5Z2QUl&autoplay=0&rel=0" title="YouTube video player" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+
             {% endif %}
 
             {% if current_user.is_authenticated %}
