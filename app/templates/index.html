@@ -293,37 +293,23 @@
     <script src="{{ url_for('static', filename='js/index_management.js') }}"></script>
     <script src="{{ url_for('static', filename='js/generated_task.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='js/shepherd_tour.js') }}"></script>
-    <script type="module">
-        import { computePosition, autoUpdate, offset, flip, shift } from 'https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.10/+esm';
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const referenceElement = document.getElementById('gameDropdownButton');
-            const floatingElement = document.getElementById('gameDropdownMenu');
+    {% if current_user.is_authenticated %}
+        <script type="module">
+            import { computePosition, autoUpdate, offset, flip, shift } from 'https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.10/+esm';
 
-            referenceElement.addEventListener('click', () => {
-                floatingElement.style.display = floatingElement.style.display === 'none' ? 'block' : 'none';
+            document.addEventListener('DOMContentLoaded', function () {
+                const referenceElement = document.getElementById('gameDropdownButton');
+                const floatingElement = document.getElementById('gameDropdownMenu');
 
-                // Compute the position using Floating UI
-                computePosition(referenceElement, floatingElement, {
-                    placement: 'bottom-start',
-                    middleware: [
-                        offset(5),  // Offset the dropdown by 5px
-                        flip(),
-                        shift({ padding: 8 }),
-                    ],
-                }).then(({ x, y }) => {
-                    Object.assign(floatingElement.style, {
-                        left: `${x}px`,
-                        top: `${y}px`,
-                    });
-                });
+                referenceElement.addEventListener('click', () => {
+                    floatingElement.style.display = floatingElement.style.display === 'none' ? 'block' : 'none';
 
-                // Automatically update position on resize or scroll
-                autoUpdate(referenceElement, floatingElement, () => {
+                    // Compute the position using Floating UI
                     computePosition(referenceElement, floatingElement, {
                         placement: 'bottom-start',
                         middleware: [
-                            offset(5),
+                            offset(5),  // Offset the dropdown by 5px
                             flip(),
                             shift({ padding: 8 }),
                         ],
@@ -333,18 +319,36 @@
                             top: `${y}px`,
                         });
                     });
+
+                    // Automatically update position on resize or scroll
+                    autoUpdate(referenceElement, floatingElement, () => {
+                        computePosition(referenceElement, floatingElement, {
+                            placement: 'bottom-start',
+                            middleware: [
+                                offset(5),
+                                flip(),
+                                shift({ padding: 8 }),
+                            ],
+                        }).then(({ x, y }) => {
+                            Object.assign(floatingElement.style, {
+                                left: `${x}px`,
+                                top: `${y}px`,
+                            });
+                        });
+                    });
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!referenceElement.contains(e.target) && !floatingElement.contains(e.target)) {
+                        floatingElement.style.display = 'none';
+                    }
                 });
             });
+        </script>
+    {% endif %}
 
-            // Close dropdown when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!referenceElement.contains(e.target) && !floatingElement.contains(e.target)) {
-                    floatingElement.style.display = 'none';
-                }
-            });
-        });
 
-    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Show flash messages in the modal
