@@ -55,13 +55,14 @@
             {% endif %}
             {{ form.leaderboard_image(class_="form-control", id="leaderboard_image") }}
         </div>
-        <div class="form-group">
-            <label for="is_public">Is Public</label>
-            {{ form.is_public(class_="form-control", id="is_public") }}
+        <div class="form-check form-switch">
+            {{ form.is_public(class_="form-check-input", id="is_public") }}
+            <label class="form-check-label" for="is_public">Is Public</label>
         </div>
-        <div class="form-group">
-            <label for="allow_joins">Allow Joining</label>
-            {{ form.allow_joins(class_="form-control", id="allow_joins") }}
+
+        <div class="form-check form-switch">
+            {{ form.allow_joins(class_="form-check-input", id="allow_joins") }}
+            <label class="form-check-label" for="allow_joins">Allow Joining</label>
         </div>
         <div class="form-group">
             <label for="custom_game_code">Custom Game Code</label>
