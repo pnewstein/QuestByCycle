@@ -120,25 +120,30 @@
                                 <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-info btn-block mt-3" id="view-profile-button">View Profile</a>
                                 <button id="leaderboardButton" data-game-id="{{ game.id }}" class="btn btn-info btn-block mt-3">View Leaderboard</button>
                                 <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-block mt-3">Logout</a>
+                                
                                 <!-- Dropdown for selecting joined games -->
                                 <div class="form-group mt-3 w-100 text-center">
                                     <label for="gameSelectDropdown" class="mb-1 w-100">Select or Join Game:</label>
                                     <div class="dropdown w-100">
-                                        <button id="gameDropdownButton" class="btn btn-secondary w-100 d-flex justify-content-center align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <button id="gameDropdownButton" class="btn btn-secondary w-100 d-flex justify-content-center align-items-center dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                             <span class="game-title w-100 text-center">{{ game.title }}</span>
                                         </button>
-                                        <div id="gameDropdownMenu" class="dropdown-menu dropdown-menu-scrollable w-100">
+                                        <ul id="gameDropdownMenu" class="dropdown-menu dropdown-menu-scrollable w-100">
                                             {% for game, joined_at in user_games %}
-                                            <a href="{{ url_for('main.index', game_id=game.id) }}" class="dropdown-item d-flex justify-content-between">
-                                                <span class="game-title text-truncate">{{ game.title }}</span>
-                                                <small class="ms-2">Joined on: {{ joined_at.strftime('%m-%d-%Y') if joined_at else 'N/A' }}</small>
-                                            </a>
+                                            <li>
+                                                <a href="{{ url_for('main.index', game_id=game.id) }}" class="dropdown-item d-flex justify-content-between">
+                                                    <span class="game-title text-truncate">{{ game.title }}</span>
+                                                    <small class="ms-2">Joined on: {{ joined_at.strftime('%m-%d-%Y') if joined_at else 'N/A' }}</small>
+                                                </a>
+                                            </li>
                                             {% endfor %}
-                                            <div class="dropdown-divider"></div>
-                                            <a href="#" class="dropdown-item bold-item" onclick="handleGameSelection({ value: 'join_custom_game' })">
-                                                Join Custom Game
-                                            </a>
-                                        </div>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a href="#" class="dropdown-item bold-item" onclick="handleGameSelection({ value: 'join_custom_game' })">
+                                                    Join Custom Game
+                                                </a>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
                             {% endif %}
@@ -297,62 +302,6 @@
     <script src="{{ url_for('static', filename='js/index_management.js') }}"></script>
     <script src="{{ url_for('static', filename='js/generated_task.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='js/shepherd_tour.js') }}"></script>
-
-    {% if current_user.is_authenticated %}
-        <script type="module">
-            import { computePosition, autoUpdate, offset, flip, shift } from 'https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.10/+esm';
-
-            document.addEventListener('DOMContentLoaded', function () {
-                const referenceElement = document.getElementById('gameDropdownButton');
-                const floatingElement = document.getElementById('gameDropdownMenu');
-
-                referenceElement.addEventListener('click', () => {
-                    floatingElement.style.display = floatingElement.style.display === 'none' ? 'block' : 'none';
-
-                    // Compute the position using Floating UI
-                    computePosition(referenceElement, floatingElement, {
-                        placement: 'bottom-start',
-                        middleware: [
-                            offset(5),  // Offset the dropdown by 5px
-                            flip(),
-                            shift({ padding: 8 }),
-                        ],
-                    }).then(({ x, y }) => {
-                        Object.assign(floatingElement.style, {
-                            left: `${x}px`,
-                            top: `${y}px`,
-                        });
-                    });
-
-                    // Automatically update position on resize or scroll
-                    autoUpdate(referenceElement, floatingElement, () => {
-                        computePosition(referenceElement, floatingElement, {
-                            placement: 'bottom-start',
-                            middleware: [
-                                offset(5),
-                                flip(),
-                                shift({ padding: 8 }),
-                            ],
-                        }).then(({ x, y }) => {
-                            Object.assign(floatingElement.style, {
-                                left: `${x}px`,
-                                top: `${y}px`,
-                            });
-                        });
-                    });
-                });
-
-                // Close dropdown when clicking outside
-                document.addEventListener('click', (e) => {
-                    if (!referenceElement.contains(e.target) && !floatingElement.contains(e.target)) {
-                        floatingElement.style.display = 'none';
-                    }
-                });
-            });
-        </script>
-    {% endif %}
-
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Show flash messages in the modal
