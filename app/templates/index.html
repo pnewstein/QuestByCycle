@@ -6,6 +6,21 @@
                 <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}" alt="Welcome to Quest by Cycle"
                     class="img-fluid w-100" style="max-width: 100%; height: auto;">
             </div>
+            <div id="flash-messages" style="display: none;">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div id="flash-messages-data">
+                            {% for category, message in messages %}
+                                <div class="flash-message {{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+            <!-- Flash Messages for the modal -->
+            <div id="modal-flash-messages">
+                <!-- Flash messages will be dynamically inserted here -->
+            </div>
             <div class="text-center">
                 <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories Below!</small></p>
             </div>
