@@ -4,8 +4,9 @@
 <div class="container">
     <a href="{{ url_for('admin.admin_dashboard') }}" class="button">Back to Dashboard</a> 
     <h2>Manage Sponsors</h2>
-    <form method="POST" action="{{ url_for('admin.manage_sponsors', game_id=game_id) }}">
+    <form method="POST" action="{{ url_for('admin.manage_sponsors', game_id=game_id) }}" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
+        <input type="hidden" name="game_id" value="{{ game_id }}">
         <div class="form-group">
             {{ form.name.label }} {{ form.name(class="form-control") }}
         </div>
@@ -13,7 +14,7 @@
             {{ form.website.label }} {{ form.website(class="form-control") }}
         </div>
         <div class="form-group">
-            {{ form.logo.label }} {{ form.logo(class="form-control") }}
+            {{ form.logo.label(class="form-label") }} {{ form.logo(class="form-control-file") }}
         </div>
         <div class="form-group">
             {{ form.description.label }} {{ form.description(class="form-control") }}
@@ -21,7 +22,6 @@
         <div class="form-group">
             {{ form.tier.label }} {{ form.tier(class="form-control") }}
         </div>
-        {{ form.game_id() }}
         <button type="submit" class="btn btn-primary">{{ form.submit.label }}</button>
     </form>
     
@@ -31,7 +31,9 @@
             <div class="col-md-4">
                 <li>{{ sponsor.name }} - {{ sponsor.tier }}</li>
                 <div class="card mb-4 shadow-sm">
-                    <img class="card-img-top" src="{{ sponsor.logo }}" alt="{{ sponsor.name }} logo">
+                    {% if sponsor.logo %}
+                        <img class="card-img-top" src="{{ url_for('static', filename=sponsor.logo) }}" alt="{{ sponsor.name }} logo">
+                    {% endif %}     
                     <div class="card-body">
                         <h5 class="card-title">{{ sponsor.name }}</h5>
                         <p class="card-text">{{ sponsor.description | safe }}</p>
@@ -74,13 +76,16 @@
         const descriptionEditor = new Quill('#description', quillOptions);
         const descriptionTextarea = document.getElementById('description-textarea');
 
-        descriptionEditor.on('text-change', function() {
-            descriptionTextarea.value = descriptionEditor.root.innerHTML;
-        });
+        if (descriptionTextarea) { // Ensure the element exists before interacting with it
+            descriptionEditor.on('text-change', function() {
+                descriptionTextarea.value = descriptionEditor.root.innerHTML;
+            });
 
-        // Set initial value if there's any data
-        descriptionEditor.root.innerHTML = descriptionTextarea.value;
+            // Set initial value if there's any data
+            descriptionEditor.root.innerHTML = descriptionTextarea.value;
+        }
     });
 </script>
+
 
 {% endblock %}

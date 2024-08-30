@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from app.models import db, User, Game, Sponsor
 from app.forms import CarouselImportForm, SponsorForm
+from app.utils import save_sponsor_logo
 from functools import wraps
 from werkzeug.utils import secure_filename
 
@@ -238,23 +239,30 @@ def update_carousel():
 @require_admin
 def edit_sponsor(sponsor_id):
     sponsor = Sponsor.query.get_or_404(sponsor_id)
-
-    # Retrieve game_id from sponsor object or fall back to query parameters or form data
     game_id = sponsor.game_id if sponsor.game_id else request.args.get('game_id', type=int)
-    if request.method == 'POST':
-        game_id = request.form.get('game_id', type=int)
 
     form = SponsorForm(obj=sponsor)
+    form.game_id.data = game_id  # Ensure game_id is correctly set on the form
+
     if form.validate_on_submit():
+        # Handle image upload
+        if 'logo' in request.files and request.files['logo'].filename:
+            image_file = request.files['logo']
+            try:
+                sponsor.logo = save_sponsor_logo(image_file, old_filename=sponsor.logo)
+            except ValueError as e:
+                flash(f"Error saving sponsor logo: {e}", 'error')
+                return render_template('edit_sponsors.html', form=form, sponsor=sponsor, game_id=game_id)
+        
+        # Update other sponsor details
         sponsor.name = sanitize_html(form.name.data)
         sponsor.website = sanitize_html(form.website.data)
-        sponsor.logo = sanitize_html(form.logo.data)
         sponsor.description = sanitize_html(form.description.data)
         sponsor.tier = sanitize_html(form.tier.data)
-        sponsor.game_id = game_id  # Use game_id from form or fallback logic
+        sponsor.game_id = game_id  # Ensure game_id is updated
         db.session.commit()
         flash('Sponsor updated successfully!', 'success')
-        return redirect(url_for('admin.manage_sponsors', game_id=game_id))  # Redirect with game_id
+        return redirect(url_for('admin.manage_sponsors', game_id=game_id))
 
     return render_template('edit_sponsors.html', form=form, sponsor=sponsor, game_id=game_id)
 
@@ -303,36 +311,36 @@ def manage_sponsors():
     game_id = request.args.get('game_id', type=int)
     if request.method == 'POST':
         game_id = request.form.get('game_id', type=int)
-    
-    print(f"Game ID received (initial): {game_id}")  # Debugging line
 
-    form = SponsorForm(game_id=game_id)
+    form = SponsorForm()
+    form.game_id.data = game_id  # Set game_id on the form
 
     if form.validate_on_submit():
-        print("Form validated successfully.")  # Debugging line
         sponsor = Sponsor(
             name=sanitize_html(form.name.data),
             website=sanitize_html(form.website.data),
-            logo=sanitize_html(form.logo.data),
             description=sanitize_html(form.description.data),
             tier=sanitize_html(form.tier.data),
             game_id=game_id
         )
-        print(f"Creating sponsor: {sponsor}")  # Debugging line
+
+        # Handle image upload
+        if 'logo' in request.files and request.files['logo'].filename:
+            image_file = request.files['logo']
+            try:
+                sponsor.logo = save_sponsor_logo(image_file)
+            except ValueError as e:
+                flash(f"Error saving sponsor logo: {e}", 'error')
+                return render_template('manage_sponsors.html', form=form, sponsors=[], game_id=game_id)
+
         db.session.add(sponsor)
         try:
             db.session.commit()
-            print("Sponsor added successfully!")  # Debugging line
             flash('Sponsor added successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            print(f"Error adding sponsor: {e}")  # Debugging line
-            flash('An error occurred while adding the sponsor.', 'error')
+            flash(f'An error occurred while adding the sponsor: {e}', 'error')
         return redirect(url_for('admin.manage_sponsors', game_id=game_id))
-    else:
-        print("Form validation failed.")  # Debugging line
-        print(form.errors)  # Debugging line
 
     sponsors = Sponsor.query.filter_by(game_id=game_id).all() if game_id else Sponsor.query.all()
-    print(f"Sponsors for game ID {game_id}: {sponsors}")  # Debugging line
     return render_template('manage_sponsors.html', form=form, sponsors=sponsors, game_id=game_id)

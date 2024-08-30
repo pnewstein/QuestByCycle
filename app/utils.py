@@ -239,6 +239,42 @@ def save_submission_image(submission_image_file):
         raise
 
 
+def save_sponsor_logo(image_file, old_filename=None):
+    # Check if the uploaded file has a valid filename
+    if image_file and allowed_file(image_file.filename):
+        # Secure the filename and generate a unique identifier to avoid collisions
+        ext = image_file.filename.rsplit('.', 1)[-1].lower()
+        filename = secure_filename(f"{uuid.uuid4()}.{ext}")
+
+        # Define the upload path
+        upload_path = os.path.join(current_app.root_path, 'static/images/sponsors')
+
+        # Ensure the directory exists
+        if not os.path.exists(upload_path):
+            os.makedirs(upload_path)
+
+        # Save the new file
+        file_path = os.path.join(upload_path, filename)
+        try:
+            image_file.save(file_path)
+        except Exception as e:
+            raise ValueError(f"Failed to save image: {str(e)}")
+
+        # Remove the old file if provided
+        if old_filename:
+            old_file_path = os.path.join(current_app.root_path, 'static', old_filename)
+            if os.path.exists(old_file_path):
+                try:
+                    os.remove(old_file_path)
+                except Exception as e:
+                    current_app.logger.error(f"Failed to remove old image: {str(e)}")
+
+        # Return the relative path to the saved file
+        return os.path.join('images', 'sponsors', filename)
+
+    else:
+        raise ValueError("Invalid file type or no file provided.")
+
 
 def can_complete_task(user_id, task_id):
     now = datetime.now()

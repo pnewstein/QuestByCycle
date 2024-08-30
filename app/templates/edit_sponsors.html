@@ -4,9 +4,9 @@
 <div class="container">
     <a href="{{ url_for('admin.admin_dashboard') }}" class="button">Back to Dashboard</a> 
     <h2>Edit Sponsor</h2>
-    <form method="POST" action="{{ url_for('admin.edit_sponsor', sponsor_id=sponsor.id, game_id=sponsor.game_id) }}">
+    <form method="POST" action="{{ url_for('admin.edit_sponsor', sponsor_id=sponsor.id, game_id=game_id) }}" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
-        <input type="hidden" name="game_id" value="{{ game_id }}" />  <!-- Hidden field for game_id -->
+        <input type="hidden" name="game_id" value="{{ game_id }}">
         <div class="form-group">
             {{ form.name.label(class="form-control-label") }}
             {{ form.name(class="form-control") }}
@@ -16,8 +16,8 @@
             {{ form.website(class="form-control") }}
         </div>
         <div class="form-group">
-            {{ form.logo.label(class="form-control-label") }}
-            {{ form.logo(class="form-control") }}
+            {{ form.logo.label(class="form-label") }}
+            {{ form.logo(class="form-control-file") }}
         </div>
         <div class="form-group">
             {{ form.description.label(class="form-control-label") }}
@@ -35,7 +35,7 @@
         <div class="form-group">
             {{ form.submit(class="btn btn-primary") }}
         </div>
-    </form>
+    </form>    
 </div>
 
 <script>

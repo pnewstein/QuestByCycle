@@ -249,7 +249,7 @@ class ContactForm(FlaskForm):
 class SponsorForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     website = StringField('Website', validators=[Optional(), URL(message='Invalid URL format')])
-    logo = StringField('Logo URL', validators=[Optional(), URL()])
+    logo = FileField('Upload Logo', validators=[Optional(), FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
     description = TextAreaField('Description', validators=[Optional()])
     tier = SelectField('Tier', choices=[('Gold', 'Gold'), ('Silver', 'Silver'), ('Bronze', 'Bronze')], validators=[DataRequired()])
     game_id = HiddenField('Game ID', validators=[DataRequired()])
@@ -257,16 +257,6 @@ class SponsorForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(SponsorForm, self).__init__(*args, **kwargs)
-
-    def validate(self, **kwargs):
-        # Prepend 'https://' if missing
-        if self.website.data and not self.website.data.startswith(('http://', 'https://')):
-            self.website.data = 'https://' + self.website.data
-        if self.logo.data and not self.logo.data.startswith(('http://', 'https://')):
-            self.logo.data = 'https://' + self.logo.data
-
-        # Now call the parent class validate, passing along any extra kwargs
-        return super(SponsorForm, self).validate(**kwargs)
 
 class CarouselImportForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
