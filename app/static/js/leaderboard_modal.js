@@ -84,7 +84,7 @@ function appendLeaderboardTable(parentElement, data) {
         parentElement.appendChild(table);
     } else {
         const p = document.createElement('p');
-        p.textContent = 'Join a game to see the leaderboard!';
+        p.textContent = 'There are no entries in this leaderboard! Be the first and submit a photo!';
         parentElement.appendChild(p);
     }
 }
