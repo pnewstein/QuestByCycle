@@ -1,5 +1,5 @@
-function showAllSubmissionsModal(gameId) {
-    fetch(`/tasks/task/all_submissions?game_id=${gameId}`)
+function showAllSubmissionsModal() {
+    fetch('/tasks/task/all_submissions')
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -14,8 +14,8 @@ function showAllSubmissionsModal(gameId) {
         });
 }
 
-function fetchAllSubmissions(gameId) {
-    fetch(`/tasks/task/all_submissions?game_id=${gameId}`)
+function fetchAllSubmissions() {
+    fetch('/tasks/task/all_submissions')
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -116,6 +116,11 @@ function deleteSubmission(submissionId, modalType) {
             if (data.success) {
                 alert('Submission deleted successfully.');
                 // Refresh based on modal type
+                if (modalType === 'mySubmissions') {
+                    fetchMySubmissions();  // Fetch and refresh my submissions
+                } else if (modalType === 'allSubmissions') {
+                    fetchAllSubmissions();  // Fetch and refresh all submissions
+                }
             } else {
                 throw new Error(data.message);
             }

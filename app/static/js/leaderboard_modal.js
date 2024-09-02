@@ -84,7 +84,7 @@ function appendLeaderboardTable(parentElement, data) {
         parentElement.appendChild(table);
     } else {
         const p = document.createElement('p');
-        p.textContent = 'There are no entries in this leaderboard! Be the first and submit a photo!';
+        p.textContent = 'Join a game to see the leaderboard!';
         parentElement.appendChild(p);
     }
 }
@@ -126,7 +126,7 @@ function appendCompletionMeter(parentElement, data, selectedGameId) {
         const completionMeter = document.createElement('div');
         completionMeter.className = 'completion-meter';
         completionMeter.id = 'completionMeter'; // Added ID for targeting
-        completionMeter.addEventListener('click', () => showAllSubmissionsModal(selectedGameId));
+        completionMeter.addEventListener('click', showAllSubmissionsModal);
 
         const clickText = document.createElement('div');
         clickText.className = 'click-text';
