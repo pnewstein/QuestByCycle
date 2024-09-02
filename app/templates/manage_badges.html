@@ -30,7 +30,7 @@
     <!-- Forms to be toggled -->
     <div id="uploadForm" class="form-container" style="display:none;">
         <h2>Upload Badge Images</h2>
-        <h5>Uploaded images match their filename to existing Tasks</h5>
+        <h5>Uploaded folder of images match their filename to existing Badges (Badge Name: Nature Lover)(Uploaded image: nature_lover.png)</h5>
         <form method="post" enctype="multipart/form-data" action="/badges/upload_images">
             {{ form.hidden_tag() }}
             <input type="file" id="imageUpload" name="file" class="button" multiple webkitdirectory>
