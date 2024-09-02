@@ -2,90 +2,92 @@
 
 {% block content %}
 <div class="container">
-    <a href="{{ url_for('admin.admin_dashboard') }}" class="button">Back to Dashboard</a>
+    <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary mb-3">Back to Dashboard</a>
     <h2>Add New Task to Game</h2>
-    <form action="" method="post" class="form" enctype="multipart/form-data" id="task-form">
+    <form action="" method="post" class="needs-validation" enctype="multipart/form-data" id="task-form" novalidate>
         {{ form.hidden_tag() }}
+        
         <!-- Task Details -->
-        <div class="form-group">
-            <label for="{{ form.title.id }}">{{ form.title.label }}</label>
-            {{ form.title(class="form-control") }}
+        <div class="mb-3">
+            <label for="{{ form.title.id }}" class="form-label">{{ form.title.label }}</label>
+            {{ form.title(class="form-control", required=True) }}
         </div>
-        <div class="form-group">
-            <label for="{{ form.description.id }}">{{ form.description.label }}</label>
+        <div class="mb-3">
+            <label for="{{ form.description.id }}" class="form-label">{{ form.description.label }}</label>
             <div id="description-editor" class="quill-editor"></div>
             {{ form.description(class="form-control", id="description", style="display: none;", required=False) }}
         </div>
-        <div class="form-group">
-            <label for="{{ form.tips.id }}">{{ form.tips.label }}</label>
+        <div class="mb-3">
+            <label for="{{ form.tips.id }}" class="form-label">{{ form.tips.label }}</label>
             <div id="tips-editor" class="quill-editor"></div>
             {{ form.tips(class="form-control", id="tips", style="display: none;", required=False) }}
         </div>
-        <div class="form-group">
-            <label for="{{ form.points.id }}">{{ form.points.label }}</label>
-            {{ form.points(class="form-control") }}
+        <div class="mb-3">
+            <label for="{{ form.points.id }}" class="form-label">{{ form.points.label }}</label>
+            {{ form.points(class="form-control", required=True) }}
         </div>
-        <div class="form-group">
-            <label for="{{ form.completion_limit.id }}">{{ form.completion_limit.label }}</label>
+        <div class="mb-3">
+            <label for="{{ form.completion_limit.id }}" class="form-label">{{ form.completion_limit.label }}</label>
             {{ form.completion_limit(class="form-control") }}
         </div>
 
         <!-- Frequency Field -->
-        <div class="form-group">
-            <label for="{{ form.frequency.id }}">{{ form.frequency.label }}</label>
+        <div class="mb-3">
+            <label for="{{ form.frequency.id }}" class="form-label">{{ form.frequency.label }}</label>
             {{ form.frequency(class="form-control") }}
         </div>
 
         <!-- Task Configuration -->
-        <div class="form-group">
-            <label for="{{ form.enabled.id }}">{{ form.enabled.label }}</label>
-            {{ form.enabled(class="form-control") }}
+        <div class="mb-3 form-check">
+            {{ form.enabled(class="form-check-input") }}
+            <label for="{{ form.enabled.id }}" class="form-check-label">{{ form.enabled.label }}</label>
         </div>
         <!-- Task Sponsored Checkbox -->
-        <div class="form-group">
-            <label for="{{ form.is_sponsored.id }}">{{ form.is_sponsored.label }}</label>
-            {{ form.is_sponsored(class="form-control") }}
-            <small>Check if the task is sponsored.</small>
+        <div class="mb-3 form-check">
+            {{ form.is_sponsored(class="form-check-input") }}
+            <label for="{{ form.is_sponsored.id }}" class="form-check-label">{{ form.is_sponsored.label }}</label>
+            <div class="form-text">Check if the task is sponsored.</div>
         </div>
-        <div class="form-group">
-            <label for="{{ form.category.id }}">{{ form.category.label }}</label>
+        <div class="mb-3">
+            <label for="{{ form.category.id }}" class="form-label">{{ form.category.label }}</label>
             {{ form.category(class="form-control") }}
         </div>
 
         <!-- Verification Type Field -->
-        <div class="form-group">
-            <label for="{{ form.verification_type.id }}">{{ form.verification_type.label }}</label>
+        <div class="mb-3">
+            <label for="{{ form.verification_type.id }}" class="form-label">{{ form.verification_type.label }}</label>
             {{ form.verification_type(class="form-control") }}
         </div>
-        
+
         <!-- Badge Selection or Creation -->
-        <fieldset>
+        <fieldset class="mb-4">
             <legend>Badge Information</legend>
-            <div class="form-group">
-                <label for="{{ form.badge_id.id }}">{{ form.badge_id.label }}</label>
+            <div class="mb-3">
+                <label for="{{ form.badge_id.id }}" class="form-label">{{ form.badge_id.label }}</label>
                 {{ form.badge_id(class="form-control") }}
-                <small>Select "None" to create a new badge or choose an existing one.</small>
+                <div class="form-text">Select "None" to create a new badge or choose an existing one.</div>
             </div>
             <!-- These fields should be filled only if creating a new badge -->
-            <div class="form-group">
-                <label for="{{ form.badge_name.id }}">{{ form.badge_name.label }}</label>
+            <div class="mb-3">
+                <label for="{{ form.badge_name.id }}" class="form-label">{{ form.badge_name.label }}</label>
                 {{ form.badge_name(class="form-control") }}
             </div>
-            <div class="form-group">
-                <label for="{{ form.badge_description.id }}">{{ form.badge_description.label }}</label>
+            <div class="mb-3">
+                <label for="{{ form.badge_description.id }}" class="form-label">{{ form.badge_description.label }}</label>
                 {{ form.badge_description(class="form-control") }}
             </div>
-            <div class="form-group">
-                <label for="{{ form.badge_image_filename.id }}">{{ form.badge_image_filename.label }}</label>
+            <div class="mb-3">
+                <label for="{{ form.badge_image_filename.id }}" class="form-label">{{ form.badge_image_filename.label }}</label>
                 {{ form.badge_image_filename(class="form-control") }}
             </div>
         </fieldset>
 
-        <div class="form-group">
-            {{ form.submit(class="button primary") }}
+        <div class="mb-3">
+            {{ form.submit(class="btn btn-primary") }}
         </div>
     </form>
 </div>
+
 <script>
     var quillDescription = new Quill('#description-editor', {
         theme: 'snow',
