@@ -78,6 +78,8 @@ class User(UserMixin, db.Model):
     show_carbon_game = db.Column(db.Boolean, default=True)  # Toggle for showing carbon reduction game
     onboarded = db.Column(db.Boolean, default=False, nullable=True)  # New field to track onboarding status
 
+    selected_game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=True)
+
     def generate_verification_token(self, expiration=320000):
         return jwt.encode(
             {'verify_email': self.id, 'exp': time() + expiration},

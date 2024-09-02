@@ -90,9 +90,12 @@ def index(game_id, task_id, user_id):
 
     # Check if the game_id is None and set it from the joined games if available
     if game_id is None and current_user.is_authenticated:
-        joined_games = current_user.participated_games
-        if joined_games:
-            game_id = joined_games[0].id
+        if current_user.selected_game_id:
+            game_id = current_user.selected_game_id
+        else:
+            joined_games = current_user.participated_games
+            if joined_games:
+                game_id = joined_games[0].id
 
     game = Game.query.get(game_id) if game_id else None
 
@@ -100,7 +103,12 @@ def index(game_id, task_id, user_id):
     if game_id and current_user.is_authenticated:
         if game not in current_user.participated_games:
             return redirect(url_for('main.index'))
-
+        
+        # Update the selected_game_id for the user
+        if current_user.selected_game_id != game_id:
+            current_user.selected_game_id = game_id
+            db.session.commit()
+            
     # Determine if the user needs onboarding
     if current_user.is_authenticated and not current_user.onboarded:
         start_onboarding = True  # Trigger the onboarding script
