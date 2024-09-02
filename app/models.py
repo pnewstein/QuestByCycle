@@ -304,7 +304,7 @@ class Sponsor(db.Model):
     name = db.Column(db.String(255), nullable=False)
     website = db.Column(db.String(255), nullable=True)
     logo = db.Column(db.String(255), nullable=True)
-    description = db.Column(db.String(500), nullable=True)
+    description = db.Column(db.String(1000), nullable=True)
     tier = db.Column(db.String(255), nullable=False)
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
 
