@@ -1,5 +1,5 @@
-function showAllSubmissionsModal() {
-    fetch('/tasks/task/all_submissions')
+function showAllSubmissionsModal(gameId) {
+    fetch(`/tasks/task/all_submissions?game_id=${gameId}`)
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -14,8 +14,8 @@ function showAllSubmissionsModal() {
         });
 }
 
-function fetchAllSubmissions() {
-    fetch('/tasks/task/all_submissions')
+function fetchAllSubmissions(gameId) {
+    fetch(`/tasks/task/all_submissions?game_id=${gameId}`)
         .then(response => response.json())
         .then(data => {
             if (data.error) {

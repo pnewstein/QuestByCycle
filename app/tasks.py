@@ -659,24 +659,33 @@ def delete_submission(submission_id):
     return jsonify({'success': True})
 
 
-@tasks_bp.route('/task/all_submissions')
-@login_required
-def all_submissions():
-    if not current_user.is_authenticated:
-        return jsonify({'error': 'Unauthorized'}), 403
+@tasks_bp.route('/task/all_submissions', methods=['GET'])
+def get_all_submissions():
+    game_id = request.args.get('game_id', type=int)
 
-    submissions = TaskSubmission.query.all()
+    if game_id is None:
+        return jsonify({'error': 'Game ID is required'}), 400
+    
+    submissions = TaskSubmission.query.join(Task).filter(Task.game_id == game_id).all()
+
+    if not submissions:
+        return jsonify({'submissions': []})
+
     submissions_data = [
         {
             'id': submission.id,
-            'user_id': submission.user_id,
             'task_id': submission.task_id,
+            'user_id': submission.user_id,
             'image_url': submission.image_url,
             'comment': submission.comment,
+            'timestamp': submission.timestamp.isoformat(),
             'twitter_url': submission.twitter_url,
-            'timestamp': submission.timestamp.isoformat()  # Adjusted to string format for JSON serialization
-        } for submission in submissions
+            'fb_url': submission.fb_url,
+            'instagram_url': submission.instagram_url
+        }
+        for submission in submissions
     ]
+
     return jsonify({
         'submissions': submissions_data,
         'is_admin': current_user.is_admin
