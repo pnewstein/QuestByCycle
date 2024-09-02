@@ -679,9 +679,7 @@ def get_all_submissions():
             'image_url': submission.image_url,
             'comment': submission.comment,
             'timestamp': submission.timestamp.isoformat(),
-            'twitter_url': submission.twitter_url or '',
-            'fb_url': submission.fb_url or '',
-            'instagram_url': submission.instagram_url or ''
+            'twitter_url': submission.twitter_url or ''
         }
         for submission in submissions
     ]
