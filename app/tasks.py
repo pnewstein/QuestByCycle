@@ -669,7 +669,7 @@ def get_all_submissions():
     submissions = TaskSubmission.query.join(Task).filter(Task.game_id == game_id).all()
 
     if not submissions:
-        return jsonify({'submissions': []})
+        return jsonify({'submissions': [], 'error': 'No submissions found for the provided game ID'})
 
     submissions_data = [
         {
