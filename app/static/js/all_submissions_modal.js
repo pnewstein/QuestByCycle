@@ -116,11 +116,6 @@ function deleteSubmission(submissionId, modalType) {
             if (data.success) {
                 alert('Submission deleted successfully.');
                 // Refresh based on modal type
-                if (modalType === 'mySubmissions') {
-                    fetchMySubmissions();  // Fetch and refresh my submissions
-                } else if (modalType === 'allSubmissions') {
-                    fetchAllSubmissions();  // Fetch and refresh all submissions
-                }
             } else {
                 throw new Error(data.message);
             }
