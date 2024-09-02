@@ -698,3 +698,19 @@ def task_details(task_id):
         'status': task.status
     }
     return jsonify({'task': task_data})
+
+@tasks_bp.route('/game/<int:game_id>/delete_all', methods=['DELETE'])
+@login_required
+def delete_all_tasks(game_id):
+    game = Game.query.get_or_404(game_id)
+    
+    if game.admin_id != current_user.id:
+        return jsonify({"success": False, "message": "You do not have permission to delete tasks for this game."}), 403
+    
+    try:
+        Task.query.filter_by(game_id=game_id).delete(synchronize_session=False)
+        db.session.commit()
+        return jsonify({"success": True, "message": "All tasks deleted successfully."}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Failed to delete all tasks: {str(e)}"}), 500
