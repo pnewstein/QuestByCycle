@@ -112,29 +112,54 @@
     }
 
     function deleteAllTasks() {
+        // First confirmation pop-up
         if (confirm('Are you sure you want to delete all tasks? This action cannot be undone.')) {
-            fetch(`/tasks/game/${game_Id}/delete_all`, {
-                method: 'DELETE',
+            
+            // Fetch the game title before showing the second confirmation pop-up
+            fetch(`/tasks/game/${game_Id}/get_title`, {
+                method: 'GET',
                 headers: {
-                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     'Accept': 'application/json',
                 },
             })
             .then(response => {
-                if (!response.ok) throw new Error('Failed to delete all tasks');
+                if (!response.ok) throw new Error('Failed to fetch game title');
                 return response.json();
             })
             .then(data => {
-                if (data.success) {
-                    alert('All tasks deleted successfully');
-                    loadTasks(game_Id);
-                } else {
-                    alert(`Failed to delete tasks: ${data.message}`);
+                const gameTitle = data.title;
+                
+                // Second confirmation pop-up with game title
+                if (confirm(`This will delete all tasks for the game: "${gameTitle}". Are you absolutely sure? This action cannot be undone.`)) {
+                    // Proceed with deletion if the user confirms
+                    fetch(`/tasks/game/${game_Id}/delete_all`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json',
+                        },
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to delete all tasks');
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            alert('All tasks deleted successfully');
+                            loadTasks(game_Id);
+                        } else {
+                            alert(`Failed to delete tasks: ${data.message}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Failed to delete all tasks. Please check the console for more details.');
+                    });
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to delete all tasks. Please check the console for more details.');
+                console.error('Error fetching game title:', error);
+                alert('Failed to fetch game title. Please check the console for more details.');
             });
         }
     }

@@ -714,3 +714,14 @@ def delete_all_tasks(game_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"success": False, "message": f"Failed to delete all tasks: {str(e)}"}), 500
+    
+
+@tasks_bp.route('/game/<int:game_id>/get_title', methods=['GET'])
+@login_required
+def get_game_title(game_id):
+    game = Game.query.get_or_404(game_id)
+    
+    if game.admin_id != current_user.id:
+        return jsonify({"success": False, "message": "You do not have permission to view this game."}), 403
+    
+    return jsonify({"title": game.title})
