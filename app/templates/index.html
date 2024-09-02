@@ -73,7 +73,7 @@
                                             style="height: 100%; width: 100%; object-fit: cover;" loading="lazy">
                                         <div class="carousel-caption minimized-caption">
                                             <h5>{{ image.task_title }}</h5>
-                                            <p>{{ image.comment }}</p>
+                                            <p class="comment-text">{{ image.comment[:75] }}{% if image.comment|length > 75 %}...{% endif %}</p>
                                         </div>
                                     </div>
                                 {% endfor %}                            
@@ -570,6 +570,14 @@
             max-height: 200px; /* Adjust this value to set the height limit */
             overflow-y: auto;
             overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+        
+        .comment-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%; /* Ensures that the text fits within the available space */
+            display: inline-block;
         }
     </style>
 {% endblock %}
