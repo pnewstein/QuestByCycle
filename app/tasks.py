@@ -682,6 +682,7 @@ def get_all_submissions():
         {
             'id': submission.id,
             'task_id': submission.task_id,
+            'user_id': submission.user_id,  # Include user_id here
             'user_display_name': submission.user.display_name or submission.user.username,
             'user_username': submission.user.username,  # Fallback username
             'image_url': submission.image_url,
