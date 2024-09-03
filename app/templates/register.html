@@ -12,7 +12,7 @@
             {% endif %}
         {% endwith %}
     <h2>Register</h2>
-    <form method="post">
+    <form method="post" action="{{ url_for('auth.register', game_id=request.args.get('game_id'), task_id=request.args.get('task_id'), next=request.args.get('next')) }}">
         {{ form.hidden_tag() }}
         <div>
             {{ form.email.label }} {{ form.email() }}
@@ -32,5 +32,6 @@
         </div>
         <a href="{{ url_for('main.index') }}" class="button">Back to Home</a>
     </form>
+    
 </div>
 {% endblock %}

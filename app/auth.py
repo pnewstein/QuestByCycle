@@ -61,18 +61,18 @@ def login():
             password = form.password.data
             if not email or not password:
                 flash('Please enter both email and password.')
-                return redirect(url_for('auth.login'))
+                return redirect(url_for('auth.login', game_id=request.args.get('game_id'), task_id=request.args.get('task_id')))
 
             user = User.query.filter_by(email=email).first()
 
             if user is None:
                 flash('Invalid email or password.')
-                return redirect(url_for('auth.login'))
+                return redirect(url_for('auth.login', game_id=request.args.get('game_id'), task_id=request.args.get('task_id')))
 
             # Check if email verification is required and if the user's email is verified
             if current_app.config.get('MAIL_PASSWORD') and not user.email_verified:
                 flash('Please verify your email before logging in.', 'warning')
-                return render_template('login.html', form=form, show_resend=True, email=email)
+                return render_template('login.html', form=form, show_resend=True, email=email, game_id=request.args.get('game_id'), task_id=request.args.get('task_id'))
 
             if user and user.check_password(password):
                 login_user(user, remember=form.remember_me.data)
@@ -96,9 +96,14 @@ def login():
                         db.session.commit()
 
                 flash('Logged in successfully.')
+
+                task_id = request.args.get('task_id')
                 next_page = request.args.get('next')
+
                 if user.is_admin:
                     return redirect(next_page or url_for('admin.admin_dashboard'))
+                elif task_id:
+                    return redirect(url_for('tasks.submit_photo', task_id=task_id))
                 else:
                     return redirect(next_page or url_for('main.index'))
             else:
@@ -107,10 +112,9 @@ def login():
     except Exception as e:
         current_app.logger.error(f'Login error: {e}')
         flash('An unexpected error occurred during login. Please try again later.', 'error')
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('auth.login', game_id=request.args.get('game_id'), task_id=request.args.get('task_id')))
     
-    return render_template('login.html', form=form)
-
+    return render_template('login.html', form=form, game_id=request.args.get('game_id'), task_id=request.args.get('task_id'))
 
 
 @auth_bp.route('/resend_verification_email', methods=['POST'])
@@ -155,14 +159,14 @@ def register():
         if form.validate_on_submit():
             if not form.accept_license.data:
                 flash('You must agree to the terms of service, license agreement, and privacy policy.', 'warning')
-                return render_template('register.html', form=form)
+                return render_template('register.html', form=form, game_id=request.args.get('game_id'), task_id=request.args.get('task_id'), next=request.args.get('next'))
 
             email = sanitize_html(form.email.data)
             base_username = email.split('@')[0]
             existing_user = User.query.filter_by(email=email).first()
             if existing_user:
                 flash('Email already registered. Please use a different email.', 'warning')
-                return redirect(url_for('auth.register'))
+                return redirect(url_for('auth.register', game_id=request.args.get('game_id'), task_id=request.args.get('task_id'), next=request.args.get('next')))
 
             counter = 1
             username = base_username
@@ -191,7 +195,7 @@ def register():
                 # Check if email verification is required
                 if current_app.config.get('MAIL_PASSWORD'):
                     token = user.generate_verification_token()
-                    verify_url = url_for('auth.verify_email', token=token, _external=True)
+                    verify_url = url_for('auth.verify_email', token=token, _external=True, task_id=request.args.get('task_id'), next=request.args.get('next'))
                     html = render_template('verify_email.html', verify_url=verify_url)
                     subject = "QuestByCycle verify email"
                     send_email(user.email, subject, html)
@@ -199,7 +203,6 @@ def register():
                 else:
                     user.email_verified = True  # Automatically verify email
                     db.session.commit()
-                    flash('Registration successful. Your email has been automatically verified.', 'success')
                     login_user(user)  # Log in the user automatically if email verification is bypassed
 
                     # Automatically join the game if a game_id is provided
@@ -221,20 +224,27 @@ def register():
                             user.participated_games.append(tutorial_game)
                             db.session.commit()
 
-                return redirect(url_for('main.index'))
+                next_page = request.args.get('next')
+                task_id = request.args.get('task_id')
+                if next_page:
+                    return redirect(next_page)
+                elif task_id:
+                    return redirect(url_for('tasks.submit_photo', task_id=task_id))
+                else:
+                    return redirect(url_for('main.index'))
 
             except Exception as e:
                 db.session.rollback()
                 flash('Registration failed due to an unexpected error. Please try again.', 'error')
                 current_app.logger.error(f'Failed to register user or send verification email: {e}')
-                return render_template('register.html', title='Register', form=form)
+                return render_template('register.html', title='Register', form=form, game_id=request.args.get('game_id'), task_id=request.args.get('task_id'), next=request.args.get('next'))
 
     except Exception as e:
         current_app.logger.error(f'Registration error: {e}')
         flash('An unexpected error occurred during registration. Please try again later.', 'error')
-        return redirect(url_for('auth.register'))
+        return redirect(url_for('auth.register', game_id=request.args.get('game_id'), task_id=request.args.get('task_id'), next=request.args.get('next')))
 
-    return render_template('register.html', title='Register', form=form)
+    return render_template('register.html', title='Register', form=form, game_id=request.args.get('game_id'), task_id=request.args.get('task_id'), next=request.args.get('next'))
 
 
 
@@ -298,8 +308,13 @@ def verify_email(token):
             user.participated_games.append(tutorial_game)
             db.session.commit()
 
+    task_id = request.args.get('task_id')
+    if task_id:
+        return redirect(url_for('tasks.submit_photo', task_id=task_id))
+
     flash('Your email has been verified and you have been logged in.', 'success')
     return redirect(url_for('main.index'))
+
 
 
 @auth_bp.route('/privacy_policy')

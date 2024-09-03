@@ -11,7 +11,7 @@
         {% endif %}
     {% endwith %}
     <h2>Login</h2>
-    <form action="{{ url_for('auth.login', game_id=request.args.get('game_id')) }}" method="post">
+    <form action="{{ url_for('auth.login', game_id=request.args.get('game_id'), task_id=request.args.get('task_id'), next=request.args.get('next')) }}" method="post">
         {{ form.hidden_tag() }}
         <div>
             {{ form.email.label }}
@@ -36,8 +36,8 @@
     </form>
     <br>
     <a href="{{ url_for('main.index') }}" class="button">Back to Home</a>
-    <a href="{{ url_for('auth.forgot_password', game_id=request.args.get('game_id')) }}" class="button">Forgot Password?</a>
-    <a href="{{ url_for('auth.register', game_id=request.args.get('game_id')) }}" class="button">Register Today!</a>
+    <a href="{{ url_for('auth.forgot_password', game_id=request.args.get('game_id'), task_id=request.args.get('task_id'), next=request.args.get('next')) }}" class="button">Forgot Password?</a>
+    <a href="{{ url_for('auth.register', game_id=request.args.get('game_id'), task_id=request.args.get('task_id'), next=request.args.get('next')) }}" class="button">Register New Account</a>
 
     {% if show_resend %}
     <!-- Resend verification email form -->
