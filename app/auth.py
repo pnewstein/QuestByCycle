@@ -308,13 +308,25 @@ def verify_email(token):
             user.participated_games.append(tutorial_game)
             db.session.commit()
 
+    # Automatically join the game if a game_id is provided
+    game_id = request.args.get('game_id')
+    if game_id:
+        game = Game.query.get(game_id)
+        if game and game not in user.participated_games:
+            user.participated_games.append(game)
+            db.session.commit()
+            flash(f'You have successfully joined the game: {game.title}', 'success')
+
+    # Redirect to the correct page based on the task_id or next parameter
     task_id = request.args.get('task_id')
+    next_page = request.args.get('next')
     if task_id:
         return redirect(url_for('tasks.submit_photo', task_id=task_id))
+    elif next_page:
+        return redirect(next_page)
 
     flash('Your email has been verified and you have been logged in.', 'success')
     return redirect(url_for('main.index'))
-
 
 
 @auth_bp.route('/privacy_policy')
