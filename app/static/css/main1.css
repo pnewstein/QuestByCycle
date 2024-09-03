@@ -18,11 +18,7 @@ main {
 
 
 .modal-backdrop {
-    z-index: 1040 !important;
-}
-
-#generateAITaskModal {
-    z-index: 1050 !important;
+    z-index: 1030 !important;
 }
 
 .shepherd-modal-overlay-container {
@@ -568,14 +564,14 @@ article h3 {
 
 .modal {
     position: fixed;
-    display: none; 
-    z-index: 1000; 
+    display: none;
+    z-index: 1000;
     left: 0;
     top: 0;
-    width: 100%; 
-    height: 100%; 
-    overflow: auto; 
-    background-color: rgba(0,0,0,0.4);
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('/static/images/header-bg.jpg') no-repeat center center/cover;
     animation: fadeIn 0.3s;
 }
 
@@ -674,20 +670,6 @@ article h3 {
     border: 1px solid #888;
     border-radius: 8px; 
     position: relative;
-    z-index: 1001;
-}
-
-
-#submissionDetailModal {
-    z-index: 3;
-}
-
-#userProfileModal {
-    z-index: 4;
-}
-
-#leaderboardModal {
-    z-index: 3;
 }
 
 #submissionDetailModal .modal-content {
@@ -711,10 +693,6 @@ article h3 {
 #submissionDetailModal div {
     text-align: center; 
     margin-top: 20px; 
-}
-
-#taskDetailModal {
-    z-index: 2;
 }
 
 .modal-content img {
