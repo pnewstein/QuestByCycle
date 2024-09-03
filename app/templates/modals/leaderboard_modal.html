@@ -97,15 +97,18 @@
 
     .click-text {
         position: absolute;
-        bottom: 10px; /* Adjust as needed */
+        bottom: 10px; 
         left: 50%;
         transform: translateX(-50%);
         width: 100%;
         text-align: center;
         font-weight: bold;
-        color: white; /* Adjust color as needed */
-        z-index: 10; /* Ensure it is above the meter bar */
-        pointer-events: none; /* Ensure clicks pass through to the meter */
+        color: white; 
+        z-index: 10; 
+        pointer-events: none;
+        background-color: rgba(0, 0, 0, 0.441); /* Black background with transparency */
+        padding: 10px; /* Add some padding to the text */
+        border-radius: 5px; /* Optional: to make it look nicer */
     }
 
     .meter-label {
