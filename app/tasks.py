@@ -484,9 +484,9 @@ def generate_qr(task_id):
             <img src="{url_for('static', filename='images/welcomeQuestByCycle.webp')}" alt="Welcome">
         </div>
         <h1>Congratulations!</h1>
-        <h2>Quest By Cycle is a free eco-adventure game where players pedal their way to sustainability, earn rewards, and transform communities—all while having fun!</h2>
         <h2>Scan to complete '{task.title}' and gain {task.points} points!</h2>
         <img src="data:image/png;base64,{img_data}" alt="QR Code">
+        <h2>Quest By Cycle is a free eco-adventure game where players pedal their way to sustainability, earn rewards, and transform communities—all while having fun!</h2>
     </body>
     </html>
     """
@@ -494,6 +494,8 @@ def generate_qr(task_id):
     response = make_response(html_content)
     response.headers['Content-Type'] = 'text/html'
     return response
+
+
 @tasks_bp.route('/submit_photo/<int:task_id>', methods=['GET', 'POST'])
 @login_required
 def submit_photo(task_id):
