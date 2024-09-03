@@ -110,11 +110,11 @@ def index(game_id, task_id, user_id):
             db.session.commit()
             
     # Determine if the user needs onboarding
-    if current_user.is_authenticated and not current_user.onboarded:
-        start_onboarding = True  # Trigger the onboarding script
-    else:
-        current_user.onboarded = True
-        db.session.commit()
+    #if current_user.is_authenticated and not current_user.onboarded:
+    #    start_onboarding = True  # Trigger the onboarding script
+    #else:
+    #    current_user.onboarded = True
+    #    db.session.commit()
 
     # If the user is authenticated, load user-specific tasks and data
     if current_user.is_authenticated:
