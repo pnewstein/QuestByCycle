@@ -39,10 +39,6 @@ function displayAllSubmissions(submissions, isAdmin) {
     submissions.forEach(submission => {
         const card = document.createElement('div');
         card.className = 'submission-card';
-        card.setAttribute('data-task-id', submissions.task_id);
-        card.addEventListener('click', function() {
-            openTaskDetailModal(submissions.task_id);
-        });
 
         const img = document.createElement('img');
         img.src = submission.image_url || 'path/to/default/image.png';
@@ -53,15 +49,19 @@ function displayAllSubmissions(submissions, isAdmin) {
         info.className = 'submission-info';
 
         const userDetails = document.createElement('p');
-        userDetails.textContent = `User ID: ${submission.user_id}`;
+        userDetails.textContent = `User: ${submission.user_display_name || submission.user_username}`;
         userDetails.className = 'submission-user-details';
 
-        const taskDetails = document.createElement('p');
-        taskDetails.textContent = `Task ID: ${submission.task_id}`;
-        taskDetails.className = 'submission-task-details';
-
         const timestamp = document.createElement('p');
-        timestamp.textContent = `Submitted on: ${submission.timestamp}`;
+        const formattedTimestamp = new Date(submission.timestamp).toLocaleString('en-US', {
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true
+        });
+        timestamp.textContent = `Submitted on: ${formattedTimestamp}`;
         timestamp.className = 'submission-timestamp';
 
         const comment = document.createElement('p');
@@ -69,22 +69,23 @@ function displayAllSubmissions(submissions, isAdmin) {
         comment.className = 'submission-comment';
 
         const twitterLink = document.createElement('p');
-        twitterLink.textContent = `Twitter: ${submission.twitter_url}`;
+        twitterLink.textContent = `Twitter: ${submission.twitter_url || 'N/A'}`;
         twitterLink.className = 'submission-comment';
 
         const facebookLink = document.createElement('p');
-        facebookLink.textContent = `Facebook: ${submission.facebook_url}`;
+        facebookLink.textContent = `Facebook: ${submission.fb_url || 'N/A'}`;
         facebookLink.className = 'submission-comment';
 
         const instagramLink = document.createElement('p');
-        instagramLink.textContent = `Instagram: ${submission.instagram_url}`;
+        instagramLink.textContent = `Instagram: ${submission.instagram_url || 'N/A'}`;
         instagramLink.className = 'submission-comment';
 
         info.appendChild(userDetails);
-        info.appendChild(taskDetails);
         info.appendChild(timestamp);
         info.appendChild(comment);
         info.appendChild(twitterLink);
+        info.appendChild(facebookLink);
+        info.appendChild(instagramLink);
 
         if (isAdmin) {
             const deleteButton = document.createElement('button');
@@ -100,9 +101,24 @@ function displayAllSubmissions(submissions, isAdmin) {
         card.appendChild(img);
         card.appendChild(info);
 
+        // Make the card clickable to show the submission detail modal
+        card.addEventListener('click', function() {
+            showSubmissionDetail({
+                url: submission.image_url,
+                comment: submission.comment,
+                user_id: submission.user_id,
+                user_display_name: submission.user_display_name || submission.user_username,
+                twitter_url: submission.twitter_url,
+                fb_url: submission.fb_url,
+                instagram_url: submission.instagram_url,
+                verification_type: 'image'  // Assuming you're using 'image', adjust as needed
+            });
+        });
+
         container.appendChild(card);
     });
 }
+
 
 function deleteSubmission(submissionId, modalType) {
     fetch(`/tasks/task/delete_submission/${submissionId}`, {

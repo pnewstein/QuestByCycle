@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from app.utils import update_user_score, getLastRelevantCompletionTime, check_and_award_badges, check_and_revoke_badges, save_badge_image, save_submission_image, can_complete_task
 from app.forms import TaskForm, PhotoForm
 from app.social import post_to_social_media
-from .models import db, Game, Task, Badge, UserTask, TaskSubmission
+from .models import db, Game, Task, Badge, UserTask, TaskSubmission, User
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 from datetime import datetime, timezone, timedelta
@@ -666,7 +666,14 @@ def get_all_submissions():
     if game_id is None:
         return jsonify({'error': 'Game ID is required'}), 400
     
-    submissions = TaskSubmission.query.join(Task).filter(Task.game_id == game_id).all()
+    # Join TaskSubmission with Task and User to get necessary details
+    submissions = (
+        TaskSubmission.query
+        .join(Task, TaskSubmission.task_id == Task.id)
+        .join(User, TaskSubmission.user_id == User.id)
+        .filter(Task.game_id == game_id)
+        .all()
+    )
 
     if not submissions:
         return jsonify({'submissions': []})
@@ -675,10 +682,11 @@ def get_all_submissions():
         {
             'id': submission.id,
             'task_id': submission.task_id,
-            'user_id': submission.user_id,
+            'user_display_name': submission.user.display_name or submission.user.username,
+            'user_username': submission.user.username,  # Fallback username
             'image_url': submission.image_url,
             'comment': submission.comment,
-            'timestamp': submission.timestamp.isoformat(),
+            'timestamp': submission.timestamp.strftime('%Y-%m-%d %H:%M'),  # Format to exclude seconds
             'twitter_url': submission.twitter_url,
             'fb_url': submission.fb_url,
             'instagram_url': submission.instagram_url
