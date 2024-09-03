@@ -511,14 +511,12 @@ def submit_photo(task_id):
         if request.method == 'POST':
             return jsonify({'success': False, 'message': message}), 400
         flash(message, 'error')
-        return redirect(url_for('tasks.submit_photo', task_id=task_id))
+        return redirect(url_for('main.index'))  # Redirect to main index or another page
 
     if not (game_start <= now <= game_end):
         message = 'This task cannot be completed outside of the game dates.'
-        if request.method == 'POST':
-            return jsonify({'success': False, 'message': message}), 400
         flash(message, 'error')
-        return redirect(url_for('tasks.submit_photo', task_id=task_id))
+        return redirect(url_for('main.index'))  # Redirect to main index or another page
 
     if request.method == 'POST':
         can_verify, next_eligible_time = can_complete_task(current_user.id, task_id)
@@ -590,6 +588,7 @@ def submit_photo(task_id):
             return jsonify({'success': False, 'message': 'No photo detected, please try again.'}), 400
 
     return render_template('submit_photo.html', form=form, task=task, task_id=task_id)
+
 
 
 def allowed_file(filename):
