@@ -14,29 +14,34 @@ function showSubmissionDetail(image) {
     const twitterLink = document.getElementById('twitterLink');
     if (image.verification_type !== 'comment' && image.twitter_url && isValidUrl(image.twitter_url)) {
         twitterLink.href = image.twitter_url;
-        twitterLink.style.display = 'inline';  // Show the Twitter link if a URL is available and not using the placeholder image
+        twitterLink.style.display = 'inline';
     } else {
-        twitterLink.style.display = 'none';  // Hide the Twitter link if using the placeholder image or no URL is available
+        twitterLink.style.display = 'none';
     }
 
     // Update the Facebook link if available
     const facebookLink = document.getElementById('facebookLink');
     if (image.fb_url && isValidUrl(image.fb_url)) {
         facebookLink.href = image.fb_url;
-        facebookLink.style.display = 'inline';  // Show the Facebook link if a URL is available
+        facebookLink.style.display = 'inline';
     } else {
-        facebookLink.style.display = 'none';  // Hide the Facebook link if no URL is available
+        facebookLink.style.display = 'none';
     }
 
     // Update the Instagram link if available
     const instagramLink = document.getElementById('instagramLink');
     if (image.instagram_url && isValidUrl(image.instagram_url)) {
         instagramLink.href = image.instagram_url;
-        instagramLink.style.display = 'inline';  // Show the Instagram link if a URL is available
+        instagramLink.style.display = 'inline';
     } else {
-        instagramLink.style.display = 'none';  // Hide the Instagram link if no URL is available
+        instagramLink.style.display = 'none';
     }
 
+    // Ensure the submission modal opens on top of the task detail modal
+    const taskDetailModalZIndex = parseInt(window.getComputedStyle(document.getElementById('taskDetailModal')).zIndex, 10);
+    submissionModal.style.zIndex = taskDetailModalZIndex + 10; // Adjust z-index to be above the task detail modal
+
+    // Show the modal
     submissionModal.style.display = 'block';
     submissionModal.style.backgroundColor = 'rgba(0,0,0,0.7)';
 }
