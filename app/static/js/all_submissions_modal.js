@@ -6,26 +6,11 @@ function showAllSubmissionsModal(gameId) {
                 throw new Error(data.error);
             }
             displayAllSubmissions(data.submissions, data.is_admin);
-            openModal('allSubmissionsModal');
+            openModal('allSubmissionsModal'); // Ensure this is the last modal opened if stacking
         })
         .catch(error => {
             console.error('Error fetching all submissions:', error);
             alert('Error fetching all submissions: ' + error.message);
-        });
-}
-
-function fetchAllSubmissions(gameId) {
-    fetch(`/tasks/task/all_submissions?game_id=${gameId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                throw new Error(data.error);
-            }
-            displayAllSubmissions(data.submissions, data.is_admin);
-        })
-        .catch(error => {
-            console.error('Error fetching all submissions:', error);
-            alert('Failed to fetch all submissions: ' + error.message);
         });
 }
 
@@ -113,6 +98,7 @@ function displayAllSubmissions(submissions, isAdmin) {
                 instagram_url: submission.instagram_url,
                 verification_type: 'image'  // Assuming you're using 'image', adjust as needed
             });
+            openModal('submissionDetailModal');  // Ensure the detail modal is opened on top
         });
 
         container.appendChild(card);
@@ -120,7 +106,8 @@ function displayAllSubmissions(submissions, isAdmin) {
 }
 
 
-function deleteSubmission(submissionId, modalType) {
+
+function deleteSubmission(submissionId) {
     fetch(`/tasks/task/delete_submission/${submissionId}`, {
         method: 'DELETE',
         headers: {
@@ -131,12 +118,6 @@ function deleteSubmission(submissionId, modalType) {
         .then(data => {
             if (data.success) {
                 alert('Submission deleted successfully.');
-                // Refresh based on modal type
-                if (modalType === 'mySubmissions') {
-                    fetchMySubmissions();  // Fetch and refresh my submissions
-                } else if (modalType === 'allSubmissions') {
-                    fetchAllSubmissions();  // Fetch and refresh all submissions
-                }
             } else {
                 throw new Error(data.message);
             }
