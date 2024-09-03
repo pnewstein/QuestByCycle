@@ -126,7 +126,7 @@ function appendCompletionMeter(parentElement, data, selectedGameId) {
         const completionMeter = document.createElement('div');
         completionMeter.className = 'completion-meter';
         completionMeter.id = 'completionMeter'; // Added ID for targeting
-        completionMeter.addEventListener('click', showAllSubmissionsModal);
+        completionMeter.addEventListener('click', () => showAllSubmissionsModal(selectedGameId));
 
         const clickText = document.createElement('div');
         clickText.className = 'click-text';
