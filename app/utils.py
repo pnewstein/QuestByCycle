@@ -2,15 +2,21 @@ from flask import flash, current_app, jsonify
 from .models import db, Task, Badge, Game, UserTask, User, ShoutBoardMessage, TaskSubmission
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
-from flask_mail import Message, Mail
 from PIL import Image
 from pytz import utc
+from email.mime.text import MIMEText
+from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request
 
 import uuid
 import os
 import csv
 import bleach
+import json
+import base64
+import smtplib
 
+SCOPES = ['https://mail.google.com/']
 
 ALLOWED_TAGS = [
     'a', 'b', 'i', 'u', 'em', 'strong', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -441,16 +447,62 @@ def check_and_revoke_badges(user_id):
     db.session.commit()
 
 
-def send_email(to, subject, template):
-    mail = Mail(current_app)
-    
-    msg = Message(
-        subject,
-        recipients=[to],
-        html=template,
-        sender=current_app.config['MAIL_DEFAULT_SENDER']
-    )
-    mail.send(msg)
+def load_credentials():
+    creds = None
+    creds_file = os.path.join(current_app.root_path, '..', 'credentials.json')
+    creds_file = os.path.abspath(creds_file)
+    current_app.logger.error(f'Looking for credentials.json at: {creds_file}')
+    if os.path.exists(creds_file):
+        creds = Credentials.from_authorized_user_file(creds_file, SCOPES)
+        if creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+            # Save the refreshed credentials
+            with open(creds_file, 'w') as token_file:
+                token_file.write(creds.to_json())
+    else:
+        current_app.logger.error('Credentials not found. Please run the authorization script.')
+        return None
+    return creds
+
+
+def generate_oauth2_string(username, access_token):
+    auth_string = f'user={username}\1auth=Bearer {access_token}\1\1'
+    return base64.b64encode(auth_string.encode('utf-8')).decode('utf-8')
+
+
+def send_email(to, subject, html_content):
+    creds = load_credentials()
+    if not creds:
+        current_app.logger.error('Failed to load credentials.')
+        return False
+
+    access_token = creds.token
+    auth_string = generate_oauth2_string(current_app.config['MAIL_USERNAME'], access_token)
+
+    # Create the email message
+    msg = MIMEText(html_content, 'html')
+    msg['Subject'] = subject
+    msg['From'] = current_app.config['MAIL_DEFAULT_SENDER']
+    msg['To'] = to
+
+    try:
+        # Connect to Gmail SMTP server
+        smtp_server = smtplib.SMTP('smtp.gmail.com', 587)
+        smtp_server.ehlo()
+        smtp_server.starttls()
+        smtp_server.ehlo()
+
+        # Authenticate using OAuth2
+        smtp_server.docmd('AUTH', 'XOAUTH2 ' + auth_string)
+
+        # Send the email
+        smtp_server.sendmail(msg['From'], [to], msg.as_string())
+        smtp_server.quit()
+        current_app.logger.info('Email sent successfully.')
+        return True
+    except Exception as e:
+        current_app.logger.error(f'Failed to send email: {e}')
+        return False
 
 
 def generate_tutorial_game():

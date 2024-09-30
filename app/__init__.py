@@ -14,7 +14,6 @@ from app.models import db
 from .config import load_config
 from flask_wtf.csrf import CSRFProtect
 from datetime import timedelta
-from flask_mail import Mail
 from flask_socketio import SocketIO
 
 # Global variable to track the first request
@@ -23,7 +22,6 @@ has_run = False
 # Initialize extensions
 login_manager = LoginManager()
 migrate = Migrate()
-mail = Mail()
 socketio = SocketIO()
 
 def create_app():
@@ -53,12 +51,7 @@ def create_app():
     app.config['SESSION_COOKIE_DOMAIN'] = app.config['encryption']['SESSION_COOKIE_DOMAIN']
     app.config['SESSION_REFRESH_EACH_REQUEST'] = app.config['encryption']['SESSION_REFRESH_EACH_REQUEST']
     app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=app.config['encryption']['REMEMBER_COOKIE_DURATION_DAYS'])
-    app.config['MAIL_SERVER'] = app.config['mail']['MAIL_SERVER']
-    app.config['MAIL_PORT'] = app.config['mail']['MAIL_PORT']
-    app.config['MAIL_USE_TLS'] = app.config['mail']['MAIL_USE_TLS']
-    app.config['MAIL_USE_SSL'] = app.config['mail']['MAIL_USE_SSL']
     app.config['MAIL_USERNAME'] = app.config['mail']['MAIL_USERNAME']
-    app.config['MAIL_PASSWORD'] = app.config['mail']['MAIL_PASSWORD']
     app.config['MAIL_DEFAULT_SENDER'] = app.config['mail']['MAIL_DEFAULT_SENDER']
 
     # Load social media configurations
@@ -83,7 +76,6 @@ def create_app():
     login_manager.init_app(app)
     csrf.init_app(app)
     migrate.init_app(app, db)
-    mail.init_app(app)
     socketio.init_app(app, async_mode='gevent', logger=True, engineio_logger=True)
 
     # Create super admin

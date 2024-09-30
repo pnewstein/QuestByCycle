@@ -4,7 +4,6 @@ from flask_login import login_user, logout_user, login_required, current_user
 from app.models import db, User, Game
 from app.forms import LoginForm, RegistrationForm, ForgotPasswordForm, ResetPasswordForm, UpdatePasswordForm
 from app.utils import send_email, generate_tutorial_game
-from flask_mail import Mail
 from sqlalchemy import or_
 from pytz import utc
 from datetime import datetime
@@ -50,8 +49,6 @@ ALLOWED_ATTRIBUTES = {
 def sanitize_html(html_content):
     return bleach.clean(html_content, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
 
-mail = Mail()
-
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -70,7 +67,7 @@ def login():
                 return redirect(url_for('auth.login', game_id=request.args.get('game_id'), task_id=request.args.get('task_id')))
 
             # Check if email verification is required and if the user's email is verified
-            if current_app.config.get('MAIL_PASSWORD') and not user.email_verified:
+            if current_app.config.get('MAIL_USERNAME') and not user.email_verified:
                 flash('Please verify your email before logging in.', 'warning')
                 return render_template('login.html', form=form, show_resend=True, email=email, game_id=request.args.get('game_id'), task_id=request.args.get('task_id'))
 
@@ -193,7 +190,7 @@ def register():
                 db.session.commit()
 
                 # Check if email verification is required
-                if current_app.config.get('MAIL_PASSWORD'):
+                if current_app.config.get('MAIL_USERNAME'):
                     token = user.generate_verification_token()
                     verify_url = url_for('auth.verify_email', token=token, _external=True, task_id=request.args.get('task_id'), next=request.args.get('next'))
                     html = render_template('verify_email.html', verify_url=verify_url)
