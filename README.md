@@ -146,6 +146,9 @@ With service provider:
 ```sudo systemctl start questbycycleApp.service```
 ```sudo systemctl enable questbycycleApp.service```
 
+Update Poetry:
+$ sudo -u APPUSER HOME=/home/APPUSER /home/APPUSER/.local/bin/poetry update
+
 ## Connect Game to X
 https://developer.x.com/en/portal/dashboard
 
