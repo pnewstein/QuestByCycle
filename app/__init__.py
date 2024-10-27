@@ -1,3 +1,6 @@
+import logging
+import os
+
 from flask import Flask, render_template, current_app, flash, redirect, url_for
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -15,6 +18,7 @@ from .config import load_config
 from flask_wtf.csrf import CSRFProtect
 from datetime import timedelta
 from flask_socketio import SocketIO
+from logging.handlers import RotatingFileHandler
 
 # Global variable to track the first request
 has_run = False
@@ -23,6 +27,22 @@ has_run = False
 login_manager = LoginManager()
 migrate = Migrate()
 socketio = SocketIO()
+
+# Set up logging configuration
+if not os.path.exists('logs'):
+    os.mkdir('logs')
+
+# Configure the root logger
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[
+        RotatingFileHandler("logs/application.log", maxBytes=10240, backupCount=10),
+        logging.StreamHandler()  # This sends logs to the console
+    ]
+)
+
+logger = logging.getLogger(__name__)
 
 def create_app():
     app = Flask(__name__)
@@ -104,15 +124,18 @@ def create_app():
     # Error handlers
     @app.errorhandler(404)
     def not_found_error(error):
+        logger.warning(f"404 error: {error}")
         return render_template('404.html'), 404
 
     @app.errorhandler(500)
     def internal_error(error):
+        logger.error(f"500 error: {error}")
         db.session.rollback()
         return render_template('500.html'), 500
 
     @app.errorhandler(429)
     def too_many_requests(e):
+        logger.warning(f"429 error: {e}")
         return render_template('429.html'), 429
 
     # Context processor to add logout form to all templates
@@ -128,11 +151,11 @@ def create_app():
     @app.errorhandler(Exception)
     def handle_exception(e):
         # Log the error details
-        app.logger.error(f"Unhandled Exception: {e}")
-        
+        logger.error(f"Unhandled Exception: {e}")
+
         # Flash a user-friendly message
         flash('An unexpected error occurred. Please try again later.', 'error')
-        
+
         # Redirect to a safe page (e.g., home or login)
         return redirect(url_for('main.index'))
 
