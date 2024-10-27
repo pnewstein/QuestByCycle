@@ -279,6 +279,7 @@ def update_password():
     return render_template('update_password.html', form=form)
 
 
+
 @auth_bp.route('/verify_email/<token>')
 def verify_email(token):
     user = User.verify_verification_token(token)
@@ -316,14 +317,17 @@ def verify_email(token):
     # Redirect to the correct page based on the task_id or next parameter
     task_id = request.args.get('task_id')
     next_page = request.args.get('next')
+
     if task_id:
         return redirect(url_for('tasks.submit_photo', task_id=task_id))
     elif next_page:
-        return redirect(next_page)
+        # Ensure next_page is a relative URL
+        parsed_url = urlparse(next_page)
+        if not parsed_url.netloc and not parsed_url.scheme:
+            return redirect(next_page)
 
     flash('Your email has been verified and you have been logged in.', 'success')
     return redirect(url_for('main.index'))
-
 
 @auth_bp.route('/privacy_policy')
 def privacy_policy():
