@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, send_file, render_template, request, redirect, url_for, flash, current_app, Response, make_response
+from flask import Blueprint, jsonify, send_file, render_template, request, redirect, url_for, flash, current_app, Response
 from flask_login import current_user, login_required, logout_user
 #from flask_caching import Cache
 from app.utils import save_profile_picture, save_bicycle_picture
@@ -734,10 +734,7 @@ def resize_image():
 
             img_io.seek(0)
 
-            # Return the image with cache headers
-            response = make_response(send_file(img_io, mimetype='image/webp'))
-            response.headers['Cache-Control'] = 'public, max-age=604800'  # Cache for 1 day
-            return response
+            return send_file(img_io, mimetype='image/webp')
         
     except Exception as e:
         current_app.logger.error(f"Exception occurred during image processing: {e}")
