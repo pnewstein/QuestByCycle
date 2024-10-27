@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, send_file, render_template, request, redirect, url_for, flash, current_app, Response, make_response
 from flask_login import current_user, login_required, logout_user
-from flask_caching import Cache
+#from flask_caching import Cache
 from app.utils import save_profile_picture, save_bicycle_picture
 from app.models import db, Game, User, Task, Badge, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage, user_games
 from app.forms import ProfileForm, ShoutBoardForm, ContactForm, BikeForm
@@ -61,19 +61,19 @@ def sanitize_html(html_content):
 
 config = load_config()
 
-cache_dir = os.path.join(app.instance_path, 'cache')  # Adjust the path as needed
-if not os.path.exists(cache_dir):
-    os.makedirs(cache_dir)
+#cache_dir = os.path.join(app.instance_path, 'cache')  # Adjust the path as needed
+#if not os.path.exists(cache_dir):
+#    os.makedirs(cache_dir)
 
-from app import app
+#from app import app
 
-cache = Cache(config={
-    'CACHE_TYPE': 'filesystem',
-    'CACHE_DIR': '/cache',  # Replace with your desired path
-    'CACHE_DEFAULT_TIMEOUT': 604800  # 7 days in seconds
-})
+#cache = Cache(config={
+#    'CACHE_TYPE': 'filesystem',
+#    'CACHE_DIR': '/cache',  # Replace with your desired path
+#    'CACHE_DEFAULT_TIMEOUT': 604800  # 7 days in seconds
+#})
 # Init cache
-cache.init_app(app)
+#cache.init_app(app)
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
