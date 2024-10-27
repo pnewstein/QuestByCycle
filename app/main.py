@@ -647,6 +647,7 @@ def refresh_csrf():
 
     return response
 
+
 @main_bp.route('/resize_image')
 def resize_image():
     image_path = request.args.get('path')
@@ -658,28 +659,31 @@ def resize_image():
         return jsonify({'error': "Invalid request: Missing 'path' or 'width'"}), 400
 
     try:
-        # 2. Sanitize the image path while preserving directory structure
-        # Split the image path into directory and filename parts
+        # 2. Remove any leading slashes from image_path to prevent incorrect path resolution
+        if image_path.startswith("/"):
+            image_path = image_path.lstrip("/")
+
+        # 3. Split the image path into directory and filename parts
         directory = os.path.dirname(image_path)
         filename = os.path.basename(image_path)
         safe_filename = secure_filename(filename)  # Sanitize the filename
-        safe_image_path = os.path.join(directory, safe_filename)
 
-        # Construct the full image path
+        # 4. Construct the full image path relative to the static folder
+        safe_image_path = os.path.join(directory, safe_filename)
         full_image_path = os.path.abspath(os.path.join(current_app.static_folder, safe_image_path))
 
-        # 3. Prevent path traversal by ensuring the path stays within the static folder.
+        # 5. Prevent path traversal by ensuring the resolved path is within the static folder
         static_folder_path = os.path.abspath(current_app.static_folder)
         if not full_image_path.startswith(static_folder_path):
             current_app.logger.error(f"Attempted path traversal detected: {image_path}")
             return jsonify({'error': 'Invalid file path'}), 400
 
-        # 4. Check if the file exists.
+        # 6. Check if the file exists
         if not os.path.exists(full_image_path):
             current_app.logger.error(f"File not found: {full_image_path}")
             return jsonify({'error': 'File not found'}), 404
 
-        # 5. Open and process the image.
+        # 7. Open and process the image
         with Image.open(full_image_path) as img:
             # Correct orientation based on EXIF data if available
             try:
@@ -700,14 +704,14 @@ def resize_image():
                 # No EXIF orientation data, proceed without altering the image
                 current_app.logger.info(f"No EXIF orientation data found for {full_image_path}")
 
-            # 6. Calculate the new height to maintain aspect ratio.
+            # 8. Calculate the new height to maintain aspect ratio
             ratio = width / float(img.width)
             height = int(img.height * ratio)
 
-            # 7. Resize the image using LANCZOS resampling.
+            # 9. Resize the image using LANCZOS resampling
             img_resized = img.resize((width, height), Image.Resampling.LANCZOS)
 
-            # 8. Preserve transparency or convert to RGB as necessary.
+            # 10. Preserve transparency or convert to RGB as necessary
             img_io = io.BytesIO()
             if img_resized.mode in ('RGBA', 'LA') or (img_resized.mode == 'P' and 'transparency' in img_resized.info):
                 img_resized = img_resized.convert('RGBA')
@@ -718,10 +722,10 @@ def resize_image():
 
             img_io.seek(0)
 
-            # 9. Return the resized image as a response.
+            # 11. Return the resized image as a response
             return send_file(img_io, mimetype='image/webp')
 
     except Exception as e:
-        # Log any unexpected errors.
+        # Log any unexpected errors
         current_app.logger.error(f"Exception occurred during image processing: {e}")
         return jsonify({'error': 'Internal server error'}), 500
