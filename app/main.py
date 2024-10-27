@@ -61,20 +61,6 @@ def sanitize_html(html_content):
 
 config = load_config()
 
-cache_dir = os.path.join(app.instance_path, 'cache')  # Adjust the path as needed
-if not os.path.exists(cache_dir):
-    os.makedirs(cache_dir)
-
-from app import app
-
-cache = Cache(config={
-    'CACHE_TYPE': 'filesystem',
-    'CACHE_DIR': '/cache',  # Replace with your desired path
-    'CACHE_DEFAULT_TIMEOUT': 604800  # 7 days in seconds
-})
-# Init cache
-cache.init_app(app)
-
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
