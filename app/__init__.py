@@ -27,6 +27,7 @@ has_run = False
 login_manager = LoginManager()
 migrate = Migrate()
 socketio = SocketIO()
+#cache = Cache(config={'CACHE_TYPE': 'simple'})  # Configure as needed
 
 # Set up logging configuration
 if not os.path.exists('logs'):
@@ -51,6 +52,9 @@ def create_app():
     inscopeconfig = load_config()
     app.config.update(inscopeconfig)
     
+    # Init cache
+    #cache.init_app(app)
+
     # Apply configurations from the TOML file
     app.config['DEFAULT_SUPER_ADMIN_PASSWORD'] = app.config['encryption']['DEFAULT_SUPER_ADMIN_PASSWORD']
     app.config['DEFAULT_SUPER_ADMIN_USERNAME'] = app.config['encryption']['DEFAULT_SUPER_ADMIN_USERNAME']
