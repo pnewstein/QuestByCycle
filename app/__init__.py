@@ -4,6 +4,7 @@ import os
 from flask import Flask, render_template, current_app, flash, redirect, url_for
 from flask_login import LoginManager
 from flask_migrate import Migrate
+from flask_caching import Cache
 from werkzeug.middleware.proxy_fix import ProxyFix
 from app.auth import auth_bp
 from app.admin import admin_bp, create_super_admin

@@ -13,6 +13,7 @@ from pytz import utc
 from flask_wtf.csrf import generate_csrf
 from PIL import Image, ExifTags
 from io import BytesIO
+from functools import lru_cache
 
 import bleach
 import os
@@ -703,13 +704,17 @@ def resize_image():
             # Resize the image using LANCZOS resampling
             img_resized = img.resize((width, height), Image.Resampling.LANCZOS)
 
-            # Preserve transparency by handling different image modes
             img_io = io.BytesIO()
+
+            # Save the image with appropriate compression settings
             if img_resized.mode in ('RGBA', 'LA') or (img_resized.mode == 'P' and 'transparency' in img_resized.info):
-                img_resized.save(img_io, 'WEBP', lossless=True)
+                # For images with transparency, convert to RGBA
+                img_resized = img_resized.convert('RGBA')
+                img_resized.save(img_io, 'WEBP', quality=85, method=6)
             else:
+                # For images without transparency
                 img_resized = img_resized.convert('RGB')
-                img_resized.save(img_io, 'WEBP')
+                img_resized.save(img_io, 'WEBP', quality=85, method=6)
 
             img_io.seek(0)
 
