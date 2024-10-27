@@ -80,23 +80,22 @@
                                 {% for image in carousel_images %}
                                 <div class="carousel-item{% if loop.first %} active{% endif %}" style="height: 300px;">
                                     <img src="{{ url_for('main.resize_image', path=image['small'], width=480) }}"
-                                    srcset="
-                                        {{ url_for('main.resize_image', path=image['small'], width=480) }} 480w,
-                                        {{ url_for('main.resize_image', path=image['medium'], width=768) }} 768w,
-                                        {{ url_for('main.resize_image', path=image['large'], width=1200) }} 1200w"
-                                    sizes="(max-width: 600px) 480px, (max-width: 960px) 768px, 1200px"
-                                    width="1200" height="750"
-                                    class="d-block w-100 h-100" alt="Carousel Image"
-                                    style="height: 100%; width: 100%; object-fit: cover;"
-                                    {% if not loop.first %} loading="lazy" {% endif %}>
-                               
-                                    <div class="carousel-caption minimized-caption">
-                                        <h5>{{ image.task_title }}</h5>
-                                        <p class="comment-text">{{ (image.comment or '')[:75] }}</p>
+                                        srcset="
+                                            {{ url_for('main.resize_image', path=image['small'], width=480) }} 480w,
+                                            {{ url_for('main.resize_image', path=image['medium'], width=768) }} 768w,
+                                            {{ url_for('main.resize_image', path=image['large'], width=1200) }} 1200w"
+                                        sizes="(max-width: 600px) 480px, (max-width: 960px) 768px, 1200px"
+                                        width="1200" height="750"
+                                        class="d-block w-100 h-100" alt="Carousel Image"
+                                        style="height: 100%; width: 100%; object-fit: cover;"
+                                        {% if not loop.first %} loading="lazy" {% endif %}>
+                                
+                                        <div class="carousel-caption minimized-caption">
+                                            <h5>{{ image.task_title }}</h5>
+                                            <p class="comment-text">{{ (image.comment or '')[:75] }}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            {% endfor %}
-                            
+                                {% endfor %}
                             </div>                    
             
                             <a class="carousel-control-prev" href="#taskImageCarousel" role="button" data-bs-slide="prev">
