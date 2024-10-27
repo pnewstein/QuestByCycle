@@ -211,15 +211,20 @@ def index(game_id, task_id, user_id):
         task_submissions = TaskSubmission.query.join(Task).filter(Task.game_id == game_id).all()
         for submission in task_submissions:
             if submission.image_url:
-                image_url = submission.image_url.lstrip('/')  # Ensure no leading slash
+                # Ensure the image_url is relative to 'static/'
+                image_url = submission.image_url.lstrip('/').replace('static/', '')
+                
+                # Ensure the path includes 'images/' if missing
+                if not image_url.startswith('images/'):
+                    image_url = f'images/{image_url}'
+                
                 carousel_images.append({
-                    'small': submission.image_url,   # Use original URL for small size
-                    'medium': submission.image_url,  # Use original URL for medium size
-                    'large': submission.image_url,   # Use original URL for large size
+                    'small': image_url,
+                    'medium': image_url,
+                    'large': image_url,
                     'task_title': submission.task.title,
                     'comment': submission.comment
                 })
-
 
     return render_template('index.html',
                            form=form,
