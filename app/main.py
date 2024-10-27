@@ -213,9 +213,9 @@ def index(game_id, task_id, user_id):
             if submission.image_url:
                 image_url = submission.image_url.lstrip('/')  # Ensure no leading slash
                 carousel_images.append({
-                    'small': image_url,   # Use original URL for small size
-                    'medium': image_url,  # Use original URL for medium size
-                    'large': image_url,   # Use original URL for large size
+                    'small': submission.image_url,   # Use original URL for small size
+                    'medium': submission.image_url,  # Use original URL for medium size
+                    'large': submission.image_url,   # Use original URL for large size
                     'task_title': submission.task.title,
                     'comment': submission.comment
                 })
