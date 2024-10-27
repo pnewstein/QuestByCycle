@@ -505,7 +505,7 @@ function isValidImageUrl(url) {
         const parsedUrl = new URL(url);
         // Check the URL scheme to make sure it's HTTP or HTTPS only
         if (parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:") {
-            // Optional: Allow only URLs ending in common image extensions (e.g., .jpg, .png, etc.)
+            // Allow only URLs ending in common image extensions (e.g., .jpg, .png, etc.)
             const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
             return allowedExtensions.some(ext => parsedUrl.pathname.toLowerCase().endsWith(ext));
         }
@@ -516,12 +516,6 @@ function isValidImageUrl(url) {
     return false;
 }
 
-// Function to sanitize URLs for use in the DOM
-function sanitizeUrl(url) {
-    const div = document.createElement('div');
-    div.appendChild(document.createTextNode(url));
-    return div.innerHTML; // Encodes the URL properly to prevent XSS
-}
 
 // Distribute images in a single row in the modal
 function distributeImages(images) {
@@ -535,20 +529,20 @@ function distributeImages(images) {
     images.forEach(image => {
         const img = document.createElement('img');
 
-        // Validate and sanitize the URL before assigning it to img.src
+        // Validate the URL before assigning it to img.src
         if (isValidImageUrl(image.url)) {
-            img.src = sanitizeUrl(image.url);
+            img.src = image.url;  // Assign the validated URL directly
         } else if (validFallbackUrl) {
-            // Use the sanitized fallback URL if image.url is invalid
-            img.src = sanitizeUrl(validFallbackUrl);
+            // Use the validated fallback URL if image.url is invalid
+            img.src = validFallbackUrl;
         }
 
         img.alt = "Loaded Image";
 
-        // Set onerror to use the sanitized fallback URL if the image fails to load
+        // Set onerror to use the validated fallback URL if the image fails to load
         img.onerror = () => {
             if (validFallbackUrl) {
-                img.src = sanitizeUrl(validFallbackUrl);
+                img.src = validFallbackUrl;
             }
         };
 
