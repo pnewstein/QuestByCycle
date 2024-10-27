@@ -499,6 +499,25 @@ function fetchSubmissions(taskId) {
         });
 }
 
+
+// Function to check if a URL is a valid image URL
+function isValidImageUrl(url) {
+    try {
+        const parsedUrl = new URL(url);
+        // Check the URL scheme to make sure it's HTTP or HTTPS only
+        if (parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:") {
+            // Optional: Allow only URLs ending in common image extensions (e.g., .jpg, .png, etc.)
+            const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+            return allowedExtensions.some(ext => parsedUrl.pathname.toLowerCase().endsWith(ext));
+        }
+    } catch (e) {
+        // If the URL constructor throws, the URL is invalid
+        return false;
+    }
+    return false;
+}
+
+
 // Distribute images in a single row in the modal
 function distributeImages(images) {
     const board = document.getElementById('submissionBoard');
@@ -506,7 +525,15 @@ function distributeImages(images) {
 
     images.forEach(image => {
         const img = document.createElement('img');
-        img.src = image.url;
+        
+        // Validate the URL before assigning it to img.src
+        if (isValidImageUrl(image.url)) {
+            img.src = image.url;
+        } else {
+            // Fallback if the URL is not valid
+            img.src = document.getElementById('taskDetailModal').getAttribute('data-placeholder-url');
+        }
+
         img.alt = "Loaded Image";
         img.onerror = () => img.src = document.getElementById('taskDetailModal').getAttribute('data-placeholder-url');
         img.onclick = () => showSubmissionDetail(image);
