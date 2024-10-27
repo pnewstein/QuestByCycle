@@ -635,11 +635,17 @@ def contact():
 def refresh_csrf():
     new_csrf_token = generate_csrf()
     response = jsonify({'csrf_token': new_csrf_token})
-    response.set_cookie('csrf_token', new_csrf_token)
+
+    # Setting the cookie with Secure, HttpOnly, and SameSite attributes
+    response.set_cookie(
+        'csrf_token',
+        new_csrf_token,
+        secure=True,         # Ensures the cookie is sent only over HTTPS
+        httponly=True,       # Prevents JavaScript from accessing the cookie
+        samesite='Strict'    # Ensures the cookie is sent only for same-site requests
+    )
+
     return response
-
-
-
 @main_bp.route('/resize_image')
 def resize_image():
     image_path = request.args.get('path')
