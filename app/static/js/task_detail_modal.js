@@ -517,11 +517,14 @@ function isValidImageUrl(url) {
     return false;
 }
 
-
 // Distribute images in a single row in the modal
 function distributeImages(images) {
     const board = document.getElementById('submissionBoard');
     board.innerHTML = ''; // Clear existing content
+
+    // Get and validate the fallback URL from the DOM
+    const fallbackUrl = document.getElementById('taskDetailModal').getAttribute('data-placeholder-url');
+    const validFallbackUrl = isValidImageUrl(fallbackUrl) ? fallbackUrl : '';
 
     images.forEach(image => {
         const img = document.createElement('img');
@@ -529,13 +532,20 @@ function distributeImages(images) {
         // Validate the URL before assigning it to img.src
         if (isValidImageUrl(image.url)) {
             img.src = image.url;
-        } else {
-            // Fallback if the URL is not valid
-            img.src = document.getElementById('taskDetailModal').getAttribute('data-placeholder-url');
+        } else if (validFallbackUrl) {
+            // Use the validated fallback URL if image.url is invalid
+            img.src = validFallbackUrl;
         }
 
         img.alt = "Loaded Image";
-        img.onerror = () => img.src = document.getElementById('taskDetailModal').getAttribute('data-placeholder-url');
+        
+        // Set onerror to use the validated fallback URL if the image fails to load
+        img.onerror = () => {
+            if (validFallbackUrl) {
+                img.src = validFallbackUrl;
+            }
+        };
+        
         img.onclick = () => showSubmissionDetail(image);
         img.style.margin = '10px'; // Add some margin between images if needed
         board.appendChild(img); // Append directly to the board
