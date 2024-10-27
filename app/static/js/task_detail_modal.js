@@ -511,11 +511,11 @@ function isValidImageUrl(url) {
         }
     } catch (e) {
         // If the URL constructor throws, the URL is invalid
+        console.error(`Invalid URL detected: ${url}`);
         return false;
     }
     return false;
 }
-
 
 // Distribute images in a single row in the modal
 function distributeImages(images) {
@@ -525,28 +525,39 @@ function distributeImages(images) {
     // Get and validate the fallback URL from the DOM
     const fallbackUrl = document.getElementById('taskDetailModal').getAttribute('data-placeholder-url');
     const validFallbackUrl = isValidImageUrl(fallbackUrl) ? fallbackUrl : '';
+    if (!validFallbackUrl) {
+        console.warn("Fallback URL is not valid.");
+    }
 
     images.forEach(image => {
         const img = document.createElement('img');
-
-        // Validate the URL before assigning it to img.src
+        
+        let finalImageUrl = '';
         if (isValidImageUrl(image.url)) {
-            img.src = image.url;  // Assign the validated URL directly
+            finalImageUrl = image.url;  // Assign the validated URL directly
         } else if (validFallbackUrl) {
             // Use the validated fallback URL if image.url is invalid
-            img.src = validFallbackUrl;
+            finalImageUrl = validFallbackUrl;
         }
+
+        // Log the image URL being used
+        console.log(`Using image URL: ${finalImageUrl}`);
+        img.src = finalImageUrl;
 
         img.alt = "Loaded Image";
 
-        // Set onerror to use the validated fallback URL if the image fails to load
+        // Set onerror to use the sanitized fallback URL if the image fails to load
         img.onerror = () => {
+            console.warn(`Image failed to load, using fallback: ${validFallbackUrl}`);
             if (validFallbackUrl) {
                 img.src = validFallbackUrl;
             }
         };
 
-        img.onclick = () => showSubmissionDetail(image);
+        img.onclick = () => {
+            console.log("Image clicked:", finalImageUrl);
+            showSubmissionDetail(image);
+        };
         img.style.margin = '10px'; // Add some margin between images if needed
         board.appendChild(img); // Append directly to the board
     });
