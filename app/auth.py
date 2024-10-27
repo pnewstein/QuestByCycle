@@ -7,6 +7,7 @@ from app.utils import send_email, generate_tutorial_game
 from sqlalchemy import or_
 from pytz import utc
 from datetime import datetime
+from urllib.parse import urlparse
 
 import bleach
 
@@ -97,12 +98,18 @@ def login():
                 task_id = request.args.get('task_id')
                 next_page = request.args.get('next')
 
+                # Ensure next_page is a relative URL
+                if next_page:
+                    parsed_url = urlparse(next_page)
+                    if not parsed_url.netloc and not parsed_url.scheme:
+                        return redirect(next_page)
+
                 if user.is_admin:
-                    return redirect(next_page or url_for('admin.admin_dashboard'))
+                    return redirect(url_for('admin.admin_dashboard'))
                 elif task_id:
                     return redirect(url_for('tasks.submit_photo', task_id=task_id))
                 else:
-                    return redirect(next_page or url_for('main.index'))
+                    return redirect(url_for('main.index'))
             else:
                 flash('Invalid email or password.')
 
@@ -129,24 +136,13 @@ def resend_verification_email():
         flash('Email not found or already verified.', 'warning')
     return redirect(url_for('auth.login'))
 
+
 @auth_bp.route('/logout')
 @login_required
 def logout():
     logout_user()
     flash('Logged out successfully.', 'success')
     return redirect(url_for('main.index'))
-
-
-def encrypt_message(message, key):
-    f = Fernet(key)
-    encrypted_message = f.encrypt(message.encode())
-    return encrypted_message.decode()
-
-
-def decrypt_message(encrypted_message, key):
-    cipher = Fernet(key)
-    decrypted_message = cipher.decrypt(encrypted_message.encode()).decode()
-    return decrypted_message
 
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
@@ -223,9 +219,14 @@ def register():
 
                 next_page = request.args.get('next')
                 task_id = request.args.get('task_id')
+
+                # Ensure next_page is a relative URL
                 if next_page:
-                    return redirect(next_page)
-                elif task_id:
+                    parsed_url = urlparse(next_page)
+                    if not parsed_url.netloc and not parsed_url.scheme:
+                        return redirect(next_page)
+
+                if task_id:
                     return redirect(url_for('tasks.submit_photo', task_id=task_id))
                 else:
                     return redirect(url_for('main.index'))
@@ -242,8 +243,6 @@ def register():
         return redirect(url_for('auth.register', game_id=request.args.get('game_id'), task_id=request.args.get('task_id'), next=request.args.get('next')))
 
     return render_template('register.html', title='Register', form=form, game_id=request.args.get('game_id'), task_id=request.args.get('task_id'), next=request.args.get('next'))
-
-
 
 @auth_bp.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
