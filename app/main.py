@@ -639,6 +639,7 @@ def refresh_csrf():
     return response
 
 
+
 @main_bp.route('/resize_image')
 def resize_image():
     image_path = request.args.get('path')
@@ -648,7 +649,15 @@ def resize_image():
         return jsonify({'error': "Invalid request: Missing 'path' or 'width'"}), 400
 
     try:
-        full_image_path = os.path.join(current_app.static_folder, image_path.lstrip('/'))
+        # Use secure_filename to remove dangerous characters and ensure safe filenames
+        safe_image_path = secure_filename(image_path)
+        full_image_path = os.path.abspath(os.path.join(current_app.static_folder, safe_image_path))
+
+        # Ensure that the resolved path is within the static folder
+        if not full_image_path.startswith(os.path.abspath(current_app.static_folder)):
+            current_app.logger.error(f"Attempted path traversal detected: {image_path}")
+            return jsonify({'error': 'Invalid file path'}), 400
+
         if not os.path.exists(full_image_path):
             current_app.logger.error(f"File not found: {full_image_path}")
             return jsonify({'error': 'File not found'}), 404
@@ -684,13 +693,10 @@ def resize_image():
 
             # Preserve transparency by handling different image modes
             if img_resized.mode in ('RGBA', 'LA') or (img_resized.mode == 'P' and 'transparency' in img_resized.info):
-                # Preserve transparency by using the original mode (with transparency)
                 img_resized = img_resized.convert('RGBA')
-                # Save to a BytesIO object with transparency preserved
                 img_io = io.BytesIO()
                 img_resized.save(img_io, 'WEBP', lossless=True, transparency=0)
             else:
-                # Convert non-transparent images to RGB
                 img_resized = img_resized.convert('RGB')
                 img_io = io.BytesIO()
                 img_resized.save(img_io, 'WEBP')
