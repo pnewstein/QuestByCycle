@@ -3,8 +3,14 @@
     <div class="container mt-5">
         {% if not current_user.is_authenticated %}
             <div class="text-center mb-4">
-                <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}" alt="Welcome to Quest by Cycle"
-                    class="img-fluid w-100" style="max-width: 100%; height: auto;">
+                <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}"
+                srcset="{{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=480) }} 480w,
+                        {{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=768) }} 768w,
+                        {{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=1200) }} 1200w"
+                sizes="(max-width: 600px) 480px, (max-width: 960px) 768px, 1200px"
+                alt="Welcome to Quest by Cycle"
+                class="img-fluid w-100"
+                style="max-width: 100%; height: auto;">           
             </div>
             <div id="flash-messages" style="display: none;">
                 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -50,8 +56,15 @@
 
             {% if current_user.is_authenticated %}
                 <div class="text-center mb-4">
-                    <img src="{{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=1200) }}" alt="Quest by Cycle"
-                        class="img-fluid w-100" style="max-width: 100%; height: auto;">
+                    <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}"
+                    srcset="{{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=480) }} 480w,
+                            {{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=768) }} 768w,
+                            {{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=1200) }} 1200w"
+                    sizes="(max-width: 600px) 480px, (max-width: 960px) 768px, 1200px"
+                    alt="Welcome to Quest by Cycle"
+                    class="img-fluid w-100"
+                    style="max-width: 100%; height: auto;">
+               
                 </div>
                 <div class="col-md-6 mb-4">
                     <div class="text-center mb-4">
