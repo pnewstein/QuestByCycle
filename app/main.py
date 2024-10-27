@@ -669,7 +669,7 @@ def refresh_csrf():
 
 
 @main_bp.route('/resize_image')
-@cache.cached(timeout=604800, query_string=True)  # Cache for 1 day
+#@cache.cached(timeout=604800, query_string=True)  # Cache for 1 day
 def resize_image():
     image_path = request.args.get('path')
     width = request.args.get('width', type=int)
