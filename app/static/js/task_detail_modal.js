@@ -499,7 +499,6 @@ function fetchSubmissions(taskId) {
         });
 }
 
-
 // Function to check if a URL is a valid image URL
 function isValidImageUrl(url) {
     try {
@@ -517,6 +516,13 @@ function isValidImageUrl(url) {
     return false;
 }
 
+// Function to sanitize URLs for use in the DOM
+function sanitizeUrl(url) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(url));
+    return div.innerHTML; // Encodes the URL properly to prevent XSS
+}
+
 // Distribute images in a single row in the modal
 function distributeImages(images) {
     const board = document.getElementById('submissionBoard');
@@ -528,24 +534,24 @@ function distributeImages(images) {
 
     images.forEach(image => {
         const img = document.createElement('img');
-        
-        // Validate the URL before assigning it to img.src
+
+        // Validate and sanitize the URL before assigning it to img.src
         if (isValidImageUrl(image.url)) {
-            img.src = image.url;
+            img.src = sanitizeUrl(image.url);
         } else if (validFallbackUrl) {
-            // Use the validated fallback URL if image.url is invalid
-            img.src = validFallbackUrl;
+            // Use the sanitized fallback URL if image.url is invalid
+            img.src = sanitizeUrl(validFallbackUrl);
         }
 
         img.alt = "Loaded Image";
-        
-        // Set onerror to use the validated fallback URL if the image fails to load
+
+        // Set onerror to use the sanitized fallback URL if the image fails to load
         img.onerror = () => {
             if (validFallbackUrl) {
-                img.src = validFallbackUrl;
+                img.src = sanitizeUrl(validFallbackUrl);
             }
         };
-        
+
         img.onclick = () => showSubmissionDetail(image);
         img.style.margin = '10px'; // Add some margin between images if needed
         board.appendChild(img); // Append directly to the board
