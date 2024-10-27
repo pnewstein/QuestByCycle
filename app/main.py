@@ -1,5 +1,6 @@
-from flask import Blueprint, jsonify, send_file, render_template, request, redirect, url_for, flash, current_app, Response
+from flask import Blueprint, jsonify, send_file, render_template, request, redirect, url_for, flash, current_app, Response, make_response
 from flask_login import current_user, login_required, logout_user
+from flask_caching import Cache
 from app.utils import save_profile_picture, save_bicycle_picture
 from app.models import db, Game, User, Task, Badge, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage, user_games
 from app.forms import ProfileForm, ShoutBoardForm, ContactForm, BikeForm
@@ -655,6 +656,7 @@ def refresh_csrf():
 
 
 @main_bp.route('/resize_image')
+@cache.cached(timeout=604800, query_string=True)  # Cache for 1 day
 def resize_image():
     image_path = request.args.get('path')
     width = request.args.get('width', type=int)
@@ -718,8 +720,11 @@ def resize_image():
 
             img_io.seek(0)
 
-            return send_file(img_io, mimetype='image/webp')
-
+            # Return the image with cache headers
+            response = make_response(send_file(img_io, mimetype='image/webp'))
+            response.headers['Cache-Control'] = 'public, max-age=604800'  # Cache for 1 day
+            return response
+        
     except Exception as e:
         current_app.logger.error(f"Exception occurred during image processing: {e}")
         return jsonify({'error': 'Internal server error'}), 500
