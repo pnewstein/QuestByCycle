@@ -646,6 +646,8 @@ def refresh_csrf():
     )
 
     return response
+
+
 @main_bp.route('/resize_image')
 def resize_image():
     image_path = request.args.get('path')
@@ -655,11 +657,10 @@ def resize_image():
         return jsonify({'error': "Invalid request: Missing 'path' or 'width'"}), 400
 
     try:
-        # Use secure_filename to remove dangerous characters and ensure safe filenames
-        safe_image_path = secure_filename(image_path)
-        full_image_path = os.path.abspath(os.path.join(current_app.static_folder, safe_image_path))
+        # Combine the static folder and the image path
+        full_image_path = os.path.abspath(os.path.join(current_app.static_folder, image_path))
 
-        # Ensure that the resolved path is within the static folder
+        # Ensure that the resolved path is within the static folder to prevent path traversal
         if not full_image_path.startswith(os.path.abspath(current_app.static_folder)):
             current_app.logger.error(f"Attempted path traversal detected: {image_path}")
             return jsonify({'error': 'Invalid file path'}), 400
@@ -678,13 +679,13 @@ def resize_image():
 
                 exif = img._getexif()
                 if exif is not None:
-                    orientation = exif.get(orientation)
+                    orientation_value = exif.get(orientation)
 
-                    if orientation == 3:
+                    if orientation_value == 3:
                         img = img.rotate(180, expand=True)
-                    elif orientation == 6:
+                    elif orientation_value == 6:
                         img = img.rotate(-90, expand=True)
-                    elif orientation == 8:
+                    elif orientation_value == 8:
                         img = img.rotate(90, expand=True)
             except (AttributeError, KeyError, IndexError):
                 # No EXIF orientation data, proceed without altering the image
@@ -693,18 +694,16 @@ def resize_image():
             # Calculate the height to maintain aspect ratio
             ratio = width / float(img.width)
             height = int(img.height * ratio)
-            
+
             # Resize the image using LANCZOS resampling
             img_resized = img.resize((width, height), Image.Resampling.LANCZOS)
 
             # Preserve transparency by handling different image modes
+            img_io = io.BytesIO()
             if img_resized.mode in ('RGBA', 'LA') or (img_resized.mode == 'P' and 'transparency' in img_resized.info):
-                img_resized = img_resized.convert('RGBA')
-                img_io = io.BytesIO()
-                img_resized.save(img_io, 'WEBP', lossless=True, transparency=0)
+                img_resized.save(img_io, 'WEBP', lossless=True)
             else:
                 img_resized = img_resized.convert('RGB')
-                img_io = io.BytesIO()
                 img_resized.save(img_io, 'WEBP')
 
             img_io.seek(0)
