@@ -501,7 +501,15 @@ function fetchSubmissions(taskId) {
 
 // Function to check if a URL is a valid image URL
 function isValidImageUrl(url) {
+    if (!url) {
+        console.error(`Invalid URL detected: ${url}`);
+        return false;
+    }
     try {
+        if (url.startsWith("/")) {
+            // Allow relative paths that start with '/'
+            return true;
+        }
         const parsedUrl = new URL(url);
         // Check the URL scheme to make sure it's HTTP or HTTPS only
         if (parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:") {
@@ -517,13 +525,19 @@ function isValidImageUrl(url) {
     return false;
 }
 
-// Distribute images in a single row in the modal
+
 function distributeImages(images) {
     const board = document.getElementById('submissionBoard');
     board.innerHTML = ''; // Clear existing content
 
     // Get and validate the fallback URL from the DOM
-    const fallbackUrl = document.getElementById('taskDetailModal').getAttribute('data-placeholder-url');
+    let fallbackUrl = document.getElementById('taskDetailModal').getAttribute('data-placeholder-url');
+    if (!fallbackUrl) {
+        console.warn("No fallback URL provided in data-placeholder-url attribute.");
+        // Set a default fallback image URL if none is provided
+        fallbackUrl = '/static/images/default-placeholder.png'; // Update to a valid placeholder image path if available
+    }
+
     const validFallbackUrl = isValidImageUrl(fallbackUrl) ? fallbackUrl : '';
     if (!validFallbackUrl) {
         console.warn("Fallback URL is not valid.");
@@ -546,7 +560,7 @@ function distributeImages(images) {
 
         img.alt = "Loaded Image";
 
-        // Set onerror to use the sanitized fallback URL if the image fails to load
+        // Set onerror to use the fallback URL if the image fails to load
         img.onerror = () => {
             console.warn(`Image failed to load, using fallback: ${validFallbackUrl}`);
             if (validFallbackUrl) {
