@@ -725,11 +725,11 @@ def resize_image():
             if img_resized.mode in ('RGBA', 'LA') or (img_resized.mode == 'P' and 'transparency' in img_resized.info):
                 # For images with transparency, convert to RGBA
                 img_resized = img_resized.convert('RGBA')
-                img_resized.save(img_io, 'WEBP', quality=85, method=6)
+                img_resized.save(img_io, 'WEBP')
             else:
                 # For images without transparency
                 img_resized = img_resized.convert('RGB')
-                img_resized.save(img_io, 'WEBP', quality=85, method=6)
+                img_resized.save(img_io, 'WEBP')
 
             img_io.seek(0)
 
