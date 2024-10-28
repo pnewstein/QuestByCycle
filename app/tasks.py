@@ -514,7 +514,7 @@ def submit_photo(task_id):
         return redirect(url_for('main.index'))  # Redirect to main index or another page
 
     if not (game_start <= now <= game_end):
-        message = 'This task cannot be completed outside of the game dates.'
+        message = 'This task cannot be completed outside of the game dates. Join a new game in the game dropdown menu.'
         flash(message, 'error')
         return redirect(url_for('main.index'))  # Redirect to main index or another page
 

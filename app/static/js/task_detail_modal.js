@@ -366,7 +366,7 @@ function submitTaskDetails(event, taskId) {
                 // Handle the specific case where the game is out of date
                 return response.json().then(data => {
                     if (data.message === 'This task cannot be completed outside of the game dates') {
-                        throw new Error('The game has ended and you can no longer submit tasks.');
+                        throw new Error('The game has ended and you can no longer submit tasks. Join a new game in the game dropdown menu.');
                     }
                     throw new Error(data.message || `Server responded with status ${response.status}`);
                 });
@@ -406,8 +406,8 @@ function submitTaskDetails(event, taskId) {
     .catch(error => {
         hideLoadingModal(); // Ensure the loading modal is hidden on error
         console.error("Submission error:", error);
-        if (error.message === 'The game has ended and you can no longer submit tasks.') {
-            alert('The game has ended, and you can no longer submit tasks for this game.');
+        if (error.message === 'The game has ended and you can no longer submit tasks. Join a new game in the game dropdown menu.') {
+            alert('The game has ended, and you can no longer submit tasks for this game. Join a new game in the game dropdown menu.');
         } else {
             alert('Error during submission: ' + error.message);
         }
