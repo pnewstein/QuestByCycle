@@ -465,6 +465,21 @@ def load_credentials():
     return creds
 
 
+def save_credentials(creds):
+    """Helper function to save refreshed credentials."""
+    creds_file = os.path.join(current_app.root_path, '..', 'credentials.json')
+    with open(creds_file, 'w') as token_file:
+        token_file.write(creds.to_json())
+
+
+def refresh_credentials(creds):
+    """Check and refresh credentials if expired."""
+    if creds and creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+        save_credentials(creds)
+    return creds
+
+
 def generate_oauth2_string(username, access_token):
     auth_string = f'user={username}\1auth=Bearer {access_token}\1\1'
     return base64.b64encode(auth_string.encode('utf-8')).decode('utf-8')
@@ -474,6 +489,12 @@ def send_email(to, subject, html_content):
     creds = load_credentials()
     if not creds:
         current_app.logger.error('Failed to load credentials.')
+        return False
+
+    # Ensure credentials are valid and refresh them if necessary
+    creds = refresh_credentials(creds)
+    if not creds or not creds.valid:
+        current_app.logger.error('Invalid or expired credentials.')
         return False
 
     access_token = creds.token
