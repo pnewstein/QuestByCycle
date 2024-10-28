@@ -1,5 +1,5 @@
-from flask import flash, current_app, jsonify
-from .models import db, Task, Badge, Game, UserTask, User, ShoutBoardMessage, TaskSubmission
+from flask import flash, current_app, jsonify, request
+from .models import db, Task, Badge, Game, UserTask, User, ShoutBoardMessage, TaskSubmission, UserIP
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 from PIL import Image
@@ -665,3 +665,15 @@ def import_tasks_and_badges_from_csv(game_id, csv_path):
     except Exception as e:
         print(f"Error during import: {e}")
         db.session.rollback()
+
+
+def log_user_ip(user):
+    # Check if this IP address is already stored for this user
+    ip_address = request.remote_addr
+    existing_ip = UserIP.query.filter_by(user_id=user.id, ip_address=ip_address).first()
+
+    if not existing_ip:
+        # Only log the IP if it's not already stored
+        new_ip = UserIP(user_id=user.id, ip_address=ip_address)
+        db.session.add(new_ip)
+        db.session.commit()

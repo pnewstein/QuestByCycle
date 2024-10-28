@@ -8,7 +8,8 @@
 
     <form id="userForm" action="{{ url_for('admin.edit_user', user_id=user.id) }}" method="POST">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        
+
+        <!-- Basic User Details -->
         <div class="form-group">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" value="{{ user.username }}" class="form-control" required>
@@ -19,6 +20,7 @@
             <input type="email" id="email" name="email" value="{{ user.email }}" class="form-control" required>
         </div>
 
+        <!-- Admin Controls -->
         <div class="form-group">
             <label for="is_admin">Is Admin:</label>
             <input type="checkbox" id="is_admin" name="is_admin" {% if user.is_admin %}checked{% endif %}>
@@ -35,6 +37,12 @@
         </div>
 
         <div class="form-group">
+            <label for="created_at">Account Created:</label>
+            <input type="text" id="created_at" value="{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}" class="form-control" disabled>
+        </div>
+
+        <!-- Other Basic Info -->
+        <div class="form-group">
             <label for="score">Score:</label>
             <input type="number" id="score" name="score" value="{{ user.score }}" class="form-control">
         </div>
@@ -45,7 +53,7 @@
         </div>
 
         <div class="form-group">
-            <label for="profile_picture">Profile Picture:</label>
+            <label for="profile_picture">Profile Picture URL:</label>
             <input type="text" id="profile_picture" name="profile_picture" value="{{ user.profile_picture }}" class="form-control">
         </div>
 
@@ -64,9 +72,79 @@
             <input type="checkbox" id="email_verified" name="email_verified" {% if user.email_verified %}checked{% endif %}>
         </div>
 
+        <!-- New Fields: Riding Preferences, Bike Description, Social Media Toggles -->
+        <div class="form-group">
+            <label for="riding_preferences">Riding Preferences (comma-separated):</label>
+            <input type="text" id="riding_preferences" name="riding_preferences" value="{{ user.riding_preferences|join(', ') }}" class="form-control">
+        </div>
+
+        <div class="form-group">
+            <label for="ride_description">Ride Description:</label>
+            <input type="text" id="ride_description" name="ride_description" value="{{ user.ride_description }}" class="form-control">
+        </div>
+
+        <div class="form-group">
+            <label for="bike_picture">Bike Picture URL:</label>
+            <input type="text" id="bike_picture" name="bike_picture" value="{{ user.bike_picture }}" class="form-control">
+        </div>
+
+        <div class="form-group">
+            <label for="bike_description">Bike Description:</label>
+            <input type="text" id="bike_description" name="bike_description" value="{{ user.bike_description }}" class="form-control">
+        </div>
+
+        <div class="form-group">
+            <label for="upload_to_socials">Upload to Socials:</label>
+            <input type="checkbox" id="upload_to_socials" name="upload_to_socials" {% if user.upload_to_socials %}checked{% endif %}>
+        </div>
+
+        <div class="form-group">
+            <label for="show_carbon_game">Show Carbon Reduction Game:</label>
+            <input type="checkbox" id="show_carbon_game" name="show_carbon_game" {% if user.show_carbon_game %}checked{% endif %}>
+        </div>
+
+        <div class="form-group">
+            <label for="onboarded">Onboarded:</label>
+            <input type="checkbox" id="onboarded" name="onboarded" {% if user.onboarded %}checked{% endif %}>
+        </div>
+
+        <div class="form-group">
+            <label for="created_at">Account Created:</label>
+            <input type="text" id="created_at" value="{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}" class="form-control" disabled>
+        </div>
+
+        <!-- Submit Button -->
         <button type="submit" class="btn btn-primary">Update User</button>
     </form>
 
+    <!-- User Submissions -->
+    <h2>User Submissions</h2>
+    <ul>
+        {% for submission in user_submissions %}
+        <li>
+            <strong>Task:</strong> {{ submission.task.title }}<br>
+            <strong>Comment:</strong> {{ submission.comment }}<br>
+            <strong>Submitted On:</strong> {{ submission.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+            {% if submission.image_url %}
+            <br><strong>Image:</strong> <a href="{{ submission.image_url }}" target="_blank">View Image</a>
+            {% endif %}
+        </li>
+        {% else %}
+        <li>No submissions found for this user.</li>
+        {% endfor %}
+    </ul>
+
+    <!-- User IP Addresses -->
+    <h2>User IP Addresses</h2>
+    <ul>
+        {% for ip in user_ips %}
+        <li>{{ ip.ip_address }} (Logged on: {{ ip.timestamp.strftime('%Y-%m-%d %H:%M:%S') }})</li>
+        {% else %}
+        <li>No IP addresses found for this user.</li>
+        {% endfor %}
+    </ul>
+
+    <!-- Participated Games -->
     <h2>Participated Games</h2>
     <ul>
         {% for game in participated_games %}
@@ -74,6 +152,7 @@
         {% endfor %}
     </ul>
 
+    <!-- Delete User -->
     <form id="deleteUserForm" action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user?');">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-danger">Delete User</button>

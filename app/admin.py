@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_required, current_user
-from app.models import db, User, Game, Sponsor, user_games
+from app.models import db, User, Game, Sponsor, user_games, TaskSubmission, UserIP
 from app.forms import CarouselImportForm, SponsorForm
 from app.utils import save_sponsor_logo
 from functools import wraps
@@ -221,6 +221,15 @@ def edit_user(user_id):
         user.age_group = request.form.get('age_group')
         user.interests = request.form.get('interests')
         user.email_verified = 'email_verified' in request.form
+
+        # Handle new fields
+        user.riding_preferences = request.form.get('riding_preferences').split(',') if request.form.get('riding_preferences') else []
+        user.ride_description = request.form.get('ride_description')
+        user.bike_picture = request.form.get('bike_picture')
+        user.bike_description = request.form.get('bike_description')
+        user.upload_to_socials = 'upload_to_socials' in request.form
+        user.show_carbon_game = 'show_carbon_game' in request.form
+        user.onboarded = 'onboarded' in request.form
         
         try:
             db.session.commit()
@@ -233,8 +242,15 @@ def edit_user(user_id):
 
     # Fetch games the user participated in
     participated_games = user.get_participated_games()
-    
-    return render_template('edit_user.html', user=user, participated_games=participated_games)
+
+    # Fetch user submissions
+    user_submissions = TaskSubmission.query.filter_by(user_id=user_id).all()
+
+    # Fetch user IPs
+    user_ips = UserIP.query.filter_by(user_id=user_id).all()
+
+    return render_template('edit_user.html', user=user, participated_games=participated_games, user_submissions=user_submissions, user_ips=user_ips)
+
 
 
 @admin_bp.route('/delete_user/<int:user_id>', methods=['POST'])

@@ -148,7 +148,14 @@ class User(UserMixin, db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    
+class UserIP(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    ip_address = db.Column(db.String(45), nullable=False)  # IPv4 and IPv6 support
+    timestamp = db.Column(db.DateTime, default=datetime.now)
+
+    user = db.relationship('User', backref='ip_addresses')
+
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(140))

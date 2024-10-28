@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import db, User, Game
 from app.forms import LoginForm, RegistrationForm, ForgotPasswordForm, ResetPasswordForm, UpdatePasswordForm
-from app.utils import send_email, generate_tutorial_game
+from app.utils import send_email, generate_tutorial_game, log_user_ip
 from sqlalchemy import or_
 from pytz import utc
 from datetime import datetime
@@ -74,6 +74,7 @@ def login():
 
             if user and user.check_password(password):
                 login_user(user, remember=form.remember_me.data)
+                log_user_ip(current_user)
 
                 generate_tutorial_game()
 
