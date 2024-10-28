@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>User Emails Grouped by Game</h1>
+    
+    {% if game_email_map %}
+        {% for game, emails in game_email_map.items() %}
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3>{{ game }}</h3>
+            </div>
+            <div class="card-body">
+                <ul>
+                    {% for email in emails %}
+                    <li>{{ email }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No emails available.</p>
+    {% endif %}
+</div>
+{% endblock %}

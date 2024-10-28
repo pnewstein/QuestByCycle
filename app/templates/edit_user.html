@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <a href="{{ url_for('admin.user_management') }}" class="btn btn-secondary">Back to User Management</a>
+    
+    <h1>Edit User: {{ user.username }}</h1>
+
+    <form id="userForm" action="{{ url_for('admin.edit_user', user_id=user.id) }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" value="{{ user.username }}" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ user.email }}" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="is_admin">Is Admin:</label>
+            <input type="checkbox" id="is_admin" name="is_admin" {% if user.is_admin %}checked{% endif %}>
+        </div>
+
+        <div class="form-group">
+            <label for="is_super_admin">Is Super Admin:</label>
+            <input type="checkbox" id="is_super_admin" name="is_super_admin" {% if user.is_super_admin %}checked{% endif %}>
+        </div>
+
+        <div class="form-group">
+            <label for="license_agreed">License Agreed:</label>
+            <input type="checkbox" id="license_agreed" name="license_agreed" {% if user.license_agreed %}checked{% endif %}>
+        </div>
+
+        <div class="form-group">
+            <label for="score">Score:</label>
+            <input type="number" id="score" name="score" value="{{ user.score }}" class="form-control">
+        </div>
+
+        <div class="form-group">
+            <label for="display_name">Display Name:</label>
+            <input type="text" id="display_name" name="display_name" value="{{ user.display_name }}" class="form-control">
+        </div>
+
+        <div class="form-group">
+            <label for="profile_picture">Profile Picture:</label>
+            <input type="text" id="profile_picture" name="profile_picture" value="{{ user.profile_picture }}" class="form-control">
+        </div>
+
+        <div class="form-group">
+            <label for="age_group">Age Group:</label>
+            <input type="text" id="age_group" name="age_group" value="{{ user.age_group }}" class="form-control">
+        </div>
+
+        <div class="form-group">
+            <label for="interests">Interests:</label>
+            <input type="text" id="interests" name="interests" value="{{ user.interests }}" class="form-control">
+        </div>
+
+        <div class="form-group">
+            <label for="email_verified">Email Verified:</label>
+            <input type="checkbox" id="email_verified" name="email_verified" {% if user.email_verified %}checked{% endif %}>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update User</button>
+    </form>
+
+    <h2>Participated Games</h2>
+    <ul>
+        {% for game in participated_games %}
+        <li>{{ game.title }}</li>
+        {% endfor %}
+    </ul>
+
+    <form id="deleteUserForm" action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-danger">Delete User</button>
+    </form>
+</div>
+{% endblock %}

@@ -42,3 +42,12 @@ function confirmUpdate() {
 function confirmDelete() {
     return confirm("Are you sure you want to delete this user?");
 }
+
+document.getElementById('gameFilter').addEventListener('change', function() {
+    var gameId = this.value;
+    if (gameId) {
+        window.location.href = '/admin/user_management/game/' + gameId;
+    } else {
+        window.location.href = '/admin/user_management';
+    }
+});

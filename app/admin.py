@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_required, current_user
-from app.models import db, User, Game, Sponsor
+from app.models import db, User, Game, Sponsor, user_games
 from app.forms import CarouselImportForm, SponsorForm
 from app.utils import save_sponsor_logo
 from functools import wraps
@@ -134,8 +134,10 @@ def admin_dashboard():
 @login_required
 @require_super_admin
 def user_management():
-    users = User.query.all()
-    return render_template('user_management.html', users=users)
+    users = User.query.all()  # Fetch all users
+    games = Game.query.all()  # Fetch all games for the filter dropdown
+    return render_template('user_management.html', users=users, games=games, selected_game=None)
+
 
 
 @admin_bp.route('/user_details/<int:user_id>', methods=['GET'])
@@ -162,7 +164,7 @@ def user_details(user_id):
         'email_verified': user.email_verified,
         'participated_games': user.get_participated_games()
     }
-    return jsonify(user_details)
+    return render_template('user_details.html', user=user)
 
 
 @admin_bp.route('/update_user/<int:user_id>', methods=['POST'])
@@ -194,6 +196,46 @@ def update_user(user_id):
         current_app.logger.error(f"Error updating user: {e}")
         flash('An error occurred while updating the user.', 'error')
     return redirect(url_for('admin.user_management'))
+
+
+@admin_bp.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+@require_super_admin
+def edit_user(user_id):
+    user = User.query.get(user_id)
+    
+    if not user:
+        flash('User not found', 'error')
+        return redirect(url_for('admin.user_management'))
+    
+    if request.method == 'POST':
+        # Update user details from the form
+        user.username = request.form.get('username')
+        user.email = request.form.get('email')
+        user.is_admin = 'is_admin' in request.form
+        user.is_super_admin = 'is_super_admin' in request.form
+        user.license_agreed = 'license_agreed' in request.form
+        user.score = request.form.get('score')
+        user.display_name = request.form.get('display_name')
+        user.profile_picture = request.form.get('profile_picture')
+        user.age_group = request.form.get('age_group')
+        user.interests = request.form.get('interests')
+        user.email_verified = 'email_verified' in request.form
+        
+        try:
+            db.session.commit()
+            flash('User updated successfully.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating user: {e}', 'error')
+
+        return redirect(url_for('admin.edit_user', user_id=user.id))
+
+    # Fetch games the user participated in
+    participated_games = user.get_participated_games()
+    
+    return render_template('edit_user.html', user=user, participated_games=participated_games)
+
 
 @admin_bp.route('/delete_user/<int:user_id>', methods=['POST'])
 @login_required
@@ -344,3 +386,29 @@ def manage_sponsors():
 
     sponsors = Sponsor.query.filter_by(game_id=game_id).all() if game_id else Sponsor.query.all()
     return render_template('manage_sponsors.html', form=form, sponsors=sponsors, game_id=game_id)
+
+
+@admin_bp.route('/user_management/game/<int:game_id>', methods=['GET'])
+@login_required
+@require_super_admin
+def filter_users_by_game(game_id):
+    users = User.query.join(user_games).filter(user_games.c.game_id == game_id).all()
+    games = Game.query.all()  # Ensure we always pass all games for the dropdown filter
+    selected_game = Game.query.get(game_id)
+    
+    return render_template('user_management.html', users=users, games=games, selected_game=selected_game)
+
+
+@admin_bp.route('/user_emails', methods=['GET'])
+@login_required
+@require_super_admin
+def user_emails():
+    games = Game.query.all()
+    game_email_map = {}
+
+    # Fetch all users grouped by each game
+    for game in games:
+        users = User.query.join(user_games).filter(user_games.c.game_id == game.id).all()
+        game_email_map[game.title] = [user.email for user in users]
+
+    return render_template('user_emails.html', game_email_map=game_email_map, games=games)

@@ -54,6 +54,9 @@
                 <p>No games found.</p>
             {% endfor %}
         </div>
+        <div>
+            <a href="{{ url_for('admin.user_management') }}" class="btn btn-primary">Manage Users by Game</a>
+        </div>
     {% endif %}
 </div>
 
