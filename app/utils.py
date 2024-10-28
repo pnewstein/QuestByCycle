@@ -473,10 +473,13 @@ def save_credentials(creds):
 
 
 def refresh_credentials(creds):
-    """Check and refresh credentials if expired."""
+    if creds:
+        current_app.logger.info(f"Current token expiry: {creds.expiry}")
     if creds and creds.expired and creds.refresh_token:
+        current_app.logger.info("Token expired. Refreshing token...")
         creds.refresh(Request())
         save_credentials(creds)
+        current_app.logger.info(f"New token expiry: {creds.expiry}")
     return creds
 
 
