@@ -582,7 +582,7 @@ def generate_tutorial_game():
 
         Social Media Interaction:
 
-        Hall of Fame: Engage with the community by commenting and sharing your achievements on social media platforms directly through the game. Click on the thumbnail images in the task’s Hall of Fame (the task’s detail page). At the bottom, there will be buttons to take you to Facebook, Twitter, and Instagram where you can comment on various tasks that have been posted and communicate with other players. Through friendly competition, let's strive to reduce carbon emissions and make a positive impact on the atmosphere.
+        Task Entries: Engage with the community by commenting and sharing your achievements on social media platforms directly through the game. Click on the thumbnail images at the bottom of a Task to view user's submissions. At the bottom, there will be buttons to take you to Facebook, X, and Instagram where you can comment on various tasks that have been posted and communicate with other players. Through friendly competition, let's strive to reduce carbon emissions and make a positive impact on the atmosphere.
         """,
         awards="""
         Stay tuned for prizes...
