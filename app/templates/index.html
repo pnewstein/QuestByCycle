@@ -119,67 +119,86 @@
             {% endif %}
             {% if profile %}
                 <div class="col-md-6 mb-4">
-                    <div class="card mb-4 w-100">
-                        <div class="card-body text-center">
-                            {% if current_user.is_authenticated %}
-                            <div id="flash-messages" style="display: none;">
-                                {% with messages = get_flashed_messages(with_categories=true) %}
-                                    {% if messages %}
-                                        <div id="flash-messages-data">
-                                            {% for category, message in messages %}
-                                                <div class="flash-message {{ category }}">{{ message }}</div>
-                                            {% endfor %}
-                                        </div>
-                                    {% endif %}
-                                {% endwith %}
-                            </div>
-                            <!-- Flash Messages for the modal -->
-                            <div id="modal-flash-messages">
-                                <!-- Flash messages will be dynamically inserted here -->
-                            </div>
-                            {% endif %}
-                            
-                            <div id="profileView">
-                                <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}"
-                                    alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px; height: auto;">
-                                <p class="font-weight-bold">Welcome, {{ profile.display_name or profile.username }}</p>
-                                <p id="total-points" class="font-weight-bold">Your Total Carbon Reduction Points: {{ total_points }}</p>
-                            </div>
-            
-                            {% if current_user.is_admin %}
-                                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-danger btn-block mt-2">Admin Dashboard</a> <br>
-                            {% endif %}
-                            {% if current_user %}
-                                <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-info btn-block mt-3" id="view-profile-button">View Profile</a>
-                                <button id="leaderboardButton" data-game-id="{{ game.id }}" class="btn btn-info btn-block mt-3">View Leaderboard</button>
-                                <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-block mt-3">Logout</a>
-                            
-                                <!-- Dropdown for selecting joined games -->
-                                <div class="form-group mt-3 w-100 text-center">
-                                    <label for="gameSelectDropdown" class="mb-1 w-100">Select or Join Game:</label>
-                                    <div class="dropdown w-100">
-                                        <button id="gameDropdownButton" class="btn btn-secondary w-100 d-flex justify-content-center align-items-center dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <span class="game-title w-100 text-center">{{ game.title }}</span>
-                                        </button>
-                                        <ul id="gameDropdownMenu" class="dropdown-menu dropdown-menu-scrollable w-100" style="min-width: 20rem;">
-                                            {% for game, joined_at in user_games|sort(reverse=True, attribute='joined_at') %}
-                                            <li>
-                                                <a href="{{ url_for('main.index', game_id=game.id) }}" class="dropdown-item d-flex flex-column">
-                                                    <span class="game-title text-truncate">{{ game.title }}</span>
-                                                    <small class="ms-3 mt-1 text-muted">Joined on: {{ joined_at.strftime('%m-%d-%Y') if joined_at else 'N/A' }}</small>
-                                                </a>
-                                            </li>
-                                            {% endfor %}
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <a href="#" class="dropdown-item bold-item" onclick="handleGameSelection({ value: 'join_custom_game' })">
-                                                    Join Custom Game
-                                                </a>
-                                            </li>
-                                        </ul>
+                    {% if current_user.is_authenticated %}
+                        <div id="flash-messages" class="flash-messages-container">
+                            {% with messages = get_flashed_messages(with_categories=true) %}
+                                {% if messages %}
+                                    <div id="flash-messages-data">
+                                        {% for category, message in messages %}
+                                            <div class="flash-message {{ category }}">
+                                                <i class="fas fa-info-circle"></i> 
+                                                <span>{{ message }}</span>
+                                            </div>
+                                        {% endfor %}
                                     </div>
-                                </div>
-                            {% endif %}
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div id="modal-flash-messages">
+                            <!-- Flash messages will be dynamically inserted here -->
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Profile View -->
+                    <div id="profileView" class="card mb-4 w-100 profile-view epic-profile-container text-center">
+                        <!-- Profile Header with Full-Width Profile Image -->
+                        <div class="text-center">
+                            <h2 class="display-3 font-weight-bold welcome-text">
+                                Welcome, {{ profile.display_name or profile.username }}
+                            </h2>
+                        </div>
+                        <!-- Profile Header with Full-Width Profile Image -->
+                        <div class="profile-header position-relative">
+                            <div class="profile-photo-full">
+                                <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}"
+                                    alt="Profile Picture" class="img-fluid full-width-profile-img">
+                            </div>
+                        </div>
+                        <!-- Carbon Reduction Points below the Welcome Text -->
+                        <p id="total-points" class="font-weight-bold text-warning">
+                            <i class="fas fa-leaf"></i> Your Carbon Reduction Points: <br>
+                            <span class="points-emphasized">{{ total_points }}</span>
+                        </p>
+                        <!-- Profile Actions -->
+                        <div class="profile-actions d-flex align-items-center">
+                            <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-primary w-35 btn-lg mx-2 shadow custom-btn-bg" id="view-profile-button">
+                                <i class="fas fa-user-circle me-2"></i>Profile
+                            </a>
+                            <button id="leaderboardButton" data-game-id="{{ game.id }}" class="btn btn-success w-35 btn-lg mx-2 shadow custom-btn-bg">
+                                <i class="fas fa-trophy me-2"></i>Leaderboard
+                            </button>
+                            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger w-35 btn-lg mx-2 shadow custom-btn-bg">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </div>
+
+                        <!-- Game Selection Dropdown -->
+                        <div class="form-group w-100 text-center">
+                            <label for="gameSelectDropdown" class="mb-2 w-100 text-secondary font-weight-bold d-flex justify-content-center align-items-center">
+                                <i class="fas fa-gamepad me-2"></i> Select or Join Game
+                            </label>
+                            <div class="dropdown w-100">
+                                <button id="gameDropdownButton" class="btn btn-secondary w-100 dropdown-toggle shadow-sm custom-btn-bg d-flex justify-content-between align-items-center px-4"
+                                        type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="game-title">{{ game.title }}</span>
+                                </button>
+                                <ul id="gameDropdownMenu" class="dropdown-menu dropdown-menu-scrollable w-100">
+                                    {% for game, joined_at in user_games|sort(reverse=True, attribute='joined_at') %}
+                                    <li>
+                                        <a href="{{ url_for('main.index', game_id=game.id) }}" class="dropdown-item d-flex flex-column text-center">
+                                            <span class="game-title text-truncate">{{ game.title }}</span>
+                                            <small class="text-muted">Joined on: {{ joined_at.strftime('%m-%d-%Y') if joined_at else 'N/A' }}</small>
+                                        </a>
+                                    </li>
+                                    {% endfor %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a href="#" class="dropdown-item bold-item text-center" onclick="handleGameSelection({ value: 'join_custom_game' })">
+                                            <i class="fas fa-plus-circle"></i> Join Custom Game
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -322,8 +341,8 @@
     {% include 'modals/loading_modal.html' %}
     {% include 'modals/sponsors_modal.html' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
-   
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/3rd/fontawesome/all.min.css') }}">
+
     <script src="{{ url_for('static', filename='js/modal_common.js') }}"></script>
     <script src="{{ url_for('static', filename='js/all_submissions_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/contact_modal.js') }}"></script>
@@ -356,7 +375,6 @@
     
             // If task_id exists, trigger the task detail modal
             if (taskId != 'None') {
-                console.log(`Found task_id: ${taskId}. Opening modal...`);
                 openTaskDetailModal(taskId);
             }
 
@@ -597,5 +615,154 @@
             max-width: 100%; /* Ensures that the text fits within the available space */
             display: inline-block;
         }
+    /* Profile Container */
+    .epic-profile-container {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: #fff;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Profile Header */
+    .profile-header {
+        width: 100%;
+        height: 300px;
+        background-color: #000;
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* Full-Width Profile Photo */
+    .profile-photo-full {
+        position: static;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .full-width-profile-img {
+        width: 100%;
+        height: 100%;
+        object-fit: scale-down;
+        filter: brightness(0.9); /* Darken the image for better contrast */
+    }
+
+    .welcome-text {
+        font-size: 2.8rem;
+        margin-bottom: .5rem; /* Space between welcome text and profile image */
+        text-shadow: 0px 4px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Responsive adjustments for screens below 768px */
+@media (max-width: 768px) {
+    .welcome-text {
+        font-size: 2rem; /* Scale down the welcome text */
+        margin-bottom: 5px; /* Reduce the bottom margin */
+    }
+
+
+
+    #total-points {
+        font-size: 1rem; /* Adjust the size for smaller screens */
+        margin-top: 50px; /* Reduce margin on top */
+    }
+}
+
+/* Responsive adjustments for very small screens (max-width: 480px) */
+@media (max-width: 480px) {
+    .welcome-text {
+        font-size: 1.6rem; /* Further scale down the welcome text */
+        margin-bottom: 20px; /* Reduce the bottom margin */
+    }
+
+    #total-points {
+        font-size: .8rem; /* Reduce size of points text */
+        margin-top: 5px; /* Reduce margin on top */
+    }
+
+    .profile-header {
+        height: 200px; /* Reduce profile header height on small screens */
+    }
+}
+
+    /* Carbon Reduction Points Styling */
+    .points-emphasized {
+        font-size: 2rem;
+        font-weight: bold;
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+        color: #ffdf5f;
+        margin-bottom: 5px;
+    }
+  
+    /* Profile Actions */
+
+    .profile-actions {
+        display: flex;
+        flex-wrap: wrap; /* Allow buttons to wrap under each other */
+        justify-content: center; /* Center buttons horizontally */
+        gap: 10px; /* Spacing between buttons */
+        margin-top: 20px;
+    }
+
+    /* Button styles */
+    .profile-actions .btn {
+        font-size: 1rem;
+        padding: 12px 40px;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 50px; /* Rounded button style */
+        display: inline-flex;
+        align-items: center; /* Vertically center the icon and text */
+        justify-content: center; /* Horizontally center the content */
+        margin: 10px 10px; /* Horizontal and vertical spacing */
+    }
+
+    /* Responsive adjustments for smaller screens */
+    @media (max-width: 768px) {
+        .profile-actions {
+            flex-direction: column; /* Stack buttons vertically */
+        }
+
+        .profile-actions .btn {
+            width: 100%; /* Buttons take full width in stacked view */
+            max-width: 300px; /* Optional: Set a max width to limit button size */
+        }
+    }
+
+    /* Updated Background for Buttons */
+    .custom-btn-bg {
+        background: linear-gradient(135deg, #24c6dc 0%, #514a9d 100%);
+        border: none;
+    }
+
+    .custom-btn-bg:hover {
+        background: linear-gradient(135deg, #514a9d 0%, #24c6dc 100%);
+    }
+
+    /* Dropdown Menu Styling */
+    .dropdown-menu-scrollable {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .dropdown-item {
+        display: flex;
+        justify-content: center;
+        text-align: center;
+        padding: 10px 20px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f1f1f1;
+    }
+
+    #total-points {
+        font-size: 1.5rem;
+        margin-bottom: .5rem; /* Space between welcome text and profile image */
+        text-shadow: 0px 4px 8px rgba(0, 0, 0, 0.8);
+    }
     </style>
 {% endblock %}
