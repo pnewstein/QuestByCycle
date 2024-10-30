@@ -20,6 +20,7 @@ function openTaskDetailModal(taskId) {
             ensureDynamicElementsExistAndPopulate(data.task, data.userCompletion.completions, data.nextEligibleTime, data.canVerify);
 
             fetchSubmissions(taskId);
+            lazyLoadImages(); // Ensure lazy loading is initialized after populating the content
             openModal('taskDetailModal');
         })
         .catch(error => {
@@ -27,6 +28,25 @@ function openTaskDetailModal(taskId) {
             alert('Sign in to view task details.');
         });
 }
+
+function lazyLoadImages() {
+    const images = document.querySelectorAll('img.lazyload');
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                img.src = img.getAttribute('data-src');  // Load image by replacing 'data-src' with 'src'
+                img.classList.remove('lazyload');
+                observer.unobserve(img);  // Stop observing once the image is loaded
+            }
+        });
+    });
+
+    images.forEach(img => {
+        imageObserver.observe(img);
+    });
+}
+
 
 function closeTaskDetailModal() {
     document.getElementById('taskDetailModal').style.display = 'none';

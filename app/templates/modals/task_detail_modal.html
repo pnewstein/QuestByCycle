@@ -12,7 +12,6 @@
         </div>
         
         <div class="modal-body">
-
             <!-- Description Section -->
             <div class="box-container description-box">
                 <h4 class="box-title">Description</h4>
@@ -27,7 +26,8 @@
                 </div>
                 <div class="task-detail-item" onclick="toggleContent(this)">
                     <h4 class="text-primary">Badge</h4>
-                    <img id="modalTaskBadgeImage" src="static/images/default_badge.png" alt="Badge Image" class="badge-image hidden">
+                    <!-- Use resized image URL -->
+                    <img id="modalTaskBadgeImage" data-src="/resize_image?path=static/images/default_badge.png&width=200" alt="Badge Image" class="badge-image hidden lazyload">
                 </div>
                 <div class="task-detail-item" onclick="toggleContent(this)">
                     <h4 class="text-primary">Category</h4>
@@ -72,13 +72,13 @@
 
 <script>
     function toggleContent(element) {
-        // Toggle all span and img children within the clicked item
-        const contents = element.querySelectorAll('span, img'); // Select both <span> and <img> elements
+        const contents = element.querySelectorAll('span, img');
         contents.forEach(content => {
-            content.classList.toggle('hidden'); // Toggle the hidden class
+            content.classList.toggle('hidden');
         });
     }
 </script>
+
 <style>
     .hidden {
         display: none !important; /* Ensure it overrides any other style */
