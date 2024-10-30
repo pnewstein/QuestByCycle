@@ -553,7 +553,7 @@ function distributeImages(images) {
     if (!fallbackUrl) {
         console.warn("No fallback URL provided in data-placeholder-url attribute.");
         // Set a default fallback image URL if none is provided
-        fallbackUrl = '/static/images/default-placeholder.png'; // Update to a valid placeholder image path if available
+        fallbackUrl = '/static/images/default-placeholder.webp'; // Update to a valid placeholder image path if available
     }
 
     const validFallbackUrl = isValidImageUrl(fallbackUrl) ? fallbackUrl : '';
