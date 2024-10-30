@@ -20,7 +20,7 @@ function openTaskDetailModal(taskId) {
             ensureDynamicElementsExistAndPopulate(data.task, data.userCompletion.completions, data.nextEligibleTime, data.canVerify);
 
             fetchSubmissions(taskId);
-            lazyLoadImages(); // Ensure lazy loading is initialized after populating the content
+            //lazyLoadImages(); // Ensure lazy loading is initialized after populating the content
             openModal('taskDetailModal');
         })
         .catch(error => {
@@ -46,7 +46,6 @@ function lazyLoadImages() {
         imageObserver.observe(img);
     });
 }
-
 
 function closeTaskDetailModal() {
     document.getElementById('taskDetailModal').style.display = 'none';
@@ -544,7 +543,6 @@ function isValidImageUrl(url) {
     }
     return false;
 }
-
 
 function distributeImages(images) {
     const board = document.getElementById('submissionBoard');
