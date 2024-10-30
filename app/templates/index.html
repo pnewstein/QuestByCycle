@@ -162,13 +162,13 @@
                         <!-- Profile Actions -->
                         <div class="profile-actions d-flex align-items-center">
                             <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-primary w-35 btn-lg mx-2 shadow custom-btn-bg" id="view-profile-button">
-                                <i class="fas fa-user-circle me-2"></i>Profile
+                                <i class="fas fa-user-circle me-2"></i><span class="button-text"> Profile</span>
                             </a>
                             <button id="leaderboardButton" data-game-id="{{ game.id }}" class="btn btn-success w-35 btn-lg mx-2 shadow custom-btn-bg">
-                                <i class="fas fa-trophy me-2"></i>Leaderboard
+                                <i class="fas fa-trophy me-2"></i><span class="button-text"> Leaderboard</span>
                             </button>
                             <a href="{{ url_for('auth.logout') }}" class="btn btn-danger w-35 btn-lg mx-2 shadow custom-btn-bg">
-                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                <i class="fas fa-sign-out-alt me-2"></i><span class="button-text"> Logout</span>
                             </a>
                         </div>
 
@@ -763,6 +763,19 @@
         font-size: 1.5rem;
         margin-bottom: .5rem; /* Space between welcome text and profile image */
         text-shadow: 0px 4px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Styling for button text */
+    .button-text {
+        font-size: 1rem; /* Increase font size */
+        font-weight: 700;   /* Make the text bold */
+        letter-spacing: 0.5px; /* Add slight spacing between letters */
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3); /* Add a subtle shadow for depth */
+    }
+
+    /* Ensure the icon doesn't affect text styling */
+    #leaderboardButton i {
+        font-size: 1.25rem; /* Adjust the icon size to match the text */
     }
     </style>
 {% endblock %}
