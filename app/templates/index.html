@@ -69,7 +69,7 @@
                 <div class="col-md-6 mb-4">
                     <div class="text-center mb-4">
                         <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories Below!</small></p>
-                        <div id="taskImageCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div id="taskImageCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
                             <ol class="carousel-indicators" style="visibility: hidden;">
                                 {% for image in carousel_images %}
                                 <li data-bs-target="#taskImageCarousel" data-bs-slide-to="{{ loop.index0 }}"
@@ -473,6 +473,30 @@
             }
         });
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const carouselElement = document.getElementById('taskImageCarousel');
+            const carouselInstance = new bootstrap.Carousel(carouselElement, {
+                interval: 3000 // Automatically slide every 3 seconds
+            });
+    
+            let slideCount = 0;
+            carouselElement.addEventListener('slide.bs.carousel', function () {
+                slideCount++;
+                if (slideCount >= 7) {
+                    carouselInstance.pause();
+                }
+            });
+    
+            carouselElement.querySelectorAll('.carousel-control-next, .carousel-control-prev').forEach(button => {
+                button.addEventListener('click', function () {
+                    carouselInstance.cycle(); // Restart carousel on manual slide
+                    slideCount = 0; // Reset counter after manual slide
+                });
+            });
+        });
+    </script>
+    
     <style>
         .bold-item {
             font-weight: bold;
