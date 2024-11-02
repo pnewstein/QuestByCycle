@@ -36,12 +36,7 @@
             <input type="checkbox" id="license_agreed" name="license_agreed" {% if user.license_agreed %}checked{% endif %}>
         </div>
 
-        <div class="form-group">
-            <label for="created_at">Account Created:</label>
-            <input type="text" id="created_at" value="{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}" class="form-control" disabled>
-        </div>
-
-        <!-- Other Basic Info -->
+        <!-- User Score and Display Name -->
         <div class="form-group">
             <label for="score">Score:</label>
             <input type="number" id="score" name="score" value="{{ user.score }}" class="form-control">
@@ -52,11 +47,13 @@
             <input type="text" id="display_name" name="display_name" value="{{ user.display_name }}" class="form-control">
         </div>
 
+        <!-- Profile Picture -->
         <div class="form-group">
             <label for="profile_picture">Profile Picture URL:</label>
             <input type="text" id="profile_picture" name="profile_picture" value="{{ user.profile_picture }}" class="form-control">
         </div>
 
+        <!-- Age Group and Interests -->
         <div class="form-group">
             <label for="age_group">Age Group:</label>
             <input type="text" id="age_group" name="age_group" value="{{ user.age_group }}" class="form-control">
@@ -67,15 +64,16 @@
             <input type="text" id="interests" name="interests" value="{{ user.interests }}" class="form-control">
         </div>
 
+        <!-- Email Verified -->
         <div class="form-group">
             <label for="email_verified">Email Verified:</label>
             <input type="checkbox" id="email_verified" name="email_verified" {% if user.email_verified %}checked{% endif %}>
         </div>
 
-        <!-- New Fields: Riding Preferences, Bike Description, Social Media Toggles -->
+        <!-- Riding Preferences and Descriptions -->
         <div class="form-group">
             <label for="riding_preferences">Riding Preferences (comma-separated):</label>
-            <input type="text" id="riding_preferences" name="riding_preferences" value="{{ user.riding_preferences|join(', ') }}" class="form-control">
+            <input type="text" id="riding_preferences" name="riding_preferences" value="{{ user.riding_preferences|default([])|join(', ') }}" class="form-control">
         </div>
 
         <div class="form-group">
@@ -93,6 +91,7 @@
             <input type="text" id="bike_description" name="bike_description" value="{{ user.bike_description }}" class="form-control">
         </div>
 
+        <!-- Toggles for Social Upload and Carbon Game -->
         <div class="form-group">
             <label for="upload_to_socials">Upload to Socials:</label>
             <input type="checkbox" id="upload_to_socials" name="upload_to_socials" {% if user.upload_to_socials %}checked{% endif %}>
@@ -108,9 +107,15 @@
             <input type="checkbox" id="onboarded" name="onboarded" {% if user.onboarded %}checked{% endif %}>
         </div>
 
+        <!-- Selected Game -->
         <div class="form-group">
-            <label for="created_at">Account Created:</label>
-            <input type="text" id="created_at" value="{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}" class="form-control" disabled>
+            <label for="selected_game_id">Selected Game:</label>
+            <select id="selected_game_id" name="selected_game_id" class="form-control">
+                <option value="">-- None --</option>
+                {% for game in games|default([]) %}
+                <option value="{{ game.id }}" {% if user.selected_game_id == game.id %}selected{% endif %}>{{ game.title }}</option>
+                {% endfor %}
+            </select>
         </div>
 
         <!-- Submit Button -->
@@ -120,7 +125,7 @@
     <!-- User Submissions -->
     <h2>User Submissions</h2>
     <ul>
-        {% for submission in user_submissions %}
+        {% for submission in user_submissions|default([]) %}
         <li>
             <strong>Task:</strong> {{ submission.task.title }}<br>
             <strong>Comment:</strong> {{ submission.comment }}<br>
@@ -137,7 +142,7 @@
     <!-- User IP Addresses -->
     <h2>User IP Addresses</h2>
     <ul>
-        {% for ip in user_ips %}
+        {% for ip in user_ips|default([]) %}
         <li>{{ ip.ip_address }} (Logged on: {{ ip.timestamp.strftime('%Y-%m-%d %H:%M:%S') }})</li>
         {% else %}
         <li>No IP addresses found for this user.</li>
@@ -147,8 +152,10 @@
     <!-- Participated Games -->
     <h2>Participated Games</h2>
     <ul>
-        {% for game in participated_games %}
+        {% for game in participated_games|default([]) %}
         <li>{{ game.title }}</li>
+        {% else %}
+        <li>No games participated by this user.</li>
         {% endfor %}
     </ul>
 

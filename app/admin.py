@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 
 import bleach
 import os
-
+import logging
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -136,8 +136,15 @@ def admin_dashboard():
 def user_management():
     users = User.query.all()  # Fetch all users
     games = Game.query.all()  # Fetch all games for the filter dropdown
-    return render_template('user_management.html', users=users, games=games, selected_game=None)
 
+    # For each user, retrieve their score per game in a dictionary format
+    user_game_scores = {}
+    for user in users:
+        user_game_scores[user.id] = {
+            game.id: user.get_score_for_game(game.id) for game in games
+        }
+
+    return render_template('user_management.html', users=users, games=games, selected_game=None, user_game_scores=user_game_scores)
 
 
 @admin_bp.route('/user_details/<int:user_id>', methods=['GET'])
@@ -196,62 +203,105 @@ def update_user(user_id):
         current_app.logger.error(f"Error updating user: {e}")
         flash('An error occurred while updating the user.', 'error')
     return redirect(url_for('admin.user_management'))
-
-
 @admin_bp.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 @require_super_admin
 def edit_user(user_id):
-    user = User.query.get(user_id)
+    logging.debug("Entered edit_user function with user_id: %s", user_id)
     
+    user = User.query.get(user_id)
     if not user:
+        logging.error("User not found with id: %s", user_id)
         flash('User not found', 'error')
         return redirect(url_for('admin.user_management'))
     
+    # Ensure user fields that are lists are non-None for template compatibility
+    user.riding_preferences = user.riding_preferences or []
+    user.participated_games = user.participated_games or []
+    user.badges = user.badges or []
+    
     if request.method == 'POST':
-        # Update user details from the form
-        user.username = request.form.get('username')
-        user.email = request.form.get('email')
-        user.is_admin = 'is_admin' in request.form
-        user.is_super_admin = 'is_super_admin' in request.form
-        user.license_agreed = 'license_agreed' in request.form
-        user.score = request.form.get('score')
-        user.display_name = request.form.get('display_name')
-        user.profile_picture = request.form.get('profile_picture')
-        user.age_group = request.form.get('age_group')
-        user.interests = request.form.get('interests')
-        user.email_verified = 'email_verified' in request.form
+        logging.debug("Received POST request with form data: %s", request.form)
 
-        # Handle new fields
-        user.riding_preferences = request.form.get('riding_preferences').split(',') if request.form.get('riding_preferences') else []
-        user.ride_description = request.form.get('ride_description')
-        user.bike_picture = request.form.get('bike_picture')
-        user.bike_description = request.form.get('bike_description')
-        user.upload_to_socials = 'upload_to_socials' in request.form
-        user.show_carbon_game = 'show_carbon_game' in request.form
-        user.onboarded = 'onboarded' in request.form
-        
         try:
+            # Update user details from the form
+            user.username = request.form.get('username')
+            user.email = request.form.get('email')
+            user.is_admin = 'is_admin' in request.form
+            user.is_super_admin = 'is_super_admin' in request.form
+            user.license_agreed = 'license_agreed' in request.form
+            user.score = int(request.form.get('score') or 0)
+            user.display_name = request.form.get('display_name')
+            user.profile_picture = request.form.get('profile_picture')
+            user.age_group = request.form.get('age_group')
+            user.interests = request.form.get('interests')
+            user.email_verified = 'email_verified' in request.form
+
+            # Update new fields for riding preferences and toggles
+            riding_preferences = request.form.get('riding_preferences')
+            user.riding_preferences = riding_preferences.split(',') if riding_preferences else []
+            user.ride_description = request.form.get('ride_description')
+            user.bike_picture = request.form.get('bike_picture')
+            user.bike_description = request.form.get('bike_description')
+            user.upload_to_socials = 'upload_to_socials' in request.form
+            user.show_carbon_game = 'show_carbon_game' in request.form
+            user.onboarded = 'onboarded' in request.form
+
+            # Update selected_game_id if provided
+            selected_game_id = request.form.get('selected_game_id')
+            user.selected_game_id = int(selected_game_id) if selected_game_id else None
+
+            logging.debug("Updated user object with new form data: %s", user)
+
             db.session.commit()
+            logging.info("User with id %s updated successfully", user_id)
             flash('User updated successfully.', 'success')
         except Exception as e:
             db.session.rollback()
+            logging.error("Error updating user: %s", e)
             flash(f'Error updating user: {e}', 'error')
+            return redirect(url_for('admin.edit_user', user_id=user.id))
 
         return redirect(url_for('admin.edit_user', user_id=user.id))
 
-    # Fetch games the user participated in
-    participated_games = user.get_participated_games()
+    # Safeguard all fetched data to ensure no 'None' values are passed to the template
+    try:
+        participated_games = user.get_participated_games() or []
+        logging.debug("Fetched participated games: %s", participated_games)
+    except Exception as e:
+        logging.error("Error fetching participated games for user %s: %s", user_id, e)
+        participated_games = []
 
-    # Fetch user submissions
-    user_submissions = TaskSubmission.query.filter_by(user_id=user_id).all()
+    try:
+        user_submissions = TaskSubmission.query.filter_by(user_id=user_id).all() or []
+        logging.debug("Fetched user submissions: %s", user_submissions)
+    except Exception as e:
+        logging.error("Error fetching user submissions for user %s: %s", user_id, e)
+        user_submissions = []
 
-    # Fetch user IPs
-    user_ips = UserIP.query.filter_by(user_id=user_id).all()
+    try:
+        user_ips = UserIP.query.filter_by(user_id=user_id).all() or []
+        logging.debug("Fetched user IP addresses: %s", user_ips)
+    except Exception as e:
+        logging.error("Error fetching user IPs for user %s: %s", user_id, e)
+        user_ips = []
 
-    return render_template('edit_user.html', user=user, participated_games=participated_games, user_submissions=user_submissions, user_ips=user_ips)
+    # Fetch all games for the selected_game_id dropdown, ensuring no 'None' value is passed
+    try:
+        games = Game.query.all() or []
+        logging.debug("Fetched all games for dropdown: %s", games)
+    except Exception as e:
+        logging.error("Error fetching games for dropdown: %s", e)
+        games = []
 
-
+    return render_template(
+        'edit_user.html',
+        user=user,
+        participated_games=participated_games,
+        user_submissions=user_submissions,
+        user_ips=user_ips,
+        games=games
+    )
 
 @admin_bp.route('/delete_user/<int:user_id>', methods=['POST'])
 @login_required
