@@ -148,6 +148,23 @@ class User(UserMixin, db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def get_score_for_game(self, game_id):
+        """
+        Retrieve the user's total score for a specific game.
+        This method calculates the sum of points awarded for all tasks 
+        completed by the user within the specified game.
+        """
+        # Sum up the points from UserTask entries for tasks within the specified game
+        total_score = db.session.query(
+            db.func.sum(UserTask.points_awarded)
+        ).join(Task, UserTask.task_id == Task.id
+        ).filter(
+            UserTask.user_id == self.id,
+            Task.game_id == game_id
+        ).scalar() or 0  # Default to 0 if no score is found
+
+        return total_score
+        
 class UserIP(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
