@@ -54,8 +54,8 @@
                             <td>{{ user.email }}</td>
                             <td>
                                 <ul>
-                                    {% for game in games %}
-                                        <li>{{ game.title }}: {{ user_game_scores[user.id][game.id] }}</li>
+                                    {% for game in user.participated_games %}
+                                        <li>{{ game.title }}: {{ user_game_scores[user.id][game.id] if game.id in user_game_scores[user.id] else 'N/A' }}</li>
                                     {% endfor %}
                                 </ul>
                             </td>

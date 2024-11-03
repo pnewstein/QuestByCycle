@@ -131,20 +131,42 @@ def admin_dashboard():
 
 
 @admin_bp.route('/user_management', methods=['GET'])
+@admin_bp.route('/user_management/game/<int:game_id>', methods=['GET'])
 @login_required
 @require_super_admin
-def user_management():
-    users = User.query.all()  # Fetch all users
+def user_management(game_id=None):
     games = Game.query.all()  # Fetch all games for the filter dropdown
 
-    # For each user, retrieve their score per game in a dictionary format
+    # Determine the selected game if a game_id is provided
+    selected_game = None
+    if game_id:
+        selected_game = Game.query.get(game_id)
+
+    # Fetch users based on the selected game filter
+    if selected_game:
+        # Only get users who have participated in the selected game
+        users = User.query.join(User.participated_games).filter(Game.id == game_id).all()
+    else:
+        # Get all users, including those not in any game
+        users = User.query.outerjoin(User.participated_games).all()
+
+    # Calculate the score per game only for the games each user has actually joined
     user_game_scores = {}
     for user in users:
+        # Get games the user has participated in
+        user_games = user.participated_games
         user_game_scores[user.id] = {
-            game.id: user.get_score_for_game(game.id) for game in games
+            game.id: user.get_score_for_game(game.id) for game in user_games
         }
 
-    return render_template('user_management.html', users=users, games=games, selected_game=None, user_game_scores=user_game_scores)
+    # Pass the necessary context to the template
+    return render_template(
+        'user_management.html',
+        users=users,
+        games=games,
+        selected_game=selected_game,
+        user_game_scores=user_game_scores
+    )
 
 
 @admin_bp.route('/user_details/<int:user_id>', methods=['GET'])
@@ -452,17 +474,6 @@ def manage_sponsors():
 
     sponsors = Sponsor.query.filter_by(game_id=game_id).all() if game_id else Sponsor.query.all()
     return render_template('manage_sponsors.html', form=form, sponsors=sponsors, game_id=game_id)
-
-
-@admin_bp.route('/user_management/game/<int:game_id>', methods=['GET'])
-@login_required
-@require_super_admin
-def filter_users_by_game(game_id):
-    users = User.query.join(user_games).filter(user_games.c.game_id == game_id).all()
-    games = Game.query.all()  # Ensure we always pass all games for the dropdown filter
-    selected_game = Game.query.get(game_id)
-    
-    return render_template('user_management.html', users=users, games=games, selected_game=selected_game)
 
 
 @admin_bp.route('/user_emails', methods=['GET'])
