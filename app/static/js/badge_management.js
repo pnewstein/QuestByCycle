@@ -19,7 +19,7 @@ function loadBadges() {
                     <td class="badge-image-manage">${imageHTML}</td>
                     <td class="badge-name">${badge.name}</td>
                     <td class="badge-description">${badge.description}</td>
-                    <td class="badge-category">${badge.category}</td>
+                    <td class="badge-category">${badge.category || 'None'}</td>
                     <td>
                         <button class="edit-badge" onclick="editBadge(${badge.id})">Edit</button>
                         <button onclick="deleteBadge(${badge.id})">Delete</button>
@@ -40,7 +40,35 @@ function toggleForm(formId) {
     }
 }
 
-// Existing JavaScript code remains the same
+function setCategoryOptions(currentCategory) {
+    return fetch('/badges/categories')
+        .then(response => response.json())
+        .then(data => {
+            const categories = data.categories || [];
+            
+            // Build the <option> elements
+            let options = categories.map(category => {
+                let selected = (category === currentCategory) ? 'selected' : '';
+                return `<option value="${category}" ${selected}>${category}</option>`;
+            });
+
+            // Add a "None" option at the beginning
+            let selectedNone = (!currentCategory || currentCategory === 'none') ? 'selected' : '';
+            options.unshift(`<option value="none" ${selectedNone}>None</option>`);
+
+            // Return a fully formed <select> element
+            return `<select class="form-control badge-category-select">
+                        ${options.join('')}
+                    </select>`;
+        })
+        .catch(error => {
+            console.error('Error fetching categories:', error);
+            // Fallback: Display "None" if there's an error
+            return `<select class="form-control badge-category-select">
+                        <option value="none" selected>None</option>
+                    </select>`;
+        });
+}
 
 function editBadge(badgeId) {
     const row = document.querySelector(`tr[data-badge-id='${badgeId}']`);
@@ -51,15 +79,41 @@ function editBadge(badgeId) {
     const nameCell = row.querySelector('.badge-name');
     const descriptionCell = row.querySelector('.badge-description');
     const categoryCell = row.querySelector('.badge-category');
-    const imageCell = row.querySelector('.badge-image img');
 
-    nameCell.innerHTML = `<input type="text" value="${nameCell.innerText.trim()}" class="form-control badge-name-input">`;
-    descriptionCell.innerHTML = `<textarea class="form-control badge-description-textarea">${descriptionCell.innerText.trim()}</textarea>`;
-    imageCell.parentNode.innerHTML = `<input type="file" class="form-control-file badge-image-input">`;
+    // Instead of .badge-image img, target the entire .badge-image-manage cell
+    const imageContainer = row.querySelector('.badge-image-manage');
 
+    // 1) Replace the name cell
+    nameCell.innerHTML = `
+        <input type="text"
+               value="${nameCell.innerText.trim()}"
+               class="form-control badge-name-input">
+    `;
+
+    // 2) Replace the description cell
+    descriptionCell.innerHTML = `
+        <textarea class="form-control badge-description-textarea">
+            ${descriptionCell.innerText.trim()}
+        </textarea>
+    `;
+
+    // 3) Replace or remove the existing <img>
+    //    Then inject a file input
+    if (imageContainer) {
+        // Clear out existing content (be it "No Image" text or <img> tag)
+        imageContainer.innerHTML = `
+            <input type="file" class="form-control-file badge-image-input">
+        `;
+    } else {
+        console.error('Could not find badge-image-manage cell');
+    }
+
+    // 4) Call setCategoryOptions(...) to build the <select> for Category
     setCategoryOptions(categoryCell.innerText.trim()).then(categoryHtml => {
         categoryCell.innerHTML = categoryHtml;
-        const editButton = row.querySelector(`button.edit-badge`);
+
+        // 5) Change the button label to "Save" and hook up the saveBadge call
+        const editButton = row.querySelector('button.edit-badge');
         editButton.innerText = 'Save';
         editButton.onclick = () => saveBadge(badgeId);
     });
@@ -67,22 +121,28 @@ function editBadge(badgeId) {
 
 function saveBadge(badgeId) {
     const row = document.querySelector(`tr[data-badge-id='${badgeId}']`);
+
     const formData = new FormData();
-    formData.append('name', row.querySelector('.badge-name-input').value);
-    formData.append('description', row.querySelector('.badge-description-textarea').value);
+    formData.append('name', row.querySelector('.badge-name-input').value.trim());
+    formData.append('description', row.querySelector('.badge-description-textarea').value.trim());
     formData.append('category', row.querySelector('.badge-category-select').value);
+
+    // If there's a file, attach it
     const imageInput = row.querySelector('.badge-image-input');
-    if (imageInput.files.length > 0) {
+    if (imageInput && imageInput.files.length > 0) {
         formData.append('image', imageInput.files[0]);
     }
 
+    // IMPORTANT: Append the CSRF token to the form data if required
+    const csrfToken = document.querySelector('[name=csrf_token]').value;
     fetch(`/badges/update/${badgeId}`, {
         method: 'POST',
         body: formData,
         headers: {
-            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'X-CSRFToken': csrfToken
         }
-    }).then(response => response.json())
+    })
+    .then(response => response.json())
     .then(data => {
         if (data.success) {
             alert('Badge updated successfully');
@@ -93,6 +153,7 @@ function saveBadge(badgeId) {
     })
     .catch(error => console.error('Error updating badge:', error));
 }
+
 
 function deleteBadge(badgeId) {
     if (!confirm("Are you sure you want to delete this badge?")) return;

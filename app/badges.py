@@ -31,8 +31,12 @@ def create_badge():
         flash('Access denied: Only administrators can manage badges.', 'danger')
         return redirect(url_for('main.index'))
 
-    categories = db.session.query(Task.category).filter(Task.category != None).distinct().all()
-    category_choices = [(category.category, category.category) for category in categories]
+    # Fetch unique categories from Task model
+    task_categories = db.session.query(Task.category).filter(Task.category.isnot(None)).distinct().all()
+
+    # Flatten the categories into a list
+    category_choices = sorted([category.category for category in task_categories])
+
     form = BadgeForm(category_choices=category_choices)
 
     if form.validate_on_submit():
@@ -74,8 +78,12 @@ def manage_badges():
         flash('Access denied: Only administrators can manage badges.', 'danger')
         return redirect(url_for('main.index'))
 
-    categories = db.session.query(Task.category).filter(Task.category != None).distinct().all()
-    category_choices = [(category.category, category.category) for category in categories]
+    # Fetch unique categories from Task model
+    task_categories = db.session.query(Task.category).filter(Task.category.isnot(None)).distinct().all()
+
+    # Flatten the categories into a list
+    category_choices = sorted([category.category for category in task_categories])
+
     form = BadgeForm(category_choices=category_choices)
 
     if form.validate_on_submit():
@@ -106,24 +114,55 @@ def manage_badges():
 @badges_bp.route('/update/<int:badge_id>', methods=['POST'])
 @login_required
 def update_badge(badge_id):
-    badge = Badge.query.get_or_404(badge_id)
-    categories = db.session.query(Task.category).filter(Task.category != None).distinct().all()
-    category_choices = [(category.category, category.category) for category in categories]
-    form = BadgeForm(category_choices=category_choices)
+    print(f"Updating badge ID: {badge_id}")
 
+    # Fetch the badge from the database or return 404 if not found
+    badge = Badge.query.get_or_404(badge_id)
+    print(f"Retrieved Badge: {badge.name}")
+
+    # Fetch unique categories from Task model
+    task_categories = db.session.query(Task.category).filter(Task.category.isnot(None)).distinct().all()
+
+    # Flatten the categories into a list
+    category_choices = sorted([category.category for category in task_categories])
+
+    form = BadgeForm(category_choices=category_choices, formdata=request.form)
+
+    # Debug output for form data
+    print("Form Data Received:", request.form)
+    if request.files:
+        print("Files Received:", request.files)
+
+    # Validate form submission
     if form.validate_on_submit():
+        print("Form validation successful.")
+
+        # Update badge properties with sanitized inputs
         badge.name = sanitize_html(form.name.data)
         badge.description = sanitize_html(form.description.data)
         badge.category = sanitize_html(form.category.data)
+
+        # Handle category 'none' as null
         if badge.category == 'none':
             badge.category = None
+
+        # Handle image upload
         if 'image' in request.files:
             image_file = request.files['image']
             if image_file.filename != '':
                 badge.image = save_badge_image(image_file)
+                print(f"Image saved: {badge.image}")
+
+        # Commit changes to the database
         db.session.commit()
+        print("Database commit successful.")
         return jsonify({'success': True, 'message': 'Badge updated successfully'})
-    return jsonify({'success': False, 'message': 'Invalid form data'})
+    else:
+        # Print form errors if validation fails
+        print("Form validation failed.")
+        print("Errors:", form.errors)
+
+    return jsonify({'success': False, 'message': 'Invalid form data', 'errors': form.errors})
 
 
 @badges_bp.route('/delete/<int:badge_id>', methods=['DELETE'])
@@ -144,9 +183,11 @@ def delete_badge(badge_id):
 
 
 @badges_bp.route('/categories', methods=['GET'])
-def get_categories():
-    categories = [category[0] for category in Badge.query.with_entities(Badge.category).distinct()]
-    return jsonify(categories)
+def get_task_categories():
+    # Fetch distinct categories from Task model
+    task_categories = db.session.query(Task.category).filter(Task.category.isnot(None)).distinct().all()
+    categories = [category.category for category in task_categories]
+    return jsonify(categories=sorted(categories))
 
 
 @badges_bp.route('/upload_images', methods=['POST'])
