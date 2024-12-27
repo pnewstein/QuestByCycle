@@ -1,5 +1,5 @@
 function showAllSubmissionsModal(gameId) {
-    fetch(`/tasks/task/all_submissions?game_id=${gameId}`)
+    fetch(`/quests/quest/all_submissions?game_id=${gameId}`)
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -27,7 +27,7 @@ function displayAllSubmissions(submissions, isAdmin) {
 
         const img = document.createElement('img');
         img.src = submission.image_url || 'path/to/default/image.png';
-        img.alt = 'Task Submission';
+        img.alt = 'Quest Submission';
         img.className = 'submission-image';
 
         const info = document.createElement('div');
@@ -108,7 +108,7 @@ function displayAllSubmissions(submissions, isAdmin) {
 
 
 function deleteSubmission(submissionId) {
-    fetch(`/tasks/task/delete_submission/${submissionId}`, {
+    fetch(`/quests/quest/delete_submission/${submissionId}`, {
         method: 'DELETE',
         headers: {
             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')

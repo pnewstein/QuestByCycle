@@ -1,21 +1,21 @@
-<!-- app/templates/modals/task_creation_modal.html -->
-<div id="taskCreationModal" class="modal">
+<!-- app/templates/modals/quest_creation_modal.html -->
+<div id="questCreationModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h5 class="modal-title">Create Task</h5>
-            <button type="button" class="btn-close" aria-label="Close" onclick="closeTaskCreationModal()"></button>
+            <h5 class="modal-title">Create Quest</h5>
+            <button type="button" class="btn-close" aria-label="Close" onclick="closeQuestCreationModal()"></button>
         </div>
         <div class="modal-body">
-            <form id="taskCreationForm">
+            <form id="questCreationForm">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-group">
-                    <label for="taskDescription">Task Description</label>
-                    <input type="text" class="form-control" id="taskDescription" required>
+                    <label for="questDescription">Quest Description</label>
+                    <input type="text" class="form-control" id="questDescription" required>
                 </div>
-                <button type="submit" class="btn btn-primary">Generate Task</button>
+                <button type="submit" class="btn btn-primary">Generate Quest</button>
             </form>
             <p>
-                Example Tasks:
+                Example Quests:
             </p>
             <ul>
                 <li>I got my kiddo a new bike and went for a ride.</li>

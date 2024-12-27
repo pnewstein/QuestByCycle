@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app, make_response
 from flask_login import login_required, current_user
-from app.models import db, Game, Task, UserTask, user_games
+from app.models import db, Game, Quest, UserQuest, user_games
 from app.forms import GameForm
 from app.utils import save_leaderboard_image, generate_smoggy_images, allowed_file
 from io import BytesIO
@@ -182,7 +182,7 @@ def delete_game(game_id):
 
     game = Game.query.get_or_404(game_id)
     try:
-        # Assuming tasks are properly cascaded in model definitions
+        # Assuming quests are properly cascaded in model definitions
         db.session.delete(game)
         db.session.commit()
         flash('Game deleted successfully!', 'success')
@@ -210,9 +210,9 @@ def game_info(game_id):
 def get_game_points(game_id):
     # Query to get the total points awarded for a specific game
     total_game_points = db.session.query(
-        db.func.sum(UserTask.points_awarded)
-    ).join(Task, UserTask.task_id == Task.id
-    ).filter(Task.game_id == game_id
+        db.func.sum(UserQuest.points_awarded)
+    ).join(Quest, UserQuest.quest_id == Quest.id
+    ).filter(Quest.game_id == game_id
     ).scalar() or 0
 
     # Query to get the goal for the specific game

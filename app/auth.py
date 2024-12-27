@@ -59,18 +59,18 @@ def login():
             password = form.password.data
             if not email or not password:
                 flash('Please enter both email and password.')
-                return redirect(url_for('auth.login', game_id=request.args.get('game_id'), task_id=request.args.get('task_id')))
+                return redirect(url_for('auth.login', game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id')))
 
             user = User.query.filter_by(email=email).first()
 
             if user is None:
                 flash('Invalid email or password.')
-                return redirect(url_for('auth.login', game_id=request.args.get('game_id'), task_id=request.args.get('task_id')))
+                return redirect(url_for('auth.login', game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id')))
 
             # Check if email verification is required and if the user's email is verified
             if current_app.config.get('MAIL_USERNAME') and not user.email_verified:
                 flash('Please verify your email before logging in.', 'warning')
-                return render_template('login.html', form=form, show_resend=True, email=email, game_id=request.args.get('game_id'), task_id=request.args.get('task_id'))
+                return render_template('login.html', form=form, show_resend=True, email=email, game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'))
 
             if user and user.check_password(password):
                 login_user(user, remember=form.remember_me.data)
@@ -96,7 +96,7 @@ def login():
 
                 flash('Logged in successfully.')
 
-                task_id = request.args.get('task_id')
+                quest_id = request.args.get('quest_id')
                 next_page = request.args.get('next')
 
                 # Ensure next_page is a relative URL
@@ -107,8 +107,8 @@ def login():
 
                 if user.is_admin:
                     return redirect(url_for('admin.admin_dashboard'))
-                elif task_id:
-                    return redirect(url_for('tasks.submit_photo', task_id=task_id))
+                elif quest_id:
+                    return redirect(url_for('quests.submit_photo', quest_id=quest_id))
                 else:
                     return redirect(url_for('main.index'))
             else:
@@ -117,9 +117,9 @@ def login():
     except Exception as e:
         current_app.logger.error(f'Login error: {e}')
         flash('An unexpected error occurred during login. Please try again later.', 'error')
-        return redirect(url_for('auth.login', game_id=request.args.get('game_id'), task_id=request.args.get('task_id')))
+        return redirect(url_for('auth.login', game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id')))
     
-    return render_template('login.html', form=form, game_id=request.args.get('game_id'), task_id=request.args.get('task_id'))
+    return render_template('login.html', form=form, game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'))
 
 
 @auth_bp.route('/resend_verification_email', methods=['POST'])
@@ -153,14 +153,14 @@ def register():
         if form.validate_on_submit():
             if not form.accept_license.data:
                 flash('You must agree to the terms of service, license agreement, and privacy policy.', 'warning')
-                return render_template('register.html', form=form, game_id=request.args.get('game_id'), task_id=request.args.get('task_id'), next=request.args.get('next'))
+                return render_template('register.html', form=form, game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'), next=request.args.get('next'))
 
             email = sanitize_html(form.email.data)
             base_username = email.split('@')[0]
             existing_user = User.query.filter_by(email=email).first()
             if existing_user:
                 flash('Email already registered. Please use a different email.', 'warning')
-                return redirect(url_for('auth.register', game_id=request.args.get('game_id'), task_id=request.args.get('task_id'), next=request.args.get('next')))
+                return redirect(url_for('auth.register', game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'), next=request.args.get('next')))
 
             counter = 1
             username = base_username
@@ -189,7 +189,7 @@ def register():
                 # Check if email verification is required
                 if current_app.config.get('MAIL_USERNAME'):
                     token = user.generate_verification_token()
-                    verify_url = url_for('auth.verify_email', token=token, _external=True, task_id=request.args.get('task_id'), next=request.args.get('next'))
+                    verify_url = url_for('auth.verify_email', token=token, _external=True, quest_id=request.args.get('quest_id'), next=request.args.get('next'))
                     html = render_template('verify_email.html', verify_url=verify_url)
                     subject = "QuestByCycle verify email"
                     send_email(user.email, subject, html)
@@ -219,7 +219,7 @@ def register():
                             db.session.commit()
 
                 next_page = request.args.get('next')
-                task_id = request.args.get('task_id')
+                quest_id = request.args.get('quest_id')
 
                 # Ensure next_page is a relative URL
                 if next_page:
@@ -227,8 +227,8 @@ def register():
                     if not parsed_url.netloc and not parsed_url.scheme:
                         return redirect(next_page)
 
-                if task_id:
-                    return redirect(url_for('tasks.submit_photo', task_id=task_id))
+                if quest_id:
+                    return redirect(url_for('quests.submit_photo', quest_id=quest_id))
                 else:
                     return redirect(url_for('main.index'))
 
@@ -236,14 +236,14 @@ def register():
                 db.session.rollback()
                 flash('Registration failed due to an unexpected error. Please try again.', 'error')
                 current_app.logger.error(f'Failed to register user or send verification email: {e}')
-                return render_template('register.html', title='Register', form=form, game_id=request.args.get('game_id'), task_id=request.args.get('task_id'), next=request.args.get('next'))
+                return render_template('register.html', title='Register', form=form, game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'), next=request.args.get('next'))
 
     except Exception as e:
         current_app.logger.error(f'Registration error: {e}')
         flash('An unexpected error occurred during registration. Please try again later.', 'error')
-        return redirect(url_for('auth.register', game_id=request.args.get('game_id'), task_id=request.args.get('task_id'), next=request.args.get('next')))
+        return redirect(url_for('auth.register', game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'), next=request.args.get('next')))
 
-    return render_template('register.html', title='Register', form=form, game_id=request.args.get('game_id'), task_id=request.args.get('task_id'), next=request.args.get('next'))
+    return render_template('register.html', title='Register', form=form, game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'), next=request.args.get('next'))
 
 @auth_bp.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
@@ -315,12 +315,12 @@ def verify_email(token):
             db.session.commit()
             flash(f'You have successfully joined the game: {game.title}', 'success')
 
-    # Redirect to the correct page based on the task_id or next parameter
-    task_id = request.args.get('task_id')
+    # Redirect to the correct page based on the quest_id or next parameter
+    quest_id = request.args.get('quest_id')
     next_page = request.args.get('next')
 
-    if task_id:
-        return redirect(url_for('tasks.submit_photo', task_id=task_id))
+    if quest_id:
+        return redirect(url_for('quests.submit_photo', quest_id=quest_id))
     elif next_page:
         # Ensure next_page is a relative URL
         parsed_url = urlparse(next_page)

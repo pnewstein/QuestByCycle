@@ -23,24 +23,24 @@
         <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-secondary">← Back to Dashboard</a>
         <h1 class="display-4 text-center flex-grow-1">{{ game.title }}</h1>
         <div>
-            <a href="{{ url_for('tasks.add_task', game_id=game.id) }}" class="btn btn-primary">Add Task</a>
-            <button class="btn btn-danger ms-2" onclick="deleteAllTasks()">Delete All Tasks</button>
+            <a href="{{ url_for('quests.add_quest', game_id=game.id) }}" class="btn btn-primary">Add Quest</a>
+            <button class="btn btn-danger ms-2" onclick="deleteAllQuests()">Delete All Quests</button>
         </div>
     </div>
 
-    <!-- Import Tasks Section -->
+    <!-- Import Quests Section -->
     <div class="mb-4">
-        <h3 class="mb-3">Import Tasks from CSV</h3>
-        <form id="importTasksForm" method="post" enctype="multipart/form-data" class="d-flex">
-            <input type="file" name="tasks_csv" accept=".csv" class="form-control me-3">
-            <button type="button" class="btn btn-secondary" onclick="importTasks()">Import</button>
+        <h3 class="mb-3">Import Quests from CSV</h3>
+        <form id="importQuestsForm" method="post" enctype="multipart/form-data" class="d-flex">
+            <input type="file" name="quests_csv" accept=".csv" class="form-control me-3">
+            <button type="button" class="btn btn-secondary" onclick="importQuests()">Import</button>
         </form>
     </div>
 
-    <!-- Existing Tasks Cards -->
-    <div id="tasksList" class="tasks-section">
-        <h3 class="mb-3">Existing Tasks</h3>
-        <div class="card-columns" id="tasksBody">
+    <!-- Existing Quests Cards -->
+    <div id="questsList" class="quests-section">
+        <h3 class="mb-3">Existing Quests</h3>
+        <div class="card-columns" id="questsBody">
             <!-- This section will be filled dynamically with JavaScript -->
         </div>
     </div>
@@ -59,7 +59,7 @@
 
     document.addEventListener('DOMContentLoaded', async function() {
         await loadBadges();
-        loadTasks(game_Id);
+        loadQuests(game_Id);
     });
 
     async function loadBadges() {
@@ -73,9 +73,9 @@
         }
     }
 
-    function addTask() {
-        const formData = new FormData(document.getElementById('addTaskForm'));
-        fetch(`/tasks/game/${game_Id}/add_task`, {
+    function addQuest() {
+        const formData = new FormData(document.getElementById('addQuestForm'));
+        fetch(`/quests/game/${game_Id}/add_quest`, {
             method: 'POST',
             body: formData,
             headers: {
@@ -85,17 +85,17 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Task added successfully.');
-                loadTasks(game_Id);
+                alert('Quest added successfully.');
+                loadQuests(game_Id);
             } else {
-                alert('Failed to add task');
+                alert('Failed to add quest');
             }
         })
         .catch(error => console.error('Error:', error));
     }
 
-    function editTask(taskId) {
-        const card = document.querySelector(`#task-${taskId}`);
+    function editQuest(questId) {
+        const card = document.querySelector(`#quest-${questId}`);
         const originalData = {};
 
         card.querySelectorAll('.editable').forEach(field => {
@@ -106,17 +106,17 @@
         processFrequency(card);
         processBadge(card);
         processEditableFields(card, originalData);
-        setupEditAndCancelButtons(card, taskId, originalData);
+        setupEditAndCancelButtons(card, questId, originalData);
 
         initializeQuillEditors(card);
     }
 
-    function deleteAllTasks() {
+    function deleteAllQuests() {
         // First confirmation pop-up
-        if (confirm('Are you sure you want to delete all tasks? This action cannot be undone.')) {
+        if (confirm('Are you sure you want to delete all quests? This action cannot be undone.')) {
             
             // Fetch the game title before showing the second confirmation pop-up
-            fetch(`/tasks/game/${game_Id}/get_title`, {
+            fetch(`/quests/game/${game_Id}/get_title`, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
@@ -130,9 +130,9 @@
                 const gameTitle = data.title;
                 
                 // Second confirmation pop-up with game title
-                if (confirm(`This will delete all tasks for the game: "${gameTitle}". Are you absolutely sure? This action cannot be undone.`)) {
+                if (confirm(`This will delete all quests for the game: "${gameTitle}". Are you absolutely sure? This action cannot be undone.`)) {
                     // Proceed with deletion if the user confirms
-                    fetch(`/tasks/game/${game_Id}/delete_all`, {
+                    fetch(`/quests/game/${game_Id}/delete_all`, {
                         method: 'DELETE',
                         headers: {
                             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -140,20 +140,20 @@
                         },
                     })
                     .then(response => {
-                        if (!response.ok) throw new Error('Failed to delete all tasks');
+                        if (!response.ok) throw new Error('Failed to delete all quests');
                         return response.json();
                     })
                     .then(data => {
                         if (data.success) {
-                            alert('All tasks deleted successfully');
-                            loadTasks(game_Id);
+                            alert('All quests deleted successfully');
+                            loadQuests(game_Id);
                         } else {
-                            alert(`Failed to delete tasks: ${data.message}`);
+                            alert(`Failed to delete quests: ${data.message}`);
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Failed to delete all tasks. Please check the console for more details.');
+                        alert('Failed to delete all quests. Please check the console for more details.');
                     });
                 }
             })
@@ -283,22 +283,22 @@
         }
     }
 
-    function setupEditAndCancelButtons(card, taskId, originalData) {
+    function setupEditAndCancelButtons(card, questId, originalData) {
         const editButton = card.querySelector(".edit-button");
         editButton.innerText = "Save";
-        editButton.onclick = () => saveTask(taskId);
+        editButton.onclick = () => saveQuest(questId);
 
         const cancelButton = document.createElement("button");
         cancelButton.innerText = "Cancel";
         cancelButton.className = "btn btn-secondary ms-2 cancel-button";
         cancelButton.onclick = () => {
-            cancelEditTask(card, originalData, editButton, taskId);
+            cancelEditQuest(card, originalData, editButton, questId);
         };
 
         editButton.parentNode.insertBefore(cancelButton, editButton.nextSibling);
     }
 
-    function cancelEditTask(card, originalData, editButton, taskId) {
+    function cancelEditQuest(card, originalData, editButton, questId) {
         Object.entries(originalData).forEach(([name, html]) => {
             const cell = card.querySelector(`.editable[data-name="${name}"]`);
             if (cell) {
@@ -307,13 +307,13 @@
         });
 
         editButton.innerText = "Edit";
-        editButton.onclick = () => editTask(taskId);
+        editButton.onclick = () => editQuest(questId);
         card.querySelector(".cancel-button").remove();
     }
 
-    function saveTask(taskId) {
-        const card = document.querySelector(`#task-${taskId}`);
-        let taskData = {};
+    function saveQuest(questId) {
+        const card = document.querySelector(`#quest-${questId}`);
+        let questData = {};
 
         card.querySelectorAll('input, select, textarea').forEach(input => {
             let value = input.value;
@@ -325,7 +325,7 @@
                 value = null;
             }
 
-            taskData[input.name] = value;
+            questData[input.name] = value;
         });
 
         // Get the Quill editor contents
@@ -335,35 +335,35 @@
         const descriptionContent = descriptionEditor.root.innerHTML.trim();
         const tipsContent = tipsEditor.root.innerHTML.trim();
 
-        // Add the Quill editor contents to taskData
-        taskData['description'] = descriptionContent;
-        taskData['tips'] = tipsContent;
+        // Add the Quill editor contents to questData
+        questData['description'] = descriptionContent;
+        questData['tips'] = tipsContent;
 
-        fetch(`/tasks/task/${taskId}/update`, {
+        fetch(`/quests/quest/${questId}/update`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
             },
-            body: JSON.stringify(taskData),
+            body: JSON.stringify(questData),
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Task updated successfully.');
-                loadTasks(game_Id);
+                alert('Quest updated successfully.');
+                loadQuests(game_Id);
             } else {
-                alert('Failed to update task. Error: ' + data.message);
+                alert('Failed to update quest. Error: ' + data.message);
             }
         })
         .catch(error => {
-            console.error('Error updating task:', error);
-            alert('Error updating task. Please check console for details.');
+            console.error('Error updating quest:', error);
+            alert('Error updating quest. Please check console for details.');
         });
     }
 
-    function loadTasks(game_Id) {
-        fetch(`/tasks/game/${game_Id}/tasks`, {
+    function loadQuests(game_Id) {
+        fetch(`/quests/game/${game_Id}/quests`, {
             method: 'GET',
             headers: {'Content-Type': 'application/json'}
         })
@@ -374,50 +374,50 @@
             return response.json();
         })
         .then(data => {
-            const tasksBody = document.getElementById('tasksBody');
-            tasksBody.innerHTML = '';
+            const questsBody = document.getElementById('questsBody');
+            questsBody.innerHTML = '';
 
-            data.tasks.forEach(task => {
+            data.quests.forEach(quest => {
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.id = `task-${task.id}`;
+                card.id = `quest-${quest.id}`;
 
-                const verificationTypeText = task.verification_type.toLowerCase();
-                const badgeName = task.badge_name || 'None';
-                const frequencyDisplayText = task.frequency || 'Not Set';
-                const categoryText = task.category || 'Not Set';
+                const verificationTypeText = quest.verification_type.toLowerCase();
+                const badgeName = quest.badge_name || 'None';
+                const frequencyDisplayText = quest.frequency || 'Not Set';
+                const categoryText = quest.category || 'Not Set';
 
                 card.innerHTML = `
                     <div class="card-body">
-                        <h5 class="card-title editable" data-name="title">${task.title}</h5>
-                        <div class="card-text editable quill-editor-container" data-name="description">${task.description}</div>
-                        <div class="card-text editable quill-editor-container" data-name="tips">${task.tips || ''}</div>
-                        <p class="card-text"><strong>Points:</strong> <span class="editable" data-name="points">${task.points}</span></p>
-                        <p class="card-text"><strong>Completion Limit:</strong> <span class="editable" data-name="completion_limit">${task.completion_limit}</span></p>
-                        <p class="card-text"><strong>Enabled:</strong> <span class="editable" data-name="enabled">${task.enabled ? 'Yes' : 'No'}</span></p>
-                        <p class="card-text"><strong>Pinned:</strong> <span class="editable" data-name="is_sponsored">${task.is_sponsored ? 'Yes' : 'No'}</span></p>
-                        <p class="card-text"><strong>Verification:</strong> <span class="editable" data-name="verification_type" data-value="${task.verification_type}">${verificationTypeText}</span></p>
+                        <h5 class="card-title editable" data-name="title">${quest.title}</h5>
+                        <div class="card-text editable quill-editor-container" data-name="description">${quest.description}</div>
+                        <div class="card-text editable quill-editor-container" data-name="tips">${quest.tips || ''}</div>
+                        <p class="card-text"><strong>Points:</strong> <span class="editable" data-name="points">${quest.points}</span></p>
+                        <p class="card-text"><strong>Completion Limit:</strong> <span class="editable" data-name="completion_limit">${quest.completion_limit}</span></p>
+                        <p class="card-text"><strong>Enabled:</strong> <span class="editable" data-name="enabled">${quest.enabled ? 'Yes' : 'No'}</span></p>
+                        <p class="card-text"><strong>Pinned:</strong> <span class="editable" data-name="is_sponsored">${quest.is_sponsored ? 'Yes' : 'No'}</span></p>
+                        <p class="card-text"><strong>Verification:</strong> <span class="editable" data-name="verification_type" data-value="${quest.verification_type}">${verificationTypeText}</span></p>
                         <p class="card-text"><strong>Badge:</strong> <span class="editable" data-name="badge_name">${badgeName}</span></p>
-                        <p class="card-text"><strong>Frequency:</strong> <span class="editable" data-name="frequency" data-value="${task.frequency}">${frequencyDisplayText}</span></p>
+                        <p class="card-text"><strong>Frequency:</strong> <span class="editable" data-name="frequency" data-value="${quest.frequency}">${frequencyDisplayText}</span></p>
                         <p class="card-text"><strong>Category:</strong> <span class="editable" data-name="category">${categoryText}</span></p>
                         <div class="d-flex justify-content-between">
-                            <button class="btn btn-warning edit-button" onclick="editTask(${task.id})">Edit</button>
-                            <button class="btn btn-danger" onclick="deleteTask(${task.id})">Delete</button>
-                            <button class="btn btn-info" onclick="window.location.href = '/tasks/generate_qr/${task.id}'">Generate QR Code</button>
+                            <button class="btn btn-warning edit-button" onclick="editQuest(${quest.id})">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteQuest(${quest.id})">Delete</button>
+                            <button class="btn btn-info" onclick="window.location.href = '/quests/generate_qr/${quest.id}'">Generate QR Code</button>
                         </div>
                     </div>
                 `;
 
-                tasksBody.appendChild(card);
+                questsBody.appendChild(card);
             });
 
             initializeQuillEditors();
         })
-        .catch(error => console.error('Failed to load tasks:', error));
+        .catch(error => console.error('Failed to load quests:', error));
     }
 
-    function deleteTask(taskId) {
-        fetch(`/tasks/task/${taskId}/delete`, {
+    function deleteQuest(questId) {
+        fetch(`/quests/quest/${questId}/delete`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -425,28 +425,28 @@
             },
         })
         .then(response => {
-            if (!response.ok) throw new Error('Failed to delete task');
+            if (!response.ok) throw new Error('Failed to delete quest');
             return response.json();
         })
         .then(data => {
             if (data.success) {
-                alert('Task deleted successfully');
-                loadTasks(game_Id);
+                alert('Quest deleted successfully');
+                loadQuests(game_Id);
             } else {
-                alert(`Failed to delete task: ${data.message}`);
+                alert(`Failed to delete quest: ${data.message}`);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Failed to delete task. Please check the console for more details.');
+            alert('Failed to delete quest. Please check the console for more details.');
         });
     }
 
-    function importTasks() {
-        const form = document.getElementById('importTasksForm');
+    function importQuests() {
+        const form = document.getElementById('importQuestsForm');
         const formData = new FormData(form);
 
-        fetch(`/tasks/game/${game_Id}/import_tasks`, {
+        fetch(`/quests/game/${game_Id}/import_quests`, {
             method: 'POST',
             body: formData,
             headers: {
@@ -462,19 +462,19 @@
         })
         .then(data => {
             if (data.success && data.redirectUrl) {
-                alert('Tasks imported successfully');
-                loadTasks(game_Id);
+                alert('Quests imported successfully');
+                loadQuests(game_Id);
             } else {
-                alert('Failed to import tasks: ' + data.message);
+                alert('Failed to import quests: ' + data.message);
             }
         })
         .catch(error => {
-            console.error('Error importing tasks:', error);
+            console.error('Error importing quests:', error);
         });
     }
 
-    function generateQRCode(taskId) {
-        const url = `/tasks/generate_qr/${taskId}`;
+    function generateQRCode(questId) {
+        const url = `/quests/generate_qr/${questId}`;
 
         fetch(url)
         .then(response => {

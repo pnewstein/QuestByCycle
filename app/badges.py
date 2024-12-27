@@ -2,7 +2,7 @@ from flask import Blueprint, current_app, render_template, flash, redirect, url_
 from flask_login import login_required, current_user
 from .forms import BadgeForm
 from .utils import save_badge_image, allowed_file
-from .models import db, Task, Badge, UserTask, Game
+from .models import db, Quest, Badge, UserQuest, Game
 from werkzeug.utils import secure_filename
 
 import bleach
@@ -31,11 +31,11 @@ def create_badge():
         flash('Access denied: Only administrators can manage badges.', 'danger')
         return redirect(url_for('main.index'))
 
-    # Fetch unique categories from Task model
-    task_categories = db.session.query(Task.category).filter(Task.category.isnot(None)).distinct().all()
+    # Fetch unique categories from Quest model
+    quest_categories = db.session.query(Quest.category).filter(Quest.category.isnot(None)).distinct().all()
 
     # Flatten the categories into a list
-    category_choices = sorted([category.category for category in task_categories])
+    category_choices = sorted([category.category for category in quest_categories])
 
     form = BadgeForm(category_choices=category_choices)
 
@@ -78,11 +78,11 @@ def manage_badges():
         flash('Access denied: Only administrators can manage badges.', 'danger')
         return redirect(url_for('main.index'))
 
-    # Fetch unique categories from Task model
-    task_categories = db.session.query(Task.category).filter(Task.category.isnot(None)).distinct().all()
+    # Fetch unique categories from Quest model
+    quest_categories = db.session.query(Quest.category).filter(Quest.category.isnot(None)).distinct().all()
 
     # Flatten the categories into a list
-    category_choices = sorted([category.category for category in task_categories])
+    category_choices = sorted([category.category for category in quest_categories])
 
     form = BadgeForm(category_choices=category_choices)
 
@@ -120,11 +120,11 @@ def update_badge(badge_id):
     badge = Badge.query.get_or_404(badge_id)
     print(f"Retrieved Badge: {badge.name}")
 
-    # Fetch unique categories from Task model
-    task_categories = db.session.query(Task.category).filter(Task.category.isnot(None)).distinct().all()
+    # Fetch unique categories from Quest model
+    quest_categories = db.session.query(Quest.category).filter(Quest.category.isnot(None)).distinct().all()
 
     # Flatten the categories into a list
-    category_choices = sorted([category.category for category in task_categories])
+    category_choices = sorted([category.category for category in quest_categories])
 
     form = BadgeForm(category_choices=category_choices, formdata=request.form)
 
@@ -183,10 +183,10 @@ def delete_badge(badge_id):
 
 
 @badges_bp.route('/categories', methods=['GET'])
-def get_task_categories():
-    # Fetch distinct categories from Task model
-    task_categories = db.session.query(Task.category).filter(Task.category.isnot(None)).distinct().all()
-    categories = [category.category for category in task_categories]
+def get_quest_categories():
+    # Fetch distinct categories from Quest model
+    quest_categories = db.session.query(Quest.category).filter(Quest.category.isnot(None)).distinct().all()
+    categories = [category.category for category in quest_categories]
     return jsonify(categories=sorted(categories))
 
 

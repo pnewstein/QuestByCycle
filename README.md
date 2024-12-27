@@ -2,14 +2,14 @@
 
 ## Overview
 
-QuestByCycle is a Flask-based web application designed to engage and motivate the bicycling community through a gamified approach, promoting environmental sustainability and climate activism. Participants complete tasks or missions related to bicycling and environmental stewardship, earning badges and recognition among the community. The platform features a competitive yet collaborative environment where users can view their standings on a leaderboard, track their progress through profile pages, and contribute to a greener planet.
+QuestByCycle is a Flask-based web application designed to engage and motivate the bicycling community through a gamified approach, promoting environmental sustainability and climate activism. Participants complete quests or missions related to bicycling and environmental stewardship, earning badges and recognition among the community. The platform features a competitive yet collaborative environment where users can view their standings on a leaderboard, track their progress through profile pages, and contribute to a greener planet.
 
 ## Features
 
 - **User Authentication:** Secure sign-up and login functionality to manage user access and personalize user experiences.
 - **Leaderboard/Homepage:** A dynamic display of participants, their rankings, and badges earned, fostering a sense of competition and achievement.
-- **Task Submission:** An interface for users to submit completed tasks or missions, facilitating the review and award of badges.
-- **User Profiles:** Dedicated pages for users to view their badges, completed tasks, and ranking within the community.
+- **Quest Submission:** An interface for users to submit completed quests or missions, facilitating the review and award of badges.
+- **User Profiles:** Dedicated pages for users to view their badges, completed quests, and ranking within the community.
 - **Responsive Design:** Ensuring a seamless and engaging user experience across various devices and screen sizes.
 
 ## Getting Started
@@ -129,20 +129,16 @@ WantedBy=multi-user.target
     
     - Copy `config.toml.example` to `config.toml` and adjust the variables accordingly.
 
-9. Initialize the database:
 
-```flask db init```
+9. Deploy
 
-```flask db migrate```
+Development:
+```flask run```
 
-```flask db upgrade```
-
-10. Deploy
-    
-Without service provider:
+Production Without service provider:
 ```gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 -b 127.0.0.1:5000 wsgi:app```
 
-With service provider:
+Production With service provider:
 ```sudo systemctl start questbycycleApp.service```
 ```sudo systemctl enable questbycycleApp.service```
 
@@ -167,7 +163,7 @@ instagram_branded_content_ads_brand
 instagram_branded_content_brand
 instagram_branded_content_creator
 
-## Connect OpenAI API for Task and Badge Generation
+## Connect OpenAI API for Quest and Badge Generation
 https://platform.openai.com/api-keys
 
 ## msmtp

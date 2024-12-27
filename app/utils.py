@@ -1,5 +1,5 @@
 from flask import flash, current_app, jsonify, request
-from .models import db, Task, Badge, Game, UserTask, User, ShoutBoardMessage, TaskSubmission, UserIP
+from .models import db, Quest, Badge, Game, UserQuest, User, ShoutBoardMessage, QuestSubmission, UserIP
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 from PIL import Image
@@ -115,7 +115,7 @@ def update_user_score(user_id):
             return False
 
         # Calculate the total points awarded to the user
-        total_points = sum(task.points_awarded for task in user.user_tasks if task.points_awarded is not None)
+        total_points = sum(quest.points_awarded for quest in user.user_quests if quest.points_awarded is not None)
 
         # Update user score, ensuring it doesn't exceed a predefined maximum
         user.score = min(total_points, MAX_POINTS_INT)
@@ -132,43 +132,43 @@ def update_user_score(user_id):
 
 
 
-def award_task_badge(user_id, task_id):
-    user_task = UserTask.query.filter_by(user_id=user_id, task_id=task_id).first()
-    if user_task and user_task.completions >= user_task.task.completion_limit:
-        if user_task.task.badge and user_task.task.badge not in user_task.user.badges:
-            user_task.user.badges.append(user_task.task.badge)
+def award_quest_badge(user_id, quest_id):
+    user_quest = UserQuest.query.filter_by(user_id=user_id, quest_id=quest_id).first()
+    if user_quest and user_quest.completions >= user_quest.quest.completion_limit:
+        if user_quest.quest.badge and user_quest.quest.badge not in user_quest.user.badges:
+            user_quest.user.badges.append(user_quest.quest.badge)
             db.session.commit()
-            flash(f"Badge '{user_task.task.badge.name}' awarded for completing task '{user_task.task.title}' the required number of times.", 'success')
+            flash(f"Badge '{user_quest.quest.badge.name}' awarded for completing quest '{user_quest.quest.title}' the required number of times.", 'success')
 
 
 def award_category_badge(user_id):
     user = User.query.get(user_id)
-    completed_categories = {ut.task.category for ut in user.user_tasks if ut.completions >= ut.task.completion_limit}
+    completed_categories = {ut.quest.category for ut in user.user_quests if ut.completions >= ut.quest.completion_limit}
     
     for category in completed_categories:
         category_badges = Badge.query.filter_by(category=category).all()
-        category_tasks = Task.query.filter_by(category=category).all()
-        completed_tasks = {ut.task for ut in user.user_tasks if ut.completions >= ut.task.completion_limit and ut.task.category == category}
+        category_quests = Quest.query.filter_by(category=category).all()
+        completed_quests = {ut.quest for ut in user.user_quests if ut.completions >= ut.quest.completion_limit and ut.quest.category == category}
         
         for badge in category_badges:
-            if badge not in user.badges and set(category_tasks) == completed_tasks:
+            if badge not in user.badges and set(category_quests) == completed_quests:
                 user.badges.append(badge)
                 db.session.commit()
-                flash(f"Badge '{badge.name}' awarded for completing all tasks in the '{category}' category.", 'success')
+                flash(f"Badge '{badge.name}' awarded for completing all quests in the '{category}' category.", 'success')
 
 
 def revoke_badge(user_id):
     user = User.query.get(user_id)
-    completed_tasks = UserTask.query.filter_by(user_id=user_id, completions=0).all()
+    completed_quests = UserQuest.query.filter_by(user_id=user_id, completions=0).all()
 
     try:
-        for user_task in completed_tasks:
+        for user_quest in completed_quests:
 
-            task = Task.query.get(user_task.task_id)
-            if task.badge and task.badge in user.badges:
-                user.badges.remove(task.badge)
+            quest = Quest.query.get(user_quest.quest_id)
+            if quest.badge and quest.badge in user.badges:
+                user.badges.remove(quest.badge)
                 db.session.commit()
-                flash(f"Badge '{task.badge.name}' revoked as the task '{task.title}' is no longer completed.", 'info')
+                flash(f"Badge '{quest.badge.name}' revoked as the quest '{quest.title}' is no longer completed.", 'info')
     except Exception as e:
         db.session.rollback()  # Rollback in case of any exception
         print(f"Failed to revoke badge for user ID {user_id}: {e}")
@@ -282,16 +282,16 @@ def save_sponsor_logo(image_file, old_filename=None):
         raise ValueError("Invalid file type or no file provided.")
 
 
-def can_complete_task(user_id, task_id):
+def can_complete_quest(user_id, quest_id):
     now = datetime.now()
-    task = Task.query.get(task_id)
+    quest = Quest.query.get(quest_id)
     
-    if not task:
-        print(f"No task found for Task ID: {task_id}")
-        return False, None  # Task does not exist
+    if not quest:
+        print(f"No quest found for Quest ID: {quest_id}")
+        return False, None  # Quest does not exist
     
     print(f"Current time: {now}")
-    print(f"Task found: {task.title} with frequency {task.frequency} and completion limit {task.completion_limit}")
+    print(f"Quest found: {quest.title} with frequency {quest.frequency} and completion limit {quest.completion_limit}")
 
     # Determine the start of the relevant period based on frequency
     period_start_map = {
@@ -299,27 +299,27 @@ def can_complete_task(user_id, task_id):
         'weekly': timedelta(weeks=1),
         'monthly': timedelta(days=30)  # Approximation for monthly
     }
-    period_start = now - period_start_map.get(task.frequency, timedelta(days=1))
+    period_start = now - period_start_map.get(quest.frequency, timedelta(days=1))
     print(f"Period start calculated as: {period_start}")
 
     # Count completions in the defined period
-    completions_within_period = TaskSubmission.query.filter(
-        TaskSubmission.user_id == user_id,
-        TaskSubmission.task_id == task_id,
-        TaskSubmission.timestamp >= period_start
+    completions_within_period = QuestSubmission.query.filter(
+        QuestSubmission.user_id == user_id,
+        QuestSubmission.quest_id == quest_id,
+        QuestSubmission.timestamp >= period_start
     ).count()
 
-    print(f"Completions within period for user {user_id} on task {task_id}: {completions_within_period}")
+    print(f"Completions within period for user {user_id} on quest {quest_id}: {completions_within_period}")
 
-    # Check if the user can verify the task again
-    can_verify = completions_within_period < task.completion_limit
+    # Check if the user can verify the quest again
+    can_verify = completions_within_period < quest.completion_limit
     next_eligible_time = None
     if not can_verify:
-        first_completion_in_period = TaskSubmission.query.filter(
-            TaskSubmission.user_id == user_id,
-            TaskSubmission.task_id == task_id,
-            TaskSubmission.timestamp >= period_start
-        ).order_by(TaskSubmission.timestamp.asc()).first()
+        first_completion_in_period = QuestSubmission.query.filter(
+            QuestSubmission.user_id == user_id,
+            QuestSubmission.quest_id == quest_id,
+            QuestSubmission.timestamp >= period_start
+        ).order_by(QuestSubmission.timestamp.asc()).first()
 
         if first_completion_in_period:
             print(f"First Completion in the period found at: {first_completion_in_period.timestamp}")
@@ -329,22 +329,22 @@ def can_complete_task(user_id, task_id):
                 'weekly': timedelta(weeks=1),
                 'monthly': timedelta(days=30)
             }
-            next_eligible_time = first_completion_in_period.timestamp + increment_map.get(task.frequency, timedelta(days=1))
+            next_eligible_time = first_completion_in_period.timestamp + increment_map.get(quest.frequency, timedelta(days=1))
             print(f"Next eligible time calculated as: {next_eligible_time}")
         else:
             print("No completions found within the period.")
     else:
-        print("User can currently verify the task.")
+        print("User can currently verify the quest.")
 
     return can_verify, next_eligible_time
 
 
-def getLastRelevantCompletionTime(user_id, task_id):
+def getLastRelevantCompletionTime(user_id, quest_id):
     now = datetime.now()
-    task = Task.query.get(task_id)
+    quest = Quest.query.get(quest_id)
     
-    if not task:
-        return None  # Task does not exist
+    if not quest:
+        return None  # Quest does not exist
 
     # Start of the period calculation must reflect the frequency
     period_start_map = {
@@ -353,69 +353,69 @@ def getLastRelevantCompletionTime(user_id, task_id):
         'monthly': now - timedelta(days=30)
     }
     
-    # Get the period start time based on the task's frequency
-    period_start = period_start_map.get(task.frequency, now)  # Default to now if frequency is not recognized
+    # Get the period start time based on the quest's frequency
+    period_start = period_start_map.get(quest.frequency, now)  # Default to now if frequency is not recognized
 
 
     # Fetch the last completion that affects the current period
-    last_relevant_completion = TaskSubmission.query.filter(
-        TaskSubmission.user_id == user_id,
-        TaskSubmission.task_id == task_id,
-        TaskSubmission.timestamp >= period_start
-    ).order_by(TaskSubmission.timestamp.desc()).first()
+    last_relevant_completion = QuestSubmission.query.filter(
+        QuestSubmission.user_id == user_id,
+        QuestSubmission.quest_id == quest_id,
+        QuestSubmission.timestamp >= period_start
+    ).order_by(QuestSubmission.timestamp.desc()).first()
 
     return last_relevant_completion.timestamp if last_relevant_completion else None
 
 
-def check_and_award_badges(user_id, task_id, game_id):
-    print(f"Checking and awarding badges for user_id={user_id}, task_id={task_id}")
+def check_and_award_badges(user_id, quest_id, game_id):
+    print(f"Checking and awarding badges for user_id={user_id}, quest_id={quest_id}")
     user = User.query.get(user_id)
-    task = Task.query.get(task_id)
-    user_task = UserTask.query.filter_by(user_id=user_id, task_id=task_id).first()
+    quest = Quest.query.get(quest_id)
+    user_quest = UserQuest.query.filter_by(user_id=user_id, quest_id=quest_id).first()
 
-    if not user_task:
-        print("No UserTask found.")
+    if not user_quest:
+        print("No UserQuest found.")
         return
 
-    print(f"UserTask found: completions={user_task.completions}, task completion limit={task.completion_limit}")
+    print(f"UserQuest found: completions={user_quest.completions}, quest completion limit={quest.completion_limit}")
     
-    if user_task.completions >= task.completion_limit:
-        print("Condition met for awarding badge based on task completion limit.")
-        if task.badge and task.badge not in user.badges:
-            user.badges.append(task.badge)
+    if user_quest.completions >= quest.completion_limit:
+        print("Condition met for awarding badge based on quest completion limit.")
+        if quest.badge and quest.badge not in user.badges:
+            user.badges.append(quest.badge)
             db.session.add(ShoutBoardMessage(
-                message=f" earned the badge '{task.badge.name}' for task <a href='javascript:void(0);' onclick='openTaskDetailModal({task.id})'>{task.title}</a>",
+                message=f" earned the badge '{quest.badge.name}' for quest <a href='javascript:void(0);' onclick='openQuestDetailModal({quest.id})'>{quest.title}</a>",
                 user_id=user_id,
                 game_id=game_id
             ))
             db.session.commit()
-            print(f"Badge '{task.badge.name}' awarded to user '{user.display_name}' for completing task '{task.title}'")
+            print(f"Badge '{quest.badge.name}' awarded to user '{user.display_name}' for completing quest '{quest.title}'")
         else:
-            print(f"No badge awarded: either no badge assigned for task or user already has the badge")
+            print(f"No badge awarded: either no badge assigned for quest or user already has the badge")
     else:
-        print("Condition not met for awarding badge based on task completion limit.")
+        print("Condition not met for awarding badge based on quest completion limit.")
 
-    if task.category and task.game_id:
-        tasks_in_category = Task.query.filter_by(category=task.category, game_id=task.game_id).all()
-        completed_tasks = {ut.task_id for ut in user.user_tasks.join(Task).filter(Task.category == task.category, Task.game_id == task.game_id) if ut.completions >= 1}
+    if quest.category and quest.game_id:
+        quests_in_category = Quest.query.filter_by(category=quest.category, game_id=quest.game_id).all()
+        completed_quests = {ut.quest_id for ut in user.user_quests.join(Quest).filter(Quest.category == quest.category, Quest.game_id == quest.game_id) if ut.completions >= 1}
 
-        category_task_ids = {t.id for t in tasks_in_category}
-        print(f"Tasks in category '{task.category}' for game ID {task.game_id}: {category_task_ids}")
-        print(f"Completed tasks in category by user for this game: {completed_tasks}")
+        category_quest_ids = {t.id for t in quests_in_category}
+        print(f"Quests in category '{quest.category}' for game ID {quest.game_id}: {category_quest_ids}")
+        print(f"Completed quests in category by user for this game: {completed_quests}")
 
-        if category_task_ids == completed_tasks:
+        if category_quest_ids == completed_quests:
             print("Condition met for awarding badge based on category completion.")
-            category_badges = Badge.query.filter_by(category=task.category).all()
+            category_badges = Badge.query.filter_by(category=quest.category).all()
             for badge in category_badges:
                 if badge not in user.badges:
                     user.badges.append(badge)
                     db.session.add(ShoutBoardMessage(
-                        message=f" earned the badge '{badge.name}' for completing all tasks in category '{task.category}'",
+                        message=f" earned the badge '{badge.name}' for completing all quests in category '{quest.category}'",
                         user_id=user_id,
                         game_id=game_id
                     ))
                     db.session.commit()
-                    print(f"Badge '{badge.name}' awarded for completing all tasks in category '{task.category}' within game ID {task.game_id}")
+                    print(f"Badge '{badge.name}' awarded for completing all quests in category '{quest.category}' within game ID {quest.game_id}")
                 else:
                     print(f"User already has badge '{badge.name}', not awarded again")
         else:
@@ -429,15 +429,15 @@ def check_and_revoke_badges(user_id):
         # Determine the logic to check if the badge should still be held
         # This depends heavily on how badge conditions are defined. Here's a generic example:
 
-        # Check if all tasks required for the badge are still completed as required
-        all_tasks_completed = True
-        for task in badge.tasks:
-            user_task = UserTask.query.filter_by(user_id=user_id, task_id=task.id).first()
-            if not user_task or user_task.completions < task.completion_limit:
-                all_tasks_completed = False
+        # Check if all quests required for the badge are still completed as required
+        all_quests_completed = True
+        for quest in badge.quests:
+            user_quest = UserQuest.query.filter_by(user_id=user_id, quest_id=quest.id).first()
+            if not user_quest or user_quest.completions < quest.completion_limit:
+                all_quests_completed = False
                 break
 
-        if not all_tasks_completed:
+        if not all_quests_completed:
             badges_to_remove.append(badge)
 
     for badge in badges_to_remove:
@@ -541,16 +541,16 @@ def generate_tutorial_game():
     description = """
     Welcome to the newest Tutorial Game! Embark on a quest to create a more sustainable future while enjoying everyday activities, having fun, and fostering teamwork in the real-life battle against climate change.
 
-    Task Instructions:
+    Quest Instructions:
 
     Concepts:
 
     How to Play:
 
     Play solo or join forces with friends in teams.
-    Explore the tasks and have fun completing them to earn Carbon Reduction Points.
-    Once a task is verified, you'll earn points displayed on the Leaderboard and badges of honor. Tasks can be verified by uploading an image from your computer, taking a photo, writing a comment, or using a QR code.
-    Earn achievement badges by completing a group of tasks or repeating tasks. Learn more about badge criteria by clicking on the task name. 
+    Explore the quests and have fun completing them to earn Carbon Reduction Points.
+    Once a quest is verified, you'll earn points displayed on the Leaderboard and badges of honor. Quests can be verified by uploading an image from your computer, taking a photo, writing a comment, or using a QR code.
+    Earn achievement badges by completing a group of quests or repeating quests. Learn more about badge criteria by clicking on the quest name. 
     """
 
     start_date = datetime(year, 3 * (current_quarter - 1) + 1, 1)
@@ -569,20 +569,20 @@ def generate_tutorial_game():
         details="""
         Verifying and Earning "Carbon Reduction" Points:
 
-        Sign In and Access Tasks: Log into the game, navigate to the homepage, and scroll down on the main game page to see the task list.
-        Complete a Task: Choose by clicking on a task from the list, and after completion, click "Verify Task". You will need to upload a picture as proof of your achievement and/or you can add a comment about your experience.
-        Submit Verification: After uploading your verification photo and adding a comment, click the "Submit Verification" button. You should receive a confirmation message indicating your task completion has been updated. Your image will appear at the bottom of the page and it will be automatically uploaded to Quest by Cycle’s social Media accounts.
-        Social Media Interaction: The uploaded photo will be shared on QuestByCycle’s Twitter, Facebook, and Instagram pages. You can view and expand thumbnail images of completed tasks by others, read comments, and visit their profiles by clicking on the images. Use the social media buttons to comment and engage with the community.
-        Explore the Leaderboard: Check the dynamic leaderboard to see the progress of players and teams. The community-wide impact is displayed via a "thermometer" showing collective carbon reduction efforts. Clicking on a player's name reveals their completed tasks and badges.
+        Sign In and Access Quests: Log into the game, navigate to the homepage, and scroll down on the main game page to see the quest list.
+        Complete a Quest: Choose by clicking on a quest from the list, and after completion, click "Verify Quest". You will need to upload a picture as proof of your achievement and/or you can add a comment about your experience.
+        Submit Verification: After uploading your verification photo and adding a comment, click the "Submit Verification" button. You should receive a confirmation message indicating your quest completion has been updated. Your image will appear at the bottom of the page and it will be automatically uploaded to Quest by Cycle’s social Media accounts.
+        Social Media Interaction: The uploaded photo will be shared on QuestByCycle’s Twitter, Facebook, and Instagram pages. You can view and expand thumbnail images of completed quests by others, read comments, and visit their profiles by clicking on the images. Use the social media buttons to comment and engage with the community.
+        Explore the Leaderboard: Check the dynamic leaderboard to see the progress of players and teams. The community-wide impact is displayed via a "thermometer" showing collective carbon reduction efforts. Clicking on a player's name reveals their completed quests and badges.
 
         Earning Badges:
 
-        Task Categories: Each task belongs to a category. Completing all tasks in a category earns you a badge. The more tasks you complete, the higher your chances of earning badges.
-        Task Limits: The task detail popup provides completion limits. If you reach the limit set for a task, you will earn a badge.
+        Quest Categories: Each quest belongs to a category. Completing all quests in a category earns you a badge. The more quests you complete, the higher your chances of earning badges.
+        Quest Limits: The quest detail popup provides completion limits. If you reach the limit set for a quest, you will earn a badge.
 
         Social Media Interaction:
 
-        Task Entries: Engage with the community by commenting and sharing your achievements on social media platforms directly through the game. Click on the thumbnail images at the bottom of a Task to view user's submissions. At the bottom, there will be buttons to take you to Facebook, X, and Instagram where you can comment on various tasks that have been posted and communicate with other players. Through friendly competition, let's strive to reduce carbon emissions and make a positive impact on the atmosphere.
+        Quest Entries: Engage with the community by commenting and sharing your achievements on social media platforms directly through the game. Click on the thumbnail images at the bottom of a Quest to view user's submissions. At the bottom, there will be buttons to take you to Facebook, X, and Instagram where you can comment on various quests that have been posted and communicate with other players. Through friendly competition, let's strive to reduce carbon emissions and make a positive impact on the atmosphere.
         """,
         awards="""
         Stay tuned for prizes...
@@ -608,8 +608,8 @@ def generate_tutorial_game():
     db.session.add(tutorial_game)
     db.session.commit()
 
-    # Import tasks and badges for the tutorial game
-    import_tasks_and_badges_from_csv(tutorial_game.id, os.path.join(current_app.static_folder, 'defaulttasks.csv'))
+    # Import quests and badges for the tutorial game
+    import_quests_and_badges_from_csv(tutorial_game.id, os.path.join(current_app.static_folder, 'defaultquests.csv'))
 
     # Add pinned message from admin
     try:
@@ -632,7 +632,7 @@ def generate_tutorial_game():
     return tutorial_game
 
 
-def import_tasks_and_badges_from_csv(game_id, csv_path):
+def import_quests_and_badges_from_csv(game_id, csv_path):
     print(f"Starting import for game_id: {game_id} from csv_path: {csv_path}")
     
     try:
@@ -669,7 +669,7 @@ def import_tasks_and_badges_from_csv(game_id, csv_path):
                     db.session.flush()
                     print(f"Added new badge: {badge}")
 
-                task = Task(
+                quest = Quest(
                     category=sanitize_html(row['category']),
                     title=sanitize_html(row['title']),
                     description=sanitize_html(row['description']),
@@ -681,8 +681,8 @@ def import_tasks_and_badges_from_csv(game_id, csv_path):
                     badge_id=badge.id,
                     game_id=game_id
                 )
-                db.session.add(task)
-                print(f"Added new task: {task}")
+                db.session.add(quest)
+                print(f"Added new quest: {quest}")
 
             db.session.commit()
             print("Import completed successfully")

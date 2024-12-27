@@ -9,11 +9,11 @@ Welcome to the Admin Guide for your Ultimate Challenge and Reward Platform. This
     - [Creating a Game](#creating-a-game)
     - [Editing a Game](#editing-a-game)
     - [Deleting a Game](#deleting-a-game)
-3. [Task Management](#task-management)
-    - [Creating Tasks](#creating-tasks)
-    - [Editing Tasks](#editing-tasks)
-    - [Deleting Tasks](#deleting-tasks)
-    - [AI-Powered Task Generation](#ai-powered-task-generation)
+3. [Quest Management](#quest-management)
+    - [Creating Quests](#creating-quests)
+    - [Editing Quests](#editing-quests)
+    - [Deleting Quests](#deleting-quests)
+    - [AI-Powered Quest Generation](#ai-powered-quest-generation)
 4. [Badge Management](#badge-management)
     - [Creating Badges](#creating-badges)
     - [Editing Badges](#editing-badges)
@@ -32,7 +32,7 @@ Welcome to the Admin Guide for your Ultimate Challenge and Reward Platform. This
 
 ## Overview
 
-As an admin, you have the ability to create, manage, and moderate games, tasks, badges, and users. Your role is crucial in maintaining an engaging and supportive community. This guide will help you understand and utilize the various features available to you.
+As an admin, you have the ability to create, manage, and moderate games, quests, badges, and users. Your role is crucial in maintaining an engaging and supportive community. This guide will help you understand and utilize the various features available to you.
 
 ## Creating and Managing Games
 
@@ -45,7 +45,7 @@ To create a new game:
 3. **Fill in the Game Details**:
     - **Game Title**: Provide a catchy and descriptive name for the game.
     - **Game Description**: Write a detailed overview of what the game entails.
-    - **Task Instructions**: Outline the tasks participants need to complete.
+    - **Quest Instructions**: Outline the quests participants need to complete.
     - **Start and End Dates**: Define the duration of the game.
     - **Game Goal**: Specify the primary objective.
     - **Game Details**: Add additional context or information.
@@ -69,49 +69,49 @@ To delete a game:
 1. **Navigate to the Game Management Page**: Select the game you want to delete.
 2. **Click on "Delete Game"**: Confirm the deletion. Note that this action is irreversible.
 
-## Task Management
+## Quest Management
 
-### Creating Tasks
+### Creating Quests
 
-To create a new task:
+To create a new quest:
 
-1. **Navigate to the Game Management Page**: Select the game for which you want to add a task.
-2. **Click on "Add Task"**: Open the task creation form.
-3. **Fill in Task Details**:
-    - **Title**: Provide a descriptive title for the task.
+1. **Navigate to the Game Management Page**: Select the game for which you want to add a quest.
+2. **Click on "Add Quest"**: Open the quest creation form.
+3. **Fill in Quest Details**:
+    - **Title**: Provide a descriptive title for the quest.
     - **Description**: Write detailed instructions and information.
-    - **Tips**: Offer helpful tips for completing the task.
+    - **Tips**: Offer helpful tips for completing the quest.
     - **Points**: Assign a point value based on difficulty.
-    - **Completion Limit**: Set the maximum number of times the task can be completed.
-    - **Frequency**: Choose the task frequency (daily, weekly, monthly).
+    - **Completion Limit**: Set the maximum number of times the quest can be completed.
+    - **Frequency**: Choose the quest frequency (daily, weekly, monthly).
     - **Verification Type**: Select the verification method (photo, comment, both).
-    - **Badge ID**: Link a badge to the task, if applicable.
+    - **Badge ID**: Link a badge to the quest, if applicable.
 
-### Editing Tasks
+### Editing Quests
 
-To edit an existing task:
+To edit an existing quest:
 
-1. **Access the Task Management Page**: Select the game and task you want to edit.
-2. **Click on "Edit Task"**: Modify the task details as needed.
+1. **Access the Quest Management Page**: Select the game and quest you want to edit.
+2. **Click on "Edit Quest"**: Modify the quest details as needed.
 3. **Save Changes**: Ensure all updates are saved.
 
-### Deleting Tasks
+### Deleting Quests
 
-To delete a task:
+To delete a quest:
 
-1. **Navigate to the Task Management Page**: Select the task you want to delete.
-2. **Click on "Delete Task"**: Confirm the deletion. Note that this action is irreversible.
+1. **Navigate to the Quest Management Page**: Select the quest you want to delete.
+2. **Click on "Delete Quest"**: Confirm the deletion. Note that this action is irreversible.
 
-### AI-Powered Task Generation
+### AI-Powered Quest Generation
 
-To generate a task using AI:
+To generate a quest using AI:
 
-1. **Navigate to the Task Management Page**: Select the game for which you want to generate a task.
-2. **Click on "Generate Task"**: Open the AI task generation form.
-3. **Provide a Description**: Enter a brief description of the task.
-4. **Submit**: The AI will generate a detailed task based on your description.
-5. **Review and Edit**: Review the generated task and make any necessary adjustments.
-6. **Add to Game**: Save the task to the game.
+1. **Navigate to the Quest Management Page**: Select the game for which you want to generate a quest.
+2. **Click on "Generate Quest"**: Open the AI quest generation form.
+3. **Provide a Description**: Enter a brief description of the quest.
+4. **Submit**: The AI will generate a detailed quest based on your description.
+5. **Review and Edit**: Review the generated quest and make any necessary adjustments.
+6. **Add to Game**: Save the quest to the game.
 
 ## Badge Management
 
@@ -149,7 +149,7 @@ To upload badges in bulk:
 1. **Navigate to the Badge Management Page**: Access this from the admin dashboard.
 2. **Click on "Bulk Upload"**: Open the bulk upload form.
 3. **Upload CSV and Images**:
-    - **CSV File**: Upload a CSV file containing badge details.
+    - **CSV File**: Upload a CSV file containing badge details (Name, Description, Filename).
     - **Images**: Upload corresponding badge images.
 4. **Process and Confirm**: The system will process the files and create badges.
 
@@ -161,7 +161,7 @@ To view user profiles:
 
 1. **Navigate to the User Management Page**: Access this from the admin dashboard.
 2. **Select a User**: Click on the user profile you want to view.
-3. **Profile Overview**: View user details, tasks, badges, and achievements.
+3. **Profile Overview**: View user details, quests, badges, and achievements.
 
 ### Editing User Profiles
 
@@ -219,7 +219,7 @@ To manage social media integration:
 
 ### Engaging the Community
 
-- **Regular Updates**: Keep the community engaged with regular updates and new tasks.
+- **Regular Updates**: Keep the community engaged with regular updates and new quests.
 - **Encourage Participation**: Motivate users to participate by highlighting achievements and progress.
 - **Moderate Discussions**: Ensure a positive and supportive environment by moderating discussions on the Shout Board.
 

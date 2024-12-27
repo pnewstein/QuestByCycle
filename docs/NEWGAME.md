@@ -37,9 +37,9 @@ You will see a form with the following fields. Fill them out as described:
    - **Interaction**: This description will appear on the game's main page and gives users an idea of what to expect.
    - **Example**: "Join the Summer Fitness Challenge to stay active and win prizes!".
 
-3. **Task Instructions**:
-   - **Purpose**: Offers detailed instructions for tasks participants need to complete.
-   - **Interaction**: Displayed in the task section of the game, guiding participants on how to complete their tasks.
+3. **Quest Instructions**:
+   - **Purpose**: Offers detailed instructions for quests participants need to complete.
+   - **Interaction**: Displayed in the quest section of the game, guiding participants on how to complete their quests.
    - **Example**: "Complete 30 minutes of exercise daily and log your activities."
 
 4. **Start Date**:
@@ -49,7 +49,7 @@ You will see a form with the following fields. Fill them out as described:
 
 5. **End Date**:
    - **Purpose**: Defines when the game ends.
-   - **Interaction**: Participants can no longer complete tasks or log activities after this date.
+   - **Interaction**: Participants can no longer complete quests or log activities after this date.
    - **Example**: "06/29/2024".
 
 6. **Game Goal**:
@@ -150,7 +150,7 @@ Fill in the social media integration fields if your game will use Twitter and Fa
    - You will receive a confirmation message indicating that the game has been created successfully.
 
 2. **Manage the Game**:
-   - You can manage the game from the Admin Dashboard, including updating game details, viewing participants, and managing tasks.
+   - You can manage the game from the Admin Dashboard, including updating game details, viewing participants, and managing quests.
 
 ## Conclusion
 

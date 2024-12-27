@@ -1,8 +1,8 @@
 from flask import Blueprint, jsonify, render_template, request, current_app, url_for
 from flask_login import login_required
-from app.forms import TaskForm
+from app.forms import QuestForm
 from app.utils import save_badge_image
-from .models import db, Task, Badge
+from .models import db, Quest, Badge
 from werkzeug.datastructures import MultiDict
 from openai import OpenAI
 from io import BytesIO
@@ -53,9 +53,9 @@ ALLOWED_ATTRIBUTES = {
 def sanitize_html(html_content):
     return bleach.clean(html_content, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
 
-@ai_bp.route('/generate_task', methods=['POST'])
+@ai_bp.route('/generate_quest', methods=['POST'])
 @login_required
-def generate_task():
+def generate_quest():
     try:
         data = request.get_json()
         description = data.get('description', '')
@@ -65,13 +65,13 @@ def generate_task():
         if not game_id:
             return jsonify({"error": "Game ID is required"}), 400
 
-        task_details, error_message = generate_task_details(description)
+        quest_details, error_message = generate_quest_details(description)
 
-        if task_details:
-            generated_task_html = render_template('generated_task.html', task=task_details, game_id=game_id)
-            return jsonify({"generated_task_html": generated_task_html})
+        if quest_details:
+            generated_quest_html = render_template('generated_quest.html', quest=quest_details, game_id=game_id)
+            return jsonify({"generated_quest_html": generated_quest_html})
         else:
-            return jsonify({"error": error_message or "Failed to generate valid task details"}), 500
+            return jsonify({"error": error_message or "Failed to generate valid quest details"}), 500
 
     except ValueError as ve:
         print(f"Validation error: {ve}")
@@ -81,10 +81,10 @@ def generate_task():
         return jsonify({'error': str(e)}), 400
 
 
-@ai_bp.route('/create_task', methods=['POST'])
+@ai_bp.route('/create_quest', methods=['POST'])
 @login_required
-def create_task():
-    form = TaskForm()
+def create_quest():
+    form = QuestForm()
     form_data = MultiDict(request.form)
     form.process(form_data)
 
@@ -118,7 +118,7 @@ def create_task():
         if not game_id:
             return jsonify({"success": False, "message": "Game ID is required."}), 400
 
-        new_task = Task(
+        new_quest = Quest(
             title=sanitize_html(form.title.data),
             description=sanitize_html(form.description.data),
             tips=sanitize_html(form.tips.data),
@@ -130,10 +130,10 @@ def create_task():
             verification_type=sanitize_html(form.verification_type.data),
             badge_id=badge_id,
         )
-        db.session.add(new_task)
+        db.session.add(new_quest)
         try:
             db.session.commit()
-            return jsonify({"success": True, "message": "Task created successfully"}), 201
+            return jsonify({"success": True, "message": "Quest created successfully"}), 201
         except Exception as e:
             db.session.rollback()
             return jsonify({"success": False, "message": f"An error occurred: {e}"}), 500
@@ -154,7 +154,7 @@ def generate_badge_image():
 
         sanitized_badge_description = sanitize_html(badge_description)
         badge_prompt = (
-            "Remove any textual inscription in the framing or otherwise and create one uber epic, symbolic, and timeless badge for a Bicycle Task Quest web app that fits this description while keeping the background invisible (transparent): " + sanitized_badge_description
+            "Remove any textual inscription in the framing or otherwise and create one uber epic, symbolic, and timeless badge for a Bicycle Quest Quest web app that fits this description while keeping the background invisible (transparent): " + sanitized_badge_description
         )
         response = client.images.generate(
             model="dall-e-3",
@@ -189,25 +189,25 @@ def generate_badge_image():
 def too_many_requests(e=None):
     return render_template('429.html'), 429
 
-def generate_task_details(description):
+def generate_quest_details(description):
     client = OpenAI(api_key=current_app.config['OPENAI_API_KEY'])
     try:
-        task_prompt = generate_task_prompt(description)
+        quest_prompt = generate_quest_prompt(description)
 
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": task_prompt},
+                {"role": "user", "content": quest_prompt},
             ]
         )
 
-        task_text = response.choices[0].message.content.strip()
+        quest_text = response.choices[0].message.content.strip()
 
         relevance_prompt = f"""
-        Based on the task description:
-        {task_text}
-        Is this Task in any small possible way bicycle, bike, cycle, or cycle-related? Meaning the Task has been accomplished by bicycle? (Answer with True or False)
+        Based on the quest description:
+        {quest_text}
+        Is this Quest in any small possible way bicycle, bike, cycle, or cycle-related? Meaning the Quest has been accomplished by bicycle? (Answer with True or False)
         """
         relevance_response = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -220,25 +220,25 @@ def generate_task_details(description):
         is_bicycle_related = relevance_response.choices[0].message.content.strip().strip(string.punctuation).lower()
 
         if is_bicycle_related == "true":
-            task_details = parse_generated_text(task_text)
+            quest_details = parse_generated_text(quest_text)
 
             valid_completion_limits = {1, 2, 3, 4, 5}
-            if task_details['Completion Limit'] not in valid_completion_limits:
-                task_details['Completion Limit'] = 1
+            if quest_details['Completion Limit'] not in valid_completion_limits:
+                quest_details['Completion Limit'] = 1
 
-            return task_details, None
+            return quest_details, None
         
         else:
-            return None, "Generated task is not bicycle-related."
+            return None, "Generated quest is not bicycle-related."
 
     except Exception as e:
-        return None, f"Failed to generate task due to an error: {str(e)}"
+        return None, f"Failed to generate quest due to an error: {str(e)}"
 
-def generate_task_prompt(description):
+def generate_quest_prompt(description):
     prompt = f"""
-    Here are examples of tasks and their respective badges, the format needs to remain:
+    Here are examples of quests and their respective badges, the format needs to remain:
 
-    Complete Task:
+    Complete Quest:
 
     Category: Student
     Title: Ride your bike to an after school activity
@@ -251,7 +251,7 @@ def generate_task_prompt(description):
     Badge Name: Activity Accessor
     Badge Description: Earned by those who extend their cycling beyond the classroom to after school activities. This badge applauds your dedication to staying active and environmentally conscious, highlighting the bike's role in supporting a balanced and engaged lifestyle.
 
-    Complete Task:
+    Complete Quest:
 
     Category: Errands
     Title: Clean clothes using clean energy.
@@ -262,14 +262,14 @@ def generate_task_prompt(description):
     Frequency: Weekly
     Verification Type (choice): Photo_comment
     Badge Name: Clean Cycle Laundromat
-    Badge Description: For incorporating your bicycle into the routine task of laundry, this badge applauds your innovative use of clean energy for everyday chores. Your commitment to cycling extends into all aspects of life, promoting a holistic approach to eco-friendly living.
+    Badge Description: For incorporating your bicycle into the routine quest of laundry, this badge applauds your innovative use of clean energy for everyday chores. Your commitment to cycling extends into all aspects of life, promoting a holistic approach to eco-friendly living.
 
-    Complete Task:
+    Complete Quest:
 
     Category: Work
     Title: Ride your bike to work for a week.
     Description: Hey, eco-warrior! Ready to kick your commute up a notch and ride the green wave to work? Strap on that helmet, grab your trusty steed, and let's pedal our way to a cleaner planet! Each week you ditch the gas guzzler for two wheels, you're not just saving time and money, you're racking up those sweet, sweet carbon reduction points. So let's make this a habit, one pedal stroke at a time.
-    Tips: Keep on keeping on, all month long...you can repeat this task each week.
+    Tips: Keep on keeping on, all month long...you can repeat this quest each week.
     Points (num): 120
     Completion Limit (num): 1
     Frequency: Weekly
@@ -277,7 +277,7 @@ def generate_task_prompt(description):
     Badge Name: Commuter Champion
     Badge Description: Earned by choosing the bike as your daily commute to work, this badge honors your contribution to reducing traffic congestion and pollution. Your commitment showcases a model for integrating fitness and environmental stewardship into daily life.
 
-    Complete Task:
+    Complete Quest:
 
     Category: Food
     Title: Need to get something delivered? Use a pedal-powered delivery service.
@@ -290,7 +290,7 @@ def generate_task_prompt(description):
     Badge Name: Eco Courier Champion
     Badge Description: For choosing pedal-powered delivery services for your delivery needs, this badge honors your commitment to minimizing environmental impact. Your decision supports sustainable logistics and contributes to a greener, more livable urban space.
 
-    Complete Task:
+    Complete Quest:
 
     Category: Around Town
     Title: Take a pedicab ride
@@ -305,11 +305,11 @@ def generate_task_prompt(description):
 
     Frequency field is required to only be one of the following: Daily, Weekly, or Monthly.
 
-    Generate a complete new task based on the description below making the points be reflective of the difficulty of the task not to exceed 500 or be below 100, the completion limit and frequency reflective of the repeatability, and verification type to be reflective of if a photo or comment is needed or both.'.
+    Generate a complete new quest based on the description below making the points be reflective of the difficulty of the quest not to exceed 500 or be below 100, the completion limit and frequency reflective of the repeatability, and verification type to be reflective of if a photo or comment is needed or both.'.
 
     Description: {description}
 
-    Task:
+    Quest:
     """
     return prompt
 
@@ -329,22 +329,22 @@ def parse_generated_text(response_text):
             "Badge Description": r"Badge Description: (.*)"
         }
 
-        task_details = {}
+        quest_details = {}
         for field, pattern in field_patterns.items():
             match = re.search(pattern, response_text)
             if match:
-                task_details[field] = match.group(1).strip()
+                quest_details[field] = match.group(1).strip()
             else:
                 raise ValueError(f"{field} field is missing or not correctly formatted")
 
         # Convert Points and Completion Limit to integers
-        task_details['Points'] = int(task_details['Points'])
-        task_details['Completion Limit'] = int(task_details['Completion Limit'])
+        quest_details['Points'] = int(quest_details['Points'])
+        quest_details['Completion Limit'] = int(quest_details['Completion Limit'])
 
         # Ensure the frequency is one of the allowed options, default to 'Monthly' if not
-        if task_details['Frequency'].lower() not in {'daily', 'weekly', 'monthly'}:
-            task_details['Frequency'] = 'Monthly'  # Default to 'Monthly'
+        if quest_details['Frequency'].lower() not in {'daily', 'weekly', 'monthly'}:
+            quest_details['Frequency'] = 'Monthly'  # Default to 'Monthly'
 
-        return task_details
+        return quest_details
     except (IndexError, ValueError) as e:
         raise ValueError(f"Error parsing response: {str(e)}")

@@ -80,10 +80,10 @@ function likeMessage(messageId) {
     });
 }
 
-function likeTask(taskId) {
+function likeQuest(questId) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    const likeButton = document.getElementById(`like-button-${taskId}`);
-    const likeCountSpan = document.getElementById(`like-count-${taskId}`);
+    const likeButton = document.getElementById(`like-button-${questId}`);
+    const likeCountSpan = document.getElementById(`like-count-${questId}`);
 
     // Check if the button is already disabled to prevent multiple submissions
     if (likeButton.disabled) {
@@ -93,7 +93,7 @@ function likeTask(taskId) {
     // Immediately disable the button to prevent multiple clicks
     likeButton.disabled = true;
 
-    fetch(`/like_task/${taskId}`, {
+    fetch(`/like_quest/${questId}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ function likeTask(taskId) {
         }
     })
     .catch(error => {
-        console.error('Error liking the task:', error);
+        console.error('Error liking the quest:', error);
         likeButton.disabled = false;  // Re-enable the button in case of error to allow retrying
     });
 }

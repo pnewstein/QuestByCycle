@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, send_file, render_template, request, redirect, url_for, flash, current_app, Response
 from flask_login import current_user, login_required, logout_user
 from app.utils import save_profile_picture, save_bicycle_picture
-from app.models import db, Game, User, Task, Badge, UserTask, TaskSubmission, TaskLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage, user_games
+from app.models import db, Game, User, Quest, Badge, UserQuest, QuestSubmission, QuestLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage, user_games
 from app.forms import ProfileForm, ShoutBoardForm, ContactForm, BikeForm
 from app.utils import send_email, allowed_file, generate_tutorial_game
 from .config import load_config
@@ -87,14 +87,14 @@ def get_datetime(activity):
         raise ValueError("Activity object does not contain valid timestamp information.")
 
 
-@main_bp.route('/', defaults={'game_id': None, 'task_id': None, 'user_id': None})
-@main_bp.route('/<int:game_id>', defaults={'task_id': None, 'user_id': None})
-@main_bp.route('/<int:game_id>/<int:task_id>', defaults={'user_id': None})
-@main_bp.route('/<int:game_id>/<int:task_id>/<int:user_id>')
-def index(game_id, task_id, user_id):
+@main_bp.route('/', defaults={'game_id': None, 'quest_id': None, 'user_id': None})
+@main_bp.route('/<int:game_id>', defaults={'quest_id': None, 'user_id': None})
+@main_bp.route('/<int:game_id>/<int:quest_id>', defaults={'user_id': None})
+@main_bp.route('/<int:game_id>/<int:quest_id>/<int:user_id>')
+def index(game_id, quest_id, user_id):
     user_games_list = []
     profile = None
-    user_tasks = []
+    user_quests = []
     badges = []
     total_points = None
     start_onboarding = False
@@ -131,12 +131,12 @@ def index(game_id, task_id, user_id):
     #    current_user.onboarded = True
     #    db.session.commit()
 
-    # If the user is authenticated, load user-specific tasks and data
+    # If the user is authenticated, load user-specific quests and data
     if current_user.is_authenticated:
-        user_tasks = UserTask.query.filter_by(user_id=current_user.id).all()
-        total_points = sum(ut.points_awarded for ut in user_tasks if ut.task.game_id == game_id)
+        user_quests = UserQuest.query.filter_by(user_id=current_user.id).all()
+        total_points = sum(ut.points_awarded for ut in user_quests if ut.quest.game_id == game_id)
 
-    tasks = Task.query.filter_by(game_id=game.id, enabled=True).all() if game else []
+    quests = Quest.query.filter_by(game_id=game.id, enabled=True).all() if game else []
     has_joined = game in current_user.participated_games if game else False
     game_participation = {game.id: has_joined} if game else {}
 
@@ -144,11 +144,11 @@ def index(game_id, task_id, user_id):
     form = ShoutBoardForm()
     pinned_messages = ShoutBoardMessage.query.filter_by(is_pinned=True, game_id=game_id).order_by(ShoutBoardMessage.timestamp.desc()).all()
     unpinned_messages = ShoutBoardMessage.query.filter_by(is_pinned=False, game_id=game_id).order_by(ShoutBoardMessage.timestamp.desc()).all()
-    completed_tasks = UserTask.query.filter(UserTask.completions > 0).order_by(UserTask.completed_at.desc()).all()
+    completed_quests = UserQuest.query.filter(UserQuest.completions > 0).order_by(UserQuest.completed_at.desc()).all()
 
     if game:
         pinned_activities = pinned_messages
-        unpinned_activities = unpinned_messages + [ut for ut in completed_tasks if ut.task.game_id == game_id]
+        unpinned_activities = unpinned_messages + [ut for ut in completed_quests if ut.quest.game_id == game_id]
     else:
         pinned_activities = []
         unpinned_activities = []
@@ -156,18 +156,18 @@ def index(game_id, task_id, user_id):
     unpinned_activities.sort(key=lambda x: get_datetime(x), reverse=True)
     activities = pinned_activities + unpinned_activities
 
-    selected_task = Task.query.get(task_id) if task_id else None
+    selected_quest = Quest.query.get(quest_id) if quest_id else None
 
     if current_user.is_authenticated:
         liked_message_ids = {like.message_id for like in ShoutBoardLike.query.filter_by(user_id=current_user.id)}
-        liked_task_ids = {like.task_id for like in TaskLike.query.filter_by(user_id=current_user.id)}
+        liked_quest_ids = {like.quest_id for like in QuestLike.query.filter_by(user_id=current_user.id)}
         
         # Fetch games along with joined_at timestamps
         user_games_list = db.session.query(Game, user_games.c.joined_at).join(user_games, user_games.c.game_id == Game.id).filter(user_games.c.user_id == current_user.id).all()
         
         profile = User.query.get_or_404(user_id)
-        user_tasks = UserTask.query.filter_by(user_id=profile.id).all()
-        badges = [badge for badge in profile.badges if any(task.game_id == game_id for task in badge.tasks)]
+        user_quests = UserQuest.query.filter_by(user_id=profile.id).all()
+        badges = [badge for badge in profile.badges if any(quest.game_id == game_id for quest in badge.quests)]
 
         if not profile.display_name:
             profile.display_name = profile.username
@@ -179,34 +179,34 @@ def index(game_id, task_id, user_id):
         'monthly': timedelta(days=30)
     }
 
-    for task in tasks:
-        task.total_completions = db.session.query(TaskSubmission).filter(TaskSubmission.task_id == task.id).count()
-        task.personal_completions = db.session.query(TaskSubmission).filter(TaskSubmission.task_id == task.id, TaskSubmission.user_id == user_id).count() if user_id else 0
-        task.completions_within_period = 0
-        task.can_verify = False
-        task.last_completion = None
-        task.first_completion_in_period = None
-        task.next_eligible_time = None
-        task.completion_timestamps = []
+    for quest in quests:
+        quest.total_completions = db.session.query(QuestSubmission).filter(QuestSubmission.quest_id == quest.id).count()
+        quest.personal_completions = db.session.query(QuestSubmission).filter(QuestSubmission.quest_id == quest.id, QuestSubmission.user_id == user_id).count() if user_id else 0
+        quest.completions_within_period = 0
+        quest.can_verify = False
+        quest.last_completion = None
+        quest.first_completion_in_period = None
+        quest.next_eligible_time = None
+        quest.completion_timestamps = []
 
         if user_id:
-            period_start = now - period_start_map.get(task.frequency, timedelta(days=1))
-            submissions = TaskSubmission.query.filter(
-                TaskSubmission.user_id == user_id,
-                TaskSubmission.task_id == task.id,
-                TaskSubmission.timestamp >= period_start
+            period_start = now - period_start_map.get(quest.frequency, timedelta(days=1))
+            submissions = QuestSubmission.query.filter(
+                QuestSubmission.user_id == user_id,
+                QuestSubmission.quest_id == quest.id,
+                QuestSubmission.timestamp >= period_start
             ).all()
 
             if submissions:
-                task.completions_within_period = len(submissions)
-                task.first_completion_in_period = min(submissions, key=lambda x: x.timestamp).timestamp
-                task.completion_timestamps = [sub.timestamp for sub in submissions]
+                quest.completions_within_period = len(submissions)
+                quest.first_completion_in_period = min(submissions, key=lambda x: x.timestamp).timestamp
+                quest.completion_timestamps = [sub.timestamp for sub in submissions]
 
-            relevant_user_tasks = [ut for ut in user_tasks if ut.task_id == task.id]
-            task.last_completion = max((ut.completed_at for ut in relevant_user_tasks), default=None)
+            relevant_user_quests = [ut for ut in user_quests if ut.quest_id == quest.id]
+            quest.last_completion = max((ut.completed_at for ut in relevant_user_quests), default=None)
 
-            if task.personal_completions < task.completion_limit:
-                task.can_verify = True
+            if quest.personal_completions < quest.completion_limit:
+                quest.can_verify = True
             else:
                 last_completion = max(submissions, key=lambda x: x.timestamp, default=None)
                 if last_completion:
@@ -215,16 +215,16 @@ def index(game_id, task_id, user_id):
                         'weekly': timedelta(weeks=1),
                         'monthly': timedelta(days=30)
                     }
-                    task.next_eligible_time = last_completion.timestamp + increment_map.get(task.frequency, timedelta(days=1))
+                    quest.next_eligible_time = last_completion.timestamp + increment_map.get(quest.frequency, timedelta(days=1))
 
-    tasks.sort(key=lambda x: (-x.is_sponsored, -x.personal_completions, -x.total_completions))
+    quests.sort(key=lambda x: (-x.is_sponsored, -x.personal_completions, -x.total_completions))
 
     custom_games = Game.query.filter(Game.custom_game_code.isnot(None), Game.is_public.is_(True)).all()
 
     carousel_images = []
     if current_user.is_authenticated and game_id:
-        task_submissions = TaskSubmission.query.join(Task).filter(Task.game_id == game_id).all()
-        for submission in task_submissions:
+        quest_submissions = QuestSubmission.query.join(Quest).filter(Quest.game_id == game_id).all()
+        for submission in quest_submissions:
             if submission.image_url:
                 # Ensure the image_url is relative to 'static/'
                 image_url = submission.image_url.lstrip('/').replace('static/', '')
@@ -237,7 +237,7 @@ def index(game_id, task_id, user_id):
                     'small': image_url,
                     'medium': image_url,
                     'large': image_url,
-                    'task_title': submission.task.title,
+                    'quest_title': submission.quest.title,
                     'comment': submission.comment
                 })
 
@@ -247,20 +247,20 @@ def index(game_id, task_id, user_id):
                            game=game,
                            user_games=user_games_list,
                            activities=activities,
-                           tasks=tasks,
+                           quests=quests,
                            game_participation=game_participation,
-                           selected_task=selected_task,
+                           selected_quest=selected_quest,
                            has_joined=has_joined,
                            profile=profile,
-                           user_tasks=user_tasks,
+                           user_quests=user_quests,
                            badges=badges,
                            carousel_images=carousel_images,
                            total_points=total_points,
-                           completions=completed_tasks,
+                           completions=completed_quests,
                            custom_games=custom_games,
                            selected_game_id=game_id or 0,
                            selected_game=game,
-                           task_id=task_id,
+                           quest_id=quest_id,
                            start_onboarding=start_onboarding)
 
 @main_bp.route('/mark-onboarding-complete', methods=['POST'])
@@ -342,12 +342,12 @@ def leaderboard_partial():
             User.id,
             User.username,
             User.display_name,
-            db.func.sum(UserTask.points_awarded).label('total_points')
-        ).join(UserTask, UserTask.user_id == User.id
-        ).join(Task, Task.id == UserTask.task_id
-        ).filter(Task.game_id == selected_game_id
+            db.func.sum(UserQuest.points_awarded).label('total_points')
+        ).join(UserQuest, UserQuest.user_id == User.id
+        ).join(Quest, Quest.id == UserQuest.quest_id
+        ).filter(Quest.game_id == selected_game_id
         ).group_by(User.id, User.username, User.display_name
-        ).order_by(db.func.sum(UserTask.points_awarded).desc()
+        ).order_by(db.func.sum(UserQuest.points_awarded).desc()
         ).all()
 
         top_users = [{
@@ -358,9 +358,9 @@ def leaderboard_partial():
         } for user_id, username, display_name, total_points in top_users_query]
 
         total_game_points = db.session.query(
-            db.func.sum(UserTask.points_awarded)
-        ).join(Task, UserTask.task_id == Task.id
-        ).filter(Task.game_id == selected_game_id
+            db.func.sum(UserQuest.points_awarded)
+        ).join(Quest, UserQuest.quest_id == Quest.id
+        ).filter(Quest.game_id == selected_game_id
         ).scalar() or 0
 
         return jsonify({
@@ -374,10 +374,10 @@ def leaderboard_partial():
 @login_required
 def user_profile(user_id):
     user = User.query.get_or_404(user_id)
-    user_tasks = UserTask.query.filter(UserTask.user_id == user.id, UserTask.completions > 0).all()
+    user_quests = UserQuest.query.filter(UserQuest.user_id == user.id, UserQuest.completions > 0).all()
     badges = user.badges
     participated_games = user.participated_games
-    task_submissions = user.task_submissions
+    quest_submissions = user.quest_submissions
     profile_messages = ProfileWallMessage.query.filter_by(user_id=user_id).order_by(ProfileWallMessage.timestamp.desc()).all()
 
     # Define riding preferences choices here
@@ -425,9 +425,9 @@ def user_profile(user_id):
             'show_carbon_game': user.show_carbon_game,
             'badges': [{'id': badge.id, 'name': badge.name, 'description': badge.description, 'category': badge.category, 'image': badge.image} for badge in badges]
         },
-        'user_tasks': [
-            {'id': task.id, 'completions': task.completions}
-            for task in user_tasks
+        'user_quests': [
+            {'id': quest.id, 'completions': quest.completions}
+            for quest in user_quests
         ],
         'profile_messages': [
             {
@@ -447,9 +447,9 @@ def user_profile(user_id):
             {'id': game.id, 'title': game.title, 'description': game.description, 'start_date': game.start_date.strftime('%B %d, %Y'), 'end_date': game.end_date.strftime('%B %d, %Y')}
             for game in participated_games
         ],
-        'task_submissions': [
-            {'id': submission.id, 'task': {'title': submission.task.title}, 'comment': submission.comment, 'timestamp': submission.timestamp.strftime('%B %d, %Y %H:%M'), 'image_url': submission.image_url, 'twitter_url': submission.twitter_url, 'fb_url': submission.fb_url, 'instagram_url': submission.instagram_url}
-            for submission in task_submissions
+        'quest_submissions': [
+            {'id': submission.id, 'quest': {'title': submission.quest.title}, 'comment': submission.comment, 'timestamp': submission.timestamp.strftime('%B %d, %Y %H:%M'), 'image_url': submission.image_url, 'twitter_url': submission.twitter_url, 'fb_url': submission.fb_url, 'instagram_url': submission.instagram_url}
+            for submission in quest_submissions
         ],
         'riding_preferences_choices': riding_preferences_choices  # Use centralized preferences
     }
@@ -573,25 +573,25 @@ def update_profile():
     return jsonify(success=True)
 
 
-@main_bp.route('/like_task/<int:task_id>', methods=['POST'])
+@main_bp.route('/like_quest/<int:quest_id>', methods=['POST'])
 @login_required
-def like_task(task_id):
-    task = Task.query.get_or_404(task_id)
-    # Check if the current user already liked this task
-    already_liked = TaskLike.query.filter_by(user_id=current_user.id, task_id=task.id).first() is not None
+def like_quest(quest_id):
+    quest = Quest.query.get_or_404(quest_id)
+    # Check if the current user already liked this quest
+    already_liked = QuestLike.query.filter_by(user_id=current_user.id, quest_id=quest.id).first() is not None
 
     if not already_liked:
-        # User has not liked this task before, so create a new like
-        new_like = TaskLike(user_id=current_user.id, task_id=task.id)
+        # User has not liked this quest before, so create a new like
+        new_like = QuestLike(user_id=current_user.id, quest_id=quest.id)
         db.session.add(new_like)
         db.session.commit()
         success = True
     else:
-        # User already liked the task. Optionally, handle "unliking" here
+        # User already liked the quest. Optionally, handle "unliking" here
         success = False
 
-    # Fetch the new like count for the task
-    new_like_count = TaskLike.query.filter_by(task_id=task.id).count()
+    # Fetch the new like count for the quest
+    new_like_count = QuestLike.query.filter_by(quest_id=quest.id).count()
     return jsonify(success=success, new_like_count=new_like_count, already_liked=already_liked)
 
 

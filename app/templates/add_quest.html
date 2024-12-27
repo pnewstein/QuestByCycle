@@ -3,11 +3,11 @@
 {% block content %}
 <div class="container">
     <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary mb-3">Back to Dashboard</a>
-    <h2>Add New Task to Game</h2>
-    <form action="" method="post" class="needs-validation" enctype="multipart/form-data" id="task-form" novalidate>
+    <h2>Add New Quest to Game</h2>
+    <form action="" method="post" class="needs-validation" enctype="multipart/form-data" id="quest-form" novalidate>
         {{ form.hidden_tag() }}
         
-        <!-- Task Details -->
+        <!-- Quest Details -->
         <div class="mb-3">
             <label for="{{ form.title.id }}" class="form-label">{{ form.title.label }}</label>
             {{ form.title(class="form-control", required=True) }}
@@ -37,16 +37,16 @@
             {{ form.frequency(class="form-control") }}
         </div>
 
-        <!-- Task Configuration -->
+        <!-- Quest Configuration -->
         <div class="mb-3 form-check">
             {{ form.enabled(class="form-check-input") }}
             <label for="{{ form.enabled.id }}" class="form-check-label">{{ form.enabled.label }}</label>
         </div>
-        <!-- Task Sponsored Checkbox -->
+        <!-- Quest Sponsored Checkbox -->
         <div class="mb-3 form-check">
             {{ form.is_sponsored(class="form-check-input") }}
             <label for="{{ form.is_sponsored.id }}" class="form-check-label">{{ form.is_sponsored.label }}</label>
-            <div class="form-text">Check if the task is sponsored.</div>
+            <div class="form-text">Check if the quest is sponsored.</div>
         </div>
         <div class="mb-3">
             <label for="{{ form.category.id }}" class="form-label">{{ form.category.label }}</label>
@@ -123,7 +123,7 @@
         }
     });
 
-    document.getElementById('task-form').onsubmit = function(e) {
+    document.getElementById('quest-form').onsubmit = function(e) {
         // Get the Quill editor contents
         var descriptionContent = quillDescription.root.innerHTML.trim();
         var tipsContent = quillTips.root.innerHTML.trim();

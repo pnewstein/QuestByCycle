@@ -182,18 +182,18 @@ main {
 .user-interests {
     font-size: 1.2em;
 }
-.badges-earned, .tasks-completed, .games-participated, .shoutboard-messages, .task-submissions {
+.badges-earned, .quests-completed, .games-participated, .shoutboard-messages, .quest-submissions {
     padding: 20px;
     border: 1px solid #eee;
     border-radius: 10px;
     background-color: #f9f9f9;
 }
-.badges-container, .tasks-container, .games-container, .bike-container, .messages-container, .submissions-container {
+.badges-container, .quests-container, .games-container, .bike-container, .messages-container, .submissions-container {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
 }
-.badge-item, .task-item, .game-item, .message-item, .submission-item {
+.badge-item, .quest-item, .game-item, .message-item, .submission-item {
     background: #eef6ff;
     border: 1px solid #ddd;
     border-radius: 10px;
@@ -211,7 +211,7 @@ main {
 .badge-item:hover .badge-icon {
     transform: scale(1.2);
 }
-.badge-item:hover, .task-item:hover, .game-item:hover, .message-item:hover, .submission-item:hover {
+.badge-item:hover, .quest-item:hover, .game-item:hover, .message-item:hover, .submission-item:hover {
     transform: translateY(-10px);
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
@@ -551,16 +551,16 @@ article h3 {
     background-color: #0056b3;
 }
 
-.tasks {
+.quests {
     margin-top: 20px;
 }
 
-.tasks ul {
+.quests ul {
     list-style-type: none;
     padding: 0;
 }
 
-.tasks li {
+.quests li {
     padding: 5px 0;
 }
 
@@ -627,7 +627,7 @@ article h3 {
     background-color: #0056b3;
 }
 
-.task-details-grid {
+.quest-details-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
     gap: 15px;
@@ -637,7 +637,7 @@ article h3 {
     padding-bottom: 20px;
 }
 
-.task-detail-item {
+.quest-detail-item {
     background: #f7f7f7;
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -647,7 +647,7 @@ article h3 {
     justify-content: flex-start; 
 }
 
-.task-detail-item h4 {
+.quest-detail-item h4 {
     margin-bottom: 5px; 
     font-size: 16px;
     color: #333;
@@ -655,7 +655,7 @@ article h3 {
     text-align: center;
 }
 
-.task-info {
+.quest-info {
     display: flex;
     justify-content: space-between;
     font-size: 14px;
@@ -842,19 +842,19 @@ footer {
     border-radius: 5px;
 }
 
-.task-modal-columns {
+.quest-modal-columns {
     display: flex;
     justify-content: space-between;
     padding: 20px;
 }
 
-.task-details, .user-task-data {
+.quest-details, .user-quest-data {
     flex: 1;
     margin: 0 10px;
     padding: 10px;
 }
 
-.user-task-data {
+.user-quest-data {
     border-left: 2px solid #ccc; 
 }
 
@@ -1110,7 +1110,7 @@ small {
     }
 }
 
-#taskImageCarousel {
+#questImageCarousel {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     border-radius: 15px;
     overflow: hidden;
@@ -1182,18 +1182,18 @@ small {
     flex-grow: 1;
 }
 
-.badges-earned, .tasks-completed {
+.badges-earned, .quests-completed {
     margin-top: 20px;
 }
 
-.badges-container, .tasks-container, .bike-container {
+.badges-container, .quests-container, .bike-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 15px;
     padding: 10px;
 }
 
-.badge-item, .task-item {
+.badge-item, .quest-item {
     border: 1px solid #ddd;
     padding: 10px;
     border-radius: 8px;
@@ -1206,17 +1206,17 @@ small {
     margin: 0 auto;
 }
 
-.badge-item h3, .task-item h3 {
+.badge-item h3, .quest-item h3 {
     margin-top: 10px;
     color: #333;
 }
 
-.badge-item p, .task-item p {
+.badge-item p, .quest-item p {
     color: #666;
     font-size: 0.9em;
 }
 
-.tasks-item p {
+.quests-item p {
     margin: 5px 0;
 }
 
@@ -1244,7 +1244,7 @@ small {
     padding: 10px;
 }
 
-.submission-user-details, .submission-task-details, .submission-timestamp, .submission-comment {
+.submission-user-details, .submission-quest-details, .submission-timestamp, .submission-comment {
     margin-top: 5px;
 }
 
@@ -1451,12 +1451,12 @@ small {
         font-size: 1.2em;
     }
 
-    .game-item, .tasks li {
+    .game-item, .quests li {
         
         padding: 10px;
     }
 
-    .tasks ul {
+    .quests ul {
         
         padding-left: 0;
     }
@@ -1498,11 +1498,11 @@ small {
         font-size: 20px; 
     }
 
-    .task-modal-columns {
+    .quest-modal-columns {
         flex-direction: column;
     }
 
-    .user-task-data {
+    .user-quest-data {
         border-left: none;
         border-top: 2px solid #ccc; 
     }
@@ -1711,7 +1711,7 @@ small {
         max-height: 200px; 
     }
 
-    .task-details-grid, .badges-container, .bike-container, .tasks-container {
+    .quest-details-grid, .badges-container, .bike-container, .quests-container {
         grid-template-columns: 1fr; 
     }
 
@@ -1719,7 +1719,7 @@ small {
         flex-direction: column; 
     }
 
-    .task-modal-columns {
+    .quest-modal-columns {
         flex-direction: column; 
     }
 

@@ -112,8 +112,8 @@ function showUserProfileModal(userId) {
                                 </a>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="task-submissions-tab" data-bs-toggle="tab" href="#task-submissions" role="tab" aria-controls="task-submissions" aria-selected="false">
-                                    <i class="bi bi-list-task me-2"></i>Task Submissions
+                                <a class="nav-link" id="quest-submissions-tab" data-bs-toggle="tab" href="#quest-submissions" role="tab" aria-controls="quest-submissions" aria-selected="false">
+                                    <i class="bi bi-list-quest me-2"></i>Quest Submissions
                                 </a>
                             </li>
                         </ul>
@@ -144,7 +144,7 @@ function showUserProfileModal(userId) {
                                                 <textarea class="form-control" id="interests" name="interests" rows="3" placeholder="Describe your interests...">${data.user.interests || ''}</textarea>
                                             </div>
                                             <div class="form-group mb-3">
-                                                <label for="ridingPreferences" class="form-label"><b>Please specify characteristics about yourself. This information will help us tailor tasks for you: (Please check all that apply)</b></label>
+                                                <label for="ridingPreferences" class="form-label"><b>Please specify characteristics about yourself. This information will help us tailor quests for you: (Please check all that apply)</b></label>
                                                 <div id="ridingPreferences">
                                                     ${data.riding_preferences_choices.map((choice, index) => `
                                                         <div class="form-check mb-2">
@@ -252,14 +252,14 @@ function showUserProfileModal(userId) {
                                     </div>
                                 </section>
                             </div>
-                            <div class="tab-pane fade" id="task-submissions" role="tabpanel" aria-labelledby="task-submissions-tab">
-                                <section class="task-submissions mb-4">
-                                    <h2 class="h2">Task Submissions</h2>
+                            <div class="tab-pane fade" id="quest-submissions" role="tabpanel" aria-labelledby="quest-submissions-tab">
+                                <section class="quest-submissions mb-4">
+                                    <h2 class="h2">Quest Submissions</h2>
                                     <div class="submissions-container row g-3">
-                                        ${data.task_submissions && data.task_submissions.length > 0 ? data.task_submissions.map(submission => `
+                                        ${data.quest_submissions && data.quest_submissions.length > 0 ? data.quest_submissions.map(submission => `
                                             <div class="submission-item col-md-6 p-3 border rounded shadow-sm bg-white">
                                                 ${submission.image_url ? `<img src="${submission.image_url}" alt="Submission Image" class="img-fluid rounded mb-2" style="max-height: 200px; object-fit: cover;">` : ''}
-                                                <p><strong>Task:</strong> ${submission.task.title}</p>
+                                                <p><strong>Quest:</strong> ${submission.quest.title}</p>
                                                 <p class="text-muted">${submission.comment}</p>
                                                 <p><strong>Submitted At:</strong> ${submission.timestamp}</p>
                                                 <div class="d-flex justify-content-start gap-2">
@@ -268,7 +268,7 @@ function showUserProfileModal(userId) {
                                                     ${submission.instagram_url ? `<a href="${submission.instagram_url}" target="_blank" class="btn btn-sm btn-instagram"><i class="bi bi-instagram"></i></a>` : ''}
                                                 </div>
                                                 ${isCurrentUser ? `<button class="btn btn-danger btn-sm mt-2" onclick="deleteSubmission(${submission.id}, 'profileSubmissions', ${data.user.id})">Delete</button>` : ''}
-                                            </div>`).join('') : '<p class="text-muted">No task submissions yet.</p>'}
+                                            </div>`).join('') : '<p class="text-muted">No quest submissions yet.</p>'}
                                     </div>
                                 </section>
                             </div>
@@ -487,7 +487,7 @@ function postReply(profileUserId, messageId) {
 }
 
 function deleteSubmission(submissionId, context, userId) {
-    fetch(`/tasks/task/delete_submission/${submissionId}`, {
+    fetch(`/quests/quest/delete_submission/${submissionId}`, {
         method: 'DELETE',
         headers: {
             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')

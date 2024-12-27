@@ -47,12 +47,12 @@ function resetModalContent() {
         instagramLink.href = '#'; // Reset to default or placeholder link
     }
 
-    const modalTaskActions = document.getElementById('modalTaskActions');
-    if (modalTaskActions) {
-        modalTaskActions.innerHTML = '';
+    const modalQuestActions = document.getElementById('modalQuestActions');
+    if (modalQuestActions) {
+        modalQuestActions.innerHTML = '';
     }
     document.querySelectorAll('[id^="verifyButton-"]').forEach(button => button.remove());
-    document.querySelectorAll('[id^="verifyTaskForm-"]').forEach(form => form.remove());
+    document.querySelectorAll('[id^="verifyQuestForm-"]').forEach(form => form.remove());
     document.body.classList.remove('body-no-scroll');
 }
 
@@ -70,8 +70,8 @@ function closeAllModals(id) {
         case 'allSubmissionsModal':
             closeAllSubmissionsModal();
             break;
-        case 'taskDetailModal':
-            closeTaskDetailModal();
+        case 'questDetailModal':
+            closeQuestDetailModal();
             break;
         case 'joinCustomGameModal':
             closeJoinCustomGameModal();
@@ -88,8 +88,8 @@ function closeAllModals(id) {
         case 'editCarouselModal':
             closeEditCarouselModal();
             break;
-        case 'closeTaskDetailModal':
-            closeTaskDetailModal();
+        case 'closeQuestDetailModal':
+            closeQuestDetailModal();
             break;
     }
 }

@@ -70,10 +70,10 @@
                 <div class="col-md-6 mb-4">
                     <div class="text-center mb-4">
                         <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories Below!</small></p>
-                        <div id="taskImageCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+                        <div id="questImageCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
                             <ol class="carousel-indicators" style="visibility: hidden;">
                                 {% for image in carousel_images %}
-                                <li data-bs-target="#taskImageCarousel" data-bs-slide-to="{{ loop.index0 }}"
+                                <li data-bs-target="#questImageCarousel" data-bs-slide-to="{{ loop.index0 }}"
                                     {% if loop.first %}class="active"{% endif %}></li>
                                 {% endfor %}
                             </ol>
@@ -91,18 +91,18 @@
                                             style="height: 100%; width: 100%; object-fit: cover;"
                                             {% if not loop.first %} loading="lazy" {% endif %}>
                                         <div class="carousel-caption minimized-caption">
-                                            <h5>{{ image.task_title }}</h5>
+                                            <h5>{{ image.quest_title }}</h5>
                                             <p class="comment-text">{{ (image.comment or '')[:75] }}</p>
                                         </div>
                                     </div>
                                 {% endfor %}             
                             </div>                    
             
-                            <a class="carousel-control-prev" href="#taskImageCarousel" role="button" data-bs-slide="prev">
+                            <a class="carousel-control-prev" href="#questImageCarousel" role="button" data-bs-slide="prev">
                                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                 <span class="visually-hidden">Previous</span>
                             </a>
-                            <a class="carousel-control-next" href="#taskImageCarousel" role="button" data-bs-slide="next">
+                            <a class="carousel-control-next" href="#questImageCarousel" role="button" data-bs-slide="next">
                                 <span class="carousel-control-next-icon" aria-hidden="true"></span>
                                 <span class="visually-hidden">Next</span>
                             </a>
@@ -247,7 +247,7 @@
                                 </button>
                                 <span id="like-count-{{ activity.id }}" class="like-count">{{ activity.likes|length }}</span>👍
                             </div>
-                            {% elif activity.__tablename__ == 'user_tasks' %}
+                            {% elif activity.__tablename__ == 'user_quests' %}
                             <strong>
                                 {{ activity.completed_at.strftime('%m-%d') }} -
                                 <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
@@ -255,19 +255,19 @@
                                 </a>
                             </strong>
                             <span class="activity-message">
-                                completed a task <br>
-                                <a href="javascript:void(0);" class="task-title" onclick="openTaskDetailModal('{{ activity.task.id }}')">
-                                    {{ activity.task.title }}
+                                completed a quest <br>
+                                <a href="javascript:void(0);" class="quest-title" onclick="openQuestDetailModal('{{ activity.quest.id }}')">
+                                    {{ activity.quest.title }}
                                 </a>
                             </span>
                             <div class="like-section">
-                                <button class="blue_button like-button" id="like-button-{{ activity.task.id }}"
-                                    onclick="likeTask('{{ activity.task.id }}');"
-                                    class="{{ 'liked-button-style' if activity.task.liked_by_user else '' }}"
-                                    {{ 'disabled' if activity.task.liked_by_user }}>
-                                    {{ 'Liked' if activity.task.liked_by_user else 'Like' }}
+                                <button class="blue_button like-button" id="like-button-{{ activity.quest.id }}"
+                                    onclick="likeQuest('{{ activity.quest.id }}');"
+                                    class="{{ 'liked-button-style' if activity.quest.liked_by_user else '' }}"
+                                    {{ 'disabled' if activity.quest.liked_by_user }}>
+                                    {{ 'Liked' if activity.quest.liked_by_user else 'Like' }}
                                 </button>
-                                <span id="like-count-{{ activity.task.id }}" class="like-count">{{ activity.task.likes|length }}</span>👍
+                                <span id="like-count-{{ activity.quest.id }}" class="like-count">{{ activity.quest.likes|length }}</span>👍
                             </div>
                             {% endif %}
                         </div>
@@ -280,35 +280,35 @@
                 </div>
             </div>
         </div>
-        <div class="container mt-5" id="available-tasks-step">
+        <div class="container mt-5" id="available-quests-step">
             {% if has_joined %}
                 <h2>Available Quests</h2>
                 <div class="game-item">
-                    <input type="text" id="taskSearchInput" class="form-control mb-3" placeholder="Search for tasks...">
+                    <input type="text" id="questSearchInput" class="form-control mb-3" placeholder="Search for quests...">
                     <table class="table">
                         <colgroup>
-                            <col style="width: auto;"> <!-- Task title, takes remaining space -->
+                            <col style="width: auto;"> <!-- Quest title, takes remaining space -->
                             <col style="width: 12%;"> <!-- Points column -->
                             <col style="width: 12%;"> <!-- Points column -->
                             <col style="width: 14%;"> <!-- Points column -->
                         </colgroup>
                         <thead>
                             <tr>
-                                <th style="vertical-align: middle; text-align: left;">Task</th>
+                                <th style="vertical-align: middle; text-align: left;">Quest</th>
                                 <th style="vertical-align: right; text-align: center;">Your Posts</th>
                                 <th style="vertical-align: right; text-align: center;">All Posts</th>
                                 <th style="vertical-align: right; text-align: center;">Points</th>
                             </tr>
                         </thead>
-                        <tbody id="taskTableBody">
-                            {% for task in tasks %}
-                            <tr class="{{ 'pinned' if task.is_sponsored }}">
+                        <tbody id="questTableBody">
+                            {% for quest in quests %}
+                            <tr class="{{ 'pinned' if quest.is_sponsored }}">
                                 <td>
-                                    <button class="button" onclick="openTaskDetailModal('{{ task.id }}')">{{ task.title }}</button>
+                                    <button class="button" onclick="openQuestDetailModal('{{ quest.id }}')">{{ quest.title }}</button>
                                 </td>
-                                <td style="text-align: center;">{{ task.personal_completions }}</td>
-                                <td style="text-align: center;">{{ task.total_completions }}</td>
-                                <td style="text-align: center;">{{ task.points }}</td>
+                                <td style="text-align: center;">{{ quest.personal_completions }}</td>
+                                <td style="text-align: center;">{{ quest.total_completions }}</td>
+                                <td style="text-align: center;">{{ quest.points }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -317,9 +317,9 @@
             {% endif %}
             {% if current_user.is_authenticated %}
                 {% if current_user.is_admin %}
-                    <!-- Task Creation Button -->
+                    <!-- Quest Creation Button -->
                     <div class="text-center mb-4">
-                        <button data-game-id="{{ game.id }}" class="btn btn-primary btn-lg mb-2" onclick="openTaskCreationModal(this)">Create New Task</button>
+                        <button data-game-id="{{ game.id }}" class="btn btn-primary btn-lg mb-2" onclick="openQuestCreationModal(this)">Create New Quest</button>
                     </div>
                 {% endif %}
             {% endif %}
@@ -330,15 +330,15 @@
 
     <div id="game_IdHolder" data-game-id="{{ selected_game_id }}" style="display:none;"></div>
 
-    {% include 'modals/task_detail_modal.html' %}
+    {% include 'modals/quest_detail_modal.html' %}
     {% include 'modals/submission_detail_modal.html' %}
     {% include 'modals/user_profile_modal.html' %}
     {% include 'modals/leaderboard_modal.html' %}
     {% include 'modals/contact_modal.html' %}
     {% include 'modals/join_custom_game_modal.html' %}
     {% include 'modals/all_submissions_modal.html' %}
-    {% include 'modals/task_creation_modal.html' %}
-    {% include 'modals/generate_AI_task_modal.html' %}
+    {% include 'modals/quest_creation_modal.html' %}
+    {% include 'modals/generate_AI_quest_modal.html' %}
     {% include 'modals/loading_modal.html' %}
     {% include 'modals/sponsors_modal.html' %}
 
@@ -350,10 +350,10 @@
     <script src="{{ url_for('static', filename='js/join_custom_game_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/leaderboard_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/submission_detail_modal.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/task_detail_modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/quest_detail_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/user_profile_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/index_management.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/generated_task.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/generated_quest.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='js/shepherd_tour.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -371,12 +371,12 @@
                 return urlParams.get(param);
             }
     
-            // Get task_id from URL
-            const taskId = "{{ task_id }}";
+            // Get quest_id from URL
+            const questId = "{{ quest_id }}";
     
-            // If task_id exists, trigger the task detail modal
-            if (taskId != 'None') {
-                openTaskDetailModal(taskId);
+            // If quest_id exists, trigger the quest detail modal
+            if (questId != 'None') {
+                openQuestDetailModal(questId);
             }
 
             function handleGameSelection(option) {
@@ -456,18 +456,18 @@
                 });
             }
 
-            // Initialize the task search input event listener
-            const taskSearchInput = document.getElementById('taskSearchInput');
-            if (taskSearchInput) {
-                taskSearchInput.addEventListener('input', function () {
+            // Initialize the quest search input event listener
+            const questSearchInput = document.getElementById('questSearchInput');
+            if (questSearchInput) {
+                questSearchInput.addEventListener('input', function () {
                     const searchValue = this.value.toLowerCase();
-                    const tasks = document.querySelectorAll('#taskTableBody tr');
-                    tasks.forEach(task => {
-                        const taskTitle = task.querySelector('td:nth-child(1) button').textContent.toLowerCase();
-                        if (taskTitle.includes(searchValue)) {
-                            task.style.display = '';
+                    const quests = document.querySelectorAll('#questTableBody tr');
+                    quests.forEach(quest => {
+                        const questTitle = quest.querySelector('td:nth-child(1) button').textContent.toLowerCase();
+                        if (questTitle.includes(searchValue)) {
+                            quest.style.display = '';
                         } else {
-                            task.style.display = 'none';
+                            quest.style.display = 'none';
                         }
                     });
                 });
@@ -476,7 +476,7 @@
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const carouselElement = document.getElementById('taskImageCarousel');
+            const carouselElement = document.getElementById('questImageCarousel');
             const carouselInstance = new bootstrap.Carousel(carouselElement, {
                 interval: 3000 // Automatically slide every 3 seconds
             });
@@ -530,7 +530,7 @@
             flex-direction: column; /* Arrange children in a column to wrap text */
         }
 
-        .task-title {
+        .quest-title {
             display: inline-block;
             max-width: 100%;
             white-space: normal;
@@ -560,9 +560,9 @@
                 line-height: 1.2; /* Adjust line-height for better spacing */
             }
 
-            .task-title {
-                display: block; /* Ensure task title wraps on small screens */
-                font-size: 0.9rem; /* Adjust font size for the task title */
+            .quest-title {
+                display: block; /* Ensure quest title wraps on small screens */
+                font-size: 0.9rem; /* Adjust font size for the quest title */
                 word-break: break-word; /* Break long words */
             }
 

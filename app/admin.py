@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_required, current_user
-from app.models import db, User, Game, Sponsor, user_games, TaskSubmission, UserIP
+from app.models import db, User, Game, Sponsor, user_games, QuestSubmission, UserIP
 from app.forms import CarouselImportForm, SponsorForm
 from app.utils import save_sponsor_logo
 from functools import wraps
@@ -295,7 +295,7 @@ def edit_user(user_id):
         participated_games = []
 
     try:
-        user_submissions = TaskSubmission.query.filter_by(user_id=user_id).all() or []
+        user_submissions = QuestSubmission.query.filter_by(user_id=user_id).all() or []
         logging.debug("Fetched user submissions: %s", user_submissions)
     except Exception as e:
         logging.error("Error fetching user submissions for user %s: %s", user_id, e)

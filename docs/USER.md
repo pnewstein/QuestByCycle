@@ -1,6 +1,6 @@
 # USER GUIDE
 
-Welcome to our Ultimate Challenge and Reward Platform! This guide will help you get started and make the most out of your experience. Whether you are here to complete exciting tasks, earn badges, or simply join a community of like-minded individuals, this document covers everything you need to know.
+Welcome to our Ultimate Challenge and Reward Platform! This guide will help you get started and make the most out of your experience. Whether you are here to complete exciting quests, earn badges, or simply join a community of like-minded individuals, this document covers everything you need to know.
 
 ## Table of Contents
 
@@ -10,10 +10,10 @@ Welcome to our Ultimate Challenge and Reward Platform! This guide will help you 
 2. [Navigating the Platform](#navigating-the-platform)
     - [Dashboard Overview](#dashboard-overview)
     - [Game Participation](#game-participation)
-3. [Completing Tasks](#completing-tasks)
-    - [Finding Tasks](#finding-tasks)
-    - [Task Verification](#task-verification)
-    - [Task Submissions](#task-submissions)
+3. [Completing Quests](#completing-quests)
+    - [Finding Quests](#finding-quests)
+    - [Quest Verification](#quest-verification)
+    - [Quest Submissions](#quest-submissions)
 4. [Earning Badges](#earning-badges)
     - [Types of Badges](#types-of-badges)
     - [Badge Requirements](#badge-requirements)
@@ -53,10 +53,10 @@ Welcome to our Ultimate Challenge and Reward Platform! This guide will help you 
 
 ### Dashboard Overview
 
-The dashboard is your central hub for accessing games, tasks, and community features.
+The dashboard is your central hub for accessing games, quests, and community features.
 
 - **Games**: View all available games, including those you are participating in.
-- **Tasks**: See tasks assigned to the games you have joined.
+- **Quests**: See quests assigned to the games you have joined.
 - **Leaderboard**: Track your progress and see how you rank against other participants.
 - **Notifications**: Stay updated with the latest activities and messages.
 
@@ -71,48 +71,48 @@ The dashboard is your central hub for accessing games, tasks, and community feat
 1. **Access Your Games**: Go to the "Games" section and find the game you want to leave.
 2. **Leave the Game**: Click on "Leave Game" and confirm your decision.
 
-## Completing Tasks
+## Completing Quests
 
-### Finding Tasks
+### Finding Quests
 
-**Browse Tasks**:
-1. **Navigate to the Tasks Section**: Click on "Tasks" from your dashboard.
-2. **Select a Game**: Choose the game for which you want to see tasks.
-3. **View Task Details**: Click on a task to view its description, tips, and requirements.
+**Browse Quests**:
+1. **Navigate to the Quests Section**: Click on "Quests" from your dashboard.
+2. **Select a Game**: Choose the game for which you want to see quests.
+3. **View Quest Details**: Click on a quest to view its description, tips, and requirements.
 
-### Task Verification
+### Quest Verification
 
-Tasks can have different verification methods:
-- **Photo Verification**: Upload a photo as evidence of task completion.
-- **Comment Verification**: Provide a comment describing how you completed the task.
+Quests can have different verification methods:
+- **Photo Verification**: Upload a photo as evidence of quest completion.
+- **Comment Verification**: Provide a comment describing how you completed the quest.
 - **Photo and Comment Verification**: Both upload a photo and provide a comment.
 
-### Task Submissions
+### Quest Submissions
 
-**Submit a Task**:
-1. **Select the Task**: Click on the task you want to complete.
-2. **Complete the Task**: Follow the instructions and gather the required verification.
+**Submit a Quest**:
+1. **Select the Quest**: Click on the quest you want to complete.
+2. **Complete the Quest**: Follow the instructions and gather the required verification.
 3. **Submit Verification**: Upload your photo and/or comment.
-4. **Submit Task**: Click on "Submit" to complete your task.
+4. **Submit Quest**: Click on "Submit" to complete your quest.
 
 **Track Your Submissions**:
 1. **Navigate to Your Profile**: Click on your username and go to "Profile."
-2. **View Submissions**: Check the "Task Submissions" section to see all tasks you have submitted.
+2. **View Submissions**: Check the "Quest Submissions" section to see all quests you have submitted.
 
 ## Earning Badges
 
 ### Types of Badges
 
-Badges are awarded for completing tasks and achieving specific milestones. Types of badges include:
-- **Task Completion Badges**: Earned by completing specific tasks.
-- **Category Badges**: Earned by completing all tasks in a specific category.
+Badges are awarded for completing quests and achieving specific milestones. Types of badges include:
+- **Quest Completion Badges**: Earned by completing specific quests.
+- **Category Badges**: Earned by completing all quests in a specific category.
 - **Achievement Badges**: Awarded for reaching significant milestones.
 
 ### Badge Requirements
 
 Each badge has specific requirements that must be met:
 - **View Badge Details**: Navigate to the "Badges" section to see the requirements for each badge.
-- **Complete Required Tasks**: Ensure you complete the tasks associated with each badge.
+- **Complete Required Quests**: Ensure you complete the quests associated with each badge.
 
 ## Using the Profile Message Board
 
@@ -144,20 +144,20 @@ Each badge has specific requirements that must be met:
 3. **Authorize the Connection**: Follow the prompts to authorize the integration.
 
 **Sharing Your Achievements**:
-1. **Complete a Task**: Submit your task verification.
+1. **Complete a Quest**: Submit your quest verification.
 2. **Share on Social Media**: Choose to share your achievement on linked social media platforms.
 
 ## Best Practices
 
 ### Staying Engaged
 
-- **Regular Participation**: Regularly check for new tasks and updates.
+- **Regular Participation**: Regularly check for new quests and updates.
 - **Encourage Others**: Motivate fellow participants by liking and commenting on their submissions.
 - **Provide Feedback**: Use the profile message board to give feedback and suggestions.
 
 ### Ensuring Fair Play
 
-- **Honest Submissions**: Ensure all task verifications are genuine and accurate.
+- **Honest Submissions**: Ensure all quest verifications are genuine and accurate.
 - **Respectful Interaction**: Maintain a respectful tone in all interactions.
 - **Report Issues**: Report any issues or inappropriate content to the admins.
 

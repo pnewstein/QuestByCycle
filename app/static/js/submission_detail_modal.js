@@ -37,9 +37,9 @@ function showSubmissionDetail(image) {
         instagramLink.style.display = 'none';
     }
 
-    // Ensure the submission modal opens on top of the task detail modal
-    const taskDetailModalZIndex = parseInt(window.getComputedStyle(document.getElementById('taskDetailModal')).zIndex, 10);
-    submissionModal.style.zIndex = taskDetailModalZIndex + 10; // Adjust z-index to be above the task detail modal
+    // Ensure the submission modal opens on top of the quest detail modal
+    const questDetailModalZIndex = parseInt(window.getComputedStyle(document.getElementById('questDetailModal')).zIndex, 10);
+    submissionModal.style.zIndex = questDetailModalZIndex + 10; // Adjust z-index to be above the quest detail modal
 
     // Show the modal
     submissionModal.style.display = 'block';

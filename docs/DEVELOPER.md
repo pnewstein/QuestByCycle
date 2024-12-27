@@ -19,13 +19,13 @@ Welcome to the Developer Guide for our Ultimate Challenge and Reward Platform! T
 4. [Admin Functionality](#admin-functionality)
     - [Admin Dashboard](#admin-dashboard)
     - [Badge Management](#badge-management)
-    - [Task Management](#task-management)
+    - [Quest Management](#quest-management)
     - [Shout Board](#shout-board)
 5. [User Functionality](#user-functionality)
-    - [Task Submission](#task-submission)
+    - [Quest Submission](#quest-submission)
     - [Profile Management](#profile-management)
     - [Social Media Integration](#social-media-integration)
-6. [AI Task Generation](#ai-task-generation)
+6. [AI Quest Generation](#ai-quest-generation)
 7. [Static Assets](#static-assets)
     - [CSS](#css)
     - [JavaScript](#javascript)
@@ -55,7 +55,7 @@ The project is organized as follows:
     - `modals/`: Templates for modal dialogs.
   - `__init__.py`: Initializes the Flask application.
   - `admin.py`: Admin-specific routes and logic.
-  - `ai.py`: AI task generation logic.
+  - `ai.py`: AI quest generation logic.
   - `auth.py`: Authentication routes and logic.
   - `badges.py`: Badge management logic.
   - `config.py`: Configuration settings.
@@ -65,7 +65,7 @@ The project is organized as follows:
   - `models.py`: SQLAlchemy models.
   - `profile.py`: User profile management logic.
   - `social.py`: Social media integration logic.
-  - `tasks.py`: Task management and submission logic.
+  - `quests.py`: Quest management and submission logic.
   - `utils.py`: Utility functions.
 - `csv/`: Contains CSV files for bulk data import.
 - `docs/`: Documentation files.
@@ -138,9 +138,9 @@ The application is modularized using Flask Blueprints:
 - **`admin_bp`**: Admin-specific routes and views (defined in `admin.py`).
 - **`auth_bp`**: Authentication routes and views (defined in `auth.py`).
 - **`badges_bp`**: Badge management routes and views (defined in `badges.py`).
-- **`ai_bp`**: AI task generation routes and views (defined in `ai.py`).
+- **`ai_bp`**: AI quest generation routes and views (defined in `ai.py`).
 - **`profile_bp`**: User profile management routes and views (defined in `profile.py`).
-- **`tasks_bp`**: Task management and submission routes and views (defined in `tasks.py`).
+- **`quests_bp`**: Quest management and submission routes and views (defined in `quests.py`).
 
 ### Database Models
 
@@ -148,10 +148,10 @@ The database models are defined in `app/models.py` and include:
 
 - **`User`**: Represents a user in the system.
 - **`Game`**: Represents a game that users can participate in.
-- **`Task`**: Represents a task that users can complete.
+- **`Quest`**: Represents a quest that users can complete.
 - **`Badge`**: Represents a badge that users can earn.
-- **`UserTask`**: Represents a user's completion of a task.
-- **`TaskSubmission`**: Represents a user's submission for a task.
+- **`UserQuest`**: Represents a user's completion of a quest.
+- **`QuestSubmission`**: Represents a user's submission for a quest.
 - **`ShoutBoardMessage`**: Represents a message posted on the Shout Board.
 
 ### Forms
@@ -160,8 +160,8 @@ Forms are defined using WTForms in `app/forms.py` and include:
 
 - **`ProfileForm`**: Form for updating user profiles.
 - **`ShoutBoardForm`**: Form for posting messages on the Shout Board.
-- **`TaskForm`**: Form for creating and updating tasks.
-- **`PhotoForm`**: Form for submitting photos for task verification.
+- **`QuestForm`**: Form for creating and updating quests.
+- **`PhotoForm`**: Form for submitting photos for quest verification.
 - **`ContactForm`**: Form for contacting support.
 
 ### Utilities
@@ -172,7 +172,7 @@ Utility functions are defined in `app/utils.py` and include:
 - **`save_badge_image`**: Saves badge images.
 - **`update_user_score`**: Updates a user's score.
 - **`award_badges`**: Awards badges to users.
-- **`can_complete_task`**: Checks if a user can complete a task.
+- **`can_complete_quest`**: Checks if a user can complete a quest.
 - **`send_email`**: Sends emails.
 
 ## Admin Functionality
@@ -183,7 +183,7 @@ The admin dashboard provides an overview of the platform's activity and allows a
 
 - **User Management**: View and manage user accounts.
 - **Game Management**: Create, update, and delete games.
-- **Task Management**: Create, update, and delete tasks.
+- **Quest Management**: Create, update, and delete quests.
 - **Badge Management**: Create, update, and delete badges.
 - **Shout Board Management**: View and delete Shout Board messages.
 
@@ -196,14 +196,14 @@ Admins can manage badges using the following routes:
 - **Update Badge**: `/badges/update/<int:badge_id>`
 - **Delete Badge**: `/badges/delete/<int:badge_id>`
 
-### Task Management
+### Quest Management
 
-Admins can manage tasks using the following routes:
+Admins can manage quests using the following routes:
 
-- **Create Task**: `/tasks/<int:game_id>/add_task`
-- **Manage Tasks**: `/tasks/<int:game_id>/manage_tasks`
-- **Update Task**: `/tasks/task/<int:task_id>/update`
-- **Delete Task**: `/tasks/task/<int:task_id>/delete`
+- **Create Quest**: `/quests/<int:game_id>/add_quest`
+- **Manage Quests**: `/quests/<int:game_id>/manage_quests`
+- **Update Quest**: `/quests/quest/<int:quest_id>/update`
+- **Delete Quest**: `/quests/quest/<int:quest_id>/delete`
 
 ### Shout Board
 
@@ -215,20 +215,20 @@ The Shout Board allows admins to post and pin messages that are viewable by all 
 
 ## User Functionality
 
-### Task Submission
+### Quest Submission
 
-Users can complete tasks and submit verification using the following routes:
+Users can complete quests and submit verification using the following routes:
 
-- **Submit Task**: `/tasks/task/<int:task_id>/submit`
-- **View Task Submissions**: `/tasks/task/<int:task_id>/submissions`
-- **Delete Submission**: `/tasks/task/delete_submission/<int:submission_id>`
+- **Submit Quest**: `/quests/quest/<int:quest_id>/submit`
+- **View Quest Submissions**: `/quests/quest/<int:quest_id>/submissions`
+- **Delete Submission**: `/quests/quest/delete_submission/<int:submission_id>`
 
 ### View User Submissions
 
 Users can view their submissions using the following routes:
 
-- **View My Submissions**: `/tasks/task/my_submissions`
-- **Delete My Submission**: `/tasks/task/delete_submission/<int:submission_id>`
+- **View My Submissions**: `/quests/quest/my_submissions`
+- **Delete My Submission**: `/quests/quest/delete_submission/<int:submission_id>`
 
 ### Profile Management
 
@@ -245,19 +245,19 @@ Users can manage their profiles using the following routes:
 
 Users can integrate their social media accounts to share their achievements:
 
-- **Twitter Integration**: Post task completions on Twitter.
-- **Facebook Integration**: Share task completions and photos on Facebook.
-- **Instagram Integration**: Post photos related to task completions on Instagram.
+- **Twitter Integration**: Post quest completions on Twitter.
+- **Facebook Integration**: Share quest completions and photos on Facebook.
+- **Instagram Integration**: Post photos related to quest completions on Instagram.
 
-## AI Task Generation
+## AI Quest Generation
 
-Our platform leverages AI to generate new tasks for users. This functionality is powered by OpenAI and involves the following steps:
+Our platform leverages AI to generate new quests for users. This functionality is powered by OpenAI and involves the following steps:
 
-1. **Generate Task**: `/ai/generate_task`
-   - This route accepts a task description and uses OpenAI to generate task details such as title, description, tips, points, completion limit, frequency, verification type, badge name, and badge description.
+1. **Generate Quest**: `/ai/generate_quest`
+   - This route accepts a quest description and uses OpenAI to generate quest details such as title, description, tips, points, completion limit, frequency, verification type, badge name, and badge description.
    
-2. **Create Task**: `/ai/create_task`
-   - After generating task details, this route creates the task in the database.
+2. **Create Quest**: `/ai/create_quest`
+   - After generating quest details, this route creates the quest in the database.
 
 3. **Generate Badge Image**: `/ai/generate_badge_image`
    - This route uses OpenAI to generate a badge image based on the badge description.
@@ -285,7 +285,7 @@ JavaScript files are located in `app/static/js` and include:
 - `badge_management.js`
 - `bootstrap.min.js`
 - `contact_modal.js`
-- `generated_task.js`
+- `generated_quest.js`
 - `highlight.min.js`
 - `index_management.js`
 - `join_custom_game_modal.js`
@@ -296,7 +296,7 @@ JavaScript files are located in `app/static/js` and include:
 - `popper.min.js`
 - `quill.min.js`
 - `submission_detail_modal.js`
-- `task_detail_modal.js`
+- `quest_detail_modal.js`
 - `user_management.js`
 - `user_profile_modal.js`
 

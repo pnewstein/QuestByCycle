@@ -127,7 +127,7 @@
     <ul>
         {% for submission in user_submissions|default([]) %}
         <li>
-            <strong>Task:</strong> {{ submission.task.title }}<br>
+            <strong>Quest:</strong> {{ submission.quest.title }}<br>
             <strong>Comment:</strong> {{ submission.comment }}<br>
             <strong>Submitted On:</strong> {{ submission.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
             {% if submission.image_url %}

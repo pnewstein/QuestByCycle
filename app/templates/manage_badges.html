@@ -23,7 +23,7 @@
     </div>
     <div>
         <!-- Toggle buttons for forms -->
-        <button class="button" onclick="toggleForm('uploadForm')">Upload Badge Images for Uploaded Tasks</button>
+        <button class="button" onclick="toggleForm('uploadForm')">Upload Badge Images for Uploaded Quests</button>
         <button class="button" onclick="toggleForm('addBadgeForm')">Add a single Category Badge</button>
         <button class="button" onclick="toggleForm('bulkUploadForm')">Bulk Upload Badges from CSV and Image Files</button>
     </div>
@@ -40,7 +40,7 @@
 
     <div id="addBadgeForm" class="form-container" style="display:none;">
         <p><h2>Add a Category Badge</h2></p>
-        <h5>Added Category Badges are awarded upon completing the set of Tasks with the same Category one time.</h5>
+        <h5>Added Category Badges are awarded upon completing the set of Quests with the same Category one time.</h5>
         <div class="badge-form">
             <form action="{{ url_for('badges.manage_badges') }}" method="post" enctype="multipart/form-data">
                 {{ form.hidden_tag() }}

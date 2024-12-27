@@ -9,7 +9,7 @@ from app.auth import auth_bp
 from app.admin import admin_bp, create_super_admin
 from app.main import main_bp
 from app.games import games_bp
-from app.tasks import tasks_bp
+from app.quests import quests_bp
 from app.badges import badges_bp
 from app.profile import profile_bp
 from app.ai import ai_bp
@@ -112,7 +112,7 @@ def create_app():
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(ai_bp, url_prefix='/ai')
     app.register_blueprint(games_bp, url_prefix='/games')
-    app.register_blueprint(tasks_bp, url_prefix='/tasks')
+    app.register_blueprint(quests_bp, url_prefix='/quests')
     app.register_blueprint(badges_bp, url_prefix='/badges')
     app.register_blueprint(profile_bp, url_prefix='/profile')
     app.register_blueprint(main_bp)

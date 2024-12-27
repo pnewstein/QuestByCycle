@@ -1,9 +1,9 @@
-<!-- Task Detail Modal -->
-<div id="taskDetailModal" class="modal">
+<!-- Quest Detail Modal -->
+<div id="questDetailModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2 id="modalTaskTitle" class="text-center">Task Title</h2>
-            <button type="button" class="btn-close" aria-label="Close" onclick="closeTaskDetailModal()"></button>
+            <h2 id="modalQuestTitle" class="text-center">Quest Title</h2>
+            <button type="button" class="btn-close" aria-label="Close" onclick="closeQuestDetailModal()"></button>
         </div>
 
         <!-- Flash Messages for the modal -->
@@ -15,37 +15,37 @@
             <!-- Description Section -->
             <div class="box-container description-box">
                 <h4 class="box-title">Description</h4>
-                <p id="modalTaskDescription" class="text-muted text-center"></p>
+                <p id="modalQuestDescription" class="text-muted text-center"></p>
             </div>
 
-            <!-- Task Details Grid -->
-            <div class="task-details-grid">
-                <div class="task-detail-item" onclick="toggleContent(this)">
+            <!-- Quest Details Grid -->
+            <div class="quest-details-grid">
+                <div class="quest-detail-item" onclick="toggleContent(this)">
                     <h4 class="text-primary">Points per Completion</h4>
-                    <span id="modalTaskPoints" class="text-info hidden"></span>
+                    <span id="modalQuestPoints" class="text-info hidden"></span>
                 </div>
-                <div class="task-detail-item" onclick="toggleContent(this)">
+                <div class="quest-detail-item" onclick="toggleContent(this)">
                     <h4 class="text-primary">Badge</h4>
                     <!-- Use resized image URL -->
-                    <img id="modalTaskBadgeImage" data-src="/resize_image?path=static/images/default_badge.png&width=200" alt="Badge Image" class="badge-image hidden lazyload">
+                    <img id="modalQuestBadgeImage" data-src="/resize_image?path=static/images/default_badge.png&width=200" alt="Badge Image" class="badge-image hidden lazyload">
                 </div>
-                <div class="task-detail-item" onclick="toggleContent(this)">
+                <div class="quest-detail-item" onclick="toggleContent(this)">
                     <h4 class="text-primary">Category</h4>
-                    <span id="modalTaskCategory" class="text-info hidden"></span>
+                    <span id="modalQuestCategory" class="text-info hidden"></span>
                 </div>
-                <div class="task-detail-item" onclick="toggleContent(this)">
+                <div class="quest-detail-item" onclick="toggleContent(this)">
                     <h4 class="text-primary">Completion Limit</h4>
-                    <span id="modalTaskCompletionLimit" class="text-info hidden"></span>
+                    <span id="modalQuestCompletionLimit" class="text-info hidden"></span>
                 </div>
-                <div class="task-detail-item" onclick="toggleContent(this)">
+                <div class="quest-detail-item" onclick="toggleContent(this)">
                     <h4 class="text-primary">Submission Requirements</h4>
-                    <span id="modalTaskVerificationType" class="text-info hidden"></span>
+                    <span id="modalQuestVerificationType" class="text-info hidden"></span>
                 </div>
-                <div class="task-detail-item" onclick="toggleContent(this)">
+                <div class="quest-detail-item" onclick="toggleContent(this)">
                     <h4 class="text-primary">Your Total Completions</h4>
-                    <span id="modalTaskCompletions" class="text-info hidden"></span>
+                    <span id="modalQuestCompletions" class="text-info hidden"></span>
                 </div>
-                <div class="task-detail-item" onclick="toggleContent(this)">
+                <div class="quest-detail-item" onclick="toggleContent(this)">
                     <h4 class="text-primary">Eligibility</h4>
                     <span id="modalCountdown" class="text-info hidden"></span>
                 </div>
@@ -54,15 +54,15 @@
             <!-- Tips Section -->
             <div class="box-container tips-box">
                 <h4 class="box-title">Tips</h4>
-                <p id="modalTaskTips" class="text-primary"></p>
+                <p id="modalQuestTips" class="text-primary"></p>
             </div>
 
-            <div class="user-task-data">
+            <div class="user-quest-data">
                 <!-- Elements like verification button and form will be dynamically appended here -->
             </div>
         </div>
         <div class="modal-footer">
-            <strong><h4 class="text-center text-success">Task Entries</h4></strong>
+            <strong><h4 class="text-center text-success">Quest Entries</h4></strong>
             <div id="submissionBoard" class="photo-board">
                 <!-- Submissions displayed here -->
             </div>
@@ -150,7 +150,7 @@
         color: #003942 !important;
     }
 
-    .task-details-grid {
+    .quest-details-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 20px;
@@ -159,7 +159,7 @@
         padding-bottom: 20px;
     }
 
-    .task-detail-item {
+    .quest-detail-item {
         background: rgba(0, 0, 0, 0.1);
         border-radius: 10px;
         padding-top: 10px;
@@ -172,20 +172,20 @@
         cursor: pointer; /* Add cursor pointer for clickability */
     }
 
-    .task-detail-item:hover {
+    .quest-detail-item:hover {
         transform: translateY(-5px);
         box-shadow: 0 8px 16px rgba(0,0,0,0.2);
     }
 
-    .task-detail-item h4 {
+    .quest-detail-item h4 {
         margin-bottom: 10px;
         font-size: 20px;
         color: #fff;
         font-weight: bold;
     }
 
-    .task-detail-item span,
-    .task-detail-item img {
+    .quest-detail-item span,
+    .quest-detail-item img {
         font-size: 18px;
         color: #ddd;
     }
@@ -341,20 +341,20 @@
             color: #6c757d; /* Standard muted text color for contrast */
         }
 
-        .task-details-grid {
+        .quest-details-grid {
             display: block; /* Change display to block to stack elements vertically */
             margin-bottom: 10px; /* Adds bottom margin for spacing between items */
         }
 
-        .task-detail-item {
+        .quest-detail-item {
             margin-bottom: 5px; /* Adds bottom margin for each detail item */
         }
 
-        .task-detail-item h4 {
+        .quest-detail-item h4 {
             font-size: 1em; /* Reduce font size to fit the smaller layout */
         }
 
-        .task-detail-item .text-info {
+        .quest-detail-item .text-info {
             font-size: 0.9em; /* Smaller font size for detail information */
         }
     }

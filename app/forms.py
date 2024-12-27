@@ -65,7 +65,7 @@ class DeleteUserForm(FlaskForm):
 class GameForm(FlaskForm):
     title = StringField('Game Title', validators=[DataRequired()])
     description = StringField('Game Description', validators=[DataRequired(), Length(max=1000)])
-    description2 = StringField('Task Rules', validators=[DataRequired(), Length(max=1000)])
+    description2 = StringField('Quest Rules', validators=[DataRequired(), Length(max=1000)])
     start_date = DateField('Start Date', format='%Y-%m-%d', validators=[DataRequired()])  # Use DateField
     end_date = DateField('End Date', format='%Y-%m-%d', validators=[DataRequired()])  # Use DateField
     details = TextAreaField('Game Details')
@@ -91,7 +91,7 @@ class GameForm(FlaskForm):
 
 
 
-class TaskForm(FlaskForm):
+class QuestForm(FlaskForm):
     enabled = BooleanField('Enabled', default=True)
     is_sponsored = BooleanField('Is Sponsored', default=False)
     category = StringField('Category', validators=[DataRequired()])
@@ -106,7 +106,7 @@ class TaskForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
     tips = TextAreaField('Tips', validators=[Optional()])
-    points = IntegerField('Points', validators=[DataRequired(), NumberRange(min=1)], default=1)  # Assuming tasks have at least 1 point
+    points = IntegerField('Points', validators=[DataRequired(), NumberRange(min=1)], default=1)  # Assuming quests have at least 1 point
     completion_limit = IntegerField('Completion Limit', validators=[DataRequired(), NumberRange(min=1)], default=1)
     frequency = SelectField('Frequency', choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly')], validators=[DataRequired()])
     badge_id = SelectField('Badge', coerce=int, choices=[], validators=[Optional()])
@@ -115,10 +115,10 @@ class TaskForm(FlaskForm):
     badge_image_filename = FileField('Badge Image', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
     default_badge_image = SelectField('Select Default Badge Image', coerce=str, choices=[], default='')
     game_id = HiddenField('Game ID', validators=[DataRequired()])
-    submit = SubmitField('Create Task')
+    submit = SubmitField('Create Quest')
 
     def __init__(self, *args, **kwargs):
-        super(TaskForm, self).__init__(*args, **kwargs)
+        super(QuestForm, self).__init__(*args, **kwargs)
         self.badge_id.choices = [(0, 'None')] + [(badge.id, badge.name) for badge in Badge.query.all()]
         badge_image_directory = os.path.join(current_app.root_path, 'static/images/badge_images')
         if not os.path.exists(badge_image_directory):
@@ -129,11 +129,11 @@ class TaskForm(FlaskForm):
         if field.data not in valid_completion_limits:
             field.data = 1
 
-class TaskImportForm(FlaskForm):
+class QuestImportForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
     tips = TextAreaField('Tips', validators=[])
-    points = IntegerField('Points', validators=[DataRequired(), NumberRange(min=1)], default=1)  # Assuming tasks have at least 1 point
+    points = IntegerField('Points', validators=[DataRequired(), NumberRange(min=1)], default=1)  # Assuming quests have at least 1 point
     completion_limit = IntegerField('Completion Limit', validators=[DataRequired(), NumberRange(min=1)], default=1)
     frequency = SelectField('Frequency', choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly')], validators=[DataRequired()])
     verification_type_choices = [
@@ -149,10 +149,10 @@ class TaskImportForm(FlaskForm):
     badge_description = TextAreaField('Badge Description', validators=[DataRequired()])    
     default_badge_image = SelectField('Select Default Badge Image', coerce=str, choices=[], default='')
     badge_image_filename = FileField('Badge Image', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
-    submit = SubmitField('Add Task')
+    submit = SubmitField('Add Quest')
 
     def __init__(self, *args, **kwargs):
-        super(TaskForm, self).__init__(*args, **kwargs)
+        super(QuestForm, self).__init__(*args, **kwargs)
         self.badge_id.choices = [(0, 'None')] + [(b.id, b.name) for b in Badge.query.order_by('name')]
         badge_image_directory = os.path.join(current_app.root_path, 'static/images/badge_images')
         self.default_badge_image.choices = [('','None')] + [(filename, filename) for filename in os.listdir(badge_image_directory)]
@@ -210,10 +210,10 @@ class BikeForm(FlaskForm):
     submit = SubmitField('Update Bike')
 
 
-class TaskSubmissionForm(FlaskForm):
+class QuestSubmissionForm(FlaskForm):
     evidence = FileField('Upload Evidence', validators=[FileAllowed(['jpg', 'jpeg,' 'png'], 'Images only!')])
     comment = TextAreaField('Comment')  # Assuming you might also want to submit a comment
-    submit = SubmitField('Submit Task')
+    submit = SubmitField('Submit Quest')
 
 
 class PhotoForm(FlaskForm):
@@ -245,9 +245,9 @@ class BadgeForm(FlaskForm):
         self.category.choices = [('none', 'None')] + [(choice, choice) for choice in category_choices]
 
 
-class TaskImportForm(FlaskForm):
+class QuestImportForm(FlaskForm):
     csv_file = FileField('CSV File', validators=[DataRequired(), FileAllowed(['csv'], 'CSV files only!')])
-    submit = SubmitField('Import Tasks')
+    submit = SubmitField('Import Quests')
 
 class ContactForm(FlaskForm):
     message = TextAreaField('Message', validators=[DataRequired()])

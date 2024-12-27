@@ -1,5 +1,5 @@
-// Task detail modal management functions
-function openTaskDetailModal(taskId) {
+// Quest detail modal management functions
+function openQuestDetailModal(questId) {
     resetModalContent();
 
     // Show flash messages in the modal
@@ -9,23 +9,23 @@ function openTaskDetailModal(taskId) {
         modalFlashContainer.innerHTML = flashMessagesContainer.innerHTML;
     }
 
-    fetch(`/tasks/detail/${taskId}/user_completion`)
+    fetch(`/quests/detail/${questId}/user_completion`)
         .then(response => response.json())
         .then(data => {
-            const { task, userCompletion, canVerify, nextEligibleTime } = data;
-            if (!populateTaskDetails(task, userCompletion.completions, canVerify, taskId, nextEligibleTime)) {
-                console.error('Error: Required elements are missing to populate task details.');
+            const { quest, userCompletion, canVerify, nextEligibleTime } = data;
+            if (!populateQuestDetails(quest, userCompletion.completions, canVerify, questId, nextEligibleTime)) {
+                console.error('Error: Required elements are missing to populate quest details.');
                 return;
             }
-            ensureDynamicElementsExistAndPopulate(data.task, data.userCompletion.completions, data.nextEligibleTime, data.canVerify);
+            ensureDynamicElementsExistAndPopulate(data.quest, data.userCompletion.completions, data.nextEligibleTime, data.canVerify);
 
-            fetchSubmissions(taskId);
+            fetchSubmissions(questId);
             //lazyLoadImages(); // Ensure lazy loading is initialized after populating the content
-            openModal('taskDetailModal');
+            openModal('questDetailModal');
         })
         .catch(error => {
-            console.error('Error opening task detail modal:', error);
-            alert('Sign in to view task details.');
+            console.error('Error opening quest detail modal:', error);
+            alert('Sign in to view quest details.');
         });
 }
 
@@ -47,23 +47,23 @@ function lazyLoadImages() {
     });
 }
 
-function closeTaskDetailModal() {
-    document.getElementById('taskDetailModal').style.display = 'none';
+function closeQuestDetailModal() {
+    document.getElementById('questDetailModal').style.display = 'none';
     resetModalContent();  // Ensure clean state on next open
 }
 
-function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextEligibleTime) {
-    const completeText = userCompletionCount >= task.completion_limit ? " - complete" : "";
+function populateQuestDetails(quest, userCompletionCount, canVerify, questId, nextEligibleTime) {
+    const completeText = userCompletionCount >= quest.completion_limit ? " - complete" : "";
     const elements = {
-        'modalTaskTitle': document.getElementById('modalTaskTitle'),
-        'modalTaskDescription': document.getElementById('modalTaskDescription'),
-        'modalTaskTips': document.getElementById('modalTaskTips'),
-        'modalTaskPoints': document.getElementById('modalTaskPoints'),
-        'modalTaskCompletionLimit': document.getElementById('modalTaskCompletionLimit'),
-        'modalTaskCategory': document.getElementById('modalTaskCategory'),
-        'modalTaskVerificationType': document.getElementById('modalTaskVerificationType'),
-        'modalTaskBadgeImage': document.getElementById('modalTaskBadgeImage'),
-        'modalTaskCompletions': document.getElementById('modalTaskCompletions'),
+        'modalQuestTitle': document.getElementById('modalQuestTitle'),
+        'modalQuestDescription': document.getElementById('modalQuestDescription'),
+        'modalQuestTips': document.getElementById('modalQuestTips'),
+        'modalQuestPoints': document.getElementById('modalQuestPoints'),
+        'modalQuestCompletionLimit': document.getElementById('modalQuestCompletionLimit'),
+        'modalQuestCategory': document.getElementById('modalQuestCategory'),
+        'modalQuestVerificationType': document.getElementById('modalQuestVerificationType'),
+        'modalQuestBadgeImage': document.getElementById('modalQuestBadgeImage'),
+        'modalQuestCompletions': document.getElementById('modalQuestCompletions'),
         'modalCountdown': document.getElementById('modalCountdown')
     };
 
@@ -76,37 +76,37 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
     }
 
     // Update text content for elements
-    elements['modalTaskTitle'].innerText = `${task.title}${completeText}`;
-    elements['modalTaskDescription'].innerHTML = task.description;
-    elements['modalTaskTips'].innerHTML = task.tips || 'No tips available';
-    elements['modalTaskPoints'].innerText = `${task.points}`;
-    const completionText = task.completion_limit > 1 ? `${task.completion_limit} times` : `${task.completion_limit} time`;
-    elements['modalTaskCompletionLimit'].innerText = `${completionText} ${task.frequency}`;
-    elements['modalTaskCategory'].innerText = task.category || 'No category set';
+    elements['modalQuestTitle'].innerText = `${quest.title}${completeText}`;
+    elements['modalQuestDescription'].innerHTML = quest.description;
+    elements['modalQuestTips'].innerHTML = quest.tips || 'No tips available';
+    elements['modalQuestPoints'].innerText = `${quest.points}`;
+    const completionText = quest.completion_limit > 1 ? `${quest.completion_limit} times` : `${quest.completion_limit} time`;
+    elements['modalQuestCompletionLimit'].innerText = `${completionText} ${quest.frequency}`;
+    elements['modalQuestCategory'].innerText = quest.category || 'No category set';
 
-    switch (task.verification_type) {
+    switch (quest.verification_type) {
         case 'photo_comment':
-            elements['modalTaskVerificationType'].innerText = "Must upload a photo and a comment to earn points!";
+            elements['modalQuestVerificationType'].innerText = "Must upload a photo and a comment to earn points!";
             break;
         case 'photo':
-            elements['modalTaskVerificationType'].innerText = "Must upload a photo to earn points!";
+            elements['modalQuestVerificationType'].innerText = "Must upload a photo to earn points!";
             break;
         case 'comment':
-            elements['modalTaskVerificationType'].innerText = "Must upload a comment to earn points!";
+            elements['modalQuestVerificationType'].innerText = "Must upload a comment to earn points!";
             break;
         case 'qr_code':
-            elements['modalTaskVerificationType'].innerText = "Find the QR code and post a photo to earn points!";
+            elements['modalQuestVerificationType'].innerText = "Find the QR code and post a photo to earn points!";
             break;
         default:
-            elements['modalTaskVerificationType'].innerText = 'Not specified';
+            elements['modalQuestVerificationType'].innerText = 'Not specified';
             break;
     }
 
-    const badgeImagePath = task.badge && task.badge.image ? `/static/images/badge_images/${task.badge.image}` : '/static/images/badge_images/default_badge.png';
-    elements['modalTaskBadgeImage'].src = badgeImagePath;
-    elements['modalTaskBadgeImage'].alt = task.badge && task.badge.name ? `Badge: ${task.badge.name}` : 'Default Badge';
+    const badgeImagePath = quest.badge && quest.badge.image ? `/static/images/badge_images/${quest.badge.image}` : '/static/images/badge_images/default_badge.png';
+    elements['modalQuestBadgeImage'].src = badgeImagePath;
+    elements['modalQuestBadgeImage'].alt = quest.badge && quest.badge.name ? `Badge: ${quest.badge.name}` : 'Default Badge';
 
-    elements['modalTaskCompletions'].innerText = `Total Completions: ${userCompletionCount}`;
+    elements['modalQuestCompletions'].innerText = `Total Completions: ${userCompletionCount}`;
 
     const nextAvailableTime = nextEligibleTime && new Date(nextEligibleTime);
     if (!canVerify && nextAvailableTime && nextAvailableTime > new Date()) {
@@ -117,16 +117,16 @@ function populateTaskDetails(task, userCompletionCount, canVerify, taskId, nextE
         elements['modalCountdown'].style.color = 'green';
     }
 
-    manageVerificationSection(taskId, canVerify, task.verification_type, nextEligibleTime);
+    manageVerificationSection(questId, canVerify, quest.verification_type, nextEligibleTime);
     return true;
 }
 
-function ensureDynamicElementsExistAndPopulate(task, userCompletionCount, nextEligibleTime, canVerify) {
-    const parentElement = document.querySelector('.user-task-data'); // Target the parent element correctly.
+function ensureDynamicElementsExistAndPopulate(quest, userCompletionCount, nextEligibleTime, canVerify) {
+    const parentElement = document.querySelector('.user-quest-data'); // Target the parent element correctly.
 
     // Define IDs and initial values for dynamic elements.
     const dynamicElements = [
-        { id: 'modalTaskCompletions', value: `${userCompletionCount || 0}` },
+        { id: 'modalQuestCompletions', value: `${userCompletionCount || 0}` },
         { id: 'modalCountdown', value: "" } // Will be updated based on conditions
     ];
 
@@ -167,27 +167,27 @@ function formatTimeDiff(ms) {
     return `${days}d ${hours}h ${minutes}m ${seconds}s`;
 }
 
-// Task detail modal verification functions
+// Quest detail modal verification functions
 const userToken = localStorage.getItem('userToken');
 const currentUserId = localStorage.getItem('current_user_id');
 
 // Function to manage the dynamic creation and adjustment of the verification form
-function manageVerificationSection(taskId, canVerify, verificationType, nextEligibleTime) {
-    const userTaskData = document.querySelector('.user-task-data');
-    userTaskData.innerHTML = '';
+function manageVerificationSection(questId, canVerify, verificationType, nextEligibleTime) {
+    const userQuestData = document.querySelector('.user-quest-data');
+    userQuestData.innerHTML = '';
 
     if (canVerify) {
         const verifyForm = document.createElement('div');
-        verifyForm.id = `verifyTaskForm-${taskId}`;
-        verifyForm.className = 'verify-task-form';
+        verifyForm.id = `verifyQuestForm-${questId}`;
+        verifyForm.className = 'verify-quest-form';
         verifyForm.style.display = 'block'; // Show by default
 
         // Ensure verificationType is correctly passed and utilized
         const formHTML = getVerificationFormHTML(verificationType.trim().toLowerCase());
         verifyForm.innerHTML = formHTML;
-        userTaskData.appendChild(verifyForm);
+        userQuestData.appendChild(verifyForm);
 
-        setupSubmissionForm(taskId);
+        setupSubmissionForm(questId);
     }
 
     console.log("Next Eligible Time:", nextEligibleTime);
@@ -239,7 +239,7 @@ function getVerificationFormHTML(verificationType) {
             // No button is added for QR code case
             break;
         case 'pause':
-            formHTML += `<p class="epic-message">Task is currently paused.</p>`;
+            formHTML += `<p class="epic-message">Quest is currently paused.</p>`;
             // No button is added for pause case
             break;
         default:
@@ -253,27 +253,27 @@ function getVerificationFormHTML(verificationType) {
 }
 
 // Toggle the display of the verification form
-function toggleVerificationForm(taskId) {
-    const verifyForm = document.getElementById(`verifyTaskForm-${taskId}`);
+function toggleVerificationForm(questId) {
+    const verifyForm = document.getElementById(`verifyQuestForm-${questId}`);
     verifyForm.style.display = verifyForm.style.display === 'none' ? 'block' : 'none';
 }
 
 // Setup submission form with event listener
-function setupSubmissionForm(taskId) {
-    const submissionForm = document.getElementById(`verifyTaskForm-${taskId}`);
+function setupSubmissionForm(questId) {
+    const submissionForm = document.getElementById(`verifyQuestForm-${questId}`);
     if (submissionForm) {
         submissionForm.addEventListener('submit', function(event) {
             showLoadingModal();
-            submitTaskDetails(event, taskId);
+            submitQuestDetails(event, questId);
         });
     } else {
-        console.error("Form not found for task ID:", taskId);
+        console.error("Form not found for quest ID:", questId);
     }
 }
 
-// Define verifyTask function to handle verification form toggling
-function verifyTask(taskId) {
-    const verifyForm = document.getElementById(`verifyTaskForm-${taskId}`);
+// Define verifyQuest function to handle verification form toggling
+function verifyQuest(questId) {
+    const verifyForm = document.getElementById(`verifyQuestForm-${questId}`);
     if (verifyForm.style.display === 'none' || verifyForm.style.display === '') {
         verifyForm.style.display = 'block';  // Show the form
     } else {
@@ -353,10 +353,10 @@ function setInstagramLink(url) {
     }
 }
 
-// Handle Task Submissions with streamlined logic
+// Handle Quest Submissions with streamlined logic
 let isSubmitting = false;
 
-function submitTaskDetails(event, taskId) {
+function submitQuestDetails(event, questId) {
     event.preventDefault();
     if (isSubmitting) return;
     isSubmitting = true;
@@ -370,7 +370,7 @@ function submitTaskDetails(event, taskId) {
 
     showLoadingModal(); // Show the loading modal
 
-    fetch(`/tasks/task/${taskId}/submit`, {
+    fetch(`/quests/quest/${questId}/submit`, {
         method: 'POST',
         body: formData,
         credentials: 'same-origin',
@@ -384,8 +384,8 @@ function submitTaskDetails(event, taskId) {
             if (response.status === 403) {
                 // Handle the specific case where the game is out of date
                 return response.json().then(data => {
-                    if (data.message === 'This task cannot be completed outside of the game dates') {
-                        throw new Error('The game has ended and you can no longer submit tasks. Join a new game in the game dropdown menu.');
+                    if (data.message === 'This quest cannot be completed outside of the game dates') {
+                        throw new Error('The game has ended and you can no longer submit quests. Join a new game in the game dropdown menu.');
                     }
                     throw new Error(data.message || `Server responded with status ${response.status}`);
                 });
@@ -419,14 +419,14 @@ function submitTaskDetails(event, taskId) {
             console.debug('Updating Instagram link:', data.instagram_url);
             updateInstagramLink(data.instagram_url);
         }
-        openTaskDetailModal(taskId);
+        openQuestDetailModal(questId);
         form.reset();
     })
     .catch(error => {
         hideLoadingModal(); // Ensure the loading modal is hidden on error
         console.error("Submission error:", error);
-        if (error.message === 'The game has ended and you can no longer submit tasks. Join a new game in the game dropdown menu.') {
-            alert('The game has ended, and you can no longer submit tasks for this game. Join a new game in the game dropdown menu.');
+        if (error.message === 'The game has ended and you can no longer submit quests. Join a new game in the game dropdown menu.') {
+            alert('The game has ended, and you can no longer submit quests for this game. Join a new game in the game dropdown menu.');
         } else {
             alert('Error during submission: ' + error.message);
         }
@@ -437,8 +437,8 @@ function submitTaskDetails(event, taskId) {
 }
 
 // Fetch and Display Submissions
-function fetchSubmissions(taskId) {
-    fetch(`/tasks/task/${taskId}/submissions`, {
+function fetchSubmissions(questId) {
+    fetch(`/quests/quest/${questId}/submissions`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${userToken}`, // Assuming Bearer token is used
@@ -549,7 +549,7 @@ function distributeImages(images) {
     board.innerHTML = ''; // Clear existing content
 
     // Get and validate the fallback URL from the DOM
-    let fallbackUrl = document.getElementById('taskDetailModal').getAttribute('data-placeholder-url');
+    let fallbackUrl = document.getElementById('questDetailModal').getAttribute('data-placeholder-url');
     if (!fallbackUrl) {
         console.warn("No fallback URL provided in data-placeholder-url attribute.");
         // Set a default fallback image URL if none is provided

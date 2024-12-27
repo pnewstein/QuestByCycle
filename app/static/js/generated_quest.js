@@ -1,15 +1,15 @@
-// Function to open the task creation modal
-function openTaskCreationModal() {
-    openModal('taskCreationModal');
+// Function to open the quest creation modal
+function openQuestCreationModal() {
+    openModal('questCreationModal');
 }
 
-function closeTaskCreationModal() {
-    document.getElementById('taskCreationModal').style.display = 'none';
+function closeQuestCreationModal() {
+    document.getElementById('questCreationModal').style.display = 'none';
     resetModalContent();  // Ensure clean state on next open
 }
 
 $(document).ready(function() {
-    $('#generateAITaskModal').modal({
+    $('#generateAIQuestModal').modal({
         show: false
     });
 });
@@ -19,28 +19,28 @@ document.addEventListener("DOMContentLoaded", function() {
     
     buttons.forEach(button => {
         button.addEventListener('click', function() {
-            openTaskCreationModal(this);
+            openQuestCreationModal(this);
         });
     });
 
-    function openTaskCreationModal(button) {
-        const form = document.getElementById('taskCreationForm');
+    function openQuestCreationModal(button) {
+        const form = document.getElementById('questCreationForm');
         const gameId = button.getAttribute('data-game-id');
 
         if (form) {
             form.addEventListener('submit', function(event) {
                 event.preventDefault();
 
-                const taskDescription = document.getElementById('taskDescription').value;
+                const questDescription = document.getElementById('questDescription').value;
                 const csrfToken = document.querySelector('[name=csrf_token]').value;
 
-                fetch('/ai/generate_task', {
+                fetch('/ai/generate_quest', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': csrfToken
                     },
-                    body: JSON.stringify({ description: taskDescription, game_id: gameId })
+                    body: JSON.stringify({ description: questDescription, game_id: gameId })
                 })
                 .then(response => {
                     if (!response.ok) {
@@ -53,12 +53,12 @@ document.addEventListener("DOMContentLoaded", function() {
                     return response.json();
                 })
                 .then(data => {
-                    if (data.generated_task_html) {
-                        document.getElementById('generatedTaskContent').innerHTML = data.generated_task_html;
+                    if (data.generated_quest_html) {
+                        document.getElementById('generatedQuestContent').innerHTML = data.generated_quest_html;
 
-                        $('#generateAITaskModal').modal('show');
+                        $('#generateAIQuestModal').modal('show');
                 
-                        const modalForm = document.getElementById('generateAITaskModalForm');
+                        const modalForm = document.getElementById('generateAIQuestModalForm');
                         if (modalForm) {
                             modalForm.setAttribute('data-game-id', gameId);
                         }
@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 const formData = new FormData(modalForm);
                                 const csrfToken = document.querySelector('[name=csrf_token]').value;
                 
-                                fetch(`/ai/create_task`, {
+                                fetch(`/ai/create_quest`, {
                                     method: 'POST',
                                     headers: {
                                         'X-CSRFToken': csrfToken
@@ -138,11 +138,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 })
                 .catch(error => {
-                    alert('Error generating task: ' + (error.errorMessage || error.statusText));
+                    alert('Error generating quest: ' + (error.errorMessage || error.statusText));
                 });
             });
         } else {
-            console.error("Form '#taskCreationForm' not found.");
+            console.error("Form '#questCreationForm' not found.");
         }
     }
 });

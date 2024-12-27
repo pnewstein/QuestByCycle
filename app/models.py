@@ -20,7 +20,7 @@ class Badge(db.Model):
     image = db.Column(db.String(500), nullable=True)
     category = db.Column(db.String(150), nullable=True) 
 
-    tasks = db.relationship('Task', backref='badge', lazy=True)
+    quests = db.relationship('Quest', backref='badge', lazy=True)
     
 user_badges = db.Table('user_badges',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
@@ -33,18 +33,18 @@ user_games = db.Table('user_games',
     db.Column('joined_at', db.DateTime, default=datetime.now(utc))
 )
 
-class UserTask(db.Model):
-    __tablename__ = 'user_tasks'
+class UserQuest(db.Model):
+    __tablename__ = 'user_quests'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True, nullable=False)
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id', ondelete='CASCADE'), primary_key=True, nullable=False)
+    quest_id = db.Column(db.Integer, db.ForeignKey('quest.id', ondelete='CASCADE'), primary_key=True, nullable=False)
     completions = db.Column(db.Integer, default=0)  # Track number of completions
-    points_awarded = db.Column(db.Integer, default=0)  # Points awarded for the task
+    points_awarded = db.Column(db.Integer, default=0)  # Points awarded for the quest
     completed_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(utc))  # Use timezone-aware datetime
-    task = db.relationship("Task", back_populates="user_tasks")
+    quest = db.relationship("Quest", back_populates="user_quests")
 
     def __init__(self, **kwargs):
-        super(UserTask, self).__init__(**kwargs)  # Initialize all fields from passed keyword arguments
+        super(UserQuest, self).__init__(**kwargs)  # Initialize all fields from passed keyword arguments
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -55,7 +55,7 @@ class User(UserMixin, db.Model):
     is_super_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.now())
     license_agreed = db.Column(db.Boolean, nullable=False)
-    user_tasks = db.relationship('UserTask', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+    user_quests = db.relationship('UserQuest', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     badges = db.relationship('Badge', secondary=user_badges, lazy='subquery',
                              backref=db.backref('users', lazy=True))
     score = db.Column(db.Integer, default=0)
@@ -64,10 +64,10 @@ class User(UserMixin, db.Model):
     profile_picture = db.Column(db.String(200))
     age_group = db.Column(db.String(50))
     interests = db.Column(db.String(500))
-    task_likes = db.relationship('TaskLike', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+    quest_likes = db.relationship('QuestLike', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     email_verified = db.Column(db.Boolean, default=False)
     shoutboard_messages = db.relationship('ShoutBoardMessage', backref='user', lazy='dynamic', cascade='all, delete-orphan')
-    task_submissions = db.relationship('TaskSubmission', backref='submitter', lazy='dynamic', cascade='all, delete-orphan')
+    quest_submissions = db.relationship('QuestSubmission', backref='submitter', lazy='dynamic', cascade='all, delete-orphan')
 
     # New fields for riding preferences and toggles
     riding_preferences = db.Column(db.ARRAY(db.String), nullable=True)  # Use ARRAY if using Postgres, or JSON for other databases
@@ -114,8 +114,8 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def is_already_liking(self, task):
-        return TaskLike.query.filter_by(user_id=self.id, task_id=task.id).count() > 0
+    def is_already_liking(self, quest):
+        return QuestLike.query.filter_by(user_id=self.id, quest_id=quest.id).count() > 0
     
     def get_participated_games(self):
         return [{'id': game.id, 'title': game.title} for game in self.participated_games]
@@ -125,20 +125,20 @@ class User(UserMixin, db.Model):
         ProfileWallMessage.query.filter_by(author_id=self.id).delete(synchronize_session=False)
         ProfileWallMessage.query.filter_by(user_id=self.id).delete(synchronize_session=False)
 
-        # Delete related UserTasks
-        for user_task in self.user_tasks:
-            db.session.delete(user_task)
+        # Delete related UserQuests
+        for user_quest in self.user_quests:
+            db.session.delete(user_quest)
 
-        # Delete related TaskLikes
-        for task_like in self.task_likes:
-            db.session.delete(task_like)
+        # Delete related QuestLikes
+        for quest_like in self.quest_likes:
+            db.session.delete(quest_like)
 
         # Delete related ShoutBoardMessages
         for message in self.shoutboard_messages:
             db.session.delete(message)
 
-        # Delete related TaskSubmissions
-        for submission in self.task_submissions:
+        # Delete related QuestSubmissions
+        for submission in self.quest_submissions:
             db.session.delete(submission)
 
         # Remove user from games
@@ -151,16 +151,16 @@ class User(UserMixin, db.Model):
     def get_score_for_game(self, game_id):
         """
         Retrieve the user's total score for a specific game.
-        This method calculates the sum of points awarded for all tasks 
+        This method calculates the sum of points awarded for all quests 
         completed by the user within the specified game.
         """
-        # Sum up the points from UserTask entries for tasks within the specified game
+        # Sum up the points from UserQuest entries for quests within the specified game
         total_score = db.session.query(
-            db.func.sum(UserTask.points_awarded)
-        ).join(Task, UserTask.task_id == Task.id
+            db.func.sum(UserQuest.points_awarded)
+        ).join(Quest, UserQuest.quest_id == Quest.id
         ).filter(
-            UserTask.user_id == self.id,
-            Task.game_id == game_id
+            UserQuest.user_id == self.id,
+            Quest.game_id == game_id
         ).scalar() or 0  # Default to 0 if no score is found
 
         return total_score
@@ -173,7 +173,7 @@ class UserIP(db.Model):
 
     user = db.relationship('User', backref='ip_addresses')
 
-class Task(db.Model):
+class Quest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(140))
     description = db.Column(db.String(2000))
@@ -185,27 +185,27 @@ class Task(db.Model):
     verification_type = db.Column(db.String(50))
     verification_comment = db.Column(db.String(1000), default="")
     game_id = db.Column(db.Integer, db.ForeignKey('game.id', ondelete='CASCADE'))
-    game = db.relationship('Game', back_populates='tasks')
+    game = db.relationship('Game', back_populates='quests')
     points = db.Column(db.Integer, default=0)
     tips = db.Column(db.String(2000), default='', nullable=True)
     completion_limit = db.Column(db.Integer, default=1)
     frequency = db.Column(db.String(50), nullable=True)
-    user_tasks = db.relationship('UserTask', back_populates='task', cascade="all, delete", passive_deletes=True)
+    user_quests = db.relationship('UserQuest', back_populates='quest', cascade="all, delete", passive_deletes=True)
     category = db.Column(db.String(50), nullable=True)
     badge_id = db.Column(db.Integer, db.ForeignKey('badge.id'), nullable=True)
-    submissions = db.relationship('TaskSubmission', back_populates='task', cascade='all, delete-orphan')
-    likes = db.relationship('TaskLike', backref='task', cascade="all, delete-orphan")
+    submissions = db.relationship('QuestSubmission', back_populates='quest', cascade='all, delete-orphan')
+    likes = db.relationship('QuestLike', backref='quest', cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f'<Task {self.id}>'
+        return f'<Quest {self.id}>'
     
-class TaskLike(db.Model):
-    __tablename__ = 'task_likes'
+class QuestLike(db.Model):
+    __tablename__ = 'quest_likes'
     id = db.Column(db.Integer, primary_key=True)
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id', ondelete='CASCADE'), nullable=False)
+    quest_id = db.Column(db.Integer, db.ForeignKey('quest.id', ondelete='CASCADE'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
 
-    __table_args__ = (db.UniqueConstraint('task_id', 'user_id', name='_task_user_uc'),)
+    __table_args__ = (db.UniqueConstraint('quest_id', 'user_id', name='_quest_user_uc'),)
 
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -215,7 +215,7 @@ class Game(db.Model):
     start_date = db.Column(db.DateTime, nullable=False, default=datetime.now())
     end_date = db.Column(db.DateTime, nullable=False, default=datetime.now())
     admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    tasks = db.relationship('Task', back_populates='game', cascade="all, delete-orphan", lazy='dynamic')
+    quests = db.relationship('Quest', back_populates='game', cascade="all, delete-orphan", lazy='dynamic')
     participants = db.relationship('User', secondary='game_participants', lazy='subquery', backref=db.backref('games', lazy=True))
     game_goal = db.Column(db.Integer)
     details = db.Column(db.Text)
@@ -309,9 +309,9 @@ class ShoutBoardLike(db.Model):
 
     __table_args__ = (db.UniqueConstraint('message_id', 'user_id', name='_message_user_uc'),)
 
-class TaskSubmission(db.Model):
+class QuestSubmission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id', ondelete='CASCADE'), nullable=False)
+    quest_id = db.Column(db.Integer, db.ForeignKey('quest.id', ondelete='CASCADE'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     image_url = db.Column(db.String(500), nullable=True)
     comment = db.Column(db.String(1000), nullable=True)
@@ -320,8 +320,8 @@ class TaskSubmission(db.Model):
     fb_url = db.Column(db.String(1024), nullable=True)
     instagram_url = db.Column(db.String(1024), nullable=True)
 
-    task = db.relationship('Task', back_populates='submissions')
-    user = db.relationship('User', back_populates='task_submissions', overlaps="submitter")
+    quest = db.relationship('Quest', back_populates='submissions')
+    user = db.relationship('User', back_populates='quest_submissions', overlaps="submitter")
 
 class Sponsor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
