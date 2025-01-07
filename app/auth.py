@@ -213,7 +213,7 @@ def register():
 
                     # Check if the user has zero participated games and add to tutorial game if true
                     if len(user.participated_games) == 0:
-                        tutorial_game = Game.query.filter_by(is_tutorial=True).first()
+                        tutorial_game = Game.query.filter_by(is_tutorial=True).order_by(Game.start_date.desc()).first()
                         if tutorial_game:
                             user.participated_games.append(tutorial_game)
                             db.session.commit()
