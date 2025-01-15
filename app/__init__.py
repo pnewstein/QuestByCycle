@@ -1,8 +1,5 @@
-import logging
-import os
-
 from flask import Flask, render_template, current_app, flash, redirect, url_for
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 from flask_migrate import Migrate
 from werkzeug.middleware.proxy_fix import ProxyFix
 from app.auth import auth_bp
@@ -19,6 +16,9 @@ from flask_wtf.csrf import CSRFProtect
 from datetime import timedelta
 from flask_socketio import SocketIO
 from logging.handlers import RotatingFileHandler
+
+import logging
+import os
 
 # Global variable to track the first request
 has_run = False
@@ -151,6 +151,13 @@ def create_app():
     @app.context_processor
     def inject_socketio_url():
         return dict(socketio_server_url=app.config['SOCKETIO_SERVER_URL'])
+
+    @app.context_processor
+    def inject_selected_game_id():
+        if current_user.is_authenticated:
+            return dict(selected_game_id=current_user.selected_game_id or 0)
+        else:
+            return dict(selected_game_id=None)
 
     @app.errorhandler(Exception)
     def handle_exception(e):
