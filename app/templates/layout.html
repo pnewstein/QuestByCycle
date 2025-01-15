@@ -187,7 +187,56 @@
 
     <script type="module" src="https://cdn.jsdelivr.net/npm/shepherd.js@13.0.0/dist/esm/shepherd.mjs"></script>
 </head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-K95B3RL52T"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-K95B3RL52T');
+</script>
+
 <body data-user-id="{{ current_user.id if current_user.is_authenticated else 'none' }}">
+
+<!-- BEGIN: Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <!-- Your site name or brand here -->
+    <a class="navbar-brand" href="{{ url_for('main.index') }}">
+      QuestByCycle
+    </a>
+    <!-- This is the hamburger button that appears on mobile -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- The collapsible menu items -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <!-- Example nav items. Replace with your actual routes. -->
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="javascript:void(0)" onclick="openModal('contactModal')">Contact Us</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
+        </li>
+        <!-- You can add as many nav links as you’d like -->
+      </ul>
+    </div>
+  </div>
+</nav>
+<!-- END: Navbar -->
+
     <div class="content-wrap">
         <main>
             {% block content %}{% endblock %}
