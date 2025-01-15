@@ -3,33 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#D0E6B5">
 
     <!-- SEO Meta Tags -->
-    <meta name="description" content="QuestByCycle is a gamified web platform designed to motivate and engage the cycling community in environmental sustainability. Complete quests, earn badges, and contribute to a greener planet while competing on the leaderboard and connecting with other cyclists.">
+    <meta name="description" content="QuestByCycle is a photo sharing web platform designed to motivate and engage the cycling community in environmental sustainability. Complete quests, earn badges, and contribute to a greener planet while competing on the leaderboard and connecting with other cyclists.">
     <meta name="keywords" content="cycling, environmental sustainability, gamification, challenges, badges, community, leaderboard">
     <meta name="author" content="QuestByCycle Team">
     <meta name="robots" content="index, follow">
     
+    <!-- Required for Safari to recognize the PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="QuestByCycle">
+
     <!-- Open Graph Meta Tags (for social media sharing) -->
-    <meta property="og:title" content="QuestByCycle - Gamified Cycling for a Greener Planet">
-    <meta property="og:description" content="Join QuestByCycle, a gamified platform where cyclists take on challenges, earn badges, and contribute to environmental sustainability.">
+    <meta property="og:title" content="QuestByCycle - Completing Quests by Bike for a Greener Planet">
+    <meta property="og:description" content="Join QuestByCycle, a photo sharing platform where cyclists take on challenges, earn badges, and contribute to environmental sustainability.">
     <meta property="og:image" content="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}">
     <meta property="og:url" content="https://www.questbycycle.org">
     <meta property="og:type" content="website">
     
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="QuestByCycle - Gamified Cycling for a Greener Planet">
-    <meta name="twitter:description" content="Join QuestByCycle, a gamified platform where cyclists take on challenges, earn badges, and contribute to environmental sustainability.">
+    <meta name="twitter:title" content="QuestByCycle - Completing Quests by Bike for a Greener Planet">
+    <meta name="twitter:description" content="Join QuestByCycle, a photo sharing platform where cyclists take on challenges, earn badges, and contribute to environmental sustainability.">
     <meta name="twitter:image" content="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}">
     <meta name="twitter:site" content="@QuestByCycle">
     
     <!-- Browser Compatibility Meta Tags -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-    <!-- Favicon -->
+
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon-180x180.png') }}">
 
     <title>{% block title %}{% endblock %} - QuestByCycle</title>
 
@@ -187,6 +196,24 @@
     <footer class="footer">
         <div class="footer-section text">
             <strong>Supporting cycling initiatives for a greener planet.</strong>
+
+            <p>Enjoy the full experience by installing our app.</p>
+            <button id="install" hidden class="btn btn-primary">Install App</button>
+            
+            <div id="manual-install" hidden>
+              <p>To install this app:</p>
+              <ul>
+                <li>
+                  <strong>Safari (iOS/iPadOS):</strong> Tap the <strong>Share</strong> button (the square with an arrow pointing up) and then select <strong>Add to Home Screen</strong>.
+                </li>
+                <li>
+                  <strong>Safari (macOS):</strong> Use the File menu and choose <strong>Save As...</strong> to save a shortcut or bookmark to your desktop.
+                </li>
+                <li>
+                  <strong>Firefox:</strong> Tap the menu button (⋮) and choose <strong>Add to Home screen</strong>.
+                </li>
+              </ul>
+            </div>         
         </div>
         <div class="footer-content">
             <div class="footer-section logos">
@@ -219,5 +246,95 @@
             &copy; {{ current_year }} QuestByCycle. All rights reserved. 
         </div>
     </footer>
+    <script>
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}").then((registration) => {
+            registration.addEventListener("updatefound", () => {
+              const newWorker = registration.installing;
+      
+              newWorker.addEventListener("statechange", () => {
+                if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                  if (confirm("A new version is available. Reload to update?")) {
+                    window.location.reload();
+                  }
+                }
+              });
+            });
+          });
+      
+          // Listen for messages from the service worker
+          navigator.serviceWorker.addEventListener("message", (event) => {
+            if (event.data.type === "UPDATE_AVAILABLE") {
+              if (confirm("A new version is available. Reload to update?")) {
+                window.location.reload();
+              }
+            }
+          });
+        }
+    </script>
+    <script>
+      const installButton = document.getElementById("install");
+      const manualInstall = document.getElementById("manual-install");
+
+      let deferredPrompt = null;
+      const userAgent = window.navigator.userAgent;
+
+      // Detect Safari
+      const isSafari = /^((?!chrome|android).)*safari/i.test(userAgent);
+
+      if (isSafari) {
+        manualInstall.hidden = false; // Show manual installation for Safari
+        console.log("Safari detected. Showing manual installation instructions.");
+      } else {
+        manualInstall.hidden = true; // Hide manual install for other browsers
+      }
+
+      // Listen for 'beforeinstallprompt' event (Chrome and supported browsers)
+      window.addEventListener("beforeinstallprompt", (event) => {
+        console.log("beforeinstallprompt event triggered");
+        event.preventDefault();
+        deferredPrompt = event;
+
+        // Show the install button
+        installButton.hidden = false;
+
+        installButton.addEventListener("click", async () => {
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const result = await deferredPrompt.userChoice;
+            console.log(`User response: ${result.outcome}`);
+            deferredPrompt = null;
+          }
+
+          installButton.hidden = true; // Hide install button after prompt
+        });
+      });
+
+      // Fallback for unsupported browsers
+      if (!window.beforeinstallprompt) {
+        installButton.hidden = true;
+        if (!isSafari) {
+          manualInstall.hidden = true;
+        }
+      }
+
+      // Handle app installation
+      window.addEventListener("appinstalled", () => {
+        console.log("PWA installed");
+        installButton.hidden = true;
+        manualInstall.hidden = true;
+      });
+
+
+      // Detect installed related apps
+      if (navigator.getInstalledRelatedApps) {
+        navigator.getInstalledRelatedApps().then((apps) => {
+          if (apps.length > 0) {
+            console.log("Related apps detected:", apps);
+            installButton.hidden = true;
+          }
+        });
+      }
+    </script>      
 </body>
 </html>
