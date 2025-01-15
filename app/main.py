@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, send_file, render_template, request, redirect, url_for, flash, current_app, Response
-from flask_login import current_user, login_required, logout_user
+from flask_login import current_user, login_required
 from app.utils import save_profile_picture, save_bicycle_picture
 from app.models import db, Game, User, Quest, Badge, UserQuest, QuestSubmission, QuestLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage, user_games
 from app.forms import ProfileForm, ShoutBoardForm, ContactForm, BikeForm
