@@ -110,7 +110,6 @@
                         <div class="text-center mb-4">
                             {% if selected_game_id %}
                                 <a href="{{ url_for('games.game_info', game_id=selected_game_id) }}" class="btn btn-primary btn-lg mb-2" id="lets-get-started-button">Game Rules</a>
-                                <button class="btn btn-secondary btn-lg mb-2" onclick="openModal('contactModal')" id="contact-us-button">Contact Us</button>
                                 <button class="btn btn-primary btn-lg mb-2" onclick="openModal('sponsorsModal', '{{ selected_game_id }}')">Sponsors</button>
                             {% endif %}
                         </div>
