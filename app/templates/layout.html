@@ -193,13 +193,12 @@
 </script>
 
 <body data-user-id="{{ current_user.id if current_user.is_authenticated else 'none' }}">
-
 <!-- BEGIN: Navbar -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <div class="container-fluid">
     <!-- Your site name or brand here -->
     <a class="navbar-brand" href="{{ url_for('main.index') }}">
-      QuestByCycle
+      <i class="fas fa-bicycle me-2"></i> QuestByCycle
     </a>
     <!-- This is the hamburger button that appears on mobile -->
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
@@ -211,42 +210,52 @@
     <!-- The collapsible menu items -->
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        <!-- Always show Home. -->
+        <!-- Home -->
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
+          <a class="nav-link" href="{{ url_for('main.index') }}">
+            <i class="fas fa-home me-1"></i> Home
+          </a>
         </li>
 
         {% if current_user.is_authenticated %}
           <!-- GAME RULES (Only if game_id is selected) -->
           {% if selected_game_id %}
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('games.game_info', game_id=selected_game_id) }}">Game Rules</a>
+            <a class="nav-link" href="{{ url_for('games.game_info', game_id=selected_game_id) }}">
+              <i class="fas fa-book me-1"></i> Game Rules
+            </a>
           </li>
           {% endif %}
           
           <!-- CONTACT US -->
           <li class="nav-item">
-            <a class="nav-link" href="javascript:void(0)" onclick="openModal('contactModal')">Contact Us</a>
+            <a class="nav-link" href="javascript:void(0)" onclick="openModal('contactModal')">
+              <i class="fas fa-envelope me-1"></i> Contact Us
+            </a>
           </li>
           
           <!-- SPONSORS (Only if game_id is selected) -->
           {% if selected_game_id %}
           <li class="nav-item">
-            <a class="nav-link" href="javascript:void(0)" onclick="openModal('sponsorsModal', '{{ selected_game_id }}')">Sponsors</a>
+            <a class="nav-link" href="javascript:void(0)" onclick="openModal('sponsorsModal', '{{ selected_game_id }}')">
+              <i class="fas fa-handshake me-1"></i> Sponsors
+            </a>
           </li>
           {% endif %}
           
           <!-- LEADERBOARD -->
           <li class="nav-item">
-            <!-- Instead of an <a> with direct href, we can let JS open the leaderboard modal -->
             <a class="nav-link" href="javascript:void(0)" id="leaderboardNavbarLink" 
-               data-game-id="{{ selected_game_id }}">Leaderboard</a>
+               data-game-id="{{ selected_game_id }}">
+              <i class="fas fa-trophy me-1"></i> Leaderboard
+            </a>
           </li>
           
           <!-- GAME SELECTION DROPDOWN -->
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="gameDropdownButton" role="button" 
                data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-gamepad me-1"></i>
               {% if selected_game %}
                   {{ selected_game.title }}
               {% else %}
@@ -258,6 +267,7 @@
               <li>
                 <a class="dropdown-item d-flex flex-column text-center" 
                    href="{{ url_for('main.index', game_id=gameObj.id) }}">
+                  <i class="fas fa-gamepad me-1"></i>
                   <span class="game-title">{{ gameObj.title }}</span>
                   <small class="text-muted">Joined on: {{ joined_at.strftime('%m-%d-%Y') if joined_at else 'N/A' }}</small>
                 </a>
@@ -267,7 +277,7 @@
               <li>
                 <a class="dropdown-item bold-item text-center" 
                    href="#" onclick="handleGameSelection({ value: 'join_custom_game' })">
-                  <i class="fas fa-plus-circle"></i> Join Custom Game
+                  <i class="fas fa-plus-circle me-1"></i> Join Custom Game
                 </a>
               </li>
             </ul>
@@ -275,26 +285,43 @@
           
           <!-- PROFILE -->
           <li class="nav-item">
-            <!-- Calls the same function that was previously attached to the profile button. -->
-            <a class="nav-link" href="javascript:void(0)" 
-               onclick="showUserProfileModal('{{ current_user.id }}')">Profile</a>
+            <a class="nav-link" href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')">
+              <i class="fas fa-user me-1"></i> Profile
+            </a>
           </li>
+
+          <!-- ADMIN DASHBOARD (Only for Admins) -->
+          {% if current_user.is_admin %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('admin.admin_dashboard') }}">
+              <i class="fas fa-user-shield me-1"></i> Admin Dashboard
+            </a>
+          </li>
+          {% endif %}
           
           <!-- LOGOUT -->
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
+            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+              <i class="fas fa-sign-out-alt me-1"></i> Logout
+            </a>
           </li>
           
         {% else %}
           <!-- Not authenticated? Show these. -->
           <li class="nav-item">
-            <a class="nav-link" href="javascript:void(0)" onclick="openModal('contactModal')">Contact Us</a>
+            <a class="nav-link" href="javascript:void(0)" onclick="openModal('contactModal')">
+              <i class="fas fa-envelope me-1"></i> Contact Us
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+            <a class="nav-link" href="{{ url_for('auth.login') }}">
+              <i class="fas fa-sign-in-alt me-1"></i> Login
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
+            <a class="nav-link" href="{{ url_for('auth.register') }}">
+              <i class="fas fa-user-plus me-1"></i> Register
+            </a>
           </li>
         {% endif %}
       </ul>
@@ -302,6 +329,7 @@
   </div>
 </nav>
 <!-- END: Navbar -->
+
 
 <div class="content-wrap">
     <main>
@@ -450,7 +478,6 @@ if ("serviceWorker" in navigator) {
   }
 </script>
 
-<!-- Additional script to handle the "Join Custom Game" logic from the dropdown -->
 <script>
 function handleGameSelection(option) {
   const selectedValue = option.value;
@@ -462,19 +489,22 @@ function handleGameSelection(option) {
   }
 }
 
-// Example of hooking up the leaderboard link to the same logic that the index page's button uses.
-// If your leaderboard modal is opened via a function `showLeaderboardModal`, do something like:
 document.addEventListener('DOMContentLoaded', function() {
   const leaderboardLink = document.getElementById('leaderboardNavbarLink');
   if (leaderboardLink) {
+    console.log('Leaderboard link found:', leaderboardLink); // Debug log
     leaderboardLink.addEventListener('click', function(e) {
       e.preventDefault();
       const gameId = leaderboardLink.dataset.gameId || 0;
-      // If you have a function like openModal('leaderboardModal'), or a dedicated
-      // function loadLeaderboard(gameId), call it here. For instance:
-      // openModal('leaderboardModal');  // or:
-      // loadLeaderboardModal(gameId);
+      // Check if the openModal function is available
+      if (typeof openModal === 'function') {
+        openModal('leaderboardModal', gameId);
+      } else {
+        console.error('openModal function is not defined.');
+      }
     });
+  } else {
+    console.error('Leaderboard link element not found.');
   }
 });
 </script>
