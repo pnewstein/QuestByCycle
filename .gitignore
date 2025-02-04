@@ -6,6 +6,10 @@ app/static/images/
 app/static/images/carousel_images
 app/static/carousel_images/
 
+cert.pem
+key.pem
+requirements.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
