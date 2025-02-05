@@ -35,8 +35,6 @@
                 enthusiasts, compete for top spots on the leaderboard, and make a real difference – all while having a blast
                 on two wheels.</p>
             <p class="h5 font-weight-bold">This is your Quest by Cycle journey!</p>
-            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg mr-2">Register Today!</a>
-            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-lg">Already a Member? Sign In</a>
         </div>
     {% endif %}
 
@@ -49,7 +47,7 @@
                     <video class="w-100" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}"
                            autoplay loop controls></video>
                 </div>
-                <h4 class="text-center">Promo Video</h4> 
+                <h4 class="text-center">Promotional Video</h4> 
                 <div class="ratio ratio-16x9 mb-4">
                     <iframe src="https://www.youtube.com/embed/ABh1KtKRxm0?si=U6PxTipd5r5Z2QUl&autoplay=0&rel=0"
                             title="YouTube video player"
@@ -231,6 +229,8 @@
     <div id="onboardingStatus" data-start-onboarding="{{ 'true' if start_onboarding else 'false' }}"></div>
     <div id="game_IdHolder" data-game-id="{{ selected_game_id }}" style="display:none;"></div>
 
+    {% include 'modals/login_modal.html' %}
+    {% include 'modals/register_modal.html' %}    
     {% include 'modals/game_info_modal.html' %}
     {% include 'modals/quest_detail_modal.html' %}
     {% include 'modals/submission_detail_modal.html' %}
@@ -248,6 +248,7 @@
 
     <script src="{{ url_for('static', filename='js/modal_common.js') }}"></script>
     <script src="{{ url_for('static', filename='js/game_info_modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/auth_modals.js') }}"></script>
     <script src="{{ url_for('static', filename='js/all_submissions_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/contact_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/join_custom_game_modal.js') }}"></script>

@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, send_file, render_template, request, redir
 from flask_login import current_user, login_required
 from app.utils import save_profile_picture, save_bicycle_picture
 from app.models import db, Game, User, Quest, Badge, UserQuest, QuestSubmission, QuestLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage, user_games
-from app.forms import ProfileForm, ShoutBoardForm, ContactForm, BikeForm
+from app.forms import ProfileForm, ShoutBoardForm, ContactForm, BikeForm, LoginForm, RegistrationForm
 from app.utils import send_email, allowed_file, generate_tutorial_game
 from .config import load_config
 from werkzeug.utils import secure_filename
@@ -98,6 +98,9 @@ def index(game_id, quest_id, user_id):
     badges = []
     total_points = None
     start_onboarding = False
+    login_form = LoginForm()
+    register_form = RegistrationForm()
+
 
     # Check if the user is authenticated and set the user_id
     if user_id is None and current_user.is_authenticated:
@@ -261,7 +264,9 @@ def index(game_id, quest_id, user_id):
                            selected_game_id=game_id or 0,
                            selected_game=game,
                            quest_id=quest_id,
-                           start_onboarding=start_onboarding)
+                           start_onboarding=start_onboarding,
+                           login_form=login_form,
+                           register_form=register_form)
 
 @main_bp.route('/mark-onboarding-complete', methods=['POST'])
 @login_required

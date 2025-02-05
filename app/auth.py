@@ -52,11 +52,13 @@ def sanitize_html(html_content):
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    form = LoginForm()
+    # Always create the login form instance
+    login_form = LoginForm()
+
     try:
-        if form.validate_on_submit():
-            email = sanitize_html(form.email.data)
-            password = form.password.data
+        if login_form.validate_on_submit():
+            email = sanitize_html(login_form.email.data)
+            password = login_form.password.data
             if not email or not password:
                 flash('Please enter both email and password.')
                 return redirect(url_for('auth.login', game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id')))
@@ -70,12 +72,12 @@ def login():
             # Check if email verification is required and if the user's email is verified
             if current_app.config.get('MAIL_USERNAME') and not user.email_verified:
                 flash('Please verify your email before logging in.', 'warning')
-                return render_template('login.html', form=form, show_resend=True, email=email, game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'))
+                return render_template('login.html', login_form=login_form, show_resend=True, email=email, 
+                                       game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'))
 
             if user and user.check_password(password):
-                login_user(user, remember=form.remember_me.data)
+                login_user(user, remember=login_form.remember_me.data)
                 log_user_ip(current_user)
-
                 generate_tutorial_game()
 
                 # Automatically join the game if a game_id is provided
@@ -117,7 +119,8 @@ def login():
         flash('An unexpected error occurred during login. Please try again later.', 'error')
         return redirect(url_for('auth.login', game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id')))
     
-    return render_template('login.html', form=form, game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'))
+    # Always pass the login_form, even if the user is not authenticated or if validation failed.
+    return render_template('login.html', login_form=login_form, game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'))
 
 
 @auth_bp.route('/resend_verification_email', methods=['POST'])
@@ -146,14 +149,14 @@ def logout():
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    form = RegistrationForm()
+    register_form = RegistrationForm()
     try:
-        if form.validate_on_submit():
-            if not form.accept_license.data:
+        if register_form.validate_on_submit():
+            if not register_form.accept_license.data:
                 flash('You must agree to the terms of service, license agreement, and privacy policy.', 'warning')
-                return render_template('register.html', form=form, game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'), next=request.args.get('next'))
+                return render_template('register.html', form=register_form, game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'), next=request.args.get('next'))
 
-            email = sanitize_html(form.email.data)
+            email = sanitize_html(register_form.email.data)
             base_username = email.split('@')[0]
             existing_user = User.query.filter_by(email=email).first()
             if existing_user:
@@ -169,7 +172,7 @@ def register():
             user = User(
                 username=sanitize_html(username),
                 email=email,
-                license_agreed=form.accept_license.data,
+                license_agreed=register_form.accept_license.data,
                 email_verified=False,  # Initially set to False
                 is_admin=False,
                 created_at=datetime.now(utc),
@@ -179,7 +182,7 @@ def register():
                 age_group=None,
                 interests=None
             )
-            user.set_password(form.password.data)
+            user.set_password(register_form.password.data)
             db.session.add(user)
             try:
                 db.session.commit()
@@ -234,14 +237,15 @@ def register():
                 db.session.rollback()
                 flash('Registration failed due to an unexpected error. Please try again.', 'error')
                 current_app.logger.error(f'Failed to register user or send verification email: {e}')
-                return render_template('register.html', title='Register', form=form, game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'), next=request.args.get('next'))
+                return render_template('register.html', title='Register', form=register_form, game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'), next=request.args.get('next'))
 
     except Exception as e:
         current_app.logger.error(f'Registration error: {e}')
         flash('An unexpected error occurred during registration. Please try again later.', 'error')
         return redirect(url_for('auth.register', game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'), next=request.args.get('next')))
 
-    return render_template('register.html', title='Register', form=form, game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'), next=request.args.get('next'))
+    return render_template('register.html', title='Register', form=register_form, register_form=register_form, game_id=request.args.get('game_id'), quest_id=request.args.get('quest_id'), next=request.args.get('next'))
+
 
 @auth_bp.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
