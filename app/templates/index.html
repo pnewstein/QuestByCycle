@@ -94,13 +94,6 @@
                                 <span class="carousel-control-next-icon" aria-hidden="true"></span>
                                 <span class="visually-hidden">Next</span>
                             </a>
-                        </div>          
-                        <br>
-                        <div class="text-center mb-4">
-                            {% if selected_game_id %}
-                                <a href="{{ url_for('games.game_info', game_id=selected_game_id) }}" class="btn btn-primary btn-lg mb-2" id="lets-get-started-button">Game Rules</a>
-                                <button class="btn btn-primary btn-lg mb-2" onclick="openModal('sponsorsModal', '{{ selected_game_id }}')">Sponsors</button>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -147,47 +140,6 @@
                             <i class="fas fa-leaf"></i> Your Carbon Reduction Points: <br>
                             <span class="points-emphasized">{{ total_points }}</span>
                         </p>
-                        <!-- Profile Actions -->
-                        <div class="profile-actions d-flex align-items-center">
-                            <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-primary w-35 btn-lg mx-2 shadow custom-btn-bg" id="view-profile-button">
-                                <i class="fas fa-user-circle me-2"></i><span class="button-text"> Profile</span>
-                            </a>
-                            <button id="leaderboardButton" data-game-id="{{ game.id }}" class="btn btn-success w-35 btn-lg mx-2 shadow custom-btn-bg">
-                                <i class="fas fa-trophy me-2"></i><span class="button-text"> Leaderboard</span>
-                            </button>
-                            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger w-35 btn-lg mx-2 shadow custom-btn-bg">
-                                <i class="fas fa-sign-out-alt me-2"></i><span class="button-text"> Logout</span>
-                            </a>
-                        </div>
-
-                        <!-- Game Selection Dropdown -->
-                        <div class="form-group w-100 text-center">
-                            <label for="gameSelectDropdown" class="mb-2 w-100 text-secondary font-weight-bold d-flex justify-content-center align-items-center">
-                                <i class="fas fa-gamepad me-2"></i> Select or Join Game
-                            </label>
-                            <div class="dropdown w-100">
-                                <button id="gameDropdownButton" class="btn btn-secondary w-100 dropdown-toggle shadow-sm custom-btn-bg d-flex justify-content-between align-items-center px-4"
-                                        type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="game-title">{{ game.title }}</span>
-                                </button>
-                                <ul id="gameDropdownMenu" class="dropdown-menu dropdown-menu-scrollable w-100">
-                                    {% for game, joined_at in user_games|sort(reverse=True, attribute='joined_at') %}
-                                    <li>
-                                        <a href="{{ url_for('main.index', game_id=game.id) }}" class="dropdown-item d-flex flex-column text-center">
-                                            <span class="game-title text-truncate">{{ game.title }}</span>
-                                            <small class="text-muted">Joined on: {{ joined_at.strftime('%m-%d-%Y') if joined_at else 'N/A' }}</small>
-                                        </a>
-                                    </li>
-                                    {% endfor %}
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <a href="#" class="dropdown-item bold-item text-center" onclick="handleGameSelection({ value: 'join_custom_game' })">
-                                            <i class="fas fa-plus-circle"></i> Join Custom Game
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
                     </div>
                 </div>
             {% endif %}
