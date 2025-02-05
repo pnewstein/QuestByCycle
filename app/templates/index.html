@@ -362,29 +362,6 @@
             }
         });
     </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const carouselElement = document.getElementById('questImageCarousel');
-            const carouselInstance = new bootstrap.Carousel(carouselElement, {
-                interval: 3000
-            });
-    
-            let slideCount = 0;
-            carouselElement.addEventListener('slide.bs.carousel', function () {
-                slideCount++;
-                if (slideCount >= 7) {
-                    carouselInstance.pause();
-                }
-            });
-    
-            carouselElement.querySelectorAll('.carousel-control-next, .carousel-control-prev').forEach(button => {
-                button.addEventListener('click', function () {
-                    carouselInstance.cycle();
-                    slideCount = 0;
-                });
-            });
-        });
-    </script>
     <style>
         .bold-item {
             font-weight: bold;
