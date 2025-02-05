@@ -203,8 +203,14 @@ def game_info(game_id):
         flash("Game details are not available.", "error")
         return redirect(url_for('main.index'))
 
-    # Render the game_info.html template with the fetched game details
+    # If the request is for a modal version, render the modal template
+    if request.args.get('modal'):
+        return render_template('modals/game_info_modal.html', game=game_details, game_id=game_id)
+
+    # Otherwise, render the full game info page
     return render_template('game_info.html', game=game_details, game_id=game_id)
+
+
 
 
 @games_bp.route('/get_game_points/<int:game_id>', methods=['GET'])
