@@ -1,299 +1,280 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#D0E6B5">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#D0E6B5">
 
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="QuestByCycle is a photo sharing web platform designed to motivate and engage the cycling community in environmental sustainability. Complete quests, earn badges, and contribute to a greener planet while competing on the leaderboard and connecting with other cyclists.">
-    <meta name="keywords" content="cycling, environmental sustainability, gamification, challenges, badges, community, leaderboard">
-    <meta name="author" content="QuestByCycle Team">
-    <meta name="robots" content="index, follow">
-    
-    <!-- Required for Safari to recognize the PWA -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="QuestByCycle">
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="QuestByCycle is a photo sharing web platform designed to motivate and engage the cycling community in environmental sustainability. Complete quests, earn badges, and contribute to a greener planet while competing on the leaderboard and connecting with other cyclists.">
+  <meta name="keywords" content="cycling, environmental sustainability, gamification, challenges, badges, community, leaderboard">
+  <meta name="author" content="QuestByCycle Team">
+  <meta name="robots" content="index, follow">
 
-    <!-- Open Graph Meta Tags (for social media sharing) -->
-    <meta property="og:title" content="QuestByCycle - Completing Quests by Bike for a Greener Planet">
-    <meta property="og:description" content="Join QuestByCycle, a photo sharing platform where cyclists take on challenges, earn badges, and contribute to environmental sustainability.">
-    <meta property="og:image" content="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}">
-    <meta property="og:url" content="https://www.questbycycle.org">
-    <meta property="og:type" content="website">
-    
-    <!-- Twitter Card Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="QuestByCycle - Completing Quests by Bike for a Greener Planet">
-    <meta name="twitter:description" content="Join QuestByCycle, a photo sharing platform where cyclists take on challenges, earn badges, and contribute to environmental sustainability.">
-    <meta name="twitter:image" content="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}">
-    <meta name="twitter:site" content="@QuestByCycle">
-    
-    <!-- Browser Compatibility Meta Tags -->
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!-- Required for Safari to recognize the PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="QuestByCycle">
 
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon-180x180.png') }}">
+  <!-- Open Graph Meta Tags (for social media sharing) -->
+  <meta property="og:title" content="QuestByCycle - Completing Quests by Bike for a Greener Planet">
+  <meta property="og:description" content="Join QuestByCycle, a photo sharing platform where cyclists take on challenges, earn badges, and contribute to environmental sustainability.">
+  <meta property="og:image" content="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}">
+  <meta property="og:url" content="https://www.questbycycle.org">
+  <meta property="og:type" content="website">
 
-    <title>{% block title %}{% endblock %} - QuestByCycle</title>
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="QuestByCycle - Completing Quests by Bike for a Greener Planet">
+  <meta name="twitter:description" content="Join QuestByCycle, a photo sharing platform where cyclists take on challenges, earn badges, and contribute to environmental sustainability.">
+  <meta name="twitter:image" content="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}">
+  <meta name="twitter:site" content="@QuestByCycle">
 
-    <!-- Inline Critical CSS -->
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            margin: 0;
-            font-family: 'Arial', sans-serif;
-            padding: 0;
-            background-color: #f0f0f0;
-            color: #333;
-        }
+  <!-- Browser Compatibility Meta Tags -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-        .content-wrap {
-            flex: 1;
-            background: url('/static/images/header-bg.jpg') stretch;
-        }
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon-180x180.png') }}">
 
-        .container {
-            width: 100%;
-            max-width: 95%;
-            margin: auto;
-            background-color: #D0E6B5;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            overflow: hidden;
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease;
-        }
+  <title>{% block title %}{% endblock %} - QuestByCycle</title>
 
-        .flash-message {
-            width: 50%;
-            margin: 20px auto; 
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-            font-size: 1em; 
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
-            transition: opacity 0.3s ease-in-out; 
-        }
+  <!-- Inline Critical CSS -->
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      padding: 0;
+      background-color: #f0f0f0;
+      color: #333;
+    }
 
-        .flash-success {
-            background-color: #a8d5a3; 
-            color: #3c763d;
-            border: 1px solid #96c48b;
-        }
+    .content-wrap {
+      flex: 1;
+      background: url('/static/images/header-bg.jpg') stretch;
+    }
 
-        .carousel-inner {
-            height: 300px;                  
-            max-width: 400px;               
-            width: 80%;                     
-            overflow: hidden;   
-            position: relative;      
-            margin: auto;                   
-            display: block;                 
-        }
+    .container {
+      width: 100%;
+      max-width: 95%;
+      margin: auto;
+      background-color: #D0E6B5;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      overflow: hidden;
+      transition: transform 0.3s ease-in-out, box-shadow 0.3s ease;
+    }
 
-        .footer {
-            background-color: #2C3E50;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-            padding: 20px 50px;
-            box-sizing: border-box;
-            width: 100%;
-        }
+    .flash-message {
+      width: 50%;
+      margin: 20px auto;
+      padding: 15px;
+      border-radius: 5px;
+      text-align: center;
+      font-size: 1em;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: opacity 0.3s ease-in-out;
+    }
 
-        .footer-content {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .flash-success {
+      background-color: #a8d5a3;
+      color: #3c763d;
+      border: 1px solid #96c48b;
+    }
 
-        .footer-section.logos {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .carousel-inner {
+      height: 300px;
+      max-width: 400px;
+      width: 80%;
+      overflow: hidden;
+      position: relative;
+      margin: auto;
+      display: block;
+    }
 
-        .footer-section.logos p {
-            margin-right: 10px;
-        }
+    .footer {
+      background-color: #2C3E50;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      padding: 20px 50px;
+      box-sizing: border-box;
+      width: 100%;
+    }
 
-        .footer-section {
-            flex: 1;
-            padding: 10px;
-            min-width: 300px; 
-        }
+    .footer-content {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-        .footer-section.links {
-            margin-bottom: 20px;
-        }
+    .footer-section.logos {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        .footer-section.legal {
-            margin-top: 20px;
-        }
+    .footer-section.logos p {
+      margin-right: 10px;
+    }
 
-        .footer-logo {
-            height: auto;
-            width: 100px; 
-        }
+    .footer-section {
+      flex: 1;
+      padding: 10px;
+      min-width: 300px;
+    }
 
-        .social-link {
-            margin: 0 10px;
-            font-size: 24px;
-            color: #ffe07a; 
-        }
+    .footer-section.links {
+      margin-bottom: 20px;
+    }
 
-        .social-link:hover {
-            color: #bfc2b1; 
-        }
-    </style>
+    .footer-section.legal {
+      margin-top: 20px;
+    }
 
-    <!-- Load non-critical CSS asynchronously -->
-    <link rel="preload" href="{{ url_for('static', filename='css/main1.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/main1.css') }}"></noscript>
-    <link rel="preload" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"></noscript>
-    <!-- Quill -->
-    <link rel="preload" href="{{ url_for('static', filename='css/quill.snow.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/quill.snow.css') }}"></noscript>
-    <link rel="preload" href="{{ url_for('static', filename='css/katex.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/katex.min.css') }}"></noscript>
-    <link rel="preload" href="{{ url_for('static', filename='css/atom-one-dark.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/atom-one-dark.min.css') }}"></noscript>
-    <!-- Onboarding -->
-    <link rel="preload" href="https://cdn.jsdelivr.net/npm/shepherd.js@13.0.0/dist/css/shepherd.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@13.0.0/dist/css/shepherd.css"></noscript>
+    .footer-logo {
+      height: auto;
+      width: 100px;
+    }
 
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="current-user-id" content="{{ current_user.id }}">
+    .social-link {
+      margin: 0 10px;
+      font-size: 24px;
+      color: #ffe07a;
+    }
 
-    <!-- JavaScript -->
-    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/katex.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/quill.min.js') }}"></script>
+    .social-link:hover {
+      color: #bfc2b1;
+    }
+  </style>
 
-    <script type="module" src="https://cdn.jsdelivr.net/npm/shepherd.js@13.0.0/dist/esm/shepherd.mjs"></script>
+  <!-- Load non-critical CSS asynchronously -->
+  <link rel="preload" href="{{ url_for('static', filename='css/main1.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/main1.css') }}"></noscript>
+  <link rel="preload" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"></noscript>
+  <!-- Quill -->
+  <link rel="preload" href="{{ url_for('static', filename='css/quill.snow.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/quill.snow.css') }}"></noscript>
+  <link rel="preload" href="{{ url_for('static', filename='css/katex.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/katex.min.css') }}"></noscript>
+  <link rel="preload" href="{{ url_for('static', filename='css/atom-one-dark.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/atom-one-dark.min.css') }}"></noscript>
+  <!-- Onboarding -->
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/shepherd.js@13.0.0/dist/css/shepherd.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@13.0.0/dist/css/shepherd.css"></noscript>
+
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="current-user-id" content="{{ current_user.id }}">
+
+  <!-- JavaScript -->
+  <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/katex.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/quill.min.js') }}"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/shepherd.js@13.0.0/dist/esm/shepherd.mjs"></script>
 </head>
 
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-K95B3RL52T"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
+  function gtag(){ dataLayer.push(arguments); }
   gtag('js', new Date());
-
   gtag('config', 'G-K95B3RL52T');
 </script>
 
 <body data-user-id="{{ current_user.id if current_user.is_authenticated else 'none' }}">
-<!-- BEGIN: Navbar -->
+  <!-- BEGIN: Navbar -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <div class="container-fluid">
-    <!-- Your site name or brand here -->
+    <!-- Brand -->
     <a class="navbar-brand" href="{{ url_for('main.index') }}">
       <i class="fas fa-bicycle me-2"></i> QuestByCycle
     </a>
-    <!-- This is the hamburger button that appears on mobile -->
+    <!-- Hamburger for mobile -->
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
             data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
             aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <!-- The collapsible menu items -->
+    <!-- Navigation items -->
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
         {% if current_user.is_authenticated %}
-          <!-- GAME RULES (Only if game_id is selected) -->
           {% if selected_game_id %}
-          <li class="nav-item">
-            <a class="nav-link" href="javascript:void(0)" onclick="showGameInfoModal('{{ selected_game_id }}')">
-              <i class="fas fa-book me-1"></i> Game Info
-            </a>
-          </li>
+            <li class="nav-item">
+              <a class="nav-link" href="javascript:void(0)" onclick="showGameInfoModal('{{ selected_game_id }}')">
+                <i class="fas fa-book me-1"></i> Game Info
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="javascript:void(0)" onclick="openModal('sponsorsModal', '{{ selected_game_id }}')">
+                <i class="fas fa-handshake me-1"></i> Sponsors
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="javascript:void(0)" id="leaderboardNavbarLink" data-game-id="{{ selected_game_id }}">
+                <i class="fas fa-trophy me-1"></i> Leaderboard
+              </a>
+            </li>
           {% endif %}
-          
-          <!-- SPONSORS (Only if game_id is selected) -->
-          {% if selected_game_id %}
-          <li class="nav-item">
-            <a class="nav-link" href="javascript:void(0)" onclick="openModal('sponsorsModal', '{{ selected_game_id }}')">
-              <i class="fas fa-handshake me-1"></i> Sponsors
-            </a>
-          </li>
-          {% endif %}
-          
-          <!-- LEADERBOARD -->
-          <li class="nav-item">
-            <a class="nav-link" href="javascript:void(0)" id="leaderboardNavbarLink" 
-               data-game-id="{{ selected_game_id }}">
-              <i class="fas fa-trophy me-1"></i> Leaderboard
-            </a>
-          </li>
-          
-          <!-- GAME SELECTION DROPDOWN -->
+
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="gameDropdownButton" role="button" 
                data-bs-toggle="dropdown" aria-expanded="false">
               <i class="fas fa-gamepad me-1"></i>
               {% if selected_game %}
-                  {{ selected_game.title }}
+                {{ selected_game.title }}
               {% else %}
-                  Select a Game
+                Select a Game
               {% endif %}
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="gameDropdownButton">
               {% for gameObj, joined_at in user_games|sort(reverse=True, attribute='joined_at') %}
-              <li>
-                <a class="dropdown-item d-flex flex-column text-center" 
-                   href="{{ url_for('main.index', game_id=gameObj.id) }}">
-                  <i class="fas fa-gamepad me-1"></i>
-                  <span class="game-title">{{ gameObj.title }}</span>
-                  <small class="text-muted">Joined on: {{ joined_at.strftime('%m-%d-%Y') if joined_at else 'N/A' }}</small>
-                </a>
-              </li>
+                <li>
+                  <a class="dropdown-item d-flex flex-column text-center" 
+                     href="{{ url_for('main.index', game_id=gameObj.id) }}">
+                    <i class="fas fa-gamepad me-1"></i>
+                    <span class="game-title">{{ gameObj.title }}</span>
+                    <small class="text-muted">Joined on: {{ joined_at.strftime('%m-%d-%Y') if joined_at else 'N/A' }}</small>
+                  </a>
+                </li>
               {% endfor %}
               <li><hr class="dropdown-divider"></li>
               <li>
-                <a class="dropdown-item bold-item text-center" 
-                   href="#" onclick="handleGameSelection({ value: 'join_custom_game' })">
+                <a class="dropdown-item bold-item text-center" href="#" onclick="handleGameSelection({ value: 'join_custom_game' })">
                   <i class="fas fa-plus-circle me-1"></i> Join Custom Game
                 </a>
               </li>
             </ul>
           </li>
-          
-          <!-- PROFILE -->
           <li class="nav-item">
             <a class="nav-link" href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')">
               <i class="fas fa-user me-1"></i> Profile
             </a>
           </li>
-
-          <!-- ADMIN DASHBOARD (Only for Admins) -->
           {% if current_user.is_admin %}
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('admin.admin_dashboard') }}">
-              <i class="fas fa-user-shield me-1"></i> Admin Dashboard
-            </a>
-          </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin.admin_dashboard', selected_game_id=selected_game_id) }}">
+                <i class="fas fa-user-shield me-1"></i> Admin Dashboard
+              </a>
+            </li>
           {% endif %}
-          
-          <!-- LOGOUT -->
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('auth.logout') }}">
               <i class="fas fa-sign-out-alt me-1"></i> Logout
             </a>
           </li>
-          
         {% else %}
-          <!-- Not authenticated? Show these. -->
+          <!-- For non-authenticated users -->
           <li class="nav-item">
             <a href="javascript:void(0)" class="btn btn-secondary btn-lg" onclick="openLoginModal()">Login</a>
           </li>
@@ -307,184 +288,165 @@
 </nav>
 <!-- END: Navbar -->
 
-
-<div class="content-wrap">
+  <div class="content-wrap">
     <main>
-        {% block content %}{% endblock %}
+      {% block content %}{% endblock %}
     </main>
-</div>
+  </div>
 
-<footer class="footer">
+  <footer class="footer">
     <div class="footer-section text">
-        <strong>Supporting cycling initiatives for a greener planet.</strong>
-        <p>Enjoy the full experience by installing our app.</p>
-        <button id="install" hidden class="btn btn-primary">Install App</button>
-        <div id="manual-install" hidden>
-          <p>To install this app:</p>
-          <ul>
-            <li>
-              <strong>Safari (iOS/iPadOS):</strong> Tap the <strong>Share</strong> button (the square with an arrow pointing up) and then select <strong>Add to Home Screen</strong>.
-            </li>
-            <li>
-              <strong>Safari (macOS):</strong> Use the File menu and choose <strong>Save As...</strong> to save a shortcut or bookmark to your desktop.
-            </li>
-            <li>
-              <strong>Firefox:</strong> Tap the menu button (⋮) and choose <strong>Add to Home screen</strong>.
-            </li>
-          </ul>
-        </div>         
+      <strong>Supporting cycling initiatives for a greener planet.</strong>
+      <p>Enjoy the full experience by installing our app.</p>
+      <button id="install" hidden class="btn btn-primary">Install App</button>
+      <div id="manual-install" hidden>
+        <p>To install this app:</p>
+        <ul>
+          <li>
+            <strong>Safari (iOS/iPadOS):</strong> Tap the <strong>Share</strong> button (the square with an arrow pointing up) and then select <strong>Add to Home Screen</strong>.
+          </li>
+          <li>
+            <strong>Safari (macOS):</strong> Use the File menu and choose <strong>Save As...</strong> to save a shortcut or bookmark to your desktop.
+          </li>
+          <li>
+            <strong>Firefox:</strong> Tap the menu button (⋮) and choose <strong>Add to Home screen</strong>.
+          </li>
+        </ul>
+      </div>
     </div>
     <div class="footer-content">
-        <div class="footer-section logos">
-            <p>Sponsored by</p>
-            <a href="https://climaterevolutions.org" target="_blank">
-                <img src="{{ url_for('static', filename='images/climate-revolutions-logo.png') }}" alt="Climate Revolutions by Bike Logo" class="footer-logo">
-            </a>
-            <a href="https://www.350eugene.org/" target="_blank">
-                <img src="{{ url_for('static', filename='images/350EUG-logo.png') }}" alt="350Eugene Logo" class="footer-logo">
-            </a>
-        </div>
-        <div class="footer-section links">
-            <a href="{{ url_for('auth.privacy_policy') }}">Privacy Policy</a>
-            <a href="{{ url_for('auth.terms_of_service') }}">Terms of Service</a>
-            <a href="{{ url_for('auth.license_agreement') }}">License Agreement</a>
-        </div>
-        <div class="footer-section social">
-            <a href="{{ selected_game.twitter_url if selected_game else 'https://twitter.com/QuestByCycle' }}" target="_blank" class="social-link">
-                <i class="fab fa-twitter"></i>
-            </a>
-            <a href="{{ selected_game.facebook_url if selected_game else 'https://facebook.com/QuestByCycle' }}" target="_blank" class="social-link">
-                <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="{{ selected_game.instagram_url if selected_game else 'https://instagram.com/QuestByCycle' }}" target="_blank" class="social-link">
-                <i class="fab fa-instagram"></i>
-            </a>
-        </div>
+      <div class="footer-section logos">
+        <p>Sponsored by</p>
+        <a href="https://climaterevolutions.org" target="_blank">
+          <img src="{{ url_for('static', filename='images/climate-revolutions-logo.png') }}" alt="Climate Revolutions by Bike Logo" class="footer-logo">
+        </a>
+        <a href="https://www.350eugene.org/" target="_blank">
+          <img src="{{ url_for('static', filename='images/350EUG-logo.png') }}" alt="350Eugene Logo" class="footer-logo">
+        </a>
+      </div>
+      <div class="footer-section links">
+        <a href="{{ url_for('auth.privacy_policy') }}">Privacy Policy</a>
+        <a href="{{ url_for('auth.terms_of_service') }}">Terms of Service</a>
+        <a href="{{ url_for('auth.license_agreement') }}">License Agreement</a>
+      </div>
+      <div class="footer-section social">
+        <a href="{{ selected_game.twitter_url if selected_game else 'https://twitter.com/QuestByCycle' }}" target="_blank" class="social-link">
+          <i class="fab fa-twitter"></i>
+        </a>
+        <a href="{{ selected_game.facebook_url if selected_game else 'https://facebook.com/QuestByCycle' }}" target="_blank" class="social-link">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+        <a href="{{ selected_game.instagram_url if selected_game else 'https://instagram.com/QuestByCycle' }}" target="_blank" class="social-link">
+          <i class="fab fa-instagram"></i>
+        </a>
+      </div>
     </div>
     <div class="footer-section legal">
-        &copy; {{ current_year }} QuestByCycle. All rights reserved. 
+      &copy; {{ current_year }} QuestByCycle. All rights reserved.
     </div>
-</footer>
+  </footer>
 
-<!-- Service Worker for PWA updates -->
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}").then((registration) => {
-    registration.addEventListener("updatefound", () => {
-      const newWorker = registration.installing;
-      newWorker.addEventListener("statechange", () => {
-        if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+  <!-- Service Worker for PWA updates -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}").then((registration) => {
+        registration.addEventListener("updatefound", () => {
+          const newWorker = registration.installing;
+          newWorker.addEventListener("statechange", () => {
+            if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+              if (confirm("A new version is available. Reload to update?")) {
+                window.location.reload();
+              }
+            }
+          });
+        });
+      });
+
+      navigator.serviceWorker.addEventListener("message", (event) => {
+        if (event.data.type === "UPDATE_AVAILABLE") {
           if (confirm("A new version is available. Reload to update?")) {
             window.location.reload();
           }
         }
       });
-    });
-  });
-
-  // Listen for messages from the service worker
-  navigator.serviceWorker.addEventListener("message", (event) => {
-    if (event.data.type === "UPDATE_AVAILABLE") {
-      if (confirm("A new version is available. Reload to update?")) {
-        window.location.reload();
-      }
     }
-  });
-}
-</script>
+  </script>
 
-<script>
-  const installButton = document.getElementById("install");
-  const manualInstall = document.getElementById("manual-install");
-
-  let deferredPrompt = null;
-  const userAgent = window.navigator.userAgent;
-
-  // Detect Safari
-  const isSafari = /^((?!chrome|android).)*safari/i.test(userAgent);
-
-  if (isSafari) {
-    manualInstall.hidden = false; 
-    console.log("Safari detected. Showing manual installation instructions.");
-  } else {
-    manualInstall.hidden = true; 
-  }
-
-  // Listen for 'beforeinstallprompt' event (Chrome and supported browsers)
-  window.addEventListener("beforeinstallprompt", (event) => {
-    console.log("beforeinstallprompt event triggered");
-    event.preventDefault();
-    deferredPrompt = event;
-    // Show the install button
-    installButton.hidden = false;
-
-    installButton.addEventListener("click", async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const result = await deferredPrompt.userChoice;
-        console.log(`User response: ${result.outcome}`);
-        deferredPrompt = null;
-      }
-      installButton.hidden = true; 
-    });
-  });
-
-  // Fallback for unsupported browsers
-  if (!window.beforeinstallprompt) {
-    installButton.hidden = true;
-    if (!isSafari) {
+  <script>
+    const installButton = document.getElementById("install");
+    const manualInstall = document.getElementById("manual-install");
+    let deferredPrompt = null;
+    const userAgent = window.navigator.userAgent;
+    const isSafari = /^((?!chrome|android).)*safari/i.test(userAgent);
+    if (isSafari) {
+      manualInstall.hidden = false;
+      console.log("Safari detected. Showing manual installation instructions.");
+    } else {
       manualInstall.hidden = true;
     }
-  }
-
-  // Handle app installation
-  window.addEventListener("appinstalled", () => {
-    console.log("PWA installed");
-    installButton.hidden = true;
-    manualInstall.hidden = true;
-  });
-
-  // Detect installed related apps
-  if (navigator.getInstalledRelatedApps) {
-    navigator.getInstalledRelatedApps().then((apps) => {
-      if (apps.length > 0) {
-        console.log("Related apps detected:", apps);
+    window.addEventListener("beforeinstallprompt", (event) => {
+      console.log("beforeinstallprompt event triggered");
+      event.preventDefault();
+      deferredPrompt = event;
+      installButton.hidden = false;
+      installButton.addEventListener("click", async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const result = await deferredPrompt.userChoice;
+          console.log(`User response: ${result.outcome}`);
+          deferredPrompt = null;
+        }
         installButton.hidden = true;
-      }
+      });
     });
-  }
-</script>
+    if (!window.beforeinstallprompt) {
+      installButton.hidden = true;
+      if (!isSafari) {
+        manualInstall.hidden = true;
+      }
+    }
+    window.addEventListener("appinstalled", () => {
+      console.log("PWA installed");
+      installButton.hidden = true;
+      manualInstall.hidden = true;
+    });
+    if (navigator.getInstalledRelatedApps) {
+      navigator.getInstalledRelatedApps().then((apps) => {
+        if (apps.length > 0) {
+          console.log("Related apps detected:", apps);
+          installButton.hidden = true;
+        }
+      });
+    }
+  </script>
 
-<script>
-function handleGameSelection(option) {
-  const selectedValue = option.value;
-  if (selectedValue === 'join_custom_game') {
-    // Reuse your existing modal logic:
-    openModal('joinCustomGameModal');
-  } else {
-    window.location.href = selectedValue;
-  }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  const leaderboardLink = document.getElementById('leaderboardNavbarLink');
-  if (leaderboardLink) {
-    console.log('Leaderboard link found:', leaderboardLink); // Debug log
-    leaderboardLink.addEventListener('click', function(e) {
-      e.preventDefault();
-      const gameId = leaderboardLink.dataset.gameId || 0;
-      // Check if the openModal function is available
-      if (typeof openModal === 'function') {
-        openModal('leaderboardModal', gameId);
+  <script>
+    function handleGameSelection(option) {
+      const selectedValue = option.value;
+      if (selectedValue === 'join_custom_game') {
+        openModal('joinCustomGameModal');
       } else {
-        console.error('openModal function is not defined.');
+        window.location.href = selectedValue;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const leaderboardLink = document.getElementById('leaderboardNavbarLink');
+      if (leaderboardLink) {
+        console.log('Leaderboard link found:', leaderboardLink);
+        leaderboardLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          const gameId = leaderboardLink.dataset.gameId || 0;
+          if (typeof openModal === 'function') {
+            openModal('leaderboardModal', gameId);
+          } else {
+            console.error('openModal function is not defined.');
+          }
+        });
+      } else {
+        console.error('Leaderboard link element not found.');
       }
     });
-  } else {
-    console.error('Leaderboard link element not found.');
-  }
-});
-</script>
-
+  </script>
 </body>
 </html>
