@@ -94,8 +94,6 @@ def login():
                         user.participated_games.append(tutorial_game)
                         db.session.commit()
 
-                flash('Logged in successfully.')
-
                 quest_id = request.args.get('quest_id')
                 next_page = request.args.get('next')
 
