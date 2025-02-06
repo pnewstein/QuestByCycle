@@ -323,3 +323,12 @@ def generate_qr_for_game(game_id):
     response = make_response(html_content)
     response.headers['Content-Type'] = 'text/html'
     return response
+
+
+@games_bp.route('/get_game/<int:game_id>', methods=['GET'])
+@login_required
+def get_game(game_id):
+    # Retrieve the game from the database or return a 404 error if not found
+    game = Game.query.get_or_404(game_id)
+    # Return a JSON object with the game name (you can include more details if needed)
+    return jsonify(name=game.title)
