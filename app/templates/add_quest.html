@@ -27,6 +27,10 @@
             {{ form.points(class="form-control", required=True) }}
         </div>
         <div class="mb-3">
+            <label for="{{ form.badge_awarded.id }}" class="form-label">{{ form.badge_awarded.label }}</label>
+            {{ form.badge_awarded(class="form-control") }}
+        </div>
+        <div class="mb-3">
             <label for="{{ form.completion_limit.id }}" class="form-label">{{ form.completion_limit.label }}</label>
             {{ form.completion_limit(class="form-control") }}
         </div>

@@ -212,6 +212,7 @@
             { name: "description", type: "textarea" },
             { name: "tips", type: "textarea" },
             { name: "points", type: "number" },
+            { name: "badge_awarded", type: "number" },
             { name: "completion_limit", type: "number" },
             { name: "category", type: "text" },
             { name: "enabled", type: "select", options: ["Yes", "No"] },
@@ -386,6 +387,7 @@
                 const badgeName = quest.badge_name || 'None';
                 const frequencyDisplayText = quest.frequency || 'Not Set';
                 const categoryText = quest.category || 'Not Set';
+                const badgeAwarded = quest.badge_awarded || 'Not Set';
 
                 card.innerHTML = `
                     <div class="card-body">
@@ -398,6 +400,7 @@
                         <p class="card-text"><strong>Pinned:</strong> <span class="editable" data-name="is_sponsored">${quest.is_sponsored ? 'Yes' : 'No'}</span></p>
                         <p class="card-text"><strong>Verification:</strong> <span class="editable" data-name="verification_type" data-value="${quest.verification_type}">${verificationTypeText}</span></p>
                         <p class="card-text"><strong>Badge:</strong> <span class="editable" data-name="badge_name">${badgeName}</span></p>
+                        <p class="card-text"><strong>Badge Awarded:</strong> <span class="editable" data-name="badge_awarded">${badgeAwarded}</span></p>
                         <p class="card-text"><strong>Frequency:</strong> <span class="editable" data-name="frequency" data-value="${quest.frequency}">${frequencyDisplayText}</span></p>
                         <p class="card-text"><strong>Category:</strong> <span class="editable" data-name="category">${categoryText}</span></p>
                         <div class="d-flex justify-content-between">

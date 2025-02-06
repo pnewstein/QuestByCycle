@@ -110,6 +110,7 @@ def add_quest(game_id):
             points=form.points.data,
             game_id=game_id,
             completion_limit=form.completion_limit.data,
+            badge_awarded=form.badge_awarded.data,
             frequency=sanitize_html(form.frequency.data),
             enabled=form.enabled.data,
             is_sponsored=form.is_sponsored.data,
@@ -254,6 +255,7 @@ def update_quest(quest_id):
     quest.tips = sanitize_html(data.get('tips', quest.tips))
     quest.points = data.get('points', quest.points)
     quest.completion_limit = data.get('completion_limit', quest.completion_limit)
+    quest.badge_awarded = data.get('badge_awarded', quest.badge_awarded)
     quest.enabled = data.get('enabled', quest.enabled)
     quest.is_sponsored = data.get('is_sponsored', quest.is_sponsored)
     quest.category = sanitize_html(data.get('category', quest.category))
@@ -312,12 +314,14 @@ def get_quests_for_game(game_id):
             'verification_type': quest.verification_type,
             'badge_name': quest.badge.name if quest.badge else 'None',
             'badge_description': quest.badge.description if quest.badge else '',
+            'badge_awarded': quest.badge_awarded if quest.badge_id else '',
             'frequency': quest.frequency,  # Handling Frequency Enum
             'category': quest.category if quest.category else 'Not Set',  # Handling potentially undefined Category
         }
         for quest in quests
     ]
     return jsonify(quests=quests_data)
+
 
 @quests_bp.route('/game/<int:game_id>/import_quests', methods=['POST'])
 @login_required
@@ -360,6 +364,7 @@ def import_quests(game_id):
                     frequency=sanitize_html(quest_info['frequency']),
                     verification_type=sanitize_html(quest_info['verification_type']),
                     badge_id=badge.id,
+                    badge_awarded=quest_info['badge_awarded'],
                     game_id=game_id
                 )
                 db.session.add(new_quest)
@@ -411,6 +416,7 @@ def quest_user_completion(quest_id):
         'tips': quest.tips,
         'points': quest.points,
         'completion_limit': quest.completion_limit,
+        'badge_awarded': quest.badge_awarded,
         'category': quest.category,
         'frequency': quest.frequency, 
         'enabled': quest.enabled,

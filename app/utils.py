@@ -675,6 +675,7 @@ def import_quests_and_badges_from_csv(game_id, csv_path):
                     description=sanitize_html(row['description']),
                     tips=sanitize_html(row['tips']),
                     points=int(row['points'].replace(',', '')),
+                    badge_awarded=int(row['badge_awarded']),
                     completion_limit=int(row['completion_limit']),
                     frequency=sanitize_html(row['frequency']),
                     verification_type=sanitize_html(row['verification_type']),
