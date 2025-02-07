@@ -640,56 +640,57 @@
             font-size: 1.25rem;
         }
 
-    /* Updated Container for the Badge Bar */
-    .badge-bar-container {
-        background-color: #f1ffee;;       /* Matches the main container background */
-        padding: 15px;                   /* Slightly more padding for visual balance */
-        border-radius: 12px;             /* Same border radius as other containers */
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);  /* Same box shadow for consistency */
-        margin-bottom: 20px;             /* Space below the badge bar */
-        overflow-x: auto;
-        overflow-y: hidden;              /* Hide any vertical overflow */
-    }
+        /* Updated Container for the Badge Bar */
+        .badge-bar-container {
+            background-color: #f1ffee;       /* Matches the main container background */
+            padding: 15px;                   /* Slightly more padding for visual balance */
+            border-radius: 12px;             /* Same border radius as other containers */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);  /* Same box shadow for consistency */
+            margin-bottom: 20px;             /* Space below the badge bar */
+            overflow-x: auto;
+            overflow-y: hidden;              /* Hide any vertical overflow */
+        }
 
-    /* Inline-flex container for badges */
-    .badge-bar {
-        display: inline-flex;
-        gap: 15px;
-        justify-content: flex-start; /* Ensure badges start from the left */
-    }
+        /* Inline-flex container for badges */
+        .badge-bar {
+            display: inline-flex;
+            gap: 15px;                       /* Increase gap for spacing between items */
+            justify-content: flex-start;     /* Ensure badges are aligned to the left */
+        }
 
-    /* Each badge item styled to match the overall index look */
-    .badge-item {
-        flex: 0 0 auto;                  /* Prevent items from shrinking */
-        width: 100px;                    /* Fixed width; adjust as needed */
-        height: 110px;                   /* Fixed height */
-        background-color: #fff;          /* White background for each badge item */
-        border-radius: 8px;              /* Rounded corners */
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow for depth */
-        padding: 10px;                   /* Inner spacing */
-        text-align: center;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
+        /* Each badge item styled to match the overall index look */
+        .badge-item {
+            flex: 0 0 auto;                  /* Prevent items from shrinking */
+            width: 100px;                    /* Fixed width; adjust as needed */
+            height: 110px;                   /* Fixed height */
+            background-color: #fff;          /* White background for each badge item */
+            border-radius: 8px;              /* Rounded corners */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+            padding: 10px;                   /* Inner spacing */
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
 
-    /* Badge image styling remains similar, with slight adjustments */
-    .badge-img {
-        width: 40px;                     /* Adjust image size */
-        height: 40px;
-        object-fit: contain;
-        transition: transform 0.3s ease;
-    }
+        /* Badge image styling remains similar */
+        .badge-img {
+            width: 40px;                     /* Adjust image size */
+            height: 40px;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
 
-    /* Hover effect to enlarge the image slightly */
-    .badge-img:hover {
-        transform: scale(1.1);
-    }
+        /* Hover effect for the badge image */
+        .badge-img:hover {
+            transform: scale(1.1);
+        }
 
-    /* Badge name styling */
-    .badge-name {
-        margin-top: 5px;
-        font-size: 0.75rem;              /* Smaller font size */
-        color: #333;
-    }
+        /* Badge name styling */
+        .badge-name {
+            margin-top: 5px;
+            font-size: 0.75rem;              /* Smaller font size */
+            color: #333;
+        }
+
 
     </style>
 </div>

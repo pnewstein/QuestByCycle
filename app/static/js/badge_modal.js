@@ -31,7 +31,7 @@ function loadAllBadges(callback) {
 
 /**
  * Open the badge modal and populate it with data.
- * @param {HTMLElement} element - The badge element that was clicked.
+ * @param {HTMLElement} element - The badge element (entire badge card) that was clicked.
  */
 function openBadgeModal(element) {
   const badgeId = element.getAttribute('data-badge-id');
@@ -50,11 +50,11 @@ function openBadgeModal(element) {
     const modalImage = document.getElementById('badgeModalImage');
     const modalText = document.getElementById('badgeModalText');
     
-    // Set the modal title and image source
+    // Set the modal title and image source using the global base URL (set in the template)
     modalTitle.textContent = badge.name;
-    modalImage.src = (badge.image || 'default_badge.png');
+    modalImage.src = (badge.image || 'static/images/default_badge.png');
   
-    // Update the image style and text based on whether the badge is earned
+    // Set the image filter and modal text based on whether the badge is earned
     if (earned) {
       modalImage.style.filter = "none";
       modalText.innerHTML = `<p><strong>Awarded!</strong></p><p>${badge.description}</p>`;
@@ -63,7 +63,7 @@ function openBadgeModal(element) {
       modalText.innerHTML = `<p><strong>Not Awarded Yet</strong></p><p>To earn this badge, ${badge.description}</p>`;
     }
   
-    // Open the modal (assumes you have an openModal function)
+    // Open the modal using your modal system (this example uses openModal)
     openModal('badgeModal');
   });
 }
