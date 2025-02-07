@@ -437,10 +437,10 @@
         leaderboardLink.addEventListener('click', function(e) {
           e.preventDefault();
           const gameId = leaderboardLink.dataset.gameId || 0;
-          if (typeof openModal === 'function') {
-            openModal('leaderboardModal', gameId);
+          if (typeof showLeaderboardModal === 'function') {
+            showLeaderboardModal(gameId);
           } else {
-            console.error('openModal function is not defined.');
+            console.error('showLeaderboardModal function is not defined.');
           }
         });
       } else {
