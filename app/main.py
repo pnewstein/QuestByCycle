@@ -95,12 +95,12 @@ def index(game_id, quest_id, user_id):
     user_games_list = []
     profile = None
     user_quests = []
-    badges = []
     total_points = None
     start_onboarding = False
     login_form = LoginForm()
     register_form = RegistrationForm()
-
+    all_badges = []
+    earned_badges = []
 
     # Check if the user is authenticated and set the user_id
     if user_id is None and current_user.is_authenticated:
@@ -170,7 +170,10 @@ def index(game_id, quest_id, user_id):
         
         profile = User.query.get_or_404(user_id)
         user_quests = UserQuest.query.filter_by(user_id=profile.id).all()
-        badges = [badge for badge in profile.badges if any(quest.game_id == game_id for quest in badge.quests)]
+        
+        all_badges = Badge.query.all()
+        # Optionally, you can also compute the user's earned badges (if you need to compare)
+        earned_badges = set(profile.badges)
 
         if not profile.display_name:
             profile.display_name = profile.username
@@ -246,6 +249,8 @@ def index(game_id, quest_id, user_id):
 
     return render_template('index.html',
                            form=form,
+                           badges=earned_badges,
+                           all_badges=all_badges,
                            games=user_games_list,
                            game=game,
                            user_games=user_games_list,
@@ -256,7 +261,6 @@ def index(game_id, quest_id, user_id):
                            has_joined=has_joined,
                            profile=profile,
                            user_quests=user_quests,
-                           badges=badges,
                            carousel_images=carousel_images,
                            total_points=total_points,
                            completions=completed_quests,
