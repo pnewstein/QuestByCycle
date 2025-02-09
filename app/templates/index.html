@@ -2,7 +2,6 @@
 {% block content %}
 <div class="container mt-1">
     {% if not current_user.is_authenticated %}
-        <!-- Logged-out Content -->
         <div class="text-center mb-4">
             <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}"
                  srcset="{{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=480) }} 480w,
@@ -24,10 +23,8 @@
                 {% endif %}
             {% endwith %}
         </div>
-        <!-- Flash Messages for the modal -->
         <div id="modal-flash-messages">
-            <!-- Flash messages will be dynamically inserted here -->
-        </div>
+            </div>
         <div class="introduction text-center mb-5">
             <p class="font-weight-bold">Ready to transform your bike rides into a thrilling adventure that benefits the
                 planet? Join the QuestByCycle community! Pedal your way to a greener world as you tackle exciting challenges,
@@ -37,17 +34,15 @@
             <p class="h5 font-weight-bold">This is your Quest by Cycle journey!</p>
         </div>
     {% endif %}
-
     <div class="row">
         {% if not current_user.is_authenticated %}
-            <!-- Additional Logged-Out Content (e.g., Videos) -->
             <div class="col-12">
-                <h4 class="text-center">Tutorial Video</h4> 
+                <h4 class="text-center">Tutorial Video</h4>
                 <div class="ratio ratio-16x9 mb-4">
                     <video class="w-100" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}"
                            autoplay loop controls></video>
                 </div>
-                <h4 class="text-center">Promotional Video</h4> 
+                <h4 class="text-center">Promotional Video</h4>
                 <div class="ratio ratio-16x9 mb-4">
                     <iframe src="https://www.youtube.com/embed/ABh1KtKRxm0?si=U6PxTipd5r5Z2QUl&autoplay=0&rel=0"
                             title="YouTube video player"
@@ -57,11 +52,8 @@
                 </div>
             </div>
         {% endif %}
-
         {% if current_user.is_authenticated %}
-            <!-- Authenticated User Content -->
             <div class="row">
-                <!-- Left Column: Profile View -->
                 {% if profile %}
                 <div class="col-md-6 mb-4">
                     {% if current_user.is_authenticated %}
@@ -71,7 +63,7 @@
                                     <div id="flash-messages-data">
                                         {% for category, message in messages %}
                                             <div class="flash-message {{ category }}">
-                                                <i class="fas fa-info-circle"></i> 
+                                                <i class="fas fa-info-circle"></i>
                                                 <span>{{ message }}</span>
                                             </div>
                                         {% endfor %}
@@ -80,8 +72,7 @@
                             {% endwith %}
                         </div>
                         <div id="modal-flash-messages">
-                            <!-- Flash messages will be dynamically inserted here -->
-                        </div>
+                            </div>
                     {% endif %}
                     <div id="profileView" class="card mb-4 w-100 profile-view epic-profile-container text-center">
                         <div class="text-center">
@@ -102,23 +93,18 @@
                     </div>
                 </div>
                 {% endif %}
-                <!-- Right Column: Game Activity Section -->
-                <div class="col-md-6 mb-4">
+                <div class="col-md-6">
                     <div id="whats-happening-step">
                         <div class="game-item">
-                            <!-- Container for the dynamically loaded game name -->
                             <div id="gameNameContainer">
                                 <h2 id="gameNameHeader">Loading game...</h2>
-                                <!-- Secondary header for recent activity -->
                                 <h3>Recent Activity</h3>
                             </div>
                             {% if current_user.is_admin %}
                                 <form action="{{ url_for('main.shout_board', game_id=selected_game_id) }}" method="post">
                                     {{ form.hidden_tag() }}
                                     <div class="form-group">
-                                        <!-- Hidden input to store the message content -->
                                         <input type="hidden" name="message" id="message-input">
-                                        <!-- Quill editor container -->
                                         <div id="quill-editor"></div>
                                     </div>
                                     {{ form.submit() }}
@@ -188,20 +174,34 @@
             </div>
         {% endif %}
     </div>
-
     {% if current_user.is_authenticated and all_badges %}
-        <div class="row mt-4">
-            <div class="col-12">
-                <h3>Your Badges</h3>
-                {# Create a list of earned badge IDs #}
-                {% set earned_badge_ids = profile.badges | map(attribute='id') | list %}
-                <div class="badge-bar-container">
+        <div class="col-12">
+            {# Create a list of earned badge IDs #}
+            {% set earned_badge_ids = profile.badges | map(attribute='id') | list %}
+            {# Create separate lists for earned and unearned badges #}
+            {% set earned_badges = [] %}
+            {% set unearned_badges = [] %}
+            {% for badge in all_badges %}
+                {% if badge.id in earned_badge_ids %}
+                    {% set _ = earned_badges.append(badge) %}
+                {% else %}
+                    {% set _ = unearned_badges.append(badge) %}
+                {% endif %}
+            {% endfor %}
+            <div class="badge-bar-container">
+                <h2>Available Badges</h2>
                 <div class="badge-bar">
-                    {% for badge in all_badges %}
-                    {% set earned = badge.id in earned_badge_ids %}
+                    {# Example for earned badges (assuming similar structure) #}
+                    {% for badge in earned_badges %}
+                    {% set earned = true %} {# Ensure 'earned' is true for earned badges section #}
+                    {% set user_completions = profile.user_quests | selectattr('quest.id', 'equalto', badge.task_id) | list | first %}
                     <div class="badge-item"
                         data-badge-id="{{ badge.id }}"
                         data-earned="{{ 'true' if earned else 'false' }}"
+                        data-task-name="{{ badge.task_name }}"
+                        data-badge-awarded-count="{{ badge.badge_awarded_count }}"
+                        data-task-id="{{ badge.task_id }}"
+                        data-user-completions="{{ user_completions.completions if user_completions else 0 }}"
                         onclick="openBadgeModal(this);">
                         <img src="{{ url_for('static', filename='images/badge_images/' ~ (badge.image or 'default_badge.png')) }}"
                             alt="{{ badge.name }}"
@@ -210,62 +210,75 @@
                         <div class="badge-name">{{ badge.name }}</div>
                     </div>
                     {% endfor %}
-                </div>
+                    {# Display unearned badges after earned badges #}
+                    {% for badge in unearned_badges %}
+                        {% set earned = false %}
+                        {% set user_completions = profile.user_quests | selectattr('quest.id', 'equalto', badge.task_id) | list | first %}
+                        <div class="badge-item"
+                            data-badge-id="{{ badge.id }}"
+                            data-earned="{{ 'true' if earned else 'false' }}"
+                            data-task-name="{{ badge.task_name }}"
+                            data-badge-awarded-count="{{ badge.badge_awarded_count }}"
+                            data-task-id="{{ badge.task_id }}"
+                            data-user-completions="{{ user_completions.completions if user_completions else 0 }}"
+                            onclick="openBadgeModal(this);">
+                            <img src="{{ url_for('static', filename='images/badge_images/' ~ (badge.image or 'default_badge.png')) }}"
+                                alt="{{ badge.name }}"
+                                oncontextmenu="return false;"
+                                class="badge-img {{ 'badge-earned' if earned else 'badge-not-earned' }}"
+                                title="{{ badge.name }}: {{ badge.description }}">
+                            <div class="badge-name">{{ badge.name }}</div>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
     {% endif %}
-
-
     {% if current_user.is_authenticated %}
-        <div class="container" id="available-quests-step">
-            {% if has_joined %}
-                <div class="game-item">
-                    <h2>Available Quests</h2>
-                    <input type="text" id="questSearchInput" class="form-control mb-3" placeholder="Search for quests...">
-                    <table class="table">
-                        <colgroup>
-                            <col style="width: auto;">
-                            <col style="width: 12%;">
-                            <col style="width: 12%;">
-                            <col style="width: 14%;">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th style="vertical-align: middle; text-align: left;">Quest</th>
-                                <th style="vertical-align: right; text-align: center;">Your Posts</th>
-                                <th style="vertical-align: right; text-align: center;">All Posts</th>
-                                <th style="vertical-align: right; text-align: center;">Points</th>
-                            </tr>
-                        </thead>
-                        <tbody id="questTableBody">
-                            {% for quest in quests %}
-                            <tr class="{{ 'pinned' if quest.is_sponsored }}">
-                                <td>
-                                    <button class="button" onclick="openQuestDetailModal('{{ quest.id }}')">{{ quest.title }}</button>
-                                </td>
-                                <td style="text-align: center;">{{ quest.personal_completions }}</td>
-                                <td style="text-align: center;">{{ quest.total_completions }}</td>
-                                <td style="text-align: center;">{{ quest.points }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% endif %}
-            {% if current_user.is_authenticated and current_user.is_admin %}
-                <div class="text-center mb-4">
-                    <button data-game-id="{{ game.id }}" class="btn btn-primary btn-lg mb-2" onclick="openQuestCreationModal(this)">Create New Quest</button>
-                </div>
-            {% endif %}
-        </div>
+        {% if has_joined %}
+            <div class="game-item">
+                <h2>Available Quests</h2>
+                <input type="text" id="questSearchInput" class="form-control mb-3" placeholder="Search for quests...">
+                <table class="table">
+                    <colgroup>
+                        <col style="width: auto;">
+                        <col style="width: 12%;">
+                        <col style="width: 12%;">
+                        <col style="width: 14%;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th style="vertical-align: middle; text-align: left;">Quest</th>
+                            <th style="vertical-align: right; text-align: center;">Your Posts</th>
+                            <th style="vertical-align: right; text-align: center;">All Posts</th>
+                            <th style="vertical-align: right; text-align: center;">Points</th>
+                        </tr>
+                    </thead>
+                    <tbody id="questTableBody">
+                        {% for quest in quests %}
+                        <tr class="{{ 'pinned' if quest.is_sponsored }}">
+                            <td>
+                                <button class="button" onclick="openQuestDetailModal('{{ quest.id }}')">{{ quest.title }}</button>
+                            </td>
+                            <td style="text-align: center;">{{ quest.personal_completions }}</td>
+                            <td style="text-align: center;">{{ quest.total_completions }}</td>
+                            <td style="text-align: center;">{{ quest.points }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+        {% if current_user.is_authenticated and current_user.is_admin %}
+            <div class="text-center mb-4">
+                <button data-game-id="{{ game.id }}" class="btn btn-primary btn-lg mb-2" onclick="openQuestCreationModal(this)">Create New Quest</button>
+            </div>
+        {% endif %}
     {% endif %}
-
     <div id="onboardingStatus" data-start-onboarding="{{ 'true' if start_onboarding else 'false' }}"></div>
     <div id="game_IdHolder" data-game-id="{{ selected_game_id }}" style="display:none;"></div>
-
     {% include 'modals/login_modal.html' %}
-    {% include 'modals/register_modal.html' %}    
+    {% include 'modals/register_modal.html' %}
     {% include 'modals/game_info_modal.html' %}
     {% include 'modals/quest_detail_modal.html' %}
     {% include 'modals/badge_modal.html' %}
@@ -279,9 +292,7 @@
     {% include 'modals/generate_AI_quest_modal.html' %}
     {% include 'modals/loading_modal.html' %}
     {% include 'modals/sponsors_modal.html' %}
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/3rd/fontawesome/all.min.css') }}">
-
     <script src="{{ url_for('static', filename='js/modal_common.js') }}"></script>
     <script src="{{ url_for('static', filename='js/badge_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/game_info_modal.js') }}"></script>
@@ -303,17 +314,15 @@
             if (flashMessagesContainer && modalFlashContainer) {
                 modalFlashContainer.innerHTML = flashMessagesContainer.innerHTML;
             }
-
             function getQueryParam(param) {
                 const urlParams = new URLSearchParams(window.location.search);
                 return urlParams.get(param);
             }
-    
+
             const questId = "{{ quest_id }}";
             if (questId != 'None') {
                 openQuestDetailModal(questId);
             }
-
             function handleGameSelection(option) {
                 const selectedValue = option.value;
                 if (selectedValue === 'join_custom_game') {
@@ -347,11 +356,9 @@
                     return true;
                 };
             }
-
             document.querySelectorAll('.activity-message').forEach(function(element) {
                 element.innerHTML = element.innerHTML.replace(/<\/?p[^>]*>/g, '');
             });
-
             function scrollMessagesContainer(direction) {
                 const scrollAmount = direction === 'up' ? -100 : 100;
                 document.querySelector('.shout-messages').scrollBy({
@@ -359,7 +366,6 @@
                     behavior: 'smooth'
                 });
             }
-
             const scrollUpButton = document.getElementById('scrollUpButton');
             const scrollDownButton = document.getElementById('scrollDownButton');
             if (scrollUpButton) {
@@ -371,7 +377,6 @@
                     scrollMessagesContainer('up');
                 });
             }
-
             if (scrollDownButton) {
                 scrollDownButton.addEventListener('click', function() {
                     scrollMessagesContainer('down');
@@ -381,7 +386,6 @@
                     scrollMessagesContainer('down');
                 });
             }
-
             const questSearchInput = document.getElementById('questSearchInput');
             if (questSearchInput) {
                 questSearchInput.addEventListener('input', function () {
@@ -639,7 +643,6 @@
         #leaderboardButton i {
             font-size: 1.25rem;
         }
-
         /* Updated Container for the Badge Bar */
         .badge-bar-container {
             background-color: #f1ffee;       /* Matches the main container background */
@@ -649,20 +652,19 @@
             margin-bottom: 20px;             /* Space below the badge bar */
             overflow-x: auto;
             overflow-y: hidden;              /* Hide any vertical overflow */
+            text-align: center; /* Center the content within the badge-bar-container */
         }
-
         /* Inline-flex container for badges */
         .badge-bar {
             display: inline-flex;
             gap: 15px;                       /* Increase gap for spacing between items */
             justify-content: flex-start;     /* Ensure badges are aligned to the left */
         }
-
         /* Each badge item styled to match the overall index look */
         .badge-item {
             flex: 0 0 auto;                  /* Prevent items from shrinking */
             width: 100px;                    /* Fixed width; adjust as needed */
-            height: 110px;                   /* Fixed height */
+            height: 115px;                   /* Fixed height */
             background-color: #fff;          /* White background for each badge item */
             border-radius: 8px;              /* Rounded corners */
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow for depth */
@@ -670,28 +672,30 @@
             text-align: center;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-
         /* Badge image styling remains similar */
         .badge-img {
             width: 40px;                     /* Adjust image size */
             height: 40px;
             object-fit: contain;
-            transition: transform 0.3s ease;
+            transition: filter 0.3s ease; /* For smooth filter transitions */
         }
-
-        /* Hover effect for the badge image */
-        .badge-img:hover {
-            transform: scale(1.1);
-        }
-
-        /* Badge name styling */
         .badge-name {
             margin-top: 5px;
-            font-size: 0.75rem;              /* Smaller font size */
-            color: #333;
+            font-size: 0.85em;
+            color: #555;
         }
-
-
+        .badge-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+        /* Style for earned badges */
+        .badge-img.badge-earned {
+            filter: none; /* No filter for earned badges - full color */
+        }
+        /* Style for not earned badges */
+        .badge-img.badge-not-earned {
+            filter: grayscale(100%); /* Grayscale for not earned badges */
+            opacity: 0.7; /* Slightly reduce opacity to further differentiate */
+        }
     </style>
-</div>
 {% endblock %}

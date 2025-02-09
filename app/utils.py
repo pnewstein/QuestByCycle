@@ -702,3 +702,44 @@ def log_user_ip(user):
         new_ip = UserIP(user_id=user.id, ip_address=ip_address)
         db.session.add(new_ip)
         db.session.commit()
+
+
+def get_game_badges(game_id):
+    print(f"get_game_badges called for game_id: {game_id}")  # Logging game_id
+    game = Game.query.get(game_id)
+    if not game:
+        print("Game not found in get_game_badges")  # Log if game is not found
+        return []
+
+    badges = Badge.query.join(Quest).filter(Quest.game_id == game_id, Quest.badge_id.isnot(None)).distinct().all()
+
+    print(f"get_game_badges returning {len(badges)} badges")  # Log number of badges returned
+    return badges
+
+
+def enhance_badges_with_task_info(badges, game_id=None):
+    enhanced_badges = []
+    for badge in badges:
+        awarding_quest = None
+        if game_id:
+            awarding_quest = next((quest for quest in badge.quests if quest.game_id == game_id), None)
+        else:
+            awarding_quest = badge.quests[0] if badge.quests else None
+
+        task_name = awarding_quest.title if awarding_quest else None
+        task_id = awarding_quest.id if awarding_quest else None
+        badge_awarded_count = awarding_quest.badge_awarded if awarding_quest else 1
+
+        print(f"DEBUG: Enhancing badge: {badge.name}, awarding_quest: {awarding_quest}, badge_awarded_count: {badge_awarded_count}")
+
+        enhanced_badges.append({
+            'id': badge.id,
+            'name': badge.name,
+            'description': badge.description,
+            'image': badge.image,
+            'category': badge.category,
+            'task_name': task_name,
+            'task_id': task_id,
+            'badge_awarded_count': badge_awarded_count,
+        })
+    return enhanced_badges

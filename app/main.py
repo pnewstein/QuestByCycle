@@ -3,7 +3,7 @@ from flask_login import current_user, login_required
 from app.utils import save_profile_picture, save_bicycle_picture
 from app.models import db, Game, User, Quest, Badge, UserQuest, QuestSubmission, QuestLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage, user_games
 from app.forms import ProfileForm, ShoutBoardForm, ContactForm, BikeForm, LoginForm, RegistrationForm
-from app.utils import send_email, allowed_file, generate_tutorial_game
+from app.utils import send_email, allowed_file, generate_tutorial_game, enhance_badges_with_task_info, get_game_badges
 from .config import load_config
 from werkzeug.utils import secure_filename
 from sqlalchemy import func
@@ -92,6 +92,8 @@ def get_datetime(activity):
 @main_bp.route('/<int:game_id>/<int:quest_id>', defaults={'user_id': None})
 @main_bp.route('/<int:game_id>/<int:quest_id>/<int:user_id>')
 def index(game_id, quest_id, user_id):
+    print(f"Index function called, game_id: {game_id}") # Log game_id at start
+
     user_games_list = []
     profile = None
     user_quests = []
@@ -171,10 +173,22 @@ def index(game_id, quest_id, user_id):
         profile = User.query.get_or_404(user_id)
         user_quests = UserQuest.query.filter_by(user_id=profile.id).all()
         
-        all_badges = Badge.query.all()
-        # Optionally, you can also compute the user's earned badges (if you need to compare)
-        earned_badges = set(profile.badges)
+        if game_id:
+                all_badges = get_game_badges(game_id) # Fetch game-specific badges using new function
+        else:
+            all_badges = Badge.query.all() # Fallback to all badges if no game_id
+        earned_badges_set = set(profile.badges) # keep as set for efficient check
 
+        # Enhance all_badges with task info - now game-aware
+        enhanced_all_badges = enhance_badges_with_task_info(all_badges, game_id) # Use helper function
+        all_badges = enhanced_all_badges
+
+        # Enhance earned_badges with task info - now game-aware
+        enhanced_earned_badges = enhance_badges_with_task_info(list(earned_badges_set), game_id) # Use helper function, convert set to list
+        earned_badges = enhanced_earned_badges
+
+        print(f"Index function: all_badges count: {len(all_badges)}, earned_badges count: {len(earned_badges)}") # Log counts
+        
         if not profile.display_name:
             profile.display_name = profile.username
 
