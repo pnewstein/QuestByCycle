@@ -114,6 +114,7 @@ class QuestForm(FlaskForm):
     badge_description = TextAreaField('Badge Description', validators=[Optional()])
     badge_image_filename = FileField('Badge Image', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
     default_badge_image = SelectField('Select Default Badge Image', coerce=str, choices=[], default='')
+    badge_awarded = IntegerField('Badge Awarded (Required Completions)', validators=[Optional(), NumberRange(min=0)], default=1)
     game_id = HiddenField('Game ID', validators=[DataRequired()])
     submit = SubmitField('Create Quest')
 
@@ -149,6 +150,7 @@ class QuestImportForm(FlaskForm):
     badge_description = TextAreaField('Badge Description', validators=[DataRequired()])    
     default_badge_image = SelectField('Select Default Badge Image', coerce=str, choices=[], default='')
     badge_image_filename = FileField('Badge Image', validators=[FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
+    badge_awarded = IntegerField('Badge Awarded (Required Completions)', validators=[Optional(), NumberRange(min=0)], default=1)
     submit = SubmitField('Add Quest')
 
     def __init__(self, *args, **kwargs):

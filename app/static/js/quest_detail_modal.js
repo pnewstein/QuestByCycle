@@ -60,6 +60,7 @@ function populateQuestDetails(quest, userCompletionCount, canVerify, questId, ne
         'modalQuestTips': document.getElementById('modalQuestTips'),
         'modalQuestPoints': document.getElementById('modalQuestPoints'),
         'modalQuestCompletionLimit': document.getElementById('modalQuestCompletionLimit'),
+        'modalQuestBadgeAwarded': document.getElementById('modalQuestBadgeAwarded'),
         'modalQuestCategory': document.getElementById('modalQuestCategory'),
         'modalQuestVerificationType': document.getElementById('modalQuestVerificationType'),
         'modalQuestBadgeImage': document.getElementById('modalQuestBadgeImage'),
@@ -80,10 +81,18 @@ function populateQuestDetails(quest, userCompletionCount, canVerify, questId, ne
     elements['modalQuestDescription'].innerHTML = quest.description;
     elements['modalQuestTips'].innerHTML = quest.tips || 'No tips available';
     elements['modalQuestPoints'].innerText = `${quest.points}`;
+    elements['modalQuestCategory'].innerText = quest.category || 'No category set';
+    
     const completionText = quest.completion_limit > 1 ? `${quest.completion_limit} times` : `${quest.completion_limit} time`;
     elements['modalQuestCompletionLimit'].innerText = `${completionText} ${quest.frequency}`;
-    elements['modalQuestCategory'].innerText = quest.category || 'No category set';
 
+
+    const completionTextAward = quest.badge_awarded > 1 ? `${quest.badge_awarded} times` : `${quest.badge_awarded} time`;
+    if (quest.badge_awarded != null) {
+        elements['modalQuestBadgeAwarded'].innerText = `After ${completionTextAward}`;
+    } else {
+        elements['modalQuestBadgeAwarded'].innerText = 'No badge awarded';
+    }
     switch (quest.verification_type) {
         case 'photo_comment':
             elements['modalQuestVerificationType'].innerText = "Must upload a photo and a comment to earn points!";

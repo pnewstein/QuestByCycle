@@ -116,18 +116,17 @@ def create_super_admin(app):
             current_app.logger.error(f"Error creating or updating super admin user: {e}")
 
 
-# Function to sign in to the admin dashboard
 @admin_bp.route('/admin_dashboard')
 @login_required
 @require_admin
 def admin_dashboard():
-    if not current_user.is_super_admin and not current_user.is_admin:
-        return redirect(url_for('main.index'))
-
-    games = Game.query.all()  # Retrieve all games from the database
-    form = CarouselImportForm()  # Create an instance of the form
-
-    return render_template('admin_dashboard.html', games=games, form=form)
+    selected_game_id = request.args.get('selected_game_id', 0)
+    # Use selected_game_id as needed, for example:
+    selected_game = Game.query.get(selected_game_id) if selected_game_id and int(selected_game_id) > 0 else None
+    games = Game.query.all()  # or however you fetch games
+    form = CarouselImportForm()
+    return render_template('admin_dashboard.html', games=games, form=form,
+                           selected_game_id=selected_game_id, selected_game=selected_game)
 
 
 @admin_bp.route('/user_management', methods=['GET'])

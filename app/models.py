@@ -195,6 +195,7 @@ class Quest(db.Model):
     badge_id = db.Column(db.Integer, db.ForeignKey('badge.id'), nullable=True)
     submissions = db.relationship('QuestSubmission', back_populates='quest', cascade='all, delete-orphan')
     likes = db.relationship('QuestLike', backref='quest', cascade="all, delete-orphan")
+    badge_awarded = db.Column(db.Integer, default=1)
 
     def __repr__(self):
         return f'<Quest {self.id}>'

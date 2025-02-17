@@ -21,7 +21,6 @@
                                     <img class="card-img-top" src="{{ url_for('static', filename=sponsor.logo) }}" alt="{{ sponsor.name }} logo">
                                     <div class="card-body bg-light">
                                         <p class="card-text">{{ sponsor.description | safe }}</p>
-                                        <p class="card-text"><strong>Tier:</strong> {{ sponsor.tier }}</p>
                                         {% if sponsor.website %}
                                             <a href="{{ sponsor.website }}" class="btn {% if tier == 'Gold' %}btn-warning{% elif tier == 'Silver' %}btn-secondary{% elif tier == 'Bronze' %}btn-danger{% else %}btn-primary{% endif %}" target="_blank">Visit Website</a>
                                         {% endif %}

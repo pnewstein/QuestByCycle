@@ -19,8 +19,6 @@
             {% endif %}
         {% endwith %}
     {% endif %}
-
-    <a href="{{ url_for('main.index') }}" class="button">Back to Home</a> <!-- Back button to home -->
     <h1>Admin Dashboard</h1>
     <div>Welcome, {{ current_user.username }}! This is the admin dashboard.</div>
 
@@ -61,7 +59,16 @@
 </div>
 
 {% include 'modals/all_submissions_modal.html' %}
+{% include 'modals/game_info_modal.html' %}
+{% include 'modals/user_profile_modal.html' %}
+{% include 'modals/leaderboard_modal.html' %}
 
+<script src="{{ url_for('static', filename='js/modal_common.js') }}"></script>
 <script src="{{ url_for('static', filename='js/all_submissions_modal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/game_info_modal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/user_profile_modal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/leaderboard_modal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/join_custom_game_modal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/index_management.js') }}"></script>
 
 {% endblock %}

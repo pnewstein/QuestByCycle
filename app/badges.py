@@ -60,15 +60,51 @@ def create_badge():
 
 @badges_bp.route('/badges', methods=['GET'])
 def get_badges():
-    badges = Badge.query.all()
-    badges_data = [{
-        'id': badge.id,
-        'name': badge.name,
-        'description': badge.description,
-        'image': url_for('static', filename='images/badge_images/' + badge.image) if badge.image else None,
-        'category': badge.category
-    } for badge in badges]
+    game_id = request.args.get('game_id', type=int)
+    if game_id:
+        game = Game.query.get(game_id)
+        if not game:
+            return jsonify(error="Game not found"), 404
+
+        # Filter badges by joining with Quest and filtering by game_id.
+        badges = Badge.query.join(Quest).filter(
+            Quest.game_id == game_id,
+            Quest.badge_id.isnot(None)
+        ).distinct().all()
+    else:
+        badges = Badge.query.all()
+    
+    badges_data = []
+    for badge in badges:
+        awarding_quest = (
+            next((quest for quest in badge.quests if quest.game_id == game_id), None)
+            if game_id else (badge.quests[0] if badge.quests else None)
+        )
+        
+        # Calculate the user's completions for the awarding quest.
+        if awarding_quest and current_user.is_authenticated:
+            user_quest = UserQuest.query.filter_by(
+                user_id=current_user.id,
+                quest_id=awarding_quest.id
+            ).first()
+            user_completions_value = user_quest.completions if user_quest else 0
+        else:
+            user_completions_value = 0
+
+        badges_data.append({
+            'id': badge.id,
+            'name': badge.name,
+            'description': badge.description,
+            'image': url_for('static', filename='images/badge_images/' + badge.image) if badge.image else None,
+            'category': badge.category,
+            'task_name': awarding_quest.title if awarding_quest else None,
+            'task_id': awarding_quest.id if awarding_quest else None,
+            'badge_awarded_count': awarding_quest.badge_awarded if awarding_quest else 1,
+            'user_completions': user_completions_value
+        })
+
     return jsonify(badges=badges_data)
+
 
 
 @badges_bp.route('/badges/manage_badges', methods=['GET', 'POST'])

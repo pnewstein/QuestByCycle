@@ -1,124 +1,60 @@
 {% extends "layout.html" %}
 {% block content %}
-    <div class="container mt-5">
+<div class="container mt-1">
+    {% if not current_user.is_authenticated %}
+        <div class="text-center mb-4">
+            <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}"
+                 srcset="{{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=480) }} 480w,
+                         {{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=768) }} 768w,
+                         {{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=1200) }} 1200w"
+                 sizes="(max-width: 600px) 480px, (max-width: 960px) 768px, 1200px"
+                 alt="Welcome to Quest by Cycle"
+                 class="img-fluid w-100"
+                 style="max-width: 100%; height: auto;">
+        </div>
+        <div id="flash-messages" style="display: none;">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div id="flash-messages-data">
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </div>
+        <div id="modal-flash-messages">
+            </div>
+        <div class="introduction text-center mb-5">
+            <p class="font-weight-bold">Ready to transform your bike rides into a thrilling adventure that benefits the
+                planet? Join the QuestByCycle community! Pedal your way to a greener world as you tackle exciting challenges,
+                earn points that combat carbon emissions, and discover hidden gems in your city. Connect with fellow cycling
+                enthusiasts, compete for top spots on the leaderboard, and make a real difference – all while having a blast
+                on two wheels.</p>
+            <p class="h5 font-weight-bold">This is your Quest by Cycle journey!</p>
+        </div>
+    {% endif %}
+    <div class="row">
         {% if not current_user.is_authenticated %}
-            <div class="text-center mb-4">
-                <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}"
-                srcset="{{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=480) }} 480w,
-                        {{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=768) }} 768w,
-                        {{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=1200) }} 1200w"
-                sizes="(max-width: 600px) 480px, (max-width: 960px) 768px, 1200px"
-                alt="Welcome to Quest by Cycle"
-                class="img-fluid w-100"
-                style="max-width: 100%; height: auto;">           
-            </div>
-            <div id="flash-messages" style="display: none;">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        <div id="flash-messages-data">
-                            {% for category, message in messages %}
-                                <div class="flash-message {{ category }}">{{ message }}</div>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                {% endwith %}
-            </div>
-            <!-- Flash Messages for the modal -->
-            <div id="modal-flash-messages">
-                <!-- Flash messages will be dynamically inserted here -->
-            </div>
-            <div class="text-center">
-                <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories!</small></p>
-            </div>
-            <div class="introduction text-center mb-5">
-                <p class="font-weight-bold">Ready to transform your bike rides into a thrilling adventure that benefits the
-                    planet? Join the QuestByCycle community! Pedal your way to a greener world as you tackle exciting challenges,
-                    earn points that combat carbon emissions, and discover hidden gems in your city. Connect with fellow cycling
-                    enthusiasts, compete for top spots on the leaderboard, and make a real difference – all while having a blast
-                    on two wheels.</p>
-                <p class="h5 font-weight-bold">This is your Quest by Cycle journey!</p>
-                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg mr-2">Register Today!</a>
-                <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-lg">Already a Member? Sign In</a>
-            </div>
-        {% endif %}
-
-        <div class="row">
-            {% if not current_user.is_authenticated %}
-                <h4 class="text-center">Tutorial Video</h4> 
+            <div class="col-12">
+                <h4 class="text-center">Tutorial Video</h4>
                 <div class="ratio ratio-16x9 mb-4">
                     <video class="w-100" src="{{ url_for('static', filename='videos/welcomeQuestByCycle.mp4') }}"
-                        autoplay loop controls></video>
+                           autoplay loop controls></video>
                 </div>
-                <h4 class="text-center">Promo Video</h4> 
+                <h4 class="text-center">Promotional Video</h4>
                 <div class="ratio ratio-16x9 mb-4">
-                    <iframe src="https://www.youtube.com/embed/ABh1KtKRxm0?si=U6PxTipd5r5Z2QUl&autoplay=0&rel=0" title="YouTube video player" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                    <iframe src="https://www.youtube.com/embed/ABh1KtKRxm0?si=U6PxTipd5r5Z2QUl&autoplay=0&rel=0"
+                            title="YouTube video player"
+                            allow="autoplay; encrypted-media; picture-in-picture"
+                            referrerpolicy="strict-origin-when-cross-origin"
+                            allowfullscreen></iframe>
                 </div>
-            {% endif %}
-
-            {% if current_user.is_authenticated %}
-                <div class="text-center mb-4">
-                    <img src="{{ url_for('static', filename='images/welcomeQuestByCycle.webp') }}"
-                    srcset="{{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=480) }} 480w,
-                            {{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=768) }} 768w,
-                            {{ url_for('main.resize_image', path='images/welcomeQuestByCycle.webp', width=1200) }} 1200w"
-                    sizes="(max-width: 600px) 480px, (max-width: 960px) 768px, 1200px"
-                    alt="Welcome to Quest by Cycle"
-                    class="img-fluid w-100"
-                    style="max-width: 100%; height: auto;">
-               
-                </div>
-                <div class="col-md-6 mb-4">
-                    <div class="text-center mb-4">
-                        <p class="epic-tagline">Share the Adventure!<br><small>Post Your Cycling Photos & Stories Below!</small></p>
-                        <div id="questImageCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
-                            <ol class="carousel-indicators" style="visibility: hidden;">
-                                {% for image in carousel_images %}
-                                <li data-bs-target="#questImageCarousel" data-bs-slide-to="{{ loop.index0 }}"
-                                    {% if loop.first %}class="active"{% endif %}></li>
-                                {% endfor %}
-                            </ol>
-                            <div class="carousel-inner">
-                                {% for image in carousel_images %}
-                                    <div class="carousel-item{% if loop.first %} active{% endif %}" style="height: 300px;">
-                                        <img src="{{ url_for('main.resize_image', path=image['small'], width=480) }}"
-                                            srcset="
-                                                {{ url_for('main.resize_image', path=image['small'], width=480) }} 480w,
-                                                {{ url_for('main.resize_image', path=image['medium'], width=768) }} 768w,
-                                                {{ url_for('main.resize_image', path=image['large'], width=1200) }} 1200w"
-                                            sizes="(max-width: 600px) 480px, (max-width: 960px) 768px, 1200px"
-                                            width="1200" height="750"
-                                            class="d-block w-100 h-100" alt="Carousel Image"
-                                            style="height: 100%; width: 100%; object-fit: cover;"
-                                            {% if not loop.first %} loading="lazy" {% endif %}>
-                                        <div class="carousel-caption minimized-caption">
-                                            <h5>{{ image.quest_title }}</h5>
-                                            <p class="comment-text">{{ (image.comment or '')[:75] }}</p>
-                                        </div>
-                                    </div>
-                                {% endfor %}             
-                            </div>                    
-            
-                            <a class="carousel-control-prev" href="#questImageCarousel" role="button" data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Previous</span>
-                            </a>
-                            <a class="carousel-control-next" href="#questImageCarousel" role="button" data-bs-slide="next">
-                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Next</span>
-                            </a>
-                        </div>          
-                        <br>
-                        <div class="text-center mb-4">
-                            {% if selected_game_id %}
-                                <a href="{{ url_for('games.game_info', game_id=selected_game_id) }}" class="btn btn-primary btn-lg mb-2" id="lets-get-started-button">Game Rules</a>
-                                <button class="btn btn-secondary btn-lg mb-2" onclick="openModal('contactModal')" id="contact-us-button">Contact Us</button>
-                                <button class="btn btn-primary btn-lg mb-2" onclick="openModal('sponsorsModal', '{{ selected_game_id }}')">Sponsors</button>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
-            {% if profile %}
+            </div>
+        {% endif %}
+        {% if current_user.is_authenticated %}
+            <div class="row">
+                {% if profile %}
                 <div class="col-md-6 mb-4">
                     {% if current_user.is_authenticated %}
                         <div id="flash-messages" class="flash-messages-container">
@@ -127,7 +63,7 @@
                                     <div id="flash-messages-data">
                                         {% for category, message in messages %}
                                             <div class="flash-message {{ category }}">
-                                                <i class="fas fa-info-circle"></i> 
+                                                <i class="fas fa-info-circle"></i>
                                                 <span>{{ message }}</span>
                                             </div>
                                         {% endfor %}
@@ -136,201 +72,216 @@
                             {% endwith %}
                         </div>
                         <div id="modal-flash-messages">
-                            <!-- Flash messages will be dynamically inserted here -->
-                        </div>
+                            </div>
                     {% endif %}
-                    
-                    <!-- Profile View -->
                     <div id="profileView" class="card mb-4 w-100 profile-view epic-profile-container text-center">
-                        <!-- Profile Header with Full-Width Profile Image -->
                         <div class="text-center">
                             <h2 class="display-3 font-weight-bold welcome-text">
                                 Welcome, {{ profile.display_name or profile.username }}
                             </h2>
                         </div>
-                        <!-- Profile Header with Full-Width Profile Image -->
                         <div class="profile-header position-relative">
                             <div class="profile-photo-full">
                                 <img src="{{ url_for('static', filename=profile.profile_picture or 'images/default_profile_picture.png') }}"
                                     alt="Profile Picture" class="img-fluid full-width-profile-img">
                             </div>
                         </div>
-                        <!-- Carbon Reduction Points below the Welcome Text -->
                         <p id="total-points" class="font-weight-bold text-warning">
                             <i class="fas fa-leaf"></i> Your Carbon Reduction Points: <br>
                             <span class="points-emphasized">{{ total_points }}</span>
                         </p>
-                        <!-- Profile Actions -->
-                        <div class="profile-actions d-flex align-items-center">
-                            <a href="javascript:void(0)" onclick="showUserProfileModal('{{ current_user.id }}')" class="btn btn-primary w-35 btn-lg mx-2 shadow custom-btn-bg" id="view-profile-button">
-                                <i class="fas fa-user-circle me-2"></i><span class="button-text"> Profile</span>
-                            </a>
-                            <button id="leaderboardButton" data-game-id="{{ game.id }}" class="btn btn-success w-35 btn-lg mx-2 shadow custom-btn-bg">
-                                <i class="fas fa-trophy me-2"></i><span class="button-text"> Leaderboard</span>
-                            </button>
-                            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger w-35 btn-lg mx-2 shadow custom-btn-bg">
-                                <i class="fas fa-sign-out-alt me-2"></i><span class="button-text"> Logout</span>
-                            </a>
-                        </div>
-
-                        <!-- Game Selection Dropdown -->
-                        <div class="form-group w-100 text-center">
-                            <label for="gameSelectDropdown" class="mb-2 w-100 text-secondary font-weight-bold d-flex justify-content-center align-items-center">
-                                <i class="fas fa-gamepad me-2"></i> Select or Join Game
-                            </label>
-                            <div class="dropdown w-100">
-                                <button id="gameDropdownButton" class="btn btn-secondary w-100 dropdown-toggle shadow-sm custom-btn-bg d-flex justify-content-between align-items-center px-4"
-                                        type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="game-title">{{ game.title }}</span>
-                                </button>
-                                <ul id="gameDropdownMenu" class="dropdown-menu dropdown-menu-scrollable w-100">
-                                    {% for game, joined_at in user_games|sort(reverse=True, attribute='joined_at') %}
-                                    <li>
-                                        <a href="{{ url_for('main.index', game_id=game.id) }}" class="dropdown-item d-flex flex-column text-center">
-                                            <span class="game-title text-truncate">{{ game.title }}</span>
-                                            <small class="text-muted">Joined on: {{ joined_at.strftime('%m-%d-%Y') if joined_at else 'N/A' }}</small>
-                                        </a>
-                                    </li>
-                                    {% endfor %}
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <a href="#" class="dropdown-item bold-item text-center" onclick="handleGameSelection({ value: 'join_custom_game' })">
-                                            <i class="fas fa-plus-circle"></i> Join Custom Game
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
                     </div>
                 </div>
-            {% endif %}
-        </div>
-    </div>
-    {% if current_user.is_authenticated %}
-        <div class="container mt-5" id="whats-happening-step">
-            <h2>What's Happening</h2>
-            <div class="game-item">
-                {% if current_user.is_admin %}
-                    <form action="{{ url_for('main.shout_board', game_id=selected_game_id) }}" method="post">
-                        {{ form.hidden_tag() }}
-                        <div class="form-group">
-                            <!-- Hidden input to store the message content -->
-                            <input type="hidden" name="message" id="message-input">
-                            <!-- Quill editor container -->
-                            <div id="quill-editor"></div>
-                        </div>
-                        {{ form.submit() }}
-                    </form>
                 {% endif %}
-                <div class="shout-messages-container">
-                    <div class="shout-messages">
-                        {% for activity in activities %}
-                        <div class="activity{% if activity.is_pinned %} pinned{% endif %} message-divider">
-                            {% if activity.__tablename__ == 'shout_board_message' %}
-                            <strong>
-                                {{ activity.timestamp.strftime('%m-%d') }} -
-                                <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
-                                    {{ activity.user.display_name or activity.user.username }}
-                                </a>
-                            </strong>
-                            <span class="activity-message">{{ activity.message|safe }}</span>
+                <div class="col-md-6">
+                    <div id="whats-happening-step">
+                        <div class="game-item">
+                            <div id="gameNameContainer">
+                                <h2 id="gameNameHeader">Loading game...</h2>
+                                <h3>Recent Activity</h3>
+                            </div>
                             {% if current_user.is_admin %}
-                            <form action="{{ url_for('main.pin_message', game_id=selected_game_id, message_id=activity.id) }}" method="post">
-                                {{ form.hidden_tag() }}
-                                <button type="submit" class="blue_button">{{ 'Unpin' if activity.is_pinned else 'Pin' }}</button>
-                            </form>
+                                <form action="{{ url_for('main.shout_board', game_id=selected_game_id) }}" method="post">
+                                    {{ form.hidden_tag() }}
+                                    <div class="form-group">
+                                        <input type="hidden" name="message" id="message-input">
+                                        <div id="quill-editor"></div>
+                                    </div>
+                                    {{ form.submit() }}
+                                </form>
                             {% endif %}
-                            <div class="like-section">
-                                <button type="button" class="blue_button like-button" id="like-button-{{ activity.id }}"
-                                    onclick="likeMessage('{{ activity.id }}')">
-                                    {{ 'Liked' if activity.liked_by_user else 'Like' }}
-                                </button>
-                                <span id="like-count-{{ activity.id }}" class="like-count">{{ activity.likes|length }}</span>👍
+                            <div class="shout-messages-container">
+                                <div class="shout-messages">
+                                    {% for activity in activities %}
+                                        <div class="activity{% if activity.is_pinned %} pinned{% endif %} message-divider">
+                                            {% if activity.__tablename__ == 'shout_board_message' %}
+                                                <strong>
+                                                    {{ activity.timestamp.strftime('%m-%d') }} -
+                                                    <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
+                                                        {{ activity.user.display_name or activity.user.username }}
+                                                    </a>
+                                                </strong>
+                                                <span class="activity-message">{{ activity.message|safe }}</span>
+                                                {% if current_user.is_admin %}
+                                                    <form action="{{ url_for('main.pin_message', game_id=selected_game_id, message_id=activity.id) }}" method="post">
+                                                        {{ form.hidden_tag() }}
+                                                        <button type="submit" class="blue_button">
+                                                            {{ 'Unpin' if activity.is_pinned else 'Pin' }}
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                                <div class="like-section">
+                                                    <button type="button" class="blue_button like-button" id="like-button-{{ activity.id }}"
+                                                            onclick="likeMessage('{{ activity.id }}')">
+                                                        {{ 'Liked' if activity.liked_by_user else 'Like' }}
+                                                    </button>
+                                                    <span id="like-count-{{ activity.id }}" class="like-count">{{ activity.likes|length }}</span>👍
+                                                </div>
+                                            {% elif activity.__tablename__ == 'user_quests' %}
+                                                <strong>
+                                                    {{ activity.completed_at.strftime('%m-%d') }} -
+                                                    <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
+                                                        {{ activity.user.display_name or activity.user.username }}
+                                                    </a>
+                                                </strong>
+                                                <span class="activity-message">
+                                                    completed a quest <br>
+                                                    <a href="javascript:void(0);" class="quest-title" onclick="openQuestDetailModal('{{ activity.quest.id }}')">
+                                                        {{ activity.quest.title }}
+                                                    </a>
+                                                </span>
+                                                <div class="like-section">
+                                                    <button class="blue_button like-button" id="like-button-{{ activity.quest.id }}"
+                                                            onclick="likeQuest('{{ activity.quest.id }}');"
+                                                            class="{{ 'liked-button-style' if activity.quest.liked_by_user else '' }}"
+                                                            {{ 'disabled' if activity.quest.liked_by_user }}>
+                                                        {{ 'Liked' if activity.quest.liked_by_user else 'Like' }}
+                                                    </button>
+                                                    <span id="like-count-{{ activity.quest.id }}" class="like-count">{{ activity.quest.likes|length }}</span>👍
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                    <div class="arrow-buttons">
+                                        <button class="btn epic-button" id="scrollUpButton">⬆</button>
+                                        <button class="btn epic-button" id="scrollDownButton">⬇</button>
+                                    </div>
+                                </div>
                             </div>
-                            {% elif activity.__tablename__ == 'user_quests' %}
-                            <strong>
-                                {{ activity.completed_at.strftime('%m-%d') }} -
-                                <a href="javascript:void(0)" onclick="showUserProfileModal('{{ activity.user.id }}')">
-                                    {{ activity.user.display_name or activity.user.username }}
-                                </a>
-                            </strong>
-                            <span class="activity-message">
-                                completed a quest <br>
-                                <a href="javascript:void(0);" class="quest-title" onclick="openQuestDetailModal('{{ activity.quest.id }}')">
-                                    {{ activity.quest.title }}
-                                </a>
-                            </span>
-                            <div class="like-section">
-                                <button class="blue_button like-button" id="like-button-{{ activity.quest.id }}"
-                                    onclick="likeQuest('{{ activity.quest.id }}');"
-                                    class="{{ 'liked-button-style' if activity.quest.liked_by_user else '' }}"
-                                    {{ 'disabled' if activity.quest.liked_by_user }}>
-                                    {{ 'Liked' if activity.quest.liked_by_user else 'Like' }}
-                                </button>
-                                <span id="like-count-{{ activity.quest.id }}" class="like-count">{{ activity.quest.likes|length }}</span>👍
-                            </div>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
-                        <div class="arrow-buttons">
-                            <button class="btn epic-button" id="scrollUpButton">⬆</button>
-                            <button class="btn epic-button" id="scrollDownButton">⬇</button>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="container mt-5" id="available-quests-step">
-            {% if has_joined %}
-                <h2>Available Quests</h2>
-                <div class="game-item">
-                    <input type="text" id="questSearchInput" class="form-control mb-3" placeholder="Search for quests...">
-                    <table class="table">
-                        <colgroup>
-                            <col style="width: auto;"> <!-- Quest title, takes remaining space -->
-                            <col style="width: 12%;"> <!-- Points column -->
-                            <col style="width: 12%;"> <!-- Points column -->
-                            <col style="width: 14%;"> <!-- Points column -->
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th style="vertical-align: middle; text-align: left;">Quest</th>
-                                <th style="vertical-align: right; text-align: center;">Your Posts</th>
-                                <th style="vertical-align: right; text-align: center;">All Posts</th>
-                                <th style="vertical-align: right; text-align: center;">Points</th>
-                            </tr>
-                        </thead>
-                        <tbody id="questTableBody">
-                            {% for quest in quests %}
-                            <tr class="{{ 'pinned' if quest.is_sponsored }}">
-                                <td>
-                                    <button class="button" onclick="openQuestDetailModal('{{ quest.id }}')">{{ quest.title }}</button>
-                                </td>
-                                <td style="text-align: center;">{{ quest.personal_completions }}</td>
-                                <td style="text-align: center;">{{ quest.total_completions }}</td>
-                                <td style="text-align: center;">{{ quest.points }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% endif %}
-            {% if current_user.is_authenticated %}
-                {% if current_user.is_admin %}
-                    <!-- Quest Creation Button -->
-                    <div class="text-center mb-4">
-                        <button data-game-id="{{ game.id }}" class="btn btn-primary btn-lg mb-2" onclick="openQuestCreationModal(this)">Create New Quest</button>
-                    </div>
+        {% endif %}
+    </div>
+    {% if current_user.is_authenticated and all_badges %}
+        <div class="col-12">
+            {# Create a list of earned badge IDs #}
+            {% set earned_badge_ids = profile.badges | map(attribute='id') | list %}
+            {# Create separate lists for earned and unearned badges #}
+            {% set earned_badges = [] %}
+            {% set unearned_badges = [] %}
+            {% for badge in all_badges %}
+                {% if badge.id in earned_badge_ids %}
+                    {% set _ = earned_badges.append(badge) %}
+                {% else %}
+                    {% set _ = unearned_badges.append(badge) %}
                 {% endif %}
-            {% endif %}
+            {% endfor %}
+            <div class="badge-bar-container">
+                <h2>Available Badges</h2>
+                <div class="badge-bar">
+                    {# Example for earned badges (assuming similar structure) #}
+                    {% for badge in earned_badges %}
+                    {% set earned = true %} {# Ensure 'earned' is true for earned badges section #}
+                    {% set user_completions = profile.user_quests | selectattr('quest.id', 'equalto', badge.task_id) | list | first %}
+                    <div class="badge-item"
+                        data-badge-id="{{ badge.id }}"
+                        data-earned="{{ 'true' if earned else 'false' }}"
+                        data-task-name="{{ badge.task_name }}"
+                        data-badge-awarded-count="{{ badge.badge_awarded_count }}"
+                        data-task-id="{{ badge.task_id }}"
+                        data-user-completions="{{ user_completions.completions if user_completions else 0 }}"
+                        onclick="openBadgeModal(this);">
+                        <img src="{{ url_for('static', filename='images/badge_images/' ~ (badge.image or 'default_badge.png')) }}"
+                            alt="{{ badge.name }}"
+                            class="badge-img {{ 'badge-earned' if earned else 'badge-not-earned' }}"
+                            title="{{ badge.name }}: {{ badge.description }}">
+                        <div class="badge-name">{{ badge.name }}</div>
+                    </div>
+                    {% endfor %}
+                    {# Display unearned badges after earned badges #}
+                    {% for badge in unearned_badges %}
+                        {% set earned = false %}
+                        {% set user_completions = profile.user_quests | selectattr('quest.id', 'equalto', badge.task_id) | list | first %}
+                        <div class="badge-item"
+                            data-badge-id="{{ badge.id }}"
+                            data-earned="{{ 'true' if earned else 'false' }}"
+                            data-task-name="{{ badge.task_name }}"
+                            data-badge-awarded-count="{{ badge.badge_awarded_count }}"
+                            data-task-id="{{ badge.task_id }}"
+                            data-user-completions="{{ user_completions.completions if user_completions else 0 }}"
+                            onclick="openBadgeModal(this);">
+                            <img src="{{ url_for('static', filename='images/badge_images/' ~ (badge.image or 'default_badge.png')) }}"
+                                alt="{{ badge.name }}"
+                                oncontextmenu="return false;"
+                                class="badge-img {{ 'badge-earned' if earned else 'badge-not-earned' }}"
+                                title="{{ badge.name }}: {{ badge.description }}">
+                            <div class="badge-name">{{ badge.name }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
     {% endif %}
-
+    {% if current_user.is_authenticated %}
+        {% if has_joined %}
+            <div class="game-item">
+                <h2>Available Quests</h2>
+                <input type="text" id="questSearchInput" class="form-control mb-3" placeholder="Search for quests...">
+                <table class="table">
+                    <colgroup>
+                        <col style="width: auto;">
+                        <col style="width: 12%;">
+                        <col style="width: 12%;">
+                        <col style="width: 14%;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th style="vertical-align: middle; text-align: left;">Quest</th>
+                            <th style="vertical-align: right; text-align: center;">Your Posts</th>
+                            <th style="vertical-align: right; text-align: center;">All Posts</th>
+                            <th style="vertical-align: right; text-align: center;">Points</th>
+                        </tr>
+                    </thead>
+                    <tbody id="questTableBody">
+                        {% for quest in quests %}
+                        <tr class="{{ 'pinned' if quest.is_sponsored }}">
+                            <td>
+                                <button class="button" onclick="openQuestDetailModal('{{ quest.id }}')">{{ quest.title }}</button>
+                            </td>
+                            <td style="text-align: center;">{{ quest.personal_completions }}</td>
+                            <td style="text-align: center;">{{ quest.total_completions }}</td>
+                            <td style="text-align: center;">{{ quest.points }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+        {% if current_user.is_authenticated and current_user.is_admin %}
+            <div class="text-center mb-4">
+                <button data-game-id="{{ game.id }}" class="btn btn-primary btn-lg mb-2" onclick="openQuestCreationModal(this)">Create New Quest</button>
+            </div>
+        {% endif %}
+    {% endif %}
     <div id="onboardingStatus" data-start-onboarding="{{ 'true' if start_onboarding else 'false' }}"></div>
-
     <div id="game_IdHolder" data-game-id="{{ selected_game_id }}" style="display:none;"></div>
-
+    {% include 'modals/login_modal.html' %}
+    {% include 'modals/register_modal.html' %}
+    {% include 'modals/game_info_modal.html' %}
     {% include 'modals/quest_detail_modal.html' %}
+    {% include 'modals/badge_modal.html' %}
     {% include 'modals/submission_detail_modal.html' %}
     {% include 'modals/user_profile_modal.html' %}
     {% include 'modals/leaderboard_modal.html' %}
@@ -341,10 +292,11 @@
     {% include 'modals/generate_AI_quest_modal.html' %}
     {% include 'modals/loading_modal.html' %}
     {% include 'modals/sponsors_modal.html' %}
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/3rd/fontawesome/all.min.css') }}">
-
     <script src="{{ url_for('static', filename='js/modal_common.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/badge_modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/game_info_modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/auth_modals.js') }}"></script>
     <script src="{{ url_for('static', filename='js/all_submissions_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/contact_modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/join_custom_game_modal.js') }}"></script>
@@ -357,31 +309,22 @@
     <script type="module" src="{{ url_for('static', filename='js/shepherd_tour.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Show flash messages in the modal
             const flashMessagesContainer = document.getElementById('flash-messages-data');
             const modalFlashContainer = document.getElementById('modal-flash-messages');
             if (flashMessagesContainer && modalFlashContainer) {
                 modalFlashContainer.innerHTML = flashMessagesContainer.innerHTML;
             }
-
-
-            // Function to get URL parameters
             function getQueryParam(param) {
                 const urlParams = new URLSearchParams(window.location.search);
                 return urlParams.get(param);
             }
-    
-            // Get quest_id from URL
+
             const questId = "{{ quest_id }}";
-    
-            // If quest_id exists, trigger the quest detail modal
             if (questId != 'None') {
                 openQuestDetailModal(questId);
             }
-
             function handleGameSelection(option) {
                 const selectedValue = option.value;
-
                 if (selectedValue === 'join_custom_game') {
                     openModal('joinCustomGameModal');
                 } else {
@@ -389,11 +332,9 @@
                 }
             }
         });
-    
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Quill editor if the container exists (i.e., user is admin)
             const quillEditorContainer = document.getElementById('quill-editor');
             if (quillEditorContainer) {
                 var quill = new Quill('#quill-editor', {
@@ -405,24 +346,19 @@
                             ['bold', 'italic', 'underline'],
                             ['link'],
                             [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                            ['clean']  // remove formatting button
+                            ['clean']
                         ]
                     }
                 });
-
-                // On form submit, copy the content from Quill to the hidden input
                 document.querySelector('form').onsubmit = function() {
                     var messageInput = document.querySelector('#message-input');
                     messageInput.value = quill.root.innerHTML;
                     return true;
                 };
             }
-
             document.querySelectorAll('.activity-message').forEach(function(element) {
                 element.innerHTML = element.innerHTML.replace(/<\/?p[^>]*>/g, '');
             });
-
-            // Function to scroll messages container
             function scrollMessagesContainer(direction) {
                 const scrollAmount = direction === 'up' ? -100 : 100;
                 document.querySelector('.shout-messages').scrollBy({
@@ -430,33 +366,26 @@
                     behavior: 'smooth'
                 });
             }
-
-            // Event listeners for desktop and mobile
             const scrollUpButton = document.getElementById('scrollUpButton');
             const scrollDownButton = document.getElementById('scrollDownButton');
-
-            // Adding both click and touchstart event listeners
             if (scrollUpButton) {
                 scrollUpButton.addEventListener('click', function() {
                     scrollMessagesContainer('up');
                 });
                 scrollUpButton.addEventListener('touchstart', function(event) {
-                    event.preventDefault(); // Prevents additional mouse events
+                    event.preventDefault();
                     scrollMessagesContainer('up');
                 });
             }
-
             if (scrollDownButton) {
                 scrollDownButton.addEventListener('click', function() {
                     scrollMessagesContainer('down');
                 });
                 scrollDownButton.addEventListener('touchstart', function(event) {
-                    event.preventDefault(); // Prevents additional mouse events
+                    event.preventDefault();
                     scrollMessagesContainer('down');
                 });
             }
-
-            // Initialize the quest search input event listener
             const questSearchInput = document.getElementById('questSearchInput');
             if (questSearchInput) {
                 questSearchInput.addEventListener('input', function () {
@@ -474,35 +403,10 @@
             }
         });
     </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const carouselElement = document.getElementById('questImageCarousel');
-            const carouselInstance = new bootstrap.Carousel(carouselElement, {
-                interval: 3000 // Automatically slide every 3 seconds
-            });
-    
-            let slideCount = 0;
-            carouselElement.addEventListener('slide.bs.carousel', function () {
-                slideCount++;
-                if (slideCount >= 7) {
-                    carouselInstance.pause();
-                }
-            });
-    
-            carouselElement.querySelectorAll('.carousel-control-next, .carousel-control-prev').forEach(button => {
-                button.addEventListener('click', function () {
-                    carouselInstance.cycle(); // Restart carousel on manual slide
-                    slideCount = 0; // Reset counter after manual slide
-                });
-            });
-        });
-    </script>
-    
-    <style>        
+    <style>
         .bold-item {
             font-weight: bold;
         }
-
         #gameDropdownMenu {
             background-color: white;
             border: 1px solid #ddd;
@@ -512,24 +416,20 @@
             max-width: 300px;
             z-index: 1000;
         }
-
         .dropdown-item {
             padding: 8px 16px;
             cursor: pointer;
         }
-
         .dropdown-item:hover {
             background-color: #f1f1f1;
         }
-
         .activity-message {
             flex-grow: 1;
             white-space: normal;
-            max-width: 100%;  /* Ensures content doesn't exceed container width */
-            display: flex; /* Use flexbox for better layout control */
-            flex-direction: column; /* Arrange children in a column to wrap text */
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
         }
-
         .quest-title {
             display: inline-block;
             max-width: 100%;
@@ -538,51 +438,39 @@
             word-break: break-word;
             word-wrap: break-word;
         }
-
         .like-section {
             display: flex;
-            align-items: center; /* Align items vertically in the center */
-            gap: 0.5rem; /* Add spacing between elements */
-            margin-top: 5px; /* Add spacing between like section and other content */
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 5px;
         }
-
-        /* Add dashed lines between each message */
         .message-divider {
-            border-bottom: 1px dashed #ddd; /* Adds a dashed line below each message */
-            padding-bottom: 10px; /* Adjust padding for visual spacing */
-            margin-bottom: 10px; /* Adjust margin for spacing between messages */
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
         }
-
-        /* Responsive adjustments for screens under 480px */
         @media (max-width: 480px) {
             .activity-message {
-                font-size: 1rem; /* Adjust font size for better readability */
-                line-height: 1.2; /* Adjust line-height for better spacing */
+                font-size: 1rem;
+                line-height: 1.2;
             }
-
             .quest-title {
-                display: block; /* Ensure quest title wraps on small screens */
-                font-size: 0.9rem; /* Adjust font size for the quest title */
-                word-break: break-word; /* Break long words */
+                display: block;
+                font-size: 0.9rem;
+                word-break: break-word;
             }
-
             .activity {
-                padding: 5px; /* Add padding for smaller screens */
-                box-sizing: border-box; /* Include padding in element's total width */
+                padding: 5px;
+                box-sizing: border-box;
             }
-
-            /* Add styles for other elements if needed */
         }
-
         .shout-messages-container {
             position: relative;
         }
-
         .shout-messages {
             max-height: 400px;
             overflow-y: hidden;
         }
-
         .arrow-buttons {
             position: absolute;
             right: 0;
@@ -593,7 +481,6 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-
         .arrow-buttons .epic-button {
             background-color: #007bff;
             color: white;
@@ -603,204 +490,212 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-
         .arrow-buttons .epic-button:hover {
             background-color: #0056b3;
             transform: translateY(-2px);
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
-
         .arrow-buttons .epic-button:active {
             transform: translateY(0);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-
         .arrow-buttons .epic-button:focus {
             outline: none;
         }
-
-        /* Truncate the text with ellipsis */
         #gameDropdownButton .game-title {
             font-weight: bold;
             display: inline-block;
             white-space: wrap;
         }
-
-        /* Scrollable dropdown menu with a maximum height */
         .dropdown-menu-scrollable {
-            max-height: 200px; /* Adjust this value to set the height limit */
+            max-height: 200px;
             overflow-y: auto;
-            overflow-x: hidden; /* Prevent horizontal scrolling */
+            overflow-x: hidden;
         }
-        
         .comment-text {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 100%; /* Ensures that the text fits within the available space */
+            max-width: 100%;
             display: inline-block;
         }
-    /* Profile Container */
-    .epic-profile-container {
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        color: #fff;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
-        position: relative;
-        overflow: hidden;
-    }
-
-    /* Profile Header */
-    .profile-header {
-        width: 100%;
-        height: 300px;
-        background-color: #000;
-        overflow: hidden;
-        position: relative;
-    }
-
-    /* Full-Width Profile Photo */
-    .profile-photo-full {
-        position: static;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-    }
-
-    .full-width-profile-img {
-        width: 100%;
-        height: 100%;
-        object-fit: scale-down;
-        filter: brightness(0.9); /* Darken the image for better contrast */
-    }
-
-    .welcome-text {
-        font-size: 2.8rem;
-        margin-bottom: .5rem; /* Space between welcome text and profile image */
-        text-shadow: 0px 4px 8px rgba(0, 0, 0, 0.8);
-    }
-
-    /* Responsive adjustments for screens below 768px */
-@media (max-width: 768px) {
-    .welcome-text {
-        font-size: 2rem; /* Scale down the welcome text */
-        margin-bottom: 5px; /* Reduce the bottom margin */
-    }
-
-
-
-    #total-points {
-        font-size: 1rem; /* Adjust the size for smaller screens */
-        margin-top: 50px; /* Reduce margin on top */
-    }
-}
-
-/* Responsive adjustments for very small screens (max-width: 480px) */
-@media (max-width: 480px) {
-    .welcome-text {
-        font-size: 1.6rem; /* Further scale down the welcome text */
-        margin-bottom: 20px; /* Reduce the bottom margin */
-    }
-
-    #total-points {
-        font-size: .8rem; /* Reduce size of points text */
-        margin-top: 5px; /* Reduce margin on top */
-    }
-
-    .profile-header {
-        height: 200px; /* Reduce profile header height on small screens */
-    }
-}
-
-    /* Carbon Reduction Points Styling */
-    .points-emphasized {
-        font-size: 2rem;
-        font-weight: bold;
-        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
-        color: #ffdf5f;
-        margin-bottom: 5px;
-    }
-  
-    /* Profile Actions */
-
-    .profile-actions {
-        display: flex;
-        flex-wrap: wrap; /* Allow buttons to wrap under each other */
-        justify-content: center; /* Center buttons horizontally */
-        gap: 10px; /* Spacing between buttons */
-        margin-top: 20px;
-    }
-
-    /* Button styles */
-    .profile-actions .btn {
-        font-size: 1rem;
-        padding: 12px 40px;
-        transition: background-color 0.3s ease, box-shadow 0.3s ease;
-        border-radius: 50px; /* Rounded button style */
-        display: inline-flex;
-        align-items: center; /* Vertically center the icon and text */
-        justify-content: center; /* Horizontally center the content */
-        margin: 10px 10px; /* Horizontal and vertical spacing */
-    }
-
-    /* Responsive adjustments for smaller screens */
-    @media (max-width: 768px) {
+        .epic-profile-container {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .profile-header {
+            width: 100%;
+            height: 300px;
+            background-color: #000;
+            overflow: hidden;
+            position: relative;
+        }
+        .profile-photo-full {
+            position: static;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .full-width-profile-img {
+            width: 100%;
+            height: 100%;
+            object-fit: scale-down;
+            filter: brightness(0.9);
+        }
+        .welcome-text {
+            font-size: 2.8rem;
+            margin-bottom: .5rem;
+            text-shadow: 0px 4px 8px rgba(0, 0, 0, 0.8);
+        }
+        @media (max-width: 768px) {
+            .welcome-text {
+                font-size: 2rem;
+                margin-bottom: 5px;
+            }
+            #total-points {
+                font-size: 1rem;
+                margin-top: 50px;
+            }
+        }
+        @media (max-width: 480px) {
+            .welcome-text {
+                font-size: 1.6rem;
+                margin-bottom: 20px;
+            }
+            #total-points {
+                font-size: .8rem;
+                margin-top: 5px;
+            }
+            .profile-header {
+                height: 200px;
+            }
+        }
+        .points-emphasized {
+            font-size: 2rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+            color: #ffdf5f;
+            margin-bottom: 5px;
+        }
         .profile-actions {
-            flex-direction: column; /* Stack buttons vertically */
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
         }
-
         .profile-actions .btn {
-            width: 100%; /* Buttons take full width in stacked view */
-            max-width: 300px; /* Optional: Set a max width to limit button size */
+            font-size: 1rem;
+            padding: 12px 40px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 10px;
         }
-    }
-
-    /* Updated Background for Buttons */
-    .custom-btn-bg {
-        background: linear-gradient(135deg, #24c6dc 0%, #514a9d 100%);
-        border: none;
-    }
-
-    .custom-btn-bg:hover {
-        background: linear-gradient(135deg, #514a9d 0%, #24c6dc 100%);
-    }
-
-    /* Dropdown Menu Styling */
-    .dropdown-menu-scrollable {
-        max-height: 400px;
-        overflow-y: auto;
-    }
-
-    .dropdown-item {
-        display: flex;
-        justify-content: center;
-        text-align: center;
-        padding: 10px 20px;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-    }
-
-    .dropdown-item:hover {
-        background-color: #f1f1f1;
-    }
-
-    #total-points {
-        font-size: 1.5rem;
-        margin-bottom: .5rem; /* Space between welcome text and profile image */
-        text-shadow: 0px 4px 8px rgba(0, 0, 0, 0.8);
-    }
-
-    /* Styling for button text */
-    .button-text {
-        font-size: 1rem; /* Increase font size */
-        font-weight: 700;   /* Make the text bold */
-        letter-spacing: 0.5px; /* Add slight spacing between letters */
-        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3); /* Add a subtle shadow for depth */
-    }
-
-    /* Ensure the icon doesn't affect text styling */
-    #leaderboardButton i {
-        font-size: 1.25rem; /* Adjust the icon size to match the text */
-    }
+        @media (max-width: 768px) {
+            .profile-actions {
+                flex-direction: column;
+            }
+            .profile-actions .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+        .custom-btn-bg {
+            background: linear-gradient(135deg, #24c6dc 0%, #514a9d 100%);
+            border: none;
+        }
+        .custom-btn-bg:hover {
+            background: linear-gradient(135deg, #514a9d 0%, #24c6dc 100%);
+        }
+        .dropdown-menu-scrollable {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .dropdown-item {
+            display: flex;
+            justify-content: center;
+            text-align: center;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .dropdown-item:hover {
+            background-color: #f1f1f1;
+        }
+        #total-points {
+            font-size: 1.5rem;
+            margin-bottom: .5rem;
+            text-shadow: 0px 4px 8px rgba(0, 0, 0, 0.8);
+        }
+        .button-text {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        #leaderboardButton i {
+            font-size: 1.25rem;
+        }
+        /* Updated Container for the Badge Bar */
+        .badge-bar-container {
+            background-color: #f1ffee;       /* Matches the main container background */
+            padding: 15px;                   /* Slightly more padding for visual balance */
+            border-radius: 12px;             /* Same border radius as other containers */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);  /* Same box shadow for consistency */
+            margin-bottom: 20px;             /* Space below the badge bar */
+            overflow-x: auto;
+            overflow-y: hidden;              /* Hide any vertical overflow */
+            text-align: center; /* Center the content within the badge-bar-container */
+        }
+        /* Inline-flex container for badges */
+        .badge-bar {
+            display: inline-flex;
+            gap: 15px;                       /* Increase gap for spacing between items */
+            justify-content: flex-start;     /* Ensure badges are aligned to the left */
+        }
+        /* Each badge item styled to match the overall index look */
+        .badge-item {
+            flex: 0 0 auto;                  /* Prevent items from shrinking */
+            width: 100px;                    /* Fixed width; adjust as needed */
+            height: 115px;                   /* Fixed height */
+            background-color: #fff;          /* White background for each badge item */
+            border-radius: 8px;              /* Rounded corners */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+            padding: 10px;                   /* Inner spacing */
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        /* Badge image styling remains similar */
+        .badge-img {
+            width: 40px;                     /* Adjust image size */
+            height: 40px;
+            object-fit: contain;
+            transition: filter 0.3s ease; /* For smooth filter transitions */
+        }
+        .badge-name {
+            margin-top: 5px;
+            font-size: 0.85em;
+            color: #555;
+        }
+        .badge-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+        /* Style for earned badges */
+        .badge-img.badge-earned {
+            filter: none; /* No filter for earned badges - full color */
+        }
+        /* Style for not earned badges */
+        .badge-img.badge-not-earned {
+            filter: grayscale(100%); /* Grayscale for not earned badges */
+            opacity: 0.7; /* Slightly reduce opacity to further differentiate */
+        }
     </style>
 {% endblock %}

@@ -26,7 +26,6 @@ function updateMeter(gameId) {
         .catch(err => console.error('Failed to update meter:', err));
 }
 
-
 function previewFile() {
     var preview = document.getElementById('profileImageDisplay');
     var file = document.querySelector('input[type=file]').files[0];
@@ -120,6 +119,36 @@ function likeQuest(questId) {
     });
 }
 
+// New function to update the game name in the header using the game ID from the hidden element
+function updateGameName() {
+    const gameHolder = document.getElementById("game_IdHolder");
+    if (!gameHolder) return;
+
+    const gameId = gameHolder.getAttribute("data-game-id");
+    const gameNameHeader = document.getElementById("gameNameHeader");
+
+    if (gameId && gameNameHeader) {
+        fetch(`/games/get_game/${gameId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.name) {
+                    gameNameHeader.textContent = data.name;
+                } else {
+                    gameNameHeader.textContent = "Game Not Found";
+                }
+            })
+            .catch(error => {
+                console.error("Error retrieving game name:", error);
+                gameNameHeader.textContent = "Error Loading Game";
+            });
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function() {
     const leaderboardButton = document.getElementById('leaderboardButton');
     if (leaderboardButton) {
@@ -166,4 +195,7 @@ document.addEventListener("DOMContentLoaded", function() {
             request.send(formData);
         });
     }
+
+    // Call the new function to update the game name in the header
+    updateGameName();
 });

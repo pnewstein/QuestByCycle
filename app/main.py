@@ -2,8 +2,8 @@ from flask import Blueprint, jsonify, send_file, render_template, request, redir
 from flask_login import current_user, login_required
 from app.utils import save_profile_picture, save_bicycle_picture
 from app.models import db, Game, User, Quest, Badge, UserQuest, QuestSubmission, QuestLike, ShoutBoardMessage, ShoutBoardLike, ProfileWallMessage, user_games
-from app.forms import ProfileForm, ShoutBoardForm, ContactForm, BikeForm
-from app.utils import send_email, allowed_file, generate_tutorial_game
+from app.forms import ProfileForm, ShoutBoardForm, ContactForm, BikeForm, LoginForm, RegistrationForm
+from app.utils import send_email, allowed_file, generate_tutorial_game, enhance_badges_with_task_info, get_game_badges
 from .config import load_config
 from werkzeug.utils import secure_filename
 from sqlalchemy import func
@@ -92,12 +92,17 @@ def get_datetime(activity):
 @main_bp.route('/<int:game_id>/<int:quest_id>', defaults={'user_id': None})
 @main_bp.route('/<int:game_id>/<int:quest_id>/<int:user_id>')
 def index(game_id, quest_id, user_id):
+    print(f"Index function called, game_id: {game_id}") # Log game_id at start
+
     user_games_list = []
     profile = None
     user_quests = []
-    badges = []
     total_points = None
     start_onboarding = False
+    login_form = LoginForm()
+    register_form = RegistrationForm()
+    all_badges = []
+    earned_badges = []
 
     # Check if the user is authenticated and set the user_id
     if user_id is None and current_user.is_authenticated:
@@ -167,8 +172,23 @@ def index(game_id, quest_id, user_id):
         
         profile = User.query.get_or_404(user_id)
         user_quests = UserQuest.query.filter_by(user_id=profile.id).all()
-        badges = [badge for badge in profile.badges if any(quest.game_id == game_id for quest in badge.quests)]
+        
+        if game_id:
+                all_badges = get_game_badges(game_id) # Fetch game-specific badges using new function
+        else:
+            all_badges = Badge.query.all() # Fallback to all badges if no game_id
+        earned_badges_set = set(profile.badges) # keep as set for efficient check
 
+        # Enhance all_badges with task info - now game-aware
+        enhanced_all_badges = enhance_badges_with_task_info(all_badges, game_id) # Use helper function
+        all_badges = enhanced_all_badges
+
+        # Enhance earned_badges with task info - now game-aware
+        enhanced_earned_badges = enhance_badges_with_task_info(list(earned_badges_set), game_id) # Use helper function, convert set to list
+        earned_badges = enhanced_earned_badges
+
+        print(f"Index function: all_badges count: {len(all_badges)}, earned_badges count: {len(earned_badges)}") # Log counts
+        
         if not profile.display_name:
             profile.display_name = profile.username
 
@@ -243,6 +263,8 @@ def index(game_id, quest_id, user_id):
 
     return render_template('index.html',
                            form=form,
+                           badges=earned_badges,
+                           all_badges=all_badges,
                            games=user_games_list,
                            game=game,
                            user_games=user_games_list,
@@ -253,7 +275,6 @@ def index(game_id, quest_id, user_id):
                            has_joined=has_joined,
                            profile=profile,
                            user_quests=user_quests,
-                           badges=badges,
                            carousel_images=carousel_images,
                            total_points=total_points,
                            completions=completed_quests,
@@ -261,7 +282,9 @@ def index(game_id, quest_id, user_id):
                            selected_game_id=game_id or 0,
                            selected_game=game,
                            quest_id=quest_id,
-                           start_onboarding=start_onboarding)
+                           start_onboarding=start_onboarding,
+                           login_form=login_form,
+                           register_form=register_form)
 
 @main_bp.route('/mark-onboarding-complete', methods=['POST'])
 @login_required

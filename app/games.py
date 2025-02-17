@@ -192,6 +192,7 @@ def delete_game(game_id):
 
     return redirect(url_for('admin.admin_dashboard'))
 
+
 @games_bp.route('/game-info/<int:game_id>')
 def game_info(game_id):
     # Fetch game details using the provided game_id
@@ -202,8 +203,15 @@ def game_info(game_id):
         flash("Game details are not available.", "error")
         return redirect(url_for('main.index'))
 
-    # Render the game_info.html template with the fetched game details
+    # If the request is for a modal version, render the modal template
+    if request.args.get('modal'):
+        return render_template('modals/game_info_modal.html', game=game_details, game_id=game_id)
+
+    # Otherwise, render the full game info page
     return render_template('game_info.html', game=game_details, game_id=game_id)
+
+
+
 
 @games_bp.route('/get_game_points/<int:game_id>', methods=['GET'])
 @login_required
@@ -315,3 +323,12 @@ def generate_qr_for_game(game_id):
     response = make_response(html_content)
     response.headers['Content-Type'] = 'text/html'
     return response
+
+
+@games_bp.route('/get_game/<int:game_id>', methods=['GET'])
+@login_required
+def get_game(game_id):
+    # Retrieve the game from the database or return a 404 error if not found
+    game = Game.query.get_or_404(game_id)
+    # Return a JSON object with the game name (you can include more details if needed)
+    return jsonify(name=game.title)
