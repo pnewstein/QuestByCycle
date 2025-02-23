@@ -92,8 +92,6 @@ def get_datetime(activity):
 @main_bp.route('/<int:game_id>/<int:quest_id>', defaults={'user_id': None})
 @main_bp.route('/<int:game_id>/<int:quest_id>/<int:user_id>')
 def index(game_id, quest_id, user_id):
-    print(f"Index function called, game_id: {game_id}") # Log game_id at start
-
     user_games_list = []
     profile = None
     user_quests = []
@@ -117,6 +115,15 @@ def index(game_id, quest_id, user_id):
             if joined_games:
                 game_id = joined_games[0].id
 
+    # If game_id is still None, default to the latest tutorial game
+    if game_id is None:
+        default_tutorial_game = Game.query.filter_by(is_tutorial=True).order_by(Game.start_date.desc()).first()
+        if default_tutorial_game:
+            game_id = default_tutorial_game.id
+        else:
+            flash("No tutorial game available", "error")
+            return redirect(url_for('some_error_route'))
+
     game = Game.query.get(game_id) if game_id else None
 
     # Ensure the user has joined the game before proceeding
@@ -128,7 +135,7 @@ def index(game_id, quest_id, user_id):
         if current_user.selected_game_id != game_id:
             current_user.selected_game_id = game_id
             db.session.commit()
-            
+
     # Determine if the user needs onboarding
     #if current_user.is_authenticated and not current_user.onboarded:
     #    start_onboarding = True  # Trigger the onboarding script
