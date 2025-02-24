@@ -121,6 +121,18 @@ function showUserProfileModal(userId) {
                             <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                                 <section class="profile mb-4">
                                     ${isCurrentUser ? `
+                                        <!-- View Mode -->
+                                        <div id="profileViewMode">
+                                        <p><strong>Display Name:</strong> ${data.user.display_name || ''}</p>
+                                        <p><strong>Age Group:</strong> ${data.user.age_group || ''}</p>
+                                        <p><strong>Interests:</strong> ${data.user.interests || ''}</p>
+                                        <p><strong>Riding Preferences:</strong> ${data.user.riding_preferences.join(', ')}</p>
+                                        <p><strong>Ride Description:</strong> ${data.user.ride_description || ''}</p>
+                                        <button type="button" class="btn btn-primary" onclick="toggleProfileEditMode()">Edit</button>
+                                        </div>
+
+                                        <!-- Edit Mode (initially hidden) -->
+                                        <div id="profileEditMode" class="d-none">
                                         <form id="editProfileForm" enctype="multipart/form-data" class="needs-validation" novalidate>
                                             <div class="form-group mb-3">
                                                 <label for="profilePictureInput" class="form-label">Profile Picture:</label>
@@ -144,7 +156,7 @@ function showUserProfileModal(userId) {
                                                 <textarea class="form-control" id="interests" name="interests" rows="3" placeholder="Describe your interests...">${data.user.interests || ''}</textarea>
                                             </div>
                                             <div class="form-group mb-3">
-                                                <label for="ridingPreferences" class="form-label"><b>Please specify characteristics about yourself. This information will help us tailor quests for you: (Please check all that apply)</b></label>
+                                                <label for="ridingPreferences" class="form-label"><b>Please specify your riding preferences:</b></label>
                                                 <div id="ridingPreferences">
                                                     ${data.riding_preferences_choices.map((choice, index) => `
                                                         <div class="form-check mb-2">
@@ -160,10 +172,11 @@ function showUserProfileModal(userId) {
                                             </div>
                                             <div class="form-check form-switch mb-3">
                                                 <input class="form-check-input" type="checkbox" id="uploadToSocials" name="upload_to_socials" ${data.user.upload_to_socials ? 'checked' : ''}>
-                                                <label class="form-check-label" for="uploadToSocials">Allow a game administrator to post your submissions to social media?</label>
+                                                <label class="form-check-label" for="uploadToSocials">Allow uploads to social media?</label>
                                             </div>
                                             <div class="d-flex justify-content-between">
                                                 <button type="button" class="btn btn-success" onclick="saveProfile(${userId})"><i class="bi bi-save me-2"></i>Save Profile</button>
+                                                <button type="button" class="btn btn-secondary" onclick="toggleProfileEditMode()">Cancel</button>
                                             </div>
                                         </form>
                                         <hr>
@@ -177,18 +190,17 @@ function showUserProfileModal(userId) {
                                             <button type="submit" class="btn btn-danger w-100">
                                                 <i class="bi bi-trash-fill me-2"></i>Delete My Account
                                             </button>
-                                        </form>` : `
+                                        </form>
+                                        </div>
+                                    ` : `
+                                        <!-- For non-current users, display non-editable details -->
                                         <p><strong>Display Name:</strong> ${data.user.display_name || ''}</p>
                                         <p><strong>Age Group:</strong> ${data.user.age_group || ''}</p>
                                         <p><strong>Interests:</strong> ${data.user.interests || ''}</p>
                                         <p><strong>Riding Preferences:</strong> ${data.user.riding_preferences.join(', ')}</p>
                                         <p><strong>Ride Description:</strong> ${data.user.ride_description || ''}</p>
-                                        ${isCurrentUser ? `
-                                        <p><strong>Uploads to Social Media:</strong> ${data.user.upload_to_socials ? 'Yes' : 'No'}</p>
-                                        <p><strong>Shows Carbon Reduction Game:</strong> ${data.user.show_carbon_game ? 'Yes' : 'No'}</p>
-                                        ` : ''}
                                     `}
-                                </section>
+                                    </section>
                             </div>
                             <div class="tab-pane fade" id="bike" role="tabpanel" aria-labelledby="bike-tab">
                                 <section class="bike mb-4">
@@ -319,6 +331,23 @@ document.querySelectorAll('.needs-validation').forEach(form => {
     }, false);
 });
 
+
+function toggleProfileEditMode() {
+    const viewDiv = document.getElementById('profileViewMode');
+    const editDiv = document.getElementById('profileEditMode');
+  
+    if (viewDiv.classList.contains('d-none')) {
+      // Currently in edit mode – switch back to view mode.
+      viewDiv.classList.remove('d-none');
+      editDiv.classList.add('d-none');
+    } else {
+      // Switch to edit mode.
+      viewDiv.classList.add('d-none');
+      editDiv.classList.remove('d-none');
+    }
+  }
+
+  
 function saveProfile(userId) {
     const form = document.getElementById('editProfileForm');
     const formData = new FormData(form);
