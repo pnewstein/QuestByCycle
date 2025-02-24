@@ -262,6 +262,8 @@ def index(game_id, quest_id, user_id):
                     'comment': submission.comment
                 })
 
+    categories = sorted({quest.category for quest in quests if quest.category})
+
     return render_template('index.html',
                            form=form,
                            badges=earned_badges,
@@ -271,6 +273,7 @@ def index(game_id, quest_id, user_id):
                            user_games=user_games_list,
                            activities=activities,
                            quests=quests,
+                           categories=categories,
                            game_participation=game_participation,
                            selected_quest=selected_quest,
                            has_joined=has_joined,
