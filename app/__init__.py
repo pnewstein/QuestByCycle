@@ -51,6 +51,13 @@ def create_app():
     # Load configuration
     inscopeconfig = load_config()
     app.config.update(inscopeconfig)
+
+    # Set SQLAlchemy engine options to mitigate connection issues
+    # This instructs SQLAlchemy to check connections before using them and to recycle them after an hour.
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,
+        'pool_recycle': 3600
+    }
     
     # Init cache
     #cache.init_app(app)

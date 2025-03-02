@@ -207,6 +207,9 @@ function manageVerificationSection(questId, canVerify, verificationType, nextEli
 function getVerificationFormHTML(verificationType) {
     let formHTML = '<form enctype="multipart/form-data" class="epic-form">';
 
+    // Insert the centered header for verifying the quest
+    formHTML += '<h2 style="text-align: center;">Verify Your Quest</h2>';
+
     // Explicitly handle each case
     switch (verificationType) {
         case 'photo':

@@ -92,8 +92,6 @@ def get_datetime(activity):
 @main_bp.route('/<int:game_id>/<int:quest_id>', defaults={'user_id': None})
 @main_bp.route('/<int:game_id>/<int:quest_id>/<int:user_id>')
 def index(game_id, quest_id, user_id):
-    print(f"Index function called, game_id: {game_id}") # Log game_id at start
-
     user_games_list = []
     profile = None
     user_quests = []
@@ -117,6 +115,15 @@ def index(game_id, quest_id, user_id):
             if joined_games:
                 game_id = joined_games[0].id
 
+    # If game_id is still None, default to the latest tutorial game
+    if game_id is None:
+        default_tutorial_game = Game.query.filter_by(is_tutorial=True).order_by(Game.start_date.desc()).first()
+        if default_tutorial_game:
+            game_id = default_tutorial_game.id
+        else:
+            flash("No tutorial game available", "error")
+            return redirect(url_for('some_error_route'))
+
     game = Game.query.get(game_id) if game_id else None
 
     # Ensure the user has joined the game before proceeding
@@ -128,13 +135,6 @@ def index(game_id, quest_id, user_id):
         if current_user.selected_game_id != game_id:
             current_user.selected_game_id = game_id
             db.session.commit()
-            
-    # Determine if the user needs onboarding
-    #if current_user.is_authenticated and not current_user.onboarded:
-    #    start_onboarding = True  # Trigger the onboarding script
-    #else:
-    #    current_user.onboarded = True
-    #    db.session.commit()
 
     # If the user is authenticated, load user-specific quests and data
     if current_user.is_authenticated:
@@ -142,7 +142,8 @@ def index(game_id, quest_id, user_id):
         total_points = sum(ut.points_awarded for ut in user_quests if ut.quest.game_id == game_id)
 
     quests = Quest.query.filter_by(game_id=game.id, enabled=True).all() if game else []
-    has_joined = game in current_user.participated_games if game else False
+    # Prevent error by only accessing participated_games if the user is authenticated
+    has_joined = game in (current_user.participated_games if current_user.is_authenticated else []) if game else False
     game_participation = {game.id: has_joined} if game else {}
 
     # Load forms and messages for the Shout Board
@@ -174,20 +175,20 @@ def index(game_id, quest_id, user_id):
         user_quests = UserQuest.query.filter_by(user_id=profile.id).all()
         
         if game_id:
-                all_badges = get_game_badges(game_id) # Fetch game-specific badges using new function
+            all_badges = get_game_badges(game_id)  # Fetch game-specific badges using new function
         else:
-            all_badges = Badge.query.all() # Fallback to all badges if no game_id
-        earned_badges_set = set(profile.badges) # keep as set for efficient check
+            all_badges = Badge.query.all()  # Fallback to all badges if no game_id
+        earned_badges_set = set(profile.badges)  # keep as set for efficient check
 
         # Enhance all_badges with task info - now game-aware
-        enhanced_all_badges = enhance_badges_with_task_info(all_badges, game_id) # Use helper function
+        enhanced_all_badges = enhance_badges_with_task_info(all_badges, game_id)  # Use helper function
         all_badges = enhanced_all_badges
 
         # Enhance earned_badges with task info - now game-aware
-        enhanced_earned_badges = enhance_badges_with_task_info(list(earned_badges_set), game_id) # Use helper function, convert set to list
+        enhanced_earned_badges = enhance_badges_with_task_info(list(earned_badges_set), game_id)  # Use helper function, convert set to list
         earned_badges = enhanced_earned_badges
 
-        print(f"Index function: all_badges count: {len(all_badges)}, earned_badges count: {len(earned_badges)}") # Log counts
+        print(f"Index function: all_badges count: {len(all_badges)}, earned_badges count: {len(earned_badges)}")  # Log counts
         
         if not profile.display_name:
             profile.display_name = profile.username
@@ -261,6 +262,8 @@ def index(game_id, quest_id, user_id):
                     'comment': submission.comment
                 })
 
+    categories = sorted({quest.category for quest in quests if quest.category})
+
     return render_template('index.html',
                            form=form,
                            badges=earned_badges,
@@ -270,6 +273,7 @@ def index(game_id, quest_id, user_id):
                            user_games=user_games_list,
                            activities=activities,
                            quests=quests,
+                           categories=categories,
                            game_participation=game_participation,
                            selected_quest=selected_quest,
                            has_joined=has_joined,
@@ -285,6 +289,7 @@ def index(game_id, quest_id, user_id):
                            start_onboarding=start_onboarding,
                            login_form=login_form,
                            register_form=register_form)
+
 
 @main_bp.route('/mark-onboarding-complete', methods=['POST'])
 @login_required

@@ -16,6 +16,9 @@ main {
     background-attachment: fixed;
 }
 
+.navbar-nav .nav-link {
+    font-weight: bold; /* Makes text bold */
+}
 
 .modal-backdrop {
     z-index: 1030 !important;
